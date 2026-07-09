@@ -66,8 +66,8 @@ const I18N = {
     },
     lang: {
       eyebrow: "Built for everyone landing here",
-      title: "Fluent in Lagos.<br>Fluent in French, too.",
-      body: "A huge share of visitors arriving in Lagos come from French-speaking neighbours like Niger and Benin. Arrivo speaks both languages natively, so getting a safe ride here never depends on getting the words right.",
+      title: "Fluent in Lagos.<br>Fluent in French and Mandarin, too.",
+      body: "Visitors arriving in Lagos come from all over — French-speaking neighbours like Niger and Benin, and a growing number of Chinese business travellers. Arrivo speaks all three languages natively, so getting a safe ride here never depends on getting the words right.",
     },
     download: {
       eyebrow: "Driving or listing a vehicle?",
@@ -209,8 +209,8 @@ const I18N = {
     },
     lang: {
       eyebrow: "Conçu pour tous ceux qui arrivent ici",
-      title: "À l'aise à Lagos.<br>À l'aise en français aussi.",
-      body: "Une grande partie des visiteurs arrivant à Lagos viennent de pays francophones voisins comme le Niger et le Bénin. Arrivo parle nativement les deux langues, pour qu'un trajet sûr ne dépende jamais de trouver les bons mots.",
+      title: "À l'aise à Lagos.<br>À l'aise en français et en mandarin aussi.",
+      body: "Les visiteurs qui arrivent à Lagos viennent de partout — des pays francophones voisins comme le Niger et le Bénin, et un nombre croissant de voyageurs d'affaires chinois. Arrivo parle nativement ces trois langues, pour qu'un trajet sûr ne dépende jamais de trouver les bons mots.",
     },
     download: {
       eyebrow: "Chauffeur ou propriétaire de véhicule ?",
