@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a pickup — Arrivo</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="booking.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="brand">
+      <img src="assets/icon.svg" alt="" class="brand-mark" width="28" height="28">
+      <span data-i18n="brand">arrivo</span>
+    </a>
+    <nav class="main-nav" aria-label="Primary">
+      <a href="index.html#how" data-i18n="nav.how">How it works</a>
+      <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
+      <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
+    </nav>
+    <div class="header-actions">
+      <div class="lang-switch" id="langSwitch" role="group" aria-label="Choose language">
+        <button type="button" class="lang-opt" data-lang="en">EN</button>
+        <button type="button" class="lang-opt" data-lang="fr">FR</button>
+        <button type="button" class="lang-opt" data-lang="zh">中文</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap booking-wrap">
+  <h1 data-i18n="booking.pageTitle">Book your pickup</h1>
+
+  <ol class="progress" id="progress">
+    <li data-step="1" class="active"><span data-i18n="booking.stepContact">Contact</span></li>
+    <li data-step="2"><span data-i18n="booking.stepFlight">Flight</span></li>
+    <li data-step="3"><span data-i18n="booking.stepLuggage">Luggage</span></li>
+    <li data-step="4"><span data-i18n="booking.stepPickup">Pickup</span></li>
+    <li data-step="5"><span data-i18n="booking.stepReview">Review &amp; Pay</span></li>
+  </ol>
+
+  <div class="booking-card">
+
+    <!-- STEP 1: Contact -->
+    <section class="step" data-step="1">
+      <h2 data-i18n="booking.contactTitle">Let's start with you</h2>
+      <input type="text" id="fName" class="field" data-i18n-placeholder="booking.name" placeholder="Full name">
+      <input type="email" id="fEmail" class="field" data-i18n-placeholder="booking.email" placeholder="Email address">
+      <input type="tel" id="fPhone" class="field" data-i18n-placeholder="booking.phone" placeholder="Phone number">
+
+      <div id="loginPrompt" class="login-prompt" hidden>
+        <p data-i18n="booking.needLogin">An account already exists with this email.</p>
+        <input type="password" id="fPassword" class="field" data-i18n-placeholder="booking.password" placeholder="Password">
+        <p class="error-text" id="loginError" hidden data-i18n="booking.loginFailed">Incorrect password. Please try again.</p>
+        <button class="btn btn-primary" id="loginBtn" data-i18n="booking.logIn">Log in and continue</button>
+      </div>
+
+      <p class="error-text" id="contactError" hidden></p>
+      <button class="btn btn-primary" id="contactContinue" data-i18n="booking.continue">Continue</button>
+    </section>
+
+    <!-- STEP 2: Flight -->
+    <section class="step" data-step="2" hidden>
+      <h2 data-i18n="booking.flightTitle">Got a flight number?</h2>
+      <p class="step-sub" data-i18n="booking.flightSub">Optional — but it means your pickup time adjusts automatically if you're early or delayed.</p>
+
+      <div class="flight-row">
+        <input type="text" id="fFlight" class="field" data-i18n-placeholder="booking.flightPlaceholder" placeholder="e.g. BA075" style="text-transform:uppercase;">
+        <button class="btn btn-ghost" id="trackFlightBtn" data-i18n="booking.track" type="button">Track</button>
+      </div>
+      <div id="flightResult" class="flight-result" hidden></div>
+      <p class="error-text" id="flightError" hidden data-i18n="booking.flightNotFound"></p>
+
+      <div class="step-actions">
+        <button class="btn btn-ghost" id="backTo1" data-i18n="booking.back">Back</button>
+        <button class="btn btn-primary" id="flightContinue" data-i18n="booking.continue">Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 3: Luggage & Vehicle -->
+    <section class="step" data-step="3" hidden>
+      <h2 data-i18n="booking.luggageTitle">Tell us your luggage</h2>
+      <p class="step-sub" data-i18n="booking.luggageSub">So we send a vehicle that actually fits everything.</p>
+
+      <label class="field-label" data-i18n="booking.bookingTypeLabel">Booking type</label>
+      <div class="booking-type-options" id="bookingTypeOptions">
+        <button type="button" class="booking-type-chip selected" data-type="one_way" data-days="1" data-multiplier="1">
+          <span data-i18n="booking.typeOneWay">One-way pickup</span>
+        </button>
+        <button type="button" class="booking-type-chip" data-type="full_day" data-days="1" data-multiplier="6">
+          <span data-i18n="booking.typeFullDay">Full day</span>
+        </button>
+        <button type="button" class="booking-type-chip" data-type="full_week" data-days="7" data-multiplier="30">
+          <span data-i18n="booking.typeFullWeek">Full week</span>
+        </button>
+        <button type="button" class="booking-type-chip" data-type="full_month" data-days="30" data-multiplier="100">
+          <span data-i18n="booking.typeFullMonth">Full month</span>
+        </button>
+      </div>
+
+      <label class="field-label" for="fBags" data-i18n="booking.bagsLabel">Number of bags</label>
+      <input type="number" id="fBags" class="field" min="0" max="12" value="1">
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="fBulky">
+        <span data-i18n="booking.bulkyLabel">I have oversized or bulky items (surfboard, extra-large suitcase, equipment, etc.)</span>
+      </label>
+
+      <div class="vehicle-options" id="vehicleOptions">
+        <button type="button" class="vehicle-card" data-vehicle="sedan" data-price="8500">
+          <span class="v-name" data-i18n="booking.vehicleSedan">Sedan</span>
+          <span class="v-price">₦8,500</span>
+          <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
+        </button>
+        <button type="button" class="vehicle-card" data-vehicle="suv" data-price="12500">
+          <span class="v-name" data-i18n="booking.vehicleSuv">SUV</span>
+          <span class="v-price">₦12,500</span>
+          <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
+        </button>
+        <button type="button" class="vehicle-card" data-vehicle="truck" data-price="16000">
+          <span class="v-name" data-i18n="booking.vehicleTruck">Truck / Van</span>
+          <span class="v-price">₦16,000</span>
+          <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
+        </button>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-ghost" id="backTo2" data-i18n="booking.back">Back</button>
+        <button class="btn btn-primary" id="luggageContinue" data-i18n="booking.continue">Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 4: Pickup -->
+    <section class="step" data-step="4" hidden>
+      <h2 data-i18n="booking.pickupTitle">Where should we pick you up?</h2>
+      <input type="text" id="fPickup" class="field" data-i18n-placeholder="booking.pickupPlaceholder" placeholder="e.g. Murtala Muhammed Airport, Terminal 1">
+      <div id="stopsList"></div>
+      <button type="button" class="link-btn" id="addStopBtn" data-i18n="booking.addStop">+ Add another stop</button>
+
+      <div class="step-actions">
+        <button class="btn btn-ghost" id="backTo3" data-i18n="booking.back">Back</button>
+        <button class="btn btn-primary" id="pickupContinue" data-i18n="booking.continue">Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 5: Review & Pay -->
+    <section class="step" data-step="5" hidden>
+      <h2 data-i18n="booking.reviewTitle">Review &amp; pay</h2>
+
+      <dl class="review-list" id="reviewList"></dl>
+
+      <div class="review-total">
+        <span data-i18n="booking.reviewFare">Total fare</span>
+        <strong id="reviewFare">₦0</strong>
+      </div>
+
+      <p class="pay-note" data-i18n="booking.payNote">Payment is handled securely by Paystack — Arrivo never sees your card details.</p>
+      <p class="error-text" id="payError" hidden></p>
+
+      <div class="step-actions">
+        <button class="btn btn-ghost" id="backTo4" data-i18n="booking.back">Back</button>
+        <button class="btn btn-primary" id="payBtn"><span data-i18n="booking.payNow">Pay</span> <span id="payAmount"></span></button>
+      </div>
+    </section>
+
+    <!-- STEP 6: Confirmation -->
+    <section class="step" data-step="6" hidden>
+      <div class="confirm-icon">✓</div>
+      <h2 data-i18n="booking.confirmTitle">You're booked!</h2>
+      <p data-i18n="booking.confirmBody">Payment confirmed. Your reference number is below — our team will confirm your driver's details closer to pickup time.</p>
+      <div class="reference-box">
+        <span data-i18n="booking.confirmReference">Booking reference</span>
+        <strong id="confirmRef"></strong>
+      </div>
+      <a href="book.html" class="btn btn-primary" data-i18n="booking.bookAnother">Book another ride</a>
+    </section>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      <img src="assets/icon.svg" alt="" width="22" height="22">
+      <span data-i18n="brand">arrivo</span>
+    </div>
+    <nav class="footer-nav" aria-label="Footer">
+      <a href="privacy.html" data-i18n="footer.privacy">Privacy Policy</a>
+      <a href="terms.html" data-i18n="footer.terms">Terms of Service</a>
+      <a href="mailto:hello@ridearrivo.com">hello@ridearrivo.com</a>
+    </nav>
+    <p class="footer-legal" data-i18n="footer.legal">© 2026 Arrivo. Made in Lagos.</p>
+  </div>
+</footer>
+
+<!-- Paystack's official inline checkout library -->
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script src="i18n.js"></script>
+<script src="booking.js"></script>
+</body>
+</html>

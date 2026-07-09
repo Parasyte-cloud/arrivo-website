@@ -1,0 +1,174 @@
+.booking-wrap { padding: 48px 0 80px; max-width: 640px; }
+.booking-wrap h1 { font-size: clamp(24px, 4vw, 32px); margin-bottom: 28px; }
+
+/* ── Progress indicator ── */
+.progress {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px;
+  gap: 4px;
+}
+.progress li {
+  flex: 1;
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding-bottom: 10px;
+  border-bottom: 3px solid var(--card-border);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.progress li.active { color: var(--ink); border-bottom-color: var(--amber); }
+.progress li.done { color: var(--teal); border-bottom-color: var(--teal); }
+
+/* ── Card & steps ── */
+.booking-card {
+  background: #fff;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+}
+.step h2 { font-size: 19px; margin-bottom: 6px; }
+.step-sub { color: var(--text-muted); font-size: 13.5px; margin-bottom: 20px; }
+
+.field {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--card-border);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  margin-bottom: 12px;
+  background: #fff;
+  color: var(--ink);
+}
+.field:focus { outline: 2px solid var(--amber); outline-offset: 1px; }
+.field-label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 4px 0 20px;
+  cursor: pointer;
+}
+.checkbox-row input { margin-top: 3px; }
+
+.step-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+}
+.step-actions .btn-primary { margin-left: auto; }
+
+.error-text { color: var(--coral); font-size: 12.5px; margin: 4px 0 12px; }
+
+.login-prompt {
+  background: #FBF9F3;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.login-prompt p { font-size: 13px; margin-bottom: 10px; }
+
+/* ── Flight step ── */
+.flight-row { display: flex; gap: 10px; }
+.flight-row .field { margin-bottom: 0; }
+.flight-result {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--teal-tint);
+  font-size: 13px;
+}
+.flight-result strong { display: block; margin-bottom: 4px; }
+
+/* ── Booking type ── */
+.booking-type-options { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 20px; }
+.booking-type-chip {
+  all: unset;
+  cursor: pointer;
+  padding: 9px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--card-border);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.booking-type-chip.selected { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+
+/* ── Vehicle cards ── */
+.vehicle-options { display: grid; gap: 10px; margin: 16px 0 4px; }
+.vehicle-card {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px;
+  border: 1.5px solid var(--card-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.vehicle-card .v-name { font-weight: 700; font-size: 14px; }
+.vehicle-card .v-price { font-weight: 700; font-size: 14px; color: var(--ink); margin-left: auto; }
+.vehicle-card .v-badge {
+  display: none;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--teal);
+  width: 100%;
+}
+.vehicle-card.selected { border-color: var(--amber); background: #FFFBF0; }
+.vehicle-card.recommended .v-badge { display: block; }
+
+/* ── Pickup / stops ── */
+.link-btn {
+  all: unset;
+  cursor: pointer;
+  color: var(--teal);
+  font-size: 12.5px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+/* ── Review ── */
+.review-list { margin: 0 0 20px; }
+.review-list div { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--card-border); font-size: 13.5px; gap: 16px; }
+.review-list dt { color: var(--text-muted); flex-shrink: 0; }
+.review-list dd { margin: 0; text-align: right; }
+.review-total {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 0; font-size: 16px; font-weight: 700; border-top: 2px solid var(--ink);
+}
+.pay-note { font-size: 12px; color: var(--text-muted); margin: 12px 0 4px; }
+
+/* ── Confirmation ── */
+.step[data-step="6"] { text-align: center; }
+.confirm-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--teal); color: #fff;
+  font-size: 26px; display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+}
+.reference-box {
+  background: #FBF9F3;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 20px 0;
+  font-size: 13px;
+}
+.reference-box strong { display: block; font-size: 18px; margin-top: 4px; font-family: 'Space Grotesk', sans-serif; }
+
+@media (min-width: 560px) {
+  .progress li { font-size: 11.5px; }
+}

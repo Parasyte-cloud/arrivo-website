@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arrivo — Land in Lagos. Someone's already there.</title>
+<meta name="description" content="Verified drivers, live-tracked rides, and airport pickups you can share with someone who cares you arrived safely. Lagos-born, built for everyone landing here.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="#top" class="brand">
+      <img src="assets/icon.svg" alt="" class="brand-mark" width="28" height="28">
+      <span data-i18n="brand">arrivo</span>
+    </a>
+
+    <nav class="main-nav" aria-label="Primary">
+      <a href="#how" data-i18n="nav.how">How it works</a>
+      <a href="#audiences" data-i18n="nav.audiences">Who it's for</a>
+      <a href="#safety" data-i18n="nav.safety">Safety</a>
+      <a href="book.html" data-i18n="nav.book">Book a ride</a>
+    </nav>
+
+    <div class="header-actions">
+      <div class="lang-switch" id="langSwitch" role="group" aria-label="Choose language">
+        <button type="button" class="lang-opt" data-lang="en">EN</button>
+        <button type="button" class="lang-opt" data-lang="fr">FR</button>
+        <button type="button" class="lang-opt" data-lang="zh">中文</button>
+      </div>
+      <a href="book.html" class="btn btn-primary btn-sm" data-i18n="nav.bookCta">Book a ride</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="top">
+    <div class="wrap hero-inner">
+      <div class="hero-copy">
+        <span class="eyebrow" data-i18n="hero.eyebrow">Lagos airport pickups, done right</span>
+        <h1 data-i18n="hero.headline">Land in Lagos.<br>Someone's already there.</h1>
+        <p class="hero-sub" data-i18n="hero.sub">
+          A verified driver, a live-tracked ride, and a trip you can share with someone who cares you arrived safely —
+          in English or en Français.
+        </p>
+        <div class="hero-ctas">
+          <a href="book.html" class="btn btn-primary" data-i18n="hero.ctaPrimary">Book a ride now</a>
+          <a href="#how" class="btn btn-ghost" data-i18n="hero.ctaSecondary">See how it works</a>
+        </div>
+
+        <ul class="trust-strip">
+          <li><span class="trust-dot"></span><span data-i18n="trust.verified">ID-verified drivers</span></li>
+          <li><span class="trust-dot"></span><span data-i18n="trust.tracking">Live GPS tracking</span></li>
+          <li><span class="trust-dot"></span><span data-i18n="trust.languages">English &amp; Français</span></li>
+          <li><span class="trust-dot"></span><span data-i18n="trust.local">Built in Lagos</span></li>
+        </ul>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <svg class="flight-path" viewBox="0 0 320 260" width="100%" height="100%">
+          <path id="flightArc" d="M20,40 C120,10 200,60 260,150" stroke="#F4A300" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="360" stroke-dashoffset="360"/>
+          <circle id="planeDot" cx="20" cy="40" r="5" fill="#F7F4EC"/>
+        </svg>
+
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <div class="phone-stripe"></div>
+          <div class="phone-screen">
+            <div class="ps-row">
+              <div class="ps-dot"></div>
+              <div class="ps-chip">12 min away</div>
+            </div>
+            <div class="ps-map"></div>
+            <div class="ps-card">
+              <div class="ps-avatar">KJ</div>
+              <div class="ps-info">
+                <div class="ps-name">Kunle J. — Toyota Highlander</div>
+                <div class="ps-meta">Plate KJA 224 XL · ★ 4.9</div>
+                <div class="ps-tag">ID Verified</div>
+              </div>
+            </div>
+            <div class="ps-btn">📍 Share ride</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <section class="section" id="how">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="how.eyebrow">The process</span>
+      <h2 data-i18n="how.title">Four steps, start to finish</h2>
+
+      <ol class="steps steps-5">
+        <li>
+          <span class="step-num">01</span>
+          <h3 data-i18n="how.step1Title">Pick your language</h3>
+          <p data-i18n="how.step1Body">Choose English or Français from the start — the whole booking flow follows in whichever you're most comfortable with.</p>
+        </li>
+        <li>
+          <span class="step-num">02</span>
+          <h3 data-i18n="how.step2Title">Enter your flight</h3>
+          <p data-i18n="how.step2Body">Tell us your flight number — we track it, so your pickup adjusts automatically if you're early or delayed.</p>
+        </li>
+        <li>
+          <span class="step-num">03</span>
+          <h3 data-i18n="how.step3Title">Tell us your luggage</h3>
+          <p data-i18n="how.step3Body">Check in how many bags and how big — we match you to a sedan, SUV, or truck that actually fits everything.</p>
+        </li>
+        <li>
+          <span class="step-num">04</span>
+          <h3 data-i18n="how.step4Title">Get matched</h3>
+          <p data-i18n="how.step4Body">A verified driver and the right-sized vehicle are assigned — you see their name, photo, and ID before they arrive.</p>
+        </li>
+        <li>
+          <span class="step-num">05</span>
+          <h3 data-i18n="how.step5Title">Track and share</h3>
+          <p data-i18n="how.step5Body">Watch your ride live on the map, and share the trip with someone who wants to know you're safe.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ AUDIENCES ============ -->
+  <section class="section section-tint" id="audiences">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="audiences.eyebrow">Built for three kinds of people</span>
+      <h2 data-i18n="audiences.title">Who Arrivo is for</h2>
+
+      <div class="cards">
+        <article class="card">
+          <div class="card-icon">🧳</div>
+          <h3 data-i18n="audiences.riderTitle">Riders &amp; travellers</h3>
+          <p data-i18n="audiences.riderBody">Airport pickups, everyday rides, multi-stop trips, and on-demand chauffeur booking — matched to a vehicle sized for your luggage, in the language you're most comfortable in.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon">🚙</div>
+          <h3 data-i18n="audiences.ownerTitle">Vehicle owners</h3>
+          <p data-i18n="audiences.ownerBody">Have a car, SUV, or truck sitting idle? List it for pickups, set your own availability, and get paid weekly or monthly — without driving it yourself.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon">🪪</div>
+          <h3 data-i18n="audiences.driverTitle">Drivers</h3>
+          <p data-i18n="audiences.driverBody">Flexible, app-based work with transparent earnings. Get verified once, then accept the rides that fit your schedule.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SAFETY ============ -->
+  <section class="section" id="safety">
+    <div class="wrap safety-wrap">
+      <div>
+        <span class="eyebrow" data-i18n="safety.eyebrow">Trust, built in — not bolted on</span>
+        <h2 data-i18n="safety.title">Safety isn't a feature.<br>It's the whole design.</h2>
+        <p class="safety-sub" data-i18n="safety.sub">Every part of Arrivo was built around one question: would you feel comfortable if this were someone you love landing alone at night?</p>
+      </div>
+
+      <ul class="safety-list">
+        <li>
+          <h4 data-i18n="safety.item1Title">Verified identity, every time</h4>
+          <p data-i18n="safety.item1Body">See your driver's name, photo, and verification status before they ever arrive.</p>
+        </li>
+        <li>
+          <h4 data-i18n="safety.item2Title">Live tracking, not a promise</h4>
+          <p data-i18n="safety.item2Body">Watch the actual route on a live map from pickup to drop-off.</p>
+        </li>
+        <li>
+          <h4 data-i18n="safety.item3Title">Share your ride</h4>
+          <p data-i18n="safety.item3Body">Send live trip details to someone you trust, in one tap.</p>
+        </li>
+        <li>
+          <h4 data-i18n="safety.item4Title">Vetted vehicles &amp; owners</h4>
+          <p data-i18n="safety.item4Body">Every vehicle in the network is tied to a documented, agreed vehicle-owner relationship — not an anonymous car.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ LANGUAGE / TOURIST CALLOUT ============ -->
+  <section class="section section-dark">
+    <div class="wrap lang-callout">
+      <span class="eyebrow eyebrow-light" data-i18n="lang.eyebrow">Built for everyone landing here</span>
+      <h2 data-i18n="lang.title">Fluent in Lagos.<br>Fluent in French, too.</h2>
+      <p data-i18n="lang.body">A huge share of visitors arriving in Lagos come from French-speaking neighbours like Niger and Benin. Arrivo speaks both languages natively, so getting a safe ride here never depends on getting the words right.</p>
+    </div>
+  </section>
+
+  <!-- ============ DOWNLOAD / WAITLIST ============ -->
+  <section class="section" id="download">
+    <div class="wrap download-wrap">
+      <span class="eyebrow" data-i18n="download.eyebrow">Driving or listing a vehicle?</span>
+      <h2 data-i18n="download.title">Be there on day one</h2>
+      <p data-i18n="download.body">Riders can book on the web right now. If you're a driver or vehicle owner, leave your email and we'll let you know the moment the mobile apps are live.</p>
+
+      <form class="waitlist-form" id="waitlistForm">
+        <label for="waitlistEmail" class="sr-only" data-i18n="download.emailLabel">Email address</label>
+        <input type="email" id="waitlistEmail" name="email" required placeholder="you@example.com" data-i18n-placeholder="download.placeholder">
+        <input type="text" name="company" id="waitlistHoneypot" class="sr-only" tabindex="-1" autocomplete="off">
+        <button type="submit" class="btn btn-primary" data-i18n="download.submit">Notify me</button>
+      </form>
+      <p class="form-note" id="formNote" data-i18n="download.note">We'll only email you about the Arrivo launch — nothing else.</p>
+
+      <div class="store-badges" aria-hidden="true">
+        <span class="store-badge">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17.05 12.536c-.03-2.79 2.28-4.14 2.38-4.2-1.3-1.9-3.32-2.16-4.04-2.19-1.72-.17-3.36 1.01-4.23 1.01-.87 0-2.21-.99-3.64-.96-1.87.03-3.6 1.09-4.56 2.76-1.95 3.38-.5 8.38 1.4 11.12.93 1.34 2.03 2.85 3.48 2.8 1.4-.06 1.93-.9 3.62-.9 1.69 0 2.17.9 3.65.87 1.51-.02 2.46-1.36 3.38-2.71 1.07-1.55 1.51-3.05 1.53-3.13-.03-.01-2.94-1.13-2.97-4.47Z"/><path d="M14.55 4.24c.77-.94 1.29-2.24 1.15-3.54-1.11.05-2.46.75-3.26 1.68-.71.82-1.34 2.15-1.17 3.42 1.24.1 2.5-.63 3.28-1.56Z"/></svg>
+          <span class="store-badge-text">
+            <small data-i18n="download.iosSoonSmall">Coming soon on the</small>
+            <strong>App Store</strong>
+          </span>
+        </span>
+        <span class="store-badge">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M3.6 2.4a1.2 1.2 0 0 0-.6 1.04v17.12c0 .43.23.82.6 1.04l9.4-9.6-9.4-9.6Z"/><path d="M15.4 10.6 5.1 1.7l11.9 6.85-1.6 2.05Z"/><path d="M15.4 13.4l1.6 2.05L5.1 22.3l10.3-8.9Z"/><path d="M17.9 9.4 20.6 11c.5.3.5 1 0 1.3l-2.7 1.6-2-2 2-2.5Z"/></svg>
+          <span class="store-badge-text">
+            <small data-i18n="download.androidSoonSmall">Coming soon on</small>
+            <strong>Google Play</strong>
+          </span>
+        </span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      <img src="assets/icon.svg" alt="" width="22" height="22">
+      <span data-i18n="brand">arrivo</span>
+    </div>
+    <nav class="footer-nav" aria-label="Footer">
+      <a href="#how" data-i18n="nav.how">How it works</a>
+      <a href="#audiences" data-i18n="nav.audiences">Who it's for</a>
+      <a href="#safety" data-i18n="nav.safety">Safety</a>
+      <a href="privacy.html" data-i18n="footer.privacy">Privacy Policy</a>
+      <a href="terms.html" data-i18n="footer.terms">Terms of Service</a>
+      <a href="mailto:hello@ridearrivo.com">hello@ridearrivo.com</a>
+    </nav>
+    <p class="footer-legal" data-i18n="footer.legal">© 2026 Arrivo. Made in Lagos.</p>
+  </div>
+</footer>
+
+<script src="i18n.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
