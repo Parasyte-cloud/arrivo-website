@@ -13,8 +13,8 @@
     return path.split(".").reduce(function (acc, key) { return acc && acc[key]; }, obj);
   }
 
-  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es"];
-  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES" };
+  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt"];
+  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT" };
 
   function applyLanguage(lang) {
     var dict = I18N[lang] || I18N.en;

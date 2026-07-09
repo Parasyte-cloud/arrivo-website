@@ -5,8 +5,8 @@
   var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com"; // same as script.js — point at your deployed backend
   var PAYSTACK_PUBLIC_KEY = "pk_test_replace_me"; // from dashboard.paystack.com/#/settings/developer
 
-  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es"];
-  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES" };
+  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt"];
+  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT" };
   var LANG_KEY = "arrivo_site_lang";
 
   var state = {
