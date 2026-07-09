@@ -109,10 +109,10 @@ Every `git push` to `main` auto-redeploys on Vercel too.
 
    If you want the live site collecting emails **before** you deploy the backend, a zero-deployment stopgap is to swap the form to post to a service like Buttondown or Mailchimp instead — a few minutes of setup, no server needed. Just say the word and I'll wire that version instead.
 
-2. **Set up `hello@ridearrivo.com`** — since the domain is already on Cloudflare, the free path is Cloudflare Email Routing:
+2. **Set up `info@ridearrivo.com`** — since the domain is already on Cloudflare, the free path is Cloudflare Email Routing:
    - Cloudflare dashboard → your domain → **Email** → **Email Routing**
    - Click **Get started**, then **Create address**
-   - Set `hello@ridearrivo.com` to forward to whatever inbox you actually check (e.g. your Gmail)
+   - Set `info@ridearrivo.com` to forward to whatever inbox you actually check (e.g. your Gmail)
    - Cloudflare adds the necessary MX/DNS records automatically since it already manages your domain
    - Takes about 5 minutes, and mail starts forwarding almost immediately
 
