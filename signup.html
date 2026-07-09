@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create your profile — Arrivo</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="booking.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="brand">
+      <img src="assets/icon.svg" alt="" class="brand-mark" width="28" height="28">
+      <span>arrivo</span>
+    </a>
+  </div>
+</header>
+
+<main class="wrap booking-wrap" style="max-width: 480px;">
+  <h1>Create your profile</h1>
+
+  <div class="booking-card" id="formCard">
+    <input type="text" id="fFirstName" class="field" placeholder="First name">
+    <input type="text" id="fLastName" class="field" placeholder="Last name">
+    <input type="email" id="fEmail" class="field" placeholder="Email address">
+    <input type="text" id="fPassport" class="field" placeholder="Identification number (optional)">
+    <p style="font-size:11.5px;color:var(--text-muted);margin:-6px 0 12px;">Any government-licensed ID — passport, NIN, etc.</p>
+    <input type="tel" id="fPhone" class="field" placeholder="Telephone number">
+    <input type="password" id="fPassword" class="field" placeholder="Create password">
+    <input type="password" id="fConfirmPassword" class="field" placeholder="Confirm password">
+
+    <label class="checkbox-row">
+      <input type="checkbox" id="fAgree">
+      <span>I agree to Arrivo's <a href="#" id="openPrivacyModal" style="color:var(--teal);text-decoration:underline;">data protection &amp; privacy policy</a>.</span>
+    </label>
+
+    <p class="error-text" id="signupError" hidden></p>
+    <button class="btn btn-primary" id="signupBtn" style="width:100%;">Create profile</button>
+  </div>
+
+  <div class="booking-card" id="successCard" hidden style="text-align:center;">
+    <div style="width:56px;height:56px;border-radius:50%;background:var(--teal);color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">✓</div>
+    <h2 style="font-size:19px;">Profile created</h2>
+    <p style="color:var(--text-muted);font-size:13.5px;">We've sent a verification link to your email. Please confirm it to finish setting up your account.</p>
+  </div>
+
+  <p style="color:var(--text-muted);font-size:12.5px;margin-top:16px;">
+    Already have a profile? <a href="book.html" style="color:var(--teal);">Log in when booking a ride</a>.
+  </p>
+</main>
+
+<!-- Privacy policy popup -->
+<div id="privacyModal" style="display:none; position:fixed; inset:0; background:rgba(18,18,59,0.6); z-index:100; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#fff; border-radius:16px; max-width:560px; width:100%; max-height:80vh; display:flex; flex-direction:column;">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 20px; border-bottom:1px solid var(--card-border);">
+      <strong style="font-family:'Space Grotesk',sans-serif;">Data Protection &amp; Privacy Policy</strong>
+      <button id="closePrivacyModal" style="all:unset; cursor:pointer; font-size:18px; color:var(--text-muted); padding:4px 8px;">✕</button>
+    </div>
+    <iframe src="privacy.html" style="flex:1; border:none; min-height:400px;"></iframe>
+    <div style="padding:16px 20px; border-top:1px solid var(--card-border);">
+      <button class="btn btn-primary" id="agreeInModalBtn" style="width:100%;">I've read this — I agree</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
+
+  document.getElementById("openPrivacyModal").addEventListener("click", function (e) {
+    e.preventDefault();
+    document.getElementById("privacyModal").style.display = "flex";
+  });
+  document.getElementById("closePrivacyModal").addEventListener("click", function () {
+    document.getElementById("privacyModal").style.display = "none";
+  });
+  document.getElementById("agreeInModalBtn").addEventListener("click", function () {
+    document.getElementById("fAgree").checked = true;
+    document.getElementById("privacyModal").style.display = "none";
+  });
+
+  document.getElementById("signupBtn").addEventListener("click", function () {
+    var errEl = document.getElementById("signupError");
+    errEl.hidden = true;
+
+    var payload = {
+      firstName: document.getElementById("fFirstName").value.trim(),
+      lastName: document.getElementById("fLastName").value.trim(),
+      email: document.getElementById("fEmail").value.trim(),
+      passportNumber: document.getElementById("fPassport").value.trim() || undefined,
+      phone: document.getElementById("fPhone").value.trim(),
+      password: document.getElementById("fPassword").value,
+      confirmPassword: document.getElementById("fConfirmPassword").value,
+      agreedToTerms: document.getElementById("fAgree").checked,
+    };
+
+    if (!payload.firstName || !payload.lastName || !payload.email || !payload.password) {
+      errEl.hidden = false;
+      errEl.textContent = "Please fill in your name, email, and password.";
+      return;
+    }
+    if (payload.password !== payload.confirmPassword) {
+      errEl.hidden = false;
+      errEl.textContent = "Passwords do not match.";
+      return;
+    }
+    if (!payload.agreedToTerms) {
+      errEl.hidden = false;
+      errEl.textContent = "You must agree to the privacy policy to continue.";
+      return;
+    }
+
+    var btn = document.getElementById("signupBtn");
+    btn.disabled = true;
+    btn.textContent = "Creating…";
+
+    fetch(API_BASE_URL + "/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) {
+          errEl.hidden = false;
+          errEl.textContent = result.data.error || "Something went wrong.";
+          btn.disabled = false;
+          btn.textContent = "Create profile";
+          return;
+        }
+        document.getElementById("formCard").hidden = true;
+        document.getElementById("successCard").hidden = false;
+      })
+      .catch(function () {
+        errEl.hidden = false;
+        errEl.textContent = "Couldn't reach the server. Please try again.";
+        btn.disabled = false;
+        btn.textContent = "Create profile";
+      });
+  });
+</script>
+</body>
+</html>

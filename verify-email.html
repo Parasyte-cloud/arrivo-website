@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verify email — Arrivo</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="booking.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="brand">
+      <img src="assets/icon.svg" alt="" class="brand-mark" width="28" height="28">
+      <span>arrivo</span>
+    </a>
+  </div>
+</header>
+
+<main class="wrap booking-wrap" style="max-width: 440px; text-align: center;">
+  <h1>Verifying your email…</h1>
+  <div class="booking-card">
+    <p id="statusMsg" style="color: var(--text-muted); font-size: 14px;">Please wait a moment.</p>
+    <a href="book.html" class="btn btn-primary" id="continueBtn" style="width:100%; margin-top: 16px; display:none;">Continue to Arrivo</a>
+  </div>
+</main>
+
+<script>
+  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
+
+  function getToken() {
+    var params = new URLSearchParams(window.location.search);
+    return params.get("token");
+  }
+
+  var token = getToken();
+  var statusMsg = document.getElementById("statusMsg");
+  var continueBtn = document.getElementById("continueBtn");
+
+  if (!token) {
+    statusMsg.textContent = "This verification link is missing its token.";
+  } else {
+    fetch(API_BASE_URL + "/api/auth/verify-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: token }),
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        statusMsg.style.color = result.ok ? "var(--teal)" : "var(--coral)";
+        statusMsg.textContent = result.data.message || result.data.error;
+        if (result.ok) continueBtn.style.display = "block";
+      })
+      .catch(function () {
+        statusMsg.style.color = "var(--coral)";
+        statusMsg.textContent = "Couldn't reach the server. Please try again.";
+      });
+  }
+</script>
+</body>
+</html>

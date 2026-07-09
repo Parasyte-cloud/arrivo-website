@@ -9,7 +9,7 @@
   var LANG_KEY = "arrivo_site_lang";
 
   var state = {
-    name: "", email: "", phone: "",
+    name: "", email: "", phone: "", whatsapp: "", country: "", agreedToTerms: false,
     token: null,
     flightNumber: "",
     bags: 1, bulky: false,
@@ -108,15 +108,32 @@
       state.name = document.getElementById("fName").value.trim();
       state.email = document.getElementById("fEmail").value.trim().toLowerCase();
       state.phone = document.getElementById("fPhone").value.trim();
+      state.whatsapp = document.getElementById("fWhatsapp").value.trim();
+      state.country = document.getElementById("fCountry").value.trim();
+      state.agreedToTerms = document.getElementById("fAgree").checked;
 
       if (!state.name || !state.email) {
         showError(contactError, "Please enter your name and email.");
         return;
       }
+      if (!state.country) {
+        showError(contactError, "Please enter your country of residence.");
+        return;
+      }
+      if (!state.agreedToTerms) {
+        showError(contactError, "Please agree to the privacy policy and terms of service to continue.");
+        return;
+      }
 
       api("/api/auth/guest", {
         method: "POST",
-        body: JSON.stringify({ name: state.name, email: state.email, phone: state.phone, preferredLanguage: currentLang() }),
+        body: JSON.stringify({
+          name: state.name, email: state.email, phone: state.phone,
+          whatsappNumber: state.whatsapp || undefined,
+          countryOfResidence: state.country,
+          agreedToTerms: state.agreedToTerms,
+          preferredLanguage: currentLang(),
+        }),
       }).then(function (result) {
         if (result.ok) {
           state.token = result.data.token;
@@ -327,6 +344,7 @@
             paymentReference: reference,
             bookingType: state.bookingType,
             durationDays: state.durationDays,
+            agreedCancellationPolicy: true,
           }),
         });
       })
@@ -352,10 +370,48 @@
   function initStep5() {
     document.getElementById("backTo4").addEventListener("click", function () { goToStep(4); });
 
+    // Privacy policy popup (step 1's link)
+    var privacyLink = document.getElementById("openPrivacyModalBooking");
+    if (privacyLink) {
+      privacyLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        document.getElementById("privacyModal").style.display = "flex";
+      });
+    }
+    document.getElementById("closePrivacyModal").addEventListener("click", function () {
+      document.getElementById("privacyModal").style.display = "none";
+    });
+    document.getElementById("agreeInModalBtn").addEventListener("click", function () {
+      document.getElementById("fAgree").checked = true;
+      document.getElementById("privacyModal").style.display = "none";
+    });
+
+    // Cancellation & Refund Policy popup (step 5, before payment)
+    document.getElementById("openCancellationModal").addEventListener("click", function (e) {
+      e.preventDefault();
+      document.getElementById("cancellationModal").style.display = "flex";
+    });
+    document.getElementById("closeCancellationModal").addEventListener("click", function () {
+      document.getElementById("cancellationModal").style.display = "none";
+    });
+    document.getElementById("agreeCancellationModalBtn").addEventListener("click", function () {
+      document.getElementById("fAgreeCancellation").checked = true;
+      document.getElementById("cancellationModal").style.display = "none";
+    });
+
     document.getElementById("payBtn").addEventListener("click", function () {
+      var payError = document.getElementById("payError");
+      payError.hidden = true;
+
+      if (!document.getElementById("fAgreeCancellation").checked) {
+        payError.hidden = false;
+        payError.textContent = "Please agree to the Cancellation & Refund Policy before paying.";
+        return;
+      }
+
       if (typeof PaystackPop === "undefined") {
-        document.getElementById("payError").hidden = false;
-        document.getElementById("payError").textContent = "Payment isn't configured yet — set PAYSTACK_PUBLIC_KEY in booking.js.";
+        payError.hidden = false;
+        payError.textContent = "Payment isn't configured yet — set PAYSTACK_PUBLIC_KEY in booking.js.";
         return;
       }
       var handler = PaystackPop.setup({
