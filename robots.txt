@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /driver.html
+
+Sitemap: https://ridearrivo.com/sitemap.xml
