@@ -273,22 +273,36 @@
     var stopCount = 0;
 
     document.getElementById("addStopBtn").addEventListener("click", function () {
-      if (stopCount >= 3) return;
+      if (stopCount >= 2) return; // pickup + up to 2 waypoints + drop-off is plenty for this flow
       stopCount++;
-      var input = document.createElement("input");
-      input.type = "text";
-      input.className = "field stop-input";
-      input.placeholder = t("booking.stopPlaceholder");
-      stopsList.appendChild(input);
+      var row = document.createElement("div");
+      row.className = "route-row";
+      row.innerHTML =
+        '<span class="route-dot route-dot-stop"></span>' +
+        '<input type="text" class="field route-input stop-input" placeholder="' + t("booking.stopPlaceholder") + '">';
+      stopsList.appendChild(row);
     });
+
+    document.getElementById("fPickup").addEventListener("input", function () { this.style.borderColor = ""; });
+    document.getElementById("fDropoff").addEventListener("input", function () { this.style.borderColor = ""; });
 
     document.getElementById("pickupContinue").addEventListener("click", function () {
       var pickup = document.getElementById("fPickup").value.trim();
-      if (!pickup) return;
-      state.pickup = pickup;
-      state.stops = Array.prototype.slice.call(stopsList.querySelectorAll(".stop-input"))
+      var dropoff = document.getElementById("fDropoff").value.trim();
+
+      if (!pickup || !dropoff) {
+        // Simple inline validation without a dedicated error element on this step.
+        if (!pickup) document.getElementById("fPickup").style.borderColor = "var(--coral)";
+        if (!dropoff) document.getElementById("fDropoff").style.borderColor = "var(--coral)";
+        return;
+      }
+
+      var waypoints = Array.prototype.slice.call(stopsList.querySelectorAll(".stop-input"))
         .map(function (i) { return i.value.trim(); })
         .filter(Boolean);
+
+      state.pickup = pickup;
+      state.stops = waypoints.concat([dropoff]); // waypoints first, drop-off always last
       renderReview();
       goToStep(5);
     });

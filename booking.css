@@ -130,7 +130,48 @@
 .vehicle-card.selected { border-color: var(--amber); background: #FFFBF0; }
 .vehicle-card.recommended .v-badge { display: block; }
 
-/* ── Pickup / stops ── */
+/* ── Pickup / drop-off route builder (Uber-style) ── */
+.route-builder {
+  position: relative;
+  margin-bottom: 4px;
+}
+.route-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+.route-input { margin-bottom: 14px; flex: 1; }
+.route-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+.route-dot-start { background: var(--teal); }
+.route-dot-end {
+  background: transparent;
+  border: 2px solid var(--coral);
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+}
+.route-dot-stop { background: var(--amber); }
+
+/* Connecting line drawn behind the dots, spanning from the first dot to the last */
+.route-builder::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 12px;
+  bottom: 26px;
+  width: 1.5px;
+  background: repeating-linear-gradient(180deg, var(--card-border) 0 4px, transparent 4px 8px);
+  z-index: 1;
+}
+
 .link-btn {
   all: unset;
   cursor: pointer;

@@ -144,11 +144,24 @@
       </div>
     </section>
 
-    <!-- STEP 4: Pickup -->
+    <!-- STEP 4: Pickup & Drop-off -->
     <section class="step" data-step="4" hidden>
       <h2 data-i18n="booking.pickupTitle">Where should we pick you up?</h2>
-      <input type="text" id="fPickup" class="field" data-i18n-placeholder="booking.pickupPlaceholder" placeholder="e.g. Murtala Muhammed Airport, Terminal 1">
-      <div id="stopsList"></div>
+
+      <div class="route-builder">
+        <div class="route-row">
+          <span class="route-dot route-dot-start"></span>
+          <input type="text" id="fPickup" class="field route-input" data-i18n-placeholder="booking.pickupPlaceholder" placeholder="e.g. Murtala Muhammed Airport, Terminal 1">
+        </div>
+
+        <div id="stopsList"></div>
+
+        <div class="route-row">
+          <span class="route-dot route-dot-end"></span>
+          <input type="text" id="fDropoff" class="field route-input" data-i18n-placeholder="booking.dropoffPlaceholder" placeholder="Drop-off location">
+        </div>
+      </div>
+
       <button type="button" class="link-btn" id="addStopBtn" data-i18n="booking.addStop">+ Add another stop</button>
 
       <div class="step-actions">
@@ -235,7 +248,7 @@
     <nav class="footer-nav" aria-label="Footer">
       <a href="privacy.html" data-i18n="footer.privacy">Privacy Policy</a>
       <a href="terms.html" data-i18n="footer.terms">Terms of Service</a>
-      <a href="mailto:info@ridearrivo.com">info@ridearrivo.com</a>
+      <a href="mailto:hello@ridearrivo.com">hello@ridearrivo.com</a>
     </nav>
     <p class="footer-legal" data-i18n="footer.legal">© 2026 Arrivo. Made in Lagos.</p>
   </div>
