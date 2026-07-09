@@ -2,7 +2,7 @@
   "use strict";
 
   // ── Configuration — replace before going live ──────────────────────────
-  var API_BASE_URL = "http://localhost:4000"; // same as script.js — point at your deployed backend
+  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com"; // same as script.js — point at your deployed backend
   var PAYSTACK_PUBLIC_KEY = "pk_test_replace_me"; // from dashboard.paystack.com/#/settings/developer
 
   var SUPPORTED_LANGS = ["en", "fr", "zh"];

@@ -4,7 +4,7 @@
   // Point this at your deployed backend once it's live somewhere public
   // (Render/Railway/Fly.io — see arrivo-backend's README). Until then this
   // only works when testing the site locally alongside a locally-running backend.
-  var API_BASE_URL = "http://localhost:4000";
+  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
 
   // ───────────────────────── i18n ─────────────────────────
   var LANG_KEY = "arrivo_site_lang";
