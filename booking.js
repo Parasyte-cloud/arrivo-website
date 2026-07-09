@@ -5,7 +5,8 @@
   var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com"; // same as script.js — point at your deployed backend
   var PAYSTACK_PUBLIC_KEY = "pk_test_replace_me"; // from dashboard.paystack.com/#/settings/developer
 
-  var SUPPORTED_LANGS = ["en", "fr", "zh"];
+  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es"];
+  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES" };
   var LANG_KEY = "arrivo_site_lang";
 
   var state = {
@@ -39,6 +40,10 @@
     document.querySelectorAll(".lang-opt").forEach(function (btn) {
       btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
     });
+
+    var label = document.getElementById("langTriggerLabel");
+    if (label) label.textContent = LANG_LABELS[lang] || lang.toUpperCase();
+
     localStorage.setItem(LANG_KEY, lang);
   }
 
@@ -50,13 +55,46 @@
     return getNested(I18N[currentLang()], path) || path;
   }
 
+  function closeLangMenu() {
+    var dropdown = document.getElementById("langDropdown");
+    var menu = document.getElementById("langMenu");
+    var trigger = document.getElementById("langTrigger");
+    if (!dropdown || !menu) return;
+    dropdown.classList.remove("open");
+    menu.hidden = true;
+    if (trigger) trigger.setAttribute("aria-expanded", "false");
+  }
+
   function initLanguage() {
     var saved = localStorage.getItem(LANG_KEY);
     var browserLang = (navigator.language || "en").slice(0, 2);
     var detected = SUPPORTED_LANGS.indexOf(browserLang) !== -1 ? browserLang : "en";
     applyLanguage(saved || detected);
+
     document.querySelectorAll(".lang-opt").forEach(function (btn) {
-      btn.addEventListener("click", function () { applyLanguage(btn.getAttribute("data-lang")); });
+      btn.addEventListener("click", function () {
+        applyLanguage(btn.getAttribute("data-lang"));
+        closeLangMenu();
+      });
+    });
+
+    var dropdown = document.getElementById("langDropdown");
+    var trigger = document.getElementById("langTrigger");
+    var menu = document.getElementById("langMenu");
+    if (!dropdown || !trigger || !menu) return;
+
+    trigger.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var isOpen = dropdown.classList.toggle("open");
+      menu.hidden = !isOpen;
+      trigger.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    document.addEventListener("click", function (e) {
+      if (!dropdown.contains(e.target)) closeLangMenu();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeLangMenu();
     });
   }
 
