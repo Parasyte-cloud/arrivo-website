@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Track your ride — Arrivo</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12123B">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="booking.css">
+<style>
+  .status-pill { display:inline-block; padding:5px 12px; border-radius:999px; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; }
+  .status-in_progress { background:#E5F4F3; color:#0E7C7B; }
+  .status-accepted { background:#FDF3E3; color:#7A4E00; }
+  .status-completed { background:#eee; color:#666; }
+  .driver-row { display:flex; align-items:center; gap:12px; margin:16px 0; }
+  .driver-avatar { width:44px; height:44px; border-radius:50%; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0; }
+  .panic-btn { background:var(--coral); color:#fff; border:none; border-radius:12px; padding:14px; width:100%; font-weight:700; font-size:13.5px; cursor:pointer; margin-top:20px; }
+  .panic-active { background:#FDECEA; border:1.5px solid var(--coral); border-radius:12px; padding:14px; text-align:center; color:var(--coral); font-weight:700; font-size:13px; margin-top:20px; }
+  .map-link { display:block; margin-top:14px; text-align:center; background:#f5f5fa; border-radius:10px; padding:12px; font-weight:700; font-size:13px; color: var(--teal); text-decoration:none; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="brand">
+      <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
+      <span>arrivo</span>
+    </a>
+  </div>
+</header>
+
+<main class="wrap booking-wrap" style="max-width: 460px;">
+  <h1>Your ride</h1>
+  <div class="booking-card" id="loadingCard">
+    <p style="color:var(--text-muted); text-align:center;">Loading your ride details…</p>
+  </div>
+
+  <div class="booking-card" id="rideCard" hidden>
+    <span class="status-pill" id="statusPill"></span>
+    <p style="margin-top:10px; font-size:13.5px;"><strong>Pickup:</strong> <span id="pickupText"></span></p>
+
+    <div class="driver-row" id="driverRow" hidden>
+      <div class="driver-avatar" id="driverInitials"></div>
+      <div>
+        <div style="font-weight:700; font-size:14px;" id="driverName"></div>
+        <div style="font-size:12px; color:var(--text-muted);" id="driverVehicle"></div>
+      </div>
+    </div>
+
+    <a href="#" id="mapLink" class="map-link" target="_blank" style="display:none;">📍 View driver's last known location</a>
+
+    <button class="panic-btn" id="panicBtn">🚨 I don't feel safe — alert support</button>
+    <div class="panic-active" id="panicActiveMsg" hidden>🚨 Support has been alerted about this ride.</div>
+  </div>
+
+  <div class="booking-card" id="errorCard" hidden style="text-align:center;">
+    <p id="errorMsg" style="color: var(--coral);"></p>
+  </div>
+</main>
+
+<script>
+  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
+  var TOKEN_KEY = "arrivo_rider_token";
+  var POLL_INTERVAL_MS = 8000;
+
+  var rideId = new URLSearchParams(window.location.search).get("ride");
+  var token = localStorage.getItem(TOKEN_KEY);
+
+  function showError(msg) {
+    document.getElementById("loadingCard").hidden = true;
+    document.getElementById("rideCard").hidden = true;
+    document.getElementById("errorCard").hidden = false;
+    document.getElementById("errorMsg").textContent = msg;
+  }
+
+  if (!rideId) {
+    showError("No ride specified.");
+  } else if (!token) {
+    window.location.href = "login.html?next=" + encodeURIComponent(window.location.pathname + window.location.search);
+  } else {
+    function initials(name) {
+      return (name || "?").split(" ").map(function (p) { return p[0]; }).join("").slice(0, 2).toUpperCase();
+    }
+
+    function refresh() {
+      fetch(API_BASE_URL + "/api/rides/" + rideId, { headers: { Authorization: "Bearer " + token } })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok) {
+            showError(result.data.error || "Couldn't load this ride.");
+            return;
+          }
+          var ride = result.data.ride;
+          document.getElementById("loadingCard").hidden = true;
+          document.getElementById("rideCard").hidden = false;
+
+          var pill = document.getElementById("statusPill");
+          pill.textContent = ride.ride_status.replace("_", " ");
+          pill.className = "status-pill status-" + ride.ride_status;
+
+          document.getElementById("pickupText").textContent = [ride.pickup_address].concat(ride.stops || []).join(" → ");
+
+          if (ride.driver_name) {
+            document.getElementById("driverRow").hidden = false;
+            document.getElementById("driverInitials").textContent = initials(ride.driver_name);
+            document.getElementById("driverName").textContent = ride.driver_name;
+            document.getElementById("driverVehicle").textContent = ride.driver_phone || "";
+          }
+
+          var mapLink = document.getElementById("mapLink");
+          if (ride.current_lat && ride.current_lng) {
+            mapLink.style.display = "block";
+            mapLink.setAttribute("href", "https://www.google.com/maps?q=" + ride.current_lat + "," + ride.current_lng);
+          }
+
+          if (ride.panic_triggered_at && !ride.panic_resolved_at) {
+            document.getElementById("panicBtn").hidden = true;
+            document.getElementById("panicActiveMsg").hidden = false;
+          }
+        })
+        .catch(function () { /* transient — next poll will retry */ });
+    }
+
+    refresh();
+    setInterval(refresh, POLL_INTERVAL_MS);
+
+    document.getElementById("panicBtn").addEventListener("click", function () {
+      if (!confirm("This will immediately alert Arrivo's support team with your ride details and location. Only use this if you feel unsafe right now. Continue?")) return;
+
+      fetch(API_BASE_URL + "/api/rides/" + rideId + "/panic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify({ note: "Triggered from web tracking page" }),
+      })
+        .then(function (res) { return res.json(); })
+        .then(function () {
+          document.getElementById("panicBtn").hidden = true;
+          document.getElementById("panicActiveMsg").hidden = false;
+          alert("Support has been alerted. If you're in immediate danger, please also call local emergency services.");
+        })
+        .catch(function () {
+          alert("Couldn't send the alert — please try again, or call support directly.");
+        });
+    });
+  }
+</script>
+</body>
+</html>

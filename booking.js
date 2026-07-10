@@ -130,8 +130,6 @@
   // ───────────────────────── Step 1: Contact ─────────────────────────
   function initStep1() {
     var contactError = document.getElementById("contactError");
-    var loginPrompt = document.getElementById("loginPrompt");
-    var loginError = document.getElementById("loginError");
 
     function showError(el, msg) {
       el.hidden = false;
@@ -139,21 +137,31 @@
     }
     function hideError(el) { el.hidden = true; }
 
+    // Prefill the read-only name/email summary from the already-authenticated
+    // rider's profile — registration happened on signup.html/login.html
+    // before they ever reached this page.
+    api("/api/auth/me", { headers: authHeader() }).then(function (result) {
+      if (result.ok) {
+        state.name = result.data.user.name;
+        state.email = result.data.user.email;
+        document.getElementById("profileName").textContent = state.name;
+        document.getElementById("profileEmail").textContent = state.email;
+        if (result.data.user.whatsapp_number) document.getElementById("fWhatsapp").value = result.data.user.whatsapp_number;
+        if (result.data.user.country_of_residence) document.getElementById("fCountry").value = result.data.user.country_of_residence;
+      } else {
+        // Token expired or invalid — send them back to log in properly.
+        localStorage.removeItem("arrivo_rider_token");
+        window.location.href = "login.html?next=book.html";
+      }
+    });
+
     document.getElementById("contactContinue").addEventListener("click", function () {
       hideError(contactError);
-      loginPrompt.hidden = true;
 
-      state.name = document.getElementById("fName").value.trim();
-      state.email = document.getElementById("fEmail").value.trim().toLowerCase();
-      state.phone = document.getElementById("fPhone").value.trim();
       state.whatsapp = document.getElementById("fWhatsapp").value.trim();
       state.country = document.getElementById("fCountry").value.trim();
       state.agreedToTerms = document.getElementById("fAgree").checked;
 
-      if (!state.name || !state.email) {
-        showError(contactError, "Please enter your name and email.");
-        return;
-      }
       if (!state.country) {
         showError(contactError, "Please enter your country of residence.");
         return;
@@ -163,44 +171,16 @@
         return;
       }
 
-      api("/api/auth/guest", {
-        method: "POST",
-        body: JSON.stringify({
-          name: state.name, email: state.email, phone: state.phone,
-          whatsappNumber: state.whatsapp || undefined,
-          countryOfResidence: state.country,
-          agreedToTerms: state.agreedToTerms,
-          preferredLanguage: currentLang(),
-        }),
-      }).then(function (result) {
-        if (result.ok) {
-          state.token = result.data.token;
-          goToStep(2);
-        } else if (result.status === 409) {
-          loginPrompt.hidden = false;
-        } else {
-          showError(contactError, result.data.error || "Something went wrong.");
-        }
+      // Save WhatsApp/Country to the rider's profile for next time, then continue.
+      api("/api/auth/me", {
+        method: "PATCH",
+        headers: authHeader(),
+        body: JSON.stringify({ whatsappNumber: state.whatsapp || undefined, countryOfResidence: state.country }),
+      }).then(function () {
+        goToStep(2);
       }).catch(function () {
-        showError(contactError, "Couldn't reach the server. Please try again.");
-      });
-    });
-
-    document.getElementById("loginBtn").addEventListener("click", function () {
-      hideError(loginError);
-      var password = document.getElementById("fPassword").value;
-      api("/api/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ email: state.email, password: password }),
-      }).then(function (result) {
-        if (result.ok) {
-          state.token = result.data.token;
-          goToStep(2);
-        } else {
-          showError(loginError);
-        }
-      }).catch(function () {
-        showError(loginError, "Couldn't reach the server. Please try again.");
+        // Non-critical if this save fails — don't block the booking over it.
+        goToStep(2);
       });
     });
   }
@@ -577,7 +557,22 @@
     function safeRun(fn, label) {
       try { fn(); } catch (err) { console.error("[arrivo booking] " + label + " failed:", err); }
     }
+
     safeRun(initLanguage, "initLanguage");
+
+    // Registration is mandatory before booking — check for a saved rider
+    // session before revealing the booking wizard at all.
+    var savedToken = localStorage.getItem("arrivo_rider_token");
+    if (!savedToken) {
+      document.getElementById("authGate").hidden = false;
+      document.getElementById("bookingCard").hidden = true;
+      return; // don't initialize any of the booking steps — nothing to do yet
+    }
+
+    state.token = savedToken;
+    document.getElementById("authGate").hidden = true;
+    document.getElementById("bookingCard").hidden = false;
+
     safeRun(initStep1, "initStep1");
     safeRun(initStep2, "initStep2");
     safeRun(initStep3, "initStep3");

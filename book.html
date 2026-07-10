@@ -62,14 +62,26 @@
     <li data-step="5"><span data-i18n="booking.stepReview">Review &amp; Pay</span></li>
   </ol>
 
-  <div class="booking-card">
+  <!-- AUTH GATE — shown only if the visitor isn't logged in yet.
+       Registration is mandatory before booking: no guest checkout anymore. -->
+  <div class="booking-card" id="authGate" hidden style="text-align:center;">
+    <h2 style="font-size:19px;">Create a profile to book</h2>
+    <p style="color:var(--text-muted); font-size:13.5px; margin-bottom:20px;">
+      For everyone's safety, every rider needs a registered profile before booking — it only takes a minute.
+    </p>
+    <a href="signup.html?next=book.html" class="btn btn-primary" style="width:100%; margin-bottom:10px;">Create a profile</a>
+    <a href="login.html?next=book.html" class="btn btn-ghost" style="width:100%;">I already have a profile — Log in</a>
+  </div>
+
+  <div class="booking-card" id="bookingCard" hidden>
 
     <!-- STEP 1: Contact -->
     <section class="step" data-step="1">
       <h2 data-i18n="booking.contactTitle">Let's start with you</h2>
-      <input type="text" id="fName" class="field" data-i18n-placeholder="booking.name" placeholder="Full name">
-      <input type="email" id="fEmail" class="field" data-i18n-placeholder="booking.email" placeholder="Email address">
-      <input type="tel" id="fPhone" class="field" data-i18n-placeholder="booking.phone" placeholder="Phone number">
+      <div id="profileSummary" style="background:#FBF9F3; border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:13px;">
+        <strong id="profileName"></strong><br>
+        <span id="profileEmail" style="color:var(--text-muted);"></span>
+      </div>
       <input type="tel" id="fWhatsapp" class="field" data-i18n-placeholder="booking.whatsapp" placeholder="WhatsApp number (optional)">
       <input type="text" id="fCountry" class="field" data-i18n-placeholder="booking.country" placeholder="Country of residence">
 
@@ -77,14 +89,6 @@
         <input type="checkbox" id="fAgree">
         <span data-i18n="booking.agree">I agree to Arrivo's <a href="#" id="openPrivacyModalBooking" style="color:var(--teal);text-decoration:underline;">privacy policy</a> and <a href="terms.html" target="_blank">terms of service</a>.</span>
       </label>
-
-      <div id="loginPrompt" class="login-prompt" hidden>
-        <p data-i18n="booking.needLogin">An account already exists with this email.</p>
-        <input type="password" id="fPassword" class="field" data-i18n-placeholder="booking.password" placeholder="Password">
-        <p class="error-text" id="loginError" hidden data-i18n="booking.loginFailed">Incorrect password. Please try again.</p>
-        <button class="btn btn-primary" id="loginBtn" data-i18n="booking.logIn">Log in and continue</button>
-        <a href="forgot-password.html" style="display:block;margin-top:10px;font-size:12.5px;color:var(--teal);">Forgot your password?</a>
-      </div>
 
       <p class="error-text" id="contactError" hidden></p>
       <button class="btn btn-primary" id="contactContinue" data-i18n="booking.continue">Continue</button>

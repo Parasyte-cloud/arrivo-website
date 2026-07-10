@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirm your ride — Arrivo</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12123B">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="booking.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="brand">
+      <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
+      <span>arrivo</span>
+    </a>
+  </div>
+</header>
+
+<main class="wrap booking-wrap" style="max-width: 440px; text-align:center;">
+  <h1>Confirm your ride</h1>
+  <div class="booking-card">
+    <div id="statusIcon" style="font-size:40px; margin-bottom:12px;">🔎</div>
+    <p id="statusMsg" style="color: var(--text-muted); font-size: 14.5px;">Checking your ride…</p>
+    <a href="#" id="trackLink" class="btn btn-primary" style="width:100%; margin-top:16px; display:none;">Track my ride live</a>
+  </div>
+</main>
+
+<script>
+  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
+  var TOKEN_KEY = "arrivo_rider_token";
+
+  function getToken() { return localStorage.getItem(TOKEN_KEY); }
+  function getScanToken() { return new URLSearchParams(window.location.search).get("token"); }
+
+  var statusIcon = document.getElementById("statusIcon");
+  var statusMsg = document.getElementById("statusMsg");
+  var trackLink = document.getElementById("trackLink");
+
+  function showError(msg) {
+    statusIcon.textContent = "⚠️";
+    statusMsg.style.color = "var(--coral)";
+    statusMsg.textContent = msg;
+  }
+
+  var scanToken = getScanToken();
+  if (!scanToken) {
+    showError("This link is missing its code — please scan the QR code on your driver's placard directly.");
+  } else if (!getToken()) {
+    // Not logged in — send them to log in, then bounce right back to this
+    // exact scan link (with the token still in the URL) to finish the job.
+    var here = window.location.pathname + window.location.search;
+    window.location.href = "login.html?next=" + encodeURIComponent(here);
+  } else {
+    fetch(API_BASE_URL + "/api/rides/scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + getToken() },
+      body: JSON.stringify({ scanToken: scanToken }),
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) {
+          showError(result.data.error || "Couldn't confirm your ride. Please try again or ask your driver for help.");
+          return;
+        }
+        statusIcon.textContent = "✅";
+        statusMsg.style.color = "var(--teal)";
+        statusMsg.textContent = "Ride confirmed with " + result.data.driverName + ". Tracking has started — have a safe trip!";
+        trackLink.style.display = "block";
+        trackLink.setAttribute("href", "track.html?ride=" + result.data.ride.id);
+      })
+      .catch(function () {
+        showError("Couldn't reach the server. Please check your connection and try again.");
+      });
+  }
+</script>
+</body>
+</html>

@@ -52,11 +52,12 @@
   <div class="booking-card" id="successCard" hidden style="text-align:center;">
     <div style="width:56px;height:56px;border-radius:50%;background:var(--teal);color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">✓</div>
     <h2 style="font-size:19px;">Profile created</h2>
-    <p style="color:var(--text-muted);font-size:13.5px;">We've sent a verification link to your email. Please confirm it to finish setting up your account.</p>
+    <p style="color:var(--text-muted);font-size:13.5px;">We've sent a verification link to your email — no need to wait for it though, you're already signed in.</p>
+    <a href="book.html" class="btn btn-primary" id="continueLink" style="width:100%;margin-top:12px;">Continue to booking</a>
   </div>
 
   <p style="color:var(--text-muted);font-size:12.5px;margin-top:16px;">
-    Already have a profile? <a href="book.html" style="color:var(--teal);">Log in when booking a ride</a>.
+    Already have a profile? <a href="login.html" id="loginLink" style="color:var(--teal);">Log in</a>.
   </p>
 </main>
 
@@ -76,6 +77,11 @@
 
 <script>
   var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
+
+  var nextParam = new URLSearchParams(window.location.search).get("next");
+  if (nextParam) {
+    document.getElementById("loginLink").setAttribute("href", "login.html?next=" + encodeURIComponent(nextParam));
+  }
 
   document.getElementById("openPrivacyModal").addEventListener("click", function (e) {
     e.preventDefault();
@@ -138,8 +144,16 @@
           btn.textContent = "Create profile";
           return;
         }
+        localStorage.setItem("arrivo_rider_token", result.data.token);
+
         document.getElementById("formCard").hidden = true;
         document.getElementById("successCard").hidden = false;
+
+        var nextUrl = new URLSearchParams(window.location.search).get("next") || "book.html";
+        document.getElementById("continueLink").setAttribute("href", nextUrl);
+        // Auto-continue after a moment — the button above still works
+        // immediately for anyone who doesn't want to wait.
+        setTimeout(function () { window.location.href = nextUrl; }, 1800);
       })
       .catch(function () {
         errEl.hidden = false;

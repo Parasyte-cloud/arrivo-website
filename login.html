@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in — Arrivo</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12123B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Arrivo">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="booking.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="brand">
+      <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
+      <span>arrivo</span>
+    </a>
+  </div>
+</header>
+
+<main class="wrap booking-wrap" style="max-width: 420px;">
+  <h1>Log in</h1>
+
+  <div class="booking-card">
+    <input type="email" id="fEmail" class="field" placeholder="Email address">
+    <input type="password" id="fPassword" class="field" placeholder="Password">
+
+    <p class="error-text" id="loginError" hidden></p>
+    <button class="btn btn-primary" id="loginBtn" style="width:100%;">Log in</button>
+    <a href="forgot-password.html" style="display:block;margin-top:12px;font-size:12.5px;color:var(--teal); text-align:center;">Forgot your password?</a>
+  </div>
+
+  <p style="color:var(--text-muted);font-size:12.5px;margin-top:16px;">
+    New to Arrivo? <a href="signup.html" id="signupLink" style="color:var(--teal);">Create a profile</a>.
+  </p>
+</main>
+
+<script>
+  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
+
+  var nextParam = new URLSearchParams(window.location.search).get("next") || "book.html";
+  document.getElementById("signupLink").setAttribute("href", "signup.html?next=" + encodeURIComponent(nextParam));
+
+  document.getElementById("loginBtn").addEventListener("click", function () {
+    var email = document.getElementById("fEmail").value.trim();
+    var password = document.getElementById("fPassword").value;
+    var errEl = document.getElementById("loginError");
+    errEl.hidden = true;
+
+    if (!email || !password) {
+      errEl.hidden = false;
+      errEl.textContent = "Please enter your email and password.";
+      return;
+    }
+
+    var btn = document.getElementById("loginBtn");
+    btn.disabled = true;
+    btn.textContent = "Logging in…";
+
+    fetch(API_BASE_URL + "/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email, password: password }),
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) {
+          errEl.hidden = false;
+          errEl.textContent = result.data.error || "Invalid email or password.";
+          btn.disabled = false;
+          btn.textContent = "Log in";
+          return;
+        }
+        localStorage.setItem("arrivo_rider_token", result.data.token);
+        window.location.href = nextParam;
+      })
+      .catch(function () {
+        errEl.hidden = false;
+        errEl.textContent = "Couldn't reach the server. Please try again.";
+        btn.disabled = false;
+        btn.textContent = "Log in";
+      });
+  });
+</script>
+</body>
+</html>
