@@ -103,6 +103,36 @@ Every `git push` to `main` auto-redeploys on Vercel too.
 - **Mandarin added as a third language**, alongside English and French — the header now has a three-way EN / FR / 中文 switcher instead of a toggle. Added because a meaningful share of Lagos's international visitors are Chinese business travelers, alongside the existing French-speaking-neighbours reasoning.
 - **Store badges now show icons**, not just placeholder text — still marked "coming soon" since the apps aren't submitted yet.
 
+## Setting up Google Places (map search for pickup/drop-off/stops)
+
+`book.html`'s Pickup step now has real address autocomplete and a live map preview for the Pickup, Drop-off, and each waypoint field — tested against a mocked Google Maps API (constructors, autocomplete restrictions, marker placement, map panning all verified to behave correctly), but it needs your own real API key to actually search real addresses.
+
+### Get a key
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com) and create a project (or use an existing one).
+2. **Enable billing** — Google requires a card on file even to use the free monthly credit ($200/month as of writing, which comfortably covers a small-to-medium app's usage).
+3. In **APIs & Services → Library**, enable both:
+   - **Maps JavaScript API**
+   - **Places API**
+4. Go to **APIs & Services → Credentials** → **Create Credentials** → **API Key**.
+5. **Restrict the key** (important — an unrestricted key can be copied out of your page source and abused): click into the new key → under "Application restrictions" choose **Websites** → add `ridearrivo.com/*` and `*.ridearrivo.com/*`. Under "API restrictions," limit it to just the two APIs you enabled above.
+
+### Add it to the site
+
+Open `book.html` and find this line near the bottom:
+
+```html
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=GOOGLE_MAPS_API_KEY_HERE&libraries=places&callback=initGoogleMaps"></script>
+```
+
+Replace `GOOGLE_MAPS_API_KEY_HERE` with your real key.
+
+### What it does
+
+- Pickup, Drop-off, and each "Add another stop" field get live address suggestions as the visitor types, restricted to Nigerian addresses (since that's where Arrivo operates — this also makes suggestions far more relevant than an unrestricted worldwide search).
+- A small map preview appears below the fields, centered on Lagos by default, and drops a pin + pans to whichever address was most recently selected from the dropdown.
+- If the key is missing, invalid, or Google's script fails to load for any reason, the fields **still work as plain text inputs** — nothing breaks, riders can still type an address manually. A small message appears letting them know map search isn't available right now.
+
 ## Still to do before this actually launches
 
 1. **Deploy `arrivo-backend` somewhere public.** Right now the waitlist form only works when you're running the backend locally (`API_BASE_URL` in `script.js` points at `http://localhost:4000`). For the **live** `ridearrivo.com` site to actually capture emails, deploy the backend to Render, Railway, or Fly.io, then update that URL in `script.js` to the real deployed address.

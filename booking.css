@@ -182,6 +182,20 @@
   display: inline-block;
 }
 
+.route-map {
+  height: 190px;
+  border-radius: 12px;
+  background: #eee;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+/* Placeholder look before Google Maps finishes loading, or if it never
+   loads (no key set, or the request failed) — keeps the layout from
+   collapsing to nothing. */
+.route-map:empty {
+  background: repeating-linear-gradient(45deg, #f0f0f5, #f0f0f5 10px, #e8e8f0 10px, #e8e8f0 20px);
+}
+
 /* ── Review ── */
 .review-list { margin: 0 0 20px; }
 .review-list div { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--card-border); font-size: 13.5px; gap: 16px; }

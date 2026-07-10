@@ -7,6 +7,11 @@
 <meta name="description" content="Book your Lagos airport pickup online — choose your vehicle, pay securely, and track your ride live. No app required.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12123B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Arrivo">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
@@ -176,6 +181,9 @@
 
       <button type="button" class="link-btn" id="addStopBtn" data-i18n="booking.addStop">+ Add another stop</button>
 
+      <div id="routeMap" class="route-map"></div>
+      <p class="error-text" id="mapsError" hidden>Map search isn't available right now — you can still type an address directly.</p>
+
       <div class="step-actions">
         <button class="btn btn-ghost" id="backTo3" data-i18n="booking.back">Back</button>
         <button class="btn btn-primary" id="pickupContinue" data-i18n="booking.continue">Continue</button>
@@ -278,5 +286,10 @@
 <script src="i18n.js"></script>
 <script src="booking.js"></script>
 <script src="clock.js"></script>
+<!-- Google Maps Places Autocomplete + map preview for the pickup/drop-off/stop fields.
+     Replace GOOGLE_MAPS_API_KEY_HERE with a real key from Google Cloud Console
+     (enable "Maps JavaScript API" and "Places API"). See README for the full setup guide. -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=GOOGLE_MAPS_API_KEY_HERE&libraries=places&callback=initGoogleMaps"></script>
+<script src="pwa-register.js"></script>
 </body>
 </html>

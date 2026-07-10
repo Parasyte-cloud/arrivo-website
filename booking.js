@@ -301,8 +301,100 @@
       state.bags = Number(bagsInput.value) || 0;
       state.bulky = bulkyInput.checked;
       goToStep(4);
+      setupPlacesForStep4(); // the map container only has real dimensions once step 4 is visible
     });
     document.getElementById("backTo2").addEventListener("click", function () { goToStep(2); });
+  }
+
+  // ───────────────────────── Google Places autocomplete + map preview ─────────────────────────
+  // Arrivo operates in Nigeria, so search results are restricted to Nigerian
+  // addresses — this also makes suggestions far more relevant than an
+  // unrestricted worldwide search would be.
+  var LAGOS_CENTER = { lat: 6.5244, lng: 3.3792 };
+  var googleMapInstance = null;
+  var googleMapMarker = null;
+  var autocompleteAttachedTo = [];
+
+  // Referenced by name in the Google Maps <script> tag's callback= parameter,
+  // so it must exist on window before that script finishes loading.
+  window.initGoogleMaps = function () {
+    window.__googleMapsReady = true;
+  };
+
+  function attachPlacesAutocomplete(inputEl) {
+    if (!inputEl || autocompleteAttachedTo.indexOf(inputEl) !== -1) return;
+    if (!window.google || !window.google.maps || !window.google.maps.places) return;
+    autocompleteAttachedTo.push(inputEl);
+
+    var autocomplete = new google.maps.places.Autocomplete(inputEl, {
+      componentRestrictions: { country: "ng" },
+      fields: ["formatted_address", "geometry", "name"],
+    });
+
+    autocomplete.addListener("place_changed", function () {
+      var place = autocomplete.getPlace();
+      // A place with no geometry means the visitor typed free text and hit
+      // Enter without picking a suggestion from the dropdown — that's still
+      // a valid address to us, we just can't show it on the map preview.
+      if (!place.geometry || !place.geometry.location) return;
+      updateMapMarker(place.geometry.location, place.formatted_address || place.name || inputEl.value);
+    });
+  }
+
+  function initRouteMap() {
+    var mapEl = document.getElementById("routeMap");
+    var errEl = document.getElementById("mapsError");
+    if (!mapEl) return;
+
+    if (!window.google || !window.google.maps) {
+      if (errEl) errEl.hidden = false;
+      return;
+    }
+    if (errEl) errEl.hidden = true;
+
+    if (!googleMapInstance) {
+      googleMapInstance = new google.maps.Map(mapEl, {
+        center: LAGOS_CENTER,
+        zoom: 11,
+        disableDefaultUI: true,
+        zoomControl: true,
+      });
+    } else {
+      // The map container is hidden (display:none) on every step except 4 —
+      // Google Maps needs an explicit nudge to redraw correctly once it
+      // becomes visible again, otherwise it can render blank or mis-sized.
+      google.maps.event.trigger(googleMapInstance, "resize");
+      googleMapInstance.setCenter(LAGOS_CENTER);
+    }
+  }
+
+  function updateMapMarker(location, label) {
+    if (!googleMapInstance) return;
+    googleMapInstance.panTo(location);
+    googleMapInstance.setZoom(15);
+    if (!googleMapMarker) {
+      googleMapMarker = new google.maps.Marker({ map: googleMapInstance, position: location, title: label });
+    } else {
+      googleMapMarker.setPosition(location);
+      googleMapMarker.setTitle(label);
+    }
+  }
+
+  function setupPlacesForStep4(attempsLeft) {
+    if (attempsLeft === undefined) attempsLeft = 20; // ~6 seconds total before giving up
+    if (window.google && window.google.maps && window.google.maps.places) {
+      attachPlacesAutocomplete(document.getElementById("fPickup"));
+      attachPlacesAutocomplete(document.getElementById("fDropoff"));
+      Array.prototype.slice.call(document.querySelectorAll(".stop-input")).forEach(attachPlacesAutocomplete);
+      initRouteMap();
+    } else if (attempsLeft > 0) {
+      // The Maps script loads async and may not be ready the instant the
+      // rider reaches this step — poll briefly rather than giving up immediately.
+      setTimeout(function () { setupPlacesForStep4(attempsLeft - 1); }, 300);
+    } else {
+      var errEl = document.getElementById("mapsError");
+      if (errEl) errEl.hidden = false;
+    }
   }
 
   // ───────────────────────── Step 4: Pickup ─────────────────────────
@@ -319,6 +411,7 @@
         '<span class="route-dot route-dot-stop"></span>' +
         '<input type="text" class="field route-input stop-input" placeholder="' + t("booking.stopPlaceholder") + '">';
       stopsList.appendChild(row);
+      attachPlacesAutocomplete(row.querySelector(".stop-input"));
     });
 
     document.getElementById("fPickup").addEventListener("input", function () { this.style.borderColor = ""; });
