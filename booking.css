@@ -1,4 +1,4 @@
-.booking-wrap { padding: 48px 0 80px; max-width: 640px; }
+.booking-wrap { padding-top: 48px; padding-bottom: 80px; max-width: 640px; }
 .booking-wrap h1 { font-size: clamp(24px, 4vw, 32px); margin-bottom: 28px; }
 
 /* ── Progress indicator ── */
