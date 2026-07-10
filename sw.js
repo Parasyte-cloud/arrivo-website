@@ -78,24 +78,56 @@ self.addEventListener("fetch", (event) => {
     return; // let the browser handle it normally, untouched
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      // Cache-first for the static shell: instant loads, works offline.
-      // Falls back to network for anything not pre-cached (e.g. a new
-      // page added after this service worker was installed).
-      const networkFetch = fetch(event.request)
+  // Full-page navigations (e.g. someone typing ridearrivo.com/book directly,
+  // or refreshing) get network-first treatment — always try the real network
+  // first, and only fall back to a cached copy if that genuinely fails.
+  // This avoids ever serving a stale shell for a page the visitor expects
+  // to be current.
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
         .then((response) => {
-          // Keep the cache fresh with whatever we actually get from the
-          // network, so future visits pick up real updates.
           if (response.ok) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
           }
           return response;
         })
-        .catch(() => cached); // offline and not cached — nothing we can do
+        .catch(() =>
+          caches.match(event.request).then((cached) => {
+            if (cached) return cached;
+            return caches.match("/index.html").then((homepage) => {
+              if (homepage) return homepage;
+              // Absolute last resort — nothing cached at all (e.g. someone's
+              // very first visit, already offline). A real Response here,
+              // not undefined, is what keeps this from ever becoming the
+              // confusing ERR_FAILED error.
+              return new Response(
+                "<h1>You're offline</h1><p>This page hasn't been loaded before, so it isn't available offline yet. Please reconnect and try again.</p>",
+                { headers: { "Content-Type": "text/html" } }
+              );
+            });
+          })
+        )
+    );
+    return;
+  }
 
-      return cached || networkFetch;
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      if (cached) return cached; // instant load from cache — don't even wait on the network
+
+      // Not cached — go to the network. If that fails and there's nothing
+      // cached either, let the browser's native error handling take over
+      // (a real network error) rather than silently resolving to
+      // `undefined`, which Chrome reports as the confusing ERR_FAILED.
+      return fetch(event.request).then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      });
     })
   );
 });
