@@ -250,7 +250,7 @@
     function updatePriceLabels() {
       vehicleCards.forEach(function (card) {
         var base = Number(card.getAttribute("data-price"));
-        card.querySelector(".v-price").textContent = "₦" + (base * state.multiplier).toLocaleString();
+        card.querySelector(".v-price").textContent = "NGN " + (base * state.multiplier).toLocaleString();
       });
     }
 
@@ -448,15 +448,15 @@
       [t("booking.reviewContact"), state.name + " · " + state.email],
       [t("booking.reviewBookingType"), bookingLabel],
       [t("booking.reviewFlight"), state.flightNumber || "—"],
-      [t("booking.reviewVehicle"), vehicleLabel + " · ₦" + totalFare.toLocaleString()],
+      [t("booking.reviewVehicle"), vehicleLabel + " · NGN " + totalFare.toLocaleString()],
       [t("booking.reviewPickup"), [state.pickup].concat(state.stops).join(" → ")],
     ];
     list.innerHTML = rows.map(function (r) {
       return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>";
     }).join("");
 
-    document.getElementById("reviewFare").textContent = "₦" + totalFare.toLocaleString();
-    document.getElementById("payAmount").textContent = "₦" + totalFare.toLocaleString();
+    document.getElementById("reviewFare").textContent = "NGN " + totalFare.toLocaleString();
+    document.getElementById("payAmount").textContent = "NGN " + totalFare.toLocaleString();
   }
 
   function toPascalCase(snake) {

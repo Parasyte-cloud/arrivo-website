@@ -183,27 +183,34 @@
     function initMobileNav() {
       var toggle = document.getElementById("mobileNavToggle");
       var menu = document.getElementById("mobileNavMenu");
+      var closeBtn = document.getElementById("mobileNavClose");
       if (!toggle || !menu) return;
 
+      function openMenu() {
+        menu.hidden = false;
+        toggle.classList.add("is-open");
+        toggle.setAttribute("aria-expanded", "true");
+      }
+      function closeMenu() {
+        menu.hidden = true;
+        toggle.classList.remove("is-open");
+        toggle.setAttribute("aria-expanded", "false");
+      }
+
       toggle.addEventListener("click", function () {
-        var isOpen = menu.hidden;
-        menu.hidden = !isOpen;
-        toggle.setAttribute("aria-expanded", String(isOpen));
+        if (menu.hidden) openMenu(); else closeMenu();
       });
+      if (closeBtn) closeBtn.addEventListener("click", closeMenu);
 
       // Close the menu after tapping a link — otherwise it stays open
       // sitting over the section the visitor just navigated to.
       menu.querySelectorAll("a").forEach(function (link) {
-        link.addEventListener("click", function () {
-          menu.hidden = true;
-          toggle.setAttribute("aria-expanded", "false");
-        });
+        link.addEventListener("click", closeMenu);
       });
 
       document.addEventListener("click", function (e) {
         if (!menu.hidden && !menu.contains(e.target) && !toggle.contains(e.target)) {
-          menu.hidden = true;
-          toggle.setAttribute("aria-expanded", "false");
+          closeMenu();
         }
       });
     }

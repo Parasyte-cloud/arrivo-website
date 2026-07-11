@@ -174,7 +174,7 @@
       }
       box.innerHTML = result.data.rides.map(function (r) {
         return '<div class="ride-card">' +
-          '<div style="display:flex;justify-content:space-between;"><strong>' + r.pickup_address + '</strong><span class="fare">₦' + Number(r.fare_naira).toLocaleString() + '</span></div>' +
+          '<div style="display:flex;justify-content:space-between;"><strong>' + r.pickup_address + '</strong><span class="fare">NGN ' + Number(r.fare_naira).toLocaleString() + '</span></div>' +
           (r.flight_number ? '<div style="font-size:12px;color:var(--text-muted);">Flight ' + r.flight_number + '</div>' : '') +
           '<div style="font-size:12px;color:var(--text-muted);">Rider: ' + r.rider_name + '</div>' +
           '<button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="window.__acceptRide(' + r.id + ')">Accept Ride</button>' +
@@ -202,7 +202,7 @@
     var r = state.activeRide;
     var isAccepted = r.ride_status === "accepted";
     box.innerHTML = '<div class="ride-card">' +
-      '<div style="display:flex;justify-content:space-between;"><strong>' + r.pickup_address + '</strong><span class="fare">₦' + Number(r.fare_naira).toLocaleString() + '</span></div>' +
+      '<div style="display:flex;justify-content:space-between;"><strong>' + r.pickup_address + '</strong><span class="fare">NGN ' + Number(r.fare_naira).toLocaleString() + '</span></div>' +
       '<div style="font-size:12px;color:var(--text-muted);">Rider: ' + r.rider_name + (r.rider_phone ? " · " + r.rider_phone : "") + '</div>' +
       '<div style="font-size:12px;color:var(--teal);font-weight:700;margin-top:6px;">' + r.ride_status.replace("_", " ").toUpperCase() + '</div>' +
       '<button class="btn btn-primary" style="width:100%;margin-top:10px;" id="advanceBtn">' + (isAccepted ? "Start Trip" : "Complete Trip") + '</button>' +
@@ -227,8 +227,8 @@
   document.getElementById("viewEarningsBtn").addEventListener("click", function () {
     api("/api/drivers/earnings").then(function (result) {
       if (!result.ok) return;
-      document.getElementById("earnMonth").textContent = "₦" + Number(result.data.thisMonthNaira).toLocaleString();
-      document.getElementById("earnTotal").textContent = "₦" + Number(result.data.totalNaira).toLocaleString();
+      document.getElementById("earnMonth").textContent = "NGN " + Number(result.data.thisMonthNaira).toLocaleString();
+      document.getElementById("earnTotal").textContent = "NGN " + Number(result.data.totalNaira).toLocaleString();
       document.getElementById("earnTrips").textContent = result.data.completedTrips;
       showSection("earningsSection");
     });

@@ -17,7 +17,7 @@ const I18N = {
     hero: {
       eyebrow: "Lagos airport pickups, done right",
       headline: "Land in Lagos.<br>Someone's already there.",
-      sub: "A verified driver, a live-tracked ride, and a trip you can share with someone who cares you arrived safely — in English, Français, or 中文.",
+      sub: "A verified driver, a live-tracked ride, and a trip you can share with someone who cares about your safe arrival — available in 7 languages, including English, French, and Chinese.",
       ctaPrimary: "Book a ride now",
       ctaSecondary: "See how it works",
     },
@@ -165,7 +165,7 @@ const I18N = {
     hero: {
       eyebrow: "L'arrivée à Lagos, bien faite",
       headline: "Atterrissez à Lagos.<br>Quelqu'un vous attend déjà.",
-      sub: "Un chauffeur vérifié, un trajet suivi en direct, et un voyage que vous pouvez partager avec un proche — en anglais, en français ou en mandarin.",
+      sub: "Un chauffeur vérifié, un trajet suivi en direct, et un voyage que vous pouvez partager avec un proche qui se soucie de votre arrivée en toute sécurité — disponible en 7 langues, dont l'anglais, le français et le chinois.",
       ctaPrimary: "Réserver une course",
       ctaSecondary: "Voir comment ça marche",
     },
@@ -314,7 +314,7 @@ I18N.zh = {
   hero: {
     eyebrow: "拉各斯机场接送，值得信赖",
     headline: "抵达拉各斯。<br>已有人在等您。",
-    sub: "经过身份验证的司机、实时追踪的行程，还能与关心您安全抵达的人分享行程 —— 支持英语、法语和中文。",
+    sub: "经过身份验证的司机、实时追踪的行程，还能与关心您平安抵达的人分享行程 —— 支持7种语言，包括英语、法语和中文。",
     ctaPrimary: "立即预订行程",
     ctaSecondary: "了解运作方式",
   },
@@ -464,7 +464,7 @@ I18N.de = {
   hero: {
     eyebrow: "Flughafenabholung in Lagos, richtig gemacht",
     headline: "Landung in Lagos.<br>Jemand wartet bereits.",
-    sub: "Ein verifizierter Fahrer, eine live verfolgte Fahrt und eine Reise, die Sie mit jemandem teilen können, der wissen möchte, dass Sie sicher angekommen sind — auf Englisch, Französisch, Chinesisch und mehr.",
+    sub: "Ein verifizierter Fahrer, eine live verfolgte Fahrt und eine Reise, die Sie mit jemandem teilen können, dem Ihre sichere Ankunft am Herzen liegt — verfügbar in 7 Sprachen, darunter Englisch, Französisch und Chinesisch.",
     ctaPrimary: "Jetzt Fahrt buchen",
     ctaSecondary: "So funktioniert's",
   },
@@ -612,7 +612,7 @@ I18N.hi = {
   hero: {
     eyebrow: "लागोस एयरपोर्ट पिकअप, सही तरीके से",
     headline: "लागोस पहुँचें।<br>कोई पहले से इंतज़ार कर रहा है।",
-    sub: "एक सत्यापित ड्राइवर, लाइव-ट्रैक की गई राइड, और एक यात्रा जिसे आप किसी ऐसे व्यक्ति के साथ साझा कर सकते हैं जो जानना चाहता है कि आप सुरक्षित पहुँचे — अंग्रेज़ी, फ़्रेंच, चीनी और अन्य भाषाओं में।",
+    sub: "एक सत्यापित ड्राइवर, लाइव-ट्रैक की गई राइड, और एक यात्रा जिसे आप किसी ऐसे व्यक्ति के साथ साझा कर सकते हैं जो आपकी सुरक्षित पहुंच की परवाह करता है — 7 भाषाओं में उपलब्ध, जिनमें अंग्रेज़ी, फ़्रेंच और चीनी शामिल हैं।",
     ctaPrimary: "अभी राइड बुक करें",
     ctaSecondary: "देखें यह कैसे काम करता है",
   },
@@ -760,7 +760,7 @@ I18N.es = {
   hero: {
     eyebrow: "Recogidas en el aeropuerto de Lagos, bien hechas",
     headline: "Aterriza en Lagos.<br>Alguien ya te espera.",
-    sub: "Un conductor verificado, un viaje rastreado en vivo, y un trayecto que puedes compartir con alguien que quiere saber que llegaste seguro — en inglés, francés, chino y más.",
+    sub: "Un conductor verificado, un viaje rastreado en vivo, y un trayecto que puedes compartir con alguien a quien le importa que llegues seguro — disponible en 7 idiomas, incluyendo inglés, francés y chino.",
     ctaPrimary: "Reservar un viaje ahora",
     ctaSecondary: "Ver cómo funciona",
   },
@@ -908,7 +908,7 @@ I18N.pt = {
   hero: {
     eyebrow: "Buscas no aeroporto de Lagos, bem feitas",
     headline: "Chegue a Lagos.<br>Alguém já está à sua espera.",
-    sub: "Um motorista verificado, uma viagem rastreada ao vivo, e um trajeto que você pode compartilhar com alguém que quer saber que você chegou em segurança — em inglês, francês, chinês e mais.",
+    sub: "Um motorista verificado, uma viagem rastreada ao vivo, e um trajeto que você pode compartilhar com alguém que se importa com sua chegada segura — disponível em 7 idiomas, incluindo inglês, francês e chinês.",
     ctaPrimary: "Reservar agora",
     ctaSecondary: "Ver como funciona",
   },

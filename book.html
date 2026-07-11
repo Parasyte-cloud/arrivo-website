@@ -146,17 +146,17 @@
       <div class="vehicle-options" id="vehicleOptions">
         <button type="button" class="vehicle-card" data-vehicle="sedan" data-price="8500">
           <span class="v-name" data-i18n="booking.vehicleSedan">Sedan</span>
-          <span class="v-price">₦8,500</span>
+          <span class="v-price">NGN 8,500</span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
         <button type="button" class="vehicle-card" data-vehicle="suv" data-price="12500">
           <span class="v-name" data-i18n="booking.vehicleSuv">SUV</span>
-          <span class="v-price">₦12,500</span>
+          <span class="v-price">NGN 12,500</span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
         <button type="button" class="vehicle-card" data-vehicle="truck" data-price="16000">
           <span class="v-name" data-i18n="booking.vehicleTruck">Truck / Van</span>
-          <span class="v-price">₦16,000</span>
+          <span class="v-price">NGN 16,000</span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
       </div>
@@ -204,7 +204,7 @@
 
       <div class="review-total">
         <span data-i18n="booking.reviewFare">Total fare</span>
-        <strong id="reviewFare">₦0</strong>
+        <strong id="reviewFare">NGN 0</strong>
       </div>
 
       <p class="pay-note" data-i18n="booking.payNote">Payment is handled securely by Paystack — Arrivo never sees your card details.</p>
@@ -294,9 +294,9 @@
 <script src="booking.js"></script>
 <script src="clock.js"></script>
 <!-- Google Maps Places Autocomplete + map preview for the pickup/drop-off/stop fields.
-     Replace AIzaSyCLWAbQmxIAoGPP0LLDp6oTosaHZBa0Y5s with a real key from Google Cloud Console
+     Replace GOOGLE_MAPS_API_KEY_HERE with a real key from Google Cloud Console
      (enable "Maps JavaScript API" and "Places API"). See README for the full setup guide. -->
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLWAbQmxIAoGPP0LLDp6oTosaHZBa0Y5s&libraries=places&callback=initGoogleMaps"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=GOOGLE_MAPS_API_KEY_HERE&libraries=places&callback=initGoogleMaps"></script>
 <script src="pwa-register.js"></script>
 </body>
 </html>
