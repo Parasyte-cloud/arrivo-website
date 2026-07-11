@@ -180,6 +180,34 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
+    function initMobileNav() {
+      var toggle = document.getElementById("mobileNavToggle");
+      var menu = document.getElementById("mobileNavMenu");
+      if (!toggle || !menu) return;
+
+      toggle.addEventListener("click", function () {
+        var isOpen = menu.hidden;
+        menu.hidden = !isOpen;
+        toggle.setAttribute("aria-expanded", String(isOpen));
+      });
+
+      // Close the menu after tapping a link — otherwise it stays open
+      // sitting over the section the visitor just navigated to.
+      menu.querySelectorAll("a").forEach(function (link) {
+        link.addEventListener("click", function () {
+          menu.hidden = true;
+          toggle.setAttribute("aria-expanded", "false");
+        });
+      });
+
+      document.addEventListener("click", function (e) {
+        if (!menu.hidden && !menu.contains(e.target) && !toggle.contains(e.target)) {
+          menu.hidden = true;
+          toggle.setAttribute("aria-expanded", "false");
+        }
+      });
+    }
+
     function safeRun(fn, label) {
       try {
         fn();
@@ -188,6 +216,7 @@
       }
     }
     safeRun(initLanguage, "initLanguage");
+    safeRun(initMobileNav, "initMobileNav");
     safeRun(initHeroAnimation, "initHeroAnimation");
     safeRun(initWaitlistForm, "initWaitlistForm");
   });
