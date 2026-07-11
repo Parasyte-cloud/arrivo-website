@@ -78,11 +78,13 @@
     <!-- STEP 1: Contact -->
     <section class="step" data-step="1">
       <h2 data-i18n="booking.contactTitle">Let's start with you</h2>
-      <div id="profileSummary" style="background:#FBF9F3; border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:13px;">
-        <strong id="profileName"></strong><br>
-        <span id="profileEmail" style="color:var(--text-muted);"></span>
+      <div id="profileSummary" style="background:#FBF9F3; border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
+        <div><strong id="profileName"></strong><br>
+        <span id="profileEmail" style="color:var(--text-muted);"></span></div>
+        <a href="account.html" style="font-size:12px; color:var(--teal); font-weight:700;">My account</a>
       </div>
-      <input type="tel" id="fWhatsapp" class="field" data-i18n-placeholder="booking.whatsapp" placeholder="WhatsApp number (optional)">
+      <label class="field-label" data-i18n="booking.whatsapp">WhatsApp number</label>
+      <div id="whatsappInputContainer" style="margin-bottom:14px;"></div>
       <input type="text" id="fCountry" class="field" data-i18n-placeholder="booking.country" placeholder="Country of residence">
 
       <label class="checkbox-row">
@@ -288,6 +290,7 @@
 <!-- Paystack's official inline checkout library -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script src="i18n.js"></script>
+<script src="phone-input.js"></script>
 <script src="booking.js"></script>
 <script src="clock.js"></script>
 <!-- Google Maps Places Autocomplete + map preview for the pickup/drop-off/stop fields.

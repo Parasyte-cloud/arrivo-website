@@ -130,6 +130,9 @@
   // ───────────────────────── Step 1: Contact ─────────────────────────
   function initStep1() {
     var contactError = document.getElementById("contactError");
+    var whatsappField = arrivoBuildPhoneInput(document.getElementById("whatsappInputContainer"), {
+      placeholder: t("booking.whatsapp"),
+    });
 
     function showError(el, msg) {
       el.hidden = false;
@@ -146,7 +149,16 @@
         state.email = result.data.user.email;
         document.getElementById("profileName").textContent = state.name;
         document.getElementById("profileEmail").textContent = state.email;
-        if (result.data.user.whatsapp_number) document.getElementById("fWhatsapp").value = result.data.user.whatsapp_number;
+        if (result.data.user.whatsapp_number) {
+          // Stored as a full international number (e.g. "+2348011112222") —
+          // split it back into country code + national number for the two-part input.
+          var stored = result.data.user.whatsapp_number;
+          var match = ARRIVO_COUNTRY_CODES
+            .slice()
+            .sort(function (a, b) { return b.dial.length - a.dial.length; }) // longest dial code first, so +234 doesn't get shadowed by +2
+            .find(function (c) { return stored.indexOf(c.dial) === 0; });
+          if (match) whatsappField.setRaw(match.dial, stored.slice(match.dial.length));
+        }
         if (result.data.user.country_of_residence) document.getElementById("fCountry").value = result.data.user.country_of_residence;
       } else {
         // Token expired or invalid — send them back to log in properly.
@@ -158,7 +170,12 @@
     document.getElementById("contactContinue").addEventListener("click", function () {
       hideError(contactError);
 
-      state.whatsapp = document.getElementById("fWhatsapp").value.trim();
+      var phoneResult = whatsappField.getValue();
+      if (!phoneResult.valid) {
+        showError(contactError, phoneResult.message);
+        return;
+      }
+      state.whatsapp = phoneResult.full;
       state.country = document.getElementById("fCountry").value.trim();
       state.agreedToTerms = document.getElementById("fAgree").checked;
 
@@ -175,7 +192,7 @@
       api("/api/auth/me", {
         method: "PATCH",
         headers: authHeader(),
-        body: JSON.stringify({ whatsappNumber: state.whatsapp || undefined, countryOfResidence: state.country }),
+        body: JSON.stringify({ whatsappNumber: state.whatsapp, countryOfResidence: state.country }),
       }).then(function () {
         goToStep(2);
       }).catch(function () {

@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your account — Arrivo</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12123B">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="booking.css">
+<style>
+  .account-wrap { max-width: 560px; padding-top: 40px; padding-bottom: 60px; }
+  .avatar-row { display:flex; align-items:center; gap:18px; margin-bottom: 28px; }
+  .avatar-circle {
+    width: 76px; height: 76px; border-radius: 50%; background: #eee;
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    cursor:pointer; border: 2px solid var(--card-border); flex-shrink:0; position:relative;
+  }
+  .avatar-circle img { width:100%; height:100%; object-fit:cover; }
+  .avatar-circle .initial { font-size:28px; font-weight:700; color:#999; }
+  .avatar-edit-badge {
+    position:absolute; bottom:0; right:0; width:22px; height:22px; border-radius:50%;
+    background: var(--amber); display:flex; align-items:center; justify-content:center;
+    font-size:11px; border: 2px solid #fff;
+  }
+  .account-name { font-size: 19px; font-weight:700; }
+  .account-email { font-size:12.5px; color: var(--text-muted); }
+
+  .tile-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:24px; }
+  .tile { border:1px solid var(--card-border); border-radius:10px; padding:14px; font-size:13px; font-weight:600; cursor:pointer; text-decoration:none; color:var(--ink); }
+  .tile:hover { background: rgba(18,18,59,0.03); }
+
+  .field-inline { display:flex; gap:8px; align-items:center; margin-bottom:10px; }
+  .field-inline .field { margin-bottom:0; flex:1; }
+  .save-note { font-size:11.5px; color: var(--teal); font-weight:700; }
+
+  .trip-card { border:1px solid var(--card-border); border-radius:12px; padding:14px; margin-bottom:12px; }
+  .trip-route { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .trip-route svg { flex-shrink:0; }
+  .trip-addr { font-size:12.5px; line-height:1.4; }
+  .trip-addr .label { color:var(--text-muted); font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; }
+  .trip-meta { display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); border-top:1px solid #f0f0f0; padding-top:8px; margin-top:8px; }
+  .trip-status { font-weight:700; padding: 2px 8px; border-radius:999px; font-size:10.5px; }
+  .status-completed { background:#E5F4F3; color:#0E7C7B; }
+  .status-cancelled { background:#FDECEA; color:#E1523D; }
+  .status-other { background:#F0F0F5; color:#6b6b85; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="brand">
+      <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
+      <span>arrivo</span>
+    </a>
+  </div>
+</header>
+
+<main class="wrap account-wrap">
+
+  <div class="avatar-row">
+    <div class="avatar-circle" id="avatarCircle">
+      <span class="initial" id="avatarInitial"></span>
+      <div class="avatar-edit-badge">✎</div>
+    </div>
+    <input type="file" id="fAvatarInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
+    <div>
+      <div class="account-name" id="accountName">—</div>
+      <div class="account-email" id="accountEmail">—</div>
+    </div>
+  </div>
+  <p class="error-text" id="avatarError" hidden></p>
+
+  <div class="tile-grid">
+    <a href="book.html" class="tile">🚗 Book a ride</a>
+    <a href="terms.html#cancellation" class="tile">🛡️ Safety &amp; cancellation policy</a>
+    <a href="mailto:info@ridearrivo.com" class="tile">💬 Help</a>
+    <a href="#" class="tile" id="logoutTile">🚪 Log out</a>
+  </div>
+
+  <div class="booking-card" style="margin-bottom:24px;">
+    <h2 style="font-size:15px; margin-bottom:12px;">Contact details</h2>
+    <div class="field-inline">
+      <input type="text" id="fWhatsapp" class="field" placeholder="WhatsApp number">
+    </div>
+    <div class="field-inline">
+      <input type="text" id="fCountry" class="field" placeholder="Country of residence">
+    </div>
+    <button class="btn btn-ghost" id="saveDetailsBtn">Save</button>
+    <span class="save-note" id="saveNote" hidden>Saved ✓</span>
+  </div>
+
+  <h2 style="font-size:15px; margin-bottom:12px;">Your trips</h2>
+  <div id="tripsList">
+    <p style="color:var(--text-muted); font-size:13px;">Loading…</p>
+  </div>
+
+</main>
+
+<script>
+  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
+  var TOKEN_KEY = "arrivo_rider_token";
+
+  function authHeader() {
+    return { Authorization: "Bearer " + localStorage.getItem(TOKEN_KEY), "Content-Type": "application/json" };
+  }
+
+  function api(path, options) {
+    options = options || {};
+    return fetch(API_BASE_URL + path, options).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        return { ok: res.ok, status: res.status, data: data };
+      });
+    });
+  }
+
+  var currentAvatarDataUrl = undefined; // undefined = unchanged, string = new photo picked
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      window.location.href = "login.html?next=account.html";
+      return;
+    }
+
+    api("/api/auth/me", { headers: authHeader() }).then(function (result) {
+      if (!result.ok) {
+        localStorage.removeItem(TOKEN_KEY);
+        window.location.href = "login.html?next=account.html";
+        return;
+      }
+      var user = result.data.user;
+      document.getElementById("accountName").textContent = user.name;
+      document.getElementById("accountEmail").textContent = user.email;
+      document.getElementById("fWhatsapp").value = user.whatsapp_number || "";
+      document.getElementById("fCountry").value = user.country_of_residence || "";
+
+      if (user.avatar_url) {
+        document.getElementById("avatarCircle").innerHTML =
+          '<img src="' + user.avatar_url + '"><div class="avatar-edit-badge">✎</div>';
+      } else {
+        document.getElementById("avatarInitial").textContent = (user.name || "?").charAt(0).toUpperCase();
+      }
+    });
+
+    document.getElementById("avatarCircle").addEventListener("click", function () {
+      document.getElementById("fAvatarInput").click();
+    });
+
+    document.getElementById("fAvatarInput").addEventListener("change", function (e) {
+      var file = e.target.files[0];
+      var errEl = document.getElementById("avatarError");
+      errEl.hidden = true;
+      if (!file) return;
+
+      if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+        errEl.hidden = false;
+        errEl.textContent = "Please choose a PNG, JPEG, or WEBP image.";
+        return;
+      }
+      if (file.size > 4 * 1024 * 1024) {
+        errEl.hidden = false;
+        errEl.textContent = "Please choose an image smaller than 4MB.";
+        return;
+      }
+
+      var reader = new FileReader();
+      reader.onload = function () {
+        currentAvatarDataUrl = reader.result;
+        document.getElementById("avatarCircle").innerHTML =
+          '<img src="' + currentAvatarDataUrl + '"><div class="avatar-edit-badge">✎</div>';
+        // Save immediately — a photo change is a distinct action from the
+        // WhatsApp/Country "Save" button below, so don't make it wait on that.
+        api("/api/auth/me", {
+          method: "PATCH", headers: authHeader(),
+          body: JSON.stringify({ avatarDataUrl: currentAvatarDataUrl }),
+        }).then(function (result) {
+          if (!result.ok) {
+            errEl.hidden = false;
+            errEl.textContent = result.data.error || "Couldn't save that photo.";
+          }
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById("saveDetailsBtn").addEventListener("click", function () {
+      var note = document.getElementById("saveNote");
+      api("/api/auth/me", {
+        method: "PATCH", headers: authHeader(),
+        body: JSON.stringify({
+          whatsappNumber: document.getElementById("fWhatsapp").value.trim(),
+          countryOfResidence: document.getElementById("fCountry").value.trim(),
+        }),
+      }).then(function (result) {
+        if (result.ok) {
+          note.hidden = false;
+          setTimeout(function () { note.hidden = true; }, 2000);
+        }
+      });
+    });
+
+    document.getElementById("logoutTile").addEventListener("click", function (e) {
+      e.preventDefault();
+      localStorage.removeItem(TOKEN_KEY);
+      window.location.href = "index.html";
+    });
+
+    loadTrips(token);
+  });
+
+  function routeStripSvg() {
+    return '<svg width="14" height="46" viewBox="0 0 14 46">' +
+      '<circle cx="7" cy="6" r="5" fill="#0E7C7B"/>' +
+      '<line x1="7" y1="12" x2="7" y2="34" stroke="#ccc" stroke-width="2" stroke-dasharray="3,3"/>' +
+      '<circle cx="7" cy="40" r="5" fill="none" stroke="#E1523D" stroke-width="2"/>' +
+      "</svg>";
+  }
+
+  function statusClass(status) {
+    if (status === "completed") return "status-completed";
+    if (status === "cancelled") return "status-cancelled";
+    return "status-other";
+  }
+
+  function loadTrips(token) {
+    api("/api/rides/mine", { headers: authHeader() }).then(function (result) {
+      var list = document.getElementById("tripsList");
+      if (!result.ok) {
+        list.innerHTML = '<p style="color:var(--coral); font-size:13px;">Couldn\'t load your trips.</p>';
+        return;
+      }
+      var rides = result.data.rides || [];
+      if (rides.length === 0) {
+        list.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">No trips yet — <a href="book.html">book your first ride</a>.</p>';
+        return;
+      }
+      list.innerHTML = rides.map(function (r) {
+        var stops = r.stops || [];
+        var dropoff = stops.length ? stops[stops.length - 1] : "—";
+        var date = new Date(r.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+        return '<div class="trip-card">' +
+          '<div class="trip-route">' + routeStripSvg() +
+          '<div class="trip-addr">' +
+          '<div class="label">Pickup</div>' + escapeHtml(r.pickup_address) +
+          '<div class="label" style="margin-top:6px;">Drop-off</div>' + escapeHtml(dropoff) +
+          "</div></div>" +
+          '<div class="trip-meta">' +
+          "<span>" + date + "</span>" +
+          '<span class="trip-status ' + statusClass(r.ride_status) + '">' + r.ride_status.replace("_", " ") + "</span>" +
+          "<span>₦" + Number(r.fare_naira).toLocaleString() + "</span>" +
+          "</div></div>";
+      }).join("");
+    });
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement("div");
+    div.textContent = str || "";
+    return div.innerHTML;
+  }
+</script>
+</body>
+</html>

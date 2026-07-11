@@ -31,6 +31,16 @@
   <h1>Create your profile</h1>
 
   <div class="booking-card" id="formCard">
+    <div style="text-align:center; margin-bottom:18px;">
+      <label for="fAvatarInput" style="cursor:pointer; display:inline-block;">
+        <div id="avatarPreview" style="width:88px; height:88px; border-radius:50%; background:#eee; margin:0 auto; display:flex; align-items:center; justify-content:center; overflow:hidden; border:2px dashed var(--card-border);">
+          <span style="font-size:28px; color:#bbb;">＋</span>
+        </div>
+        <div style="font-size:12px; color:var(--teal); font-weight:700; margin-top:8px;">Add profile photo</div>
+      </label>
+      <input type="file" id="fAvatarInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
+      <p class="error-text" id="avatarError" hidden style="text-align:center;"></p>
+    </div>
     <input type="text" id="fFirstName" class="field" placeholder="First name">
     <input type="text" id="fLastName" class="field" placeholder="Last name">
     <input type="email" id="fEmail" class="field" placeholder="Email address">
@@ -95,6 +105,37 @@
     document.getElementById("privacyModal").style.display = "none";
   });
 
+  var avatarDataUrl = null;
+  var MAX_AVATAR_MB = 4;
+
+  document.getElementById("fAvatarInput").addEventListener("change", function (e) {
+    var file = e.target.files[0];
+    var avatarErr = document.getElementById("avatarError");
+    avatarErr.hidden = true;
+    if (!file) return;
+
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      avatarErr.hidden = false;
+      avatarErr.textContent = "Please choose a PNG, JPEG, or WEBP image.";
+      e.target.value = "";
+      return;
+    }
+    if (file.size > MAX_AVATAR_MB * 1024 * 1024) {
+      avatarErr.hidden = false;
+      avatarErr.textContent = "Please choose an image smaller than " + MAX_AVATAR_MB + "MB.";
+      e.target.value = "";
+      return;
+    }
+
+    var reader = new FileReader();
+    reader.onload = function () {
+      avatarDataUrl = reader.result;
+      document.getElementById("avatarPreview").innerHTML =
+        '<img src="' + avatarDataUrl + '" style="width:100%; height:100%; object-fit:cover;">';
+    };
+    reader.readAsDataURL(file);
+  });
+
   document.getElementById("signupBtn").addEventListener("click", function () {
     var errEl = document.getElementById("signupError");
     errEl.hidden = true;
@@ -108,6 +149,7 @@
       password: document.getElementById("fPassword").value,
       confirmPassword: document.getElementById("fConfirmPassword").value,
       agreedToTerms: document.getElementById("fAgree").checked,
+      avatarDataUrl: avatarDataUrl || undefined,
     };
 
     if (!payload.firstName || !payload.lastName || !payload.email || !payload.password) {
