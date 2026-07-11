@@ -140,15 +140,18 @@
       var toggle = document.getElementById("mobileNavToggle");
       var menu = document.getElementById("mobileNavMenu");
       var closeBtn = document.getElementById("mobileNavClose");
+      var backdrop = document.getElementById("mobileNavBackdrop");
       if (!toggle || !menu) return;
 
       function openMenu() {
         menu.hidden = false;
+        if (backdrop) backdrop.hidden = false;
         toggle.classList.add("is-open");
         toggle.setAttribute("aria-expanded", "true");
       }
       function closeMenu() {
         menu.hidden = true;
+        if (backdrop) backdrop.hidden = true;
         toggle.classList.remove("is-open");
         toggle.setAttribute("aria-expanded", "false");
       }
@@ -157,6 +160,7 @@
         if (menu.hidden) openMenu(); else closeMenu();
       });
       if (closeBtn) closeBtn.addEventListener("click", closeMenu);
+      if (backdrop) backdrop.addEventListener("click", closeMenu);
 
       // Close the menu after tapping a link — otherwise it stays open
       // sitting over the section the visitor just navigated to.

@@ -12,6 +12,7 @@
   var state = {
     name: "", email: "", phone: "", whatsapp: "", country: "", agreedToTerms: false,
     token: null,
+    bookingFor: "self", passengerName: "",
     flightNumber: "",
     bags: 1, bulky: false,
     bookingType: "one_way", durationDays: 1, multiplier: 1,
@@ -140,6 +141,32 @@
     }
     function hideError(el) { el.hidden = true; }
 
+    // "Who is this ride for" — myself vs. someone else. When it's for
+    // someone else, the WhatsApp number collected here needs to be the
+    // actual passenger's (that's who the driver will be contacting and
+    // matching against on pickup), not the account holder's, so the field
+    // label and passenger-name field toggle together.
+    var forWhoToggle = document.getElementById("forWhoToggle");
+    var passengerFields = document.getElementById("passengerFields");
+    var whatsappLabel = document.getElementById("whatsappLabel");
+    if (forWhoToggle) {
+      forWhoToggle.querySelectorAll(".for-who-opt").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          state.bookingFor = btn.getAttribute("data-for");
+          forWhoToggle.querySelectorAll(".for-who-opt").forEach(function (b) {
+            b.classList.toggle("is-active", b === btn);
+          });
+          var forOther = state.bookingFor === "other";
+          if (passengerFields) passengerFields.hidden = !forOther;
+          if (whatsappLabel) {
+            whatsappLabel.textContent = forOther
+              ? t("booking.whatsappPassenger")
+              : t("booking.whatsapp");
+          }
+        });
+      });
+    }
+
     // Prefill the read-only name/email summary from the already-authenticated
     // rider's profile — registration happened on signup.html/login.html
     // before they ever reached this page.
@@ -179,6 +206,17 @@
       state.country = document.getElementById("fCountry").value.trim();
       state.agreedToTerms = document.getElementById("fAgree").checked;
 
+      if (state.bookingFor === "other") {
+        var passengerNameInput = document.getElementById("fPassengerName");
+        state.passengerName = passengerNameInput ? passengerNameInput.value.trim() : "";
+        if (!state.passengerName) {
+          showError(contactError, t("booking.passengerNameRequired"));
+          return;
+        }
+      } else {
+        state.passengerName = "";
+      }
+
       if (!state.country) {
         showError(contactError, "Please enter your country of residence.");
         return;
@@ -189,10 +227,15 @@
       }
 
       // Save WhatsApp/Country to the rider's profile for next time, then continue.
+      // Only when booking for self — if this is a passenger's number, it
+      // belongs to the ride, not to the account holder's saved profile.
+      var profilePatch = { countryOfResidence: state.country };
+      if (state.bookingFor === "self") profilePatch.whatsappNumber = state.whatsapp;
+
       api("/api/auth/me", {
         method: "PATCH",
         headers: authHeader(),
-        body: JSON.stringify({ whatsappNumber: state.whatsapp, countryOfResidence: state.country }),
+        body: JSON.stringify(profilePatch),
       }).then(function () {
         goToStep(2);
       }).catch(function () {
@@ -446,11 +489,16 @@
 
     var rows = [
       [t("booking.reviewContact"), state.name + " · " + state.email],
+    ];
+    if (state.bookingFor === "other" && state.passengerName) {
+      rows.push([t("booking.reviewPassenger"), state.passengerName]);
+    }
+    rows.push(
       [t("booking.reviewBookingType"), bookingLabel],
       [t("booking.reviewFlight"), state.flightNumber || "N/A"],
       [t("booking.reviewVehicle"), vehicleLabel + " · NGN " + totalFare.toLocaleString()],
-      [t("booking.reviewPickup"), [state.pickup].concat(state.stops).join(" → ")],
-    ];
+      [t("booking.reviewPickup"), [state.pickup].concat(state.stops).join(" → ")]
+    );
     list.innerHTML = rows.map(function (r) {
       return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>";
     }).join("");
@@ -487,6 +535,9 @@
             bookingType: state.bookingType,
             durationDays: state.durationDays,
             agreedCancellationPolicy: true,
+            bookingFor: state.bookingFor,
+            passengerName: state.bookingFor === "other" ? state.passengerName : null,
+            passengerWhatsapp: state.whatsapp,
           }),
         });
       })

@@ -83,9 +83,20 @@
         <span id="profileEmail" style="color:var(--text-muted);"></span></div>
         <a href="account.html" style="font-size:12px; color:var(--teal); font-weight:700;">My account</a>
       </div>
-      <label class="field-label" data-i18n="booking.whatsapp">WhatsApp number</label>
+      <label class="field-label" id="whatsappLabel" data-i18n="booking.whatsapp">WhatsApp number</label>
       <div id="whatsappInputContainer" style="margin-bottom:14px;"></div>
-      <input type="text" id="fCountry" class="field" data-i18n-placeholder="booking.country" placeholder="Country of residence">
+      <input type="text" id="fCountry" class="field" data-i18n-placeholder="booking.country" placeholder="Country of residence" style="margin-bottom:14px;">
+
+      <label class="field-label" data-i18n="booking.forWhoLabel">Who is this ride for?</label>
+      <div class="for-who-toggle" id="forWhoToggle">
+        <button type="button" class="for-who-opt is-active" data-for="self" data-i18n="booking.forSelf">Myself</button>
+        <button type="button" class="for-who-opt" data-for="other" data-i18n="booking.forOther">Someone else</button>
+      </div>
+
+      <div id="passengerFields" hidden>
+        <label class="field-label" data-i18n="booking.passengerName">Passenger's full name</label>
+        <input type="text" id="fPassengerName" class="field" data-i18n-placeholder="booking.passengerNamePlaceholder" placeholder="e.g. Amaka Obi" style="margin-bottom:14px;">
+      </div>
 
       <label class="checkbox-row">
         <input type="checkbox" id="fAgree">

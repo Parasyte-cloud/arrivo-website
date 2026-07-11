@@ -216,11 +216,33 @@ a { color: inherit; text-decoration: none; }
   right: 0;
   background: var(--cream);
   border-bottom: 1px solid var(--card-border);
-  display: flex;
+  display: none;
   flex-direction: column;
   padding: 0 24px 12px;
-  box-shadow: 0 12px 24px rgba(18,18,59,0.08);
+  box-shadow: 0 12px 24px rgba(18,18,59,0.14);
+  z-index: 55;
 }
+/* This is the actual fix: [hidden] was being beaten by the "display: flex"
+   rule above because author CSS always outranks the UA [hidden] stylesheet
+   rule, no matter what the hidden property/attribute says. That silently
+   made the menu render at all times on mobile, so tapping the toggle
+   changed its internal state but nothing ever visibly happened. */
+.mobile-nav-menu:not([hidden]) {
+  display: flex;
+  animation: mobileNavIn 0.2s ease both;
+}
+@keyframes mobileNavIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.mobile-nav-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(18,18,59,0.32);
+  z-index: 48;
+}
+.mobile-nav-backdrop:not([hidden]) { display: block; }
 .mobile-nav-menu-header {
   display: flex;
   align-items: center;
@@ -253,7 +275,7 @@ a { color: inherit; text-decoration: none; }
 }
 .mobile-nav-menu a:last-child { border-bottom: none; }
 @media (min-width: 860px) {
-  .mobile-nav-toggle, .mobile-nav-menu { display: none; }
+  .mobile-nav-toggle, .mobile-nav-menu, .mobile-nav-backdrop { display: none; }
 }
 
 .live-clock {
@@ -678,3 +700,25 @@ a { color: inherit; text-decoration: none; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
+
+/* ── Booking: "who is this ride for" toggle (book.html step 1) ── */
+.for-who-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+.for-who-opt {
+  flex: 1;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--card-border);
+  background: #fff;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.for-who-opt.is-active {
+  border-color: var(--teal);
+  background: var(--teal-tint);
+  color: var(--teal);
+}
+.for-who-opt:hover { border-color: var(--teal); }
