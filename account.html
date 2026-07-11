@@ -49,6 +49,18 @@
   .status-completed { background:#E5F4F3; color:#0E7C7B; }
   .status-cancelled { background:#FDECEA; color:#E1523D; }
   .status-other { background:#F0F0F5; color:#6b6b85; }
+
+  .social-list { display:flex; flex-direction:column; }
+  .social-row {
+    display:flex; align-items:center; gap:14px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--card-border);
+    text-decoration:none; color:var(--ink);
+  }
+  .social-row:last-child { border-bottom:none; }
+  .social-row .icon-badge { margin-bottom:0; }
+  .social-row .label { flex:1; font-weight:600; font-size:14px; }
+  .social-row .chevron { color:var(--text-muted); font-size:18px; }
 </style>
 </head>
 <body>
@@ -80,7 +92,7 @@
   <div class="tile-grid">
     <a href="book.html" class="tile">🚗 Book a ride</a>
     <a href="terms.html#cancellation" class="tile">🛡️ Safety &amp; cancellation policy</a>
-    <a href="mailto:info@ridearrivo.com" class="tile">💬 Help</a>
+    <a href="#support" class="tile">💬 Help &amp; support</a>
     <a href="#" class="tile" id="logoutTile">🚪 Log out</a>
   </div>
 
@@ -94,6 +106,47 @@
     </div>
     <button class="btn btn-ghost" id="saveDetailsBtn">Save</button>
     <span class="save-note" id="saveNote" hidden>Saved ✓</span>
+  </div>
+
+  <h2 style="font-size:15px; margin-bottom:12px;" id="support">Support</h2>
+  <div class="booking-card" style="margin-bottom:24px;">
+    <h3 style="font-size:17px; margin-bottom:4px;">How can Arrivo help?</h3>
+    <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px;">We usually reply within a few hours.</p>
+    <a href="mailto:info@ridearrivo.com" class="btn btn-primary" style="display:inline-flex;">✉️ Send email</a>
+
+    <div class="social-list" style="margin-top:24px;">
+      <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted); margin-bottom:4px;">Follow us on social</p>
+      <a class="social-row" href="https://www.instagram.com/ridearrivong?igsh=ZzRzYTRtZWRsMWV3&amp;utm_source=qr" target="_blank" rel="noopener">
+        <div class="icon-badge">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="var(--teal)" stroke-width="1.7"/>
+            <circle cx="12" cy="12" r="4.2" stroke="var(--teal)" stroke-width="1.7"/>
+            <circle cx="17.2" cy="6.8" r="1.1" fill="var(--teal)"/>
+          </svg>
+        </div>
+        <span class="label">Instagram</span>
+        <span class="chevron">›</span>
+      </a>
+      <a class="social-row" href="https://www.tiktok.com/@ridearrivong?_r=1&amp;_t=ZS-97tSwV8mvEj" target="_blank" rel="noopener">
+        <div class="icon-badge">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 3v10.6a2.8 2.8 0 1 1-2-2.68" stroke="var(--teal)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13 3c.4 2.2 2 3.8 4 4.1" stroke="var(--teal)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="label">TikTok</span>
+        <span class="chevron">›</span>
+      </a>
+      <a class="social-row" href="https://x.com/ridearrivong?s=11" target="_blank" rel="noopener">
+        <div class="icon-badge">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5.5 5.5l13 13M18.5 5.5l-13 13" stroke="var(--teal)" stroke-width="1.9" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="label">X (Twitter)</span>
+        <span class="chevron">›</span>
+      </a>
+    </div>
   </div>
 
   <h2 style="font-size:15px; margin-bottom:12px;">Your trips</h2>
