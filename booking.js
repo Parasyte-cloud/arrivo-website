@@ -447,7 +447,7 @@
     var rows = [
       [t("booking.reviewContact"), state.name + " · " + state.email],
       [t("booking.reviewBookingType"), bookingLabel],
-      [t("booking.reviewFlight"), state.flightNumber || "—"],
+      [t("booking.reviewFlight"), state.flightNumber || "N/A"],
       [t("booking.reviewVehicle"), vehicleLabel + " · NGN " + totalFare.toLocaleString()],
       [t("booking.reviewPickup"), [state.pickup].concat(state.stops).join(" → ")],
     ];
@@ -553,7 +553,7 @@
 
       if (typeof PaystackPop === "undefined") {
         payError.hidden = false;
-        payError.textContent = "Payment isn't configured yet — set PAYSTACK_PUBLIC_KEY in booking.js.";
+        payError.textContent = "Payment isn't configured yet. Set PAYSTACK_PUBLIC_KEY in booking.js.";
         return;
       }
       var handler = PaystackPop.setup({

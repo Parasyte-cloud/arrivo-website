@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your account — Arrivo</title>
+<title>Your account | Arrivo</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#12123B">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=23">
 <link rel="stylesheet" href="booking.css">
 <style>
   .account-wrap { max-width: 560px; padding-top: 40px; padding-bottom: 60px; }
@@ -71,8 +71,8 @@
     </div>
     <input type="file" id="fAvatarInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
     <div>
-      <div class="account-name" id="accountName">—</div>
-      <div class="account-email" id="accountEmail">—</div>
+      <div class="account-name" id="accountName">…</div>
+      <div class="account-email" id="accountEmail">…</div>
     </div>
   </div>
   <p class="error-text" id="avatarError" hidden></p>
@@ -175,7 +175,7 @@
         currentAvatarDataUrl = reader.result;
         document.getElementById("avatarCircle").innerHTML =
           '<img src="' + currentAvatarDataUrl + '"><div class="avatar-edit-badge">✎</div>';
-        // Save immediately — a photo change is a distinct action from the
+        // Save immediately: a photo change is a distinct action from the
         // WhatsApp/Country "Save" button below, so don't make it wait on that.
         api("/api/auth/me", {
           method: "PATCH", headers: authHeader(),
@@ -238,12 +238,12 @@
       }
       var rides = result.data.rides || [];
       if (rides.length === 0) {
-        list.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">No trips yet — <a href="book.html">book your first ride</a>.</p>';
+        list.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">No trips yet. <a href="book.html">book your first ride</a>.</p>';
         return;
       }
       list.innerHTML = rides.map(function (r) {
         var stops = r.stops || [];
-        var dropoff = stops.length ? stops[stops.length - 1] : "—";
+        var dropoff = stops.length ? stops[stops.length - 1] : "Not set";
         var date = new Date(r.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
         return '<div class="trip-card">' +
           '<div class="trip-route">' + routeStripSvg() +

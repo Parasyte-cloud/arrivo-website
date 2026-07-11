@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Book a pickup — Arrivo</title>
-<meta name="description" content="Book your Lagos airport pickup online — choose your vehicle, pay securely, and track your ride live. No app required.">
+<title>Book a pickup | Arrivo</title>
+<meta name="description" content="Book your Lagos airport pickup online. Choose your vehicle, pay securely, and track your ride live. No app required.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="Arrivo">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=23">
 <link rel="stylesheet" href="booking.css">
 </head>
 <body>
@@ -62,15 +62,15 @@
     <li data-step="5"><span data-i18n="booking.stepReview">Review &amp; Pay</span></li>
   </ol>
 
-  <!-- AUTH GATE — shown only if the visitor isn't logged in yet.
+  <!-- AUTH GATE: shown only if the visitor isn't logged in yet.
        Registration is mandatory before booking: no guest checkout anymore. -->
   <div class="booking-card" id="authGate" hidden style="text-align:center;">
     <h2 style="font-size:19px;">Create a profile to book</h2>
     <p style="color:var(--text-muted); font-size:13.5px; margin-bottom:20px;">
-      For everyone's safety, every rider needs a registered profile before booking — it only takes a minute.
+      For everyone's safety, every rider needs a registered profile before booking. It only takes a minute.
     </p>
     <a href="signup.html?next=book.html" class="btn btn-primary" style="width:100%; margin-bottom:10px;">Create a profile</a>
-    <a href="login.html?next=book.html" class="btn btn-ghost" style="width:100%;">I already have a profile — Log in</a>
+    <a href="login.html?next=book.html" class="btn btn-ghost" style="width:100%;">Already have a profile? Log in</a>
   </div>
 
   <div class="booking-card" id="bookingCard" hidden>
@@ -99,7 +99,7 @@
     <!-- STEP 2: Flight -->
     <section class="step" data-step="2" hidden>
       <h2 data-i18n="booking.flightTitle">Got a flight number?</h2>
-      <p class="step-sub" data-i18n="booking.flightSub">Optional — but it means your pickup time adjusts automatically if you're early or delayed.</p>
+      <p class="step-sub" data-i18n="booking.flightSub">Optional, but it means your pickup time adjusts automatically if you're early or delayed.</p>
 
       <div class="flight-row">
         <input type="text" id="fFlight" class="field" data-i18n-placeholder="booking.flightPlaceholder" placeholder="e.g. BA075" style="text-transform:uppercase;">
@@ -188,7 +188,7 @@
       <button type="button" class="link-btn" id="addStopBtn" data-i18n="booking.addStop">+ Add another stop</button>
 
       <div id="routeMap" class="route-map"></div>
-      <p class="error-text" id="mapsError" hidden>Map search isn't available right now — you can still type an address directly.</p>
+      <p class="error-text" id="mapsError" hidden>Map search isn't available right now. You can still type an address directly.</p>
 
       <div class="step-actions">
         <button class="btn btn-ghost" id="backTo3" data-i18n="booking.back">Back</button>
@@ -207,7 +207,7 @@
         <strong id="reviewFare">NGN 0</strong>
       </div>
 
-      <p class="pay-note" data-i18n="booking.payNote">Payment is handled securely by Paystack — Arrivo never sees your card details.</p>
+      <p class="pay-note" data-i18n="booking.payNote">Payment is handled securely by Paystack. Arrivo never sees your card details.</p>
 
       <label class="checkbox-row">
         <input type="checkbox" id="fAgreeCancellation">
@@ -226,7 +226,7 @@
     <section class="step" data-step="6" hidden>
       <div class="confirm-icon">✓</div>
       <h2 data-i18n="booking.confirmTitle">You're booked!</h2>
-      <p data-i18n="booking.confirmBody">Payment confirmed. Your reference number is below — our team will confirm your driver's details closer to pickup time.</p>
+      <p data-i18n="booking.confirmBody">Payment confirmed. Your reference number is below. Our team will confirm your driver's details closer to pickup time.</p>
       <div class="reference-box">
         <span data-i18n="booking.confirmReference">Booking reference</span>
         <strong id="confirmRef"></strong>
@@ -246,7 +246,7 @@
     </div>
     <iframe src="privacy.html" style="flex:1; border:none; min-height:400px;"></iframe>
     <div style="padding:16px 20px; border-top:1px solid var(--card-border);">
-      <button class="btn btn-primary" id="agreeInModalBtn" style="width:100%;">I've read this — I agree</button>
+      <button class="btn btn-primary" id="agreeInModalBtn" style="width:100%;">I've read this and agree</button>
     </div>
   </div>
 </div>
@@ -260,7 +260,7 @@
     </div>
     <iframe src="terms.html#cancellation" style="flex:1; border:none; min-height:400px;"></iframe>
     <div style="padding:16px 20px; border-top:1px solid var(--card-border);">
-      <button class="btn btn-primary" id="agreeCancellationModalBtn" style="width:100%;">I've read this — I agree</button>
+      <button class="btn btn-primary" id="agreeCancellationModalBtn" style="width:100%;">I've read this and agree</button>
     </div>
   </div>
 </div>
@@ -289,9 +289,9 @@
 
 <!-- Paystack's official inline checkout library -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
-<script src="i18n.js"></script>
+<script src="i18n.js?v=23"></script>
 <script src="phone-input.js"></script>
-<script src="booking.js"></script>
+<script src="booking.js?v=23"></script>
 <script src="clock.js"></script>
 <!-- Google Maps Places Autocomplete + map preview for the pickup/drop-off/stop fields.
      Replace GOOGLE_MAPS_API_KEY_HERE with a real key from Google Cloud Console
