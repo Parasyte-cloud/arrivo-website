@@ -104,19 +104,9 @@
       </div>
 
       <div class="hero-visual" aria-hidden="true">
-        <svg class="flight-path" viewBox="0 0 320 260" width="100%" height="100%">
-          <path id="flightArc" d="M20,40 C120,10 200,60 260,150" stroke="#F4A300" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="360" stroke-dashoffset="360"/>
-          <circle id="planeDot" cx="20" cy="40" r="5" fill="#F7F4EC"/>
-        </svg>
-
         <div class="phone-frame">
           <div class="phone-notch"></div>
           <div class="phone-stripe"></div>
-
-          <div class="phone-intro" aria-hidden="true">
-            <span class="intro-plane">✈️</span>
-            <span class="intro-car">🚗</span>
-          </div>
 
           <div class="phone-screen">
             <div class="ps-row">
@@ -134,6 +124,26 @@
             </div>
             <div class="ps-btn">📍 Share ride</div>
           </div>
+        </div>
+
+        <!-- One-time load-in: a big plane sweeps in from the left, "lands"
+             and cross-dissolves into a car, which drives off — revealing
+             the phone screen underneath. Skipped entirely for anyone with
+             prefers-reduced-motion set. -->
+        <div class="intro-overlay" id="introOverlay" aria-hidden="true">
+          <svg class="intro-plane" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 34L58 8L30 34L2 34Z" fill="var(--cream)"/>
+            <path d="M30 34L58 8L34 58L30 34Z" fill="var(--cream)" opacity="0.75"/>
+            <path d="M30 34L34 58" stroke="var(--amber)" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <svg class="intro-car" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 40 H14 C16 29 27 21 41 21 H70 C83 21 91 28 97 40 H112 C117 40 117 47 112 47 H8 C3 47 3 40 8 40 Z" fill="var(--coral)"/>
+            <path d="M45 24 H68 L75 35 H39 Z" fill="var(--cream)" opacity="0.9"/>
+            <circle cx="31" cy="47" r="8.5" fill="var(--ink)"/>
+            <circle cx="31" cy="47" r="3.4" fill="var(--cream)"/>
+            <circle cx="90" cy="47" r="8.5" fill="var(--ink)"/>
+            <circle cx="90" cy="47" r="3.4" fill="var(--cream)"/>
+          </svg>
         </div>
       </div>
     </div>

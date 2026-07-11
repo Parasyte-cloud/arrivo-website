@@ -416,7 +416,6 @@ a { color: inherit; text-decoration: none; }
   justify-content: center;
   min-height: 340px;
 }
-.flight-path { position: absolute; inset: 0; pointer-events: none; }
 
 /* Phone mockup, reusing the same visual language as the app screens */
 .phone-frame {
@@ -434,54 +433,74 @@ a { color: inherit; text-decoration: none; }
 }
 .phone-stripe { height: 5px; background: repeating-linear-gradient(90deg, var(--ink) 0 10px, var(--amber) 10px 20px); }
 
-/* ── One-time intro: a plane flies in, "lands" and becomes a car, car
-   drives off, then the real phone screen underneath is revealed ── */
-.phone-intro {
+/* ── One-time intro: a big plane sweeps in from the left across the whole
+   visual column, cross-dissolves into a car mid-flight, the car drives off,
+   and the curtain fades away to reveal the phone screen underneath.
+   Sized to hero-visual (not phone-frame) so the plane has real room to move. ── */
+.intro-overlay {
   position: absolute;
   inset: 0;
-  z-index: 4;
+  z-index: 10;
   background: var(--ink);
+  border-radius: 28px;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: introOverlayHide 4.2s ease forwards;
+  animation: introOverlayHide 3s ease forwards;
 }
 .intro-plane, .intro-car {
   position: absolute;
-  font-size: 34px;
+  width: 42%;
+  max-width: 210px;
   opacity: 0;
-  line-height: 1;
 }
 .intro-plane {
-  animation: introPlaneFly 4.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: introPlaneFly 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 .intro-car {
-  animation: introCarDrive 4.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  width: 46%;
+  max-width: 200px;
+  animation: introCarReveal 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes introPlaneFly {
-  0%   { transform: translate(120px, -90px) rotate(-15deg) scale(0.7); opacity: 0; }
-  12%  { opacity: 1; }
-  45%  { transform: translate(0, 0) rotate(8deg) scale(1); opacity: 1; }
-  55%  { transform: translate(-6px, 6px) rotate(8deg) scale(0.9); opacity: 1; }
-  62%  { opacity: 0; transform: translate(-6px, 10px) rotate(8deg) scale(0.6); }
+  0%   { transform: translateX(-240%) translateY(-16%) rotate(-10deg) scale(0.85); opacity: 0; }
+  10%  { opacity: 1; }
+  46%  { transform: translateX(0) translateY(0) rotate(4deg) scale(1.15); opacity: 1; }
+  56%  { transform: translateX(4%) translateY(6%) rotate(4deg) scale(0.95); opacity: 1; }
+  64%  { transform: translateX(4%) translateY(8%) rotate(4deg) scale(0.6); opacity: 0; }
   100% { opacity: 0; }
 }
 
-@keyframes introCarDrive {
-  0%, 55% { opacity: 0; transform: translate(0, 14px) scale(0.6); }
-  63%     { opacity: 1; transform: translate(0, 14px) scale(1); }
-  80%     { opacity: 1; transform: translate(-40px, 14px) scale(1); }
-  100%    { opacity: 0; transform: translate(-160px, 14px) scale(0.85); }
+@keyframes introCarReveal {
+  0%, 56% { opacity: 0; transform: translateX(0) scale(0.55); }
+  66%     { opacity: 1; transform: translateX(0) scale(1.05); }
+  84%     { opacity: 1; transform: translateX(-6%) scale(1); }
+  100%    { opacity: 0; transform: translateX(180%) scale(0.9); }
 }
 
 @keyframes introOverlayHide {
-  0%, 88% { opacity: 1; pointer-events: auto; }
+  0%, 80% { opacity: 1; pointer-events: auto; }
   100%    { opacity: 0; pointer-events: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .phone-intro { display: none; }
+  .intro-overlay { display: none; }
+}
+
+/* Mobile: same choreography, just scaled to the narrower column so it
+   never feels oversized or forces horizontal scroll. */
+@media (max-width: 600px) {
+  .intro-plane { width: 50%; max-width: 150px; }
+  .intro-car   { width: 54%; max-width: 145px; }
+}
+
+/* Desktop: give the hero its own two-column layout instead of stacking
+   copy above a small centered card with acres of space around it. */
+@media (min-width: 960px) {
+  .hero-inner { grid-template-columns: 1.05fr 0.95fr; gap: 56px; }
+  .hero-visual { min-height: 420px; }
 }
 
 .phone-screen { padding: 22px 14px 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -646,5 +665,4 @@ a { color: inherit; text-decoration: none; }
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  #flightArc, #planeDot { animation: none !important; stroke-dashoffset: 0 !important; }
 }

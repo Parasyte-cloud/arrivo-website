@@ -87,50 +87,6 @@
     });
   }
 
-  // ───────────────────── Hero landing animation ─────────────────────
-  function initHeroAnimation() {
-    var arc = document.getElementById("flightArc");
-    var dot = document.getElementById("planeDot");
-    if (!arc || !dot) return;
-
-    var prefersReduced = typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) return;
-
-    var length = arc.getTotalLength();
-    arc.style.strokeDasharray = length;
-    arc.style.strokeDashoffset = length;
-
-    var duration = 1400; // ms
-    var start = null;
-
-    function frame(timestamp) {
-      if (!start) start = timestamp;
-      var progress = Math.min((timestamp - start) / duration, 1);
-      var eased = 1 - Math.pow(1 - progress, 2); // ease-out
-
-      arc.style.strokeDashoffset = String(length * (1 - eased));
-
-      var point = arc.getPointAtLength(length * eased);
-      dot.setAttribute("cx", point.x);
-      dot.setAttribute("cy", point.y);
-
-      if (progress < 1) {
-        requestAnimationFrame(frame);
-      } else {
-        // Small "landing" bounce on the pin/phone once the arc completes.
-        var phone = document.querySelector(".phone-frame");
-        if (phone) {
-          phone.style.transition = "transform 0.4s cubic-bezier(.34,1.56,.64,1)";
-          phone.style.transform = "translateY(-6px)";
-          setTimeout(function () { phone.style.transform = "translateY(0)"; }, 400);
-        }
-      }
-    }
-
-    requestAnimationFrame(frame);
-  }
-
   // ───────────────────────── Waitlist form ─────────────────────────
   function initWaitlistForm() {
     var form = document.getElementById("waitlistForm");
@@ -224,7 +180,6 @@
     }
     safeRun(initLanguage, "initLanguage");
     safeRun(initMobileNav, "initMobileNav");
-    safeRun(initHeroAnimation, "initHeroAnimation");
     safeRun(initWaitlistForm, "initWaitlistForm");
   });
 })();
