@@ -610,9 +610,10 @@
     var activeBanner = document.getElementById("panicActiveBanner");
     var listeningBtn = document.getElementById("listeningDeviceBtn");
     var ARRIVO_SUPPORT_WHATSAPP = "2348162706078";
-    var PANIC_STATE_KEY = "arrivo_panic_active";
+    var PANIC_STATE_KEY = "arrivo_panic_active"; // stores JSON: { rideId }
 
     var countdownTimer = null;
+    var resolutionPollTimer = null;
     var pendingWindow = null;
     var listeningActive = false;
 
@@ -624,9 +625,39 @@
       activeBanner.hidden = false;
     }
 
-    if (localStorage.getItem(PANIC_STATE_KEY) === "1") {
-      showActiveBanner();
+    function clearActiveBanner() {
+      if (resolutionPollTimer) { clearInterval(resolutionPollTimer); resolutionPollTimer = null; }
+      localStorage.removeItem(PANIC_STATE_KEY);
+      activeBanner.hidden = true;
+      btn.hidden = false;
     }
+
+    // The only way the locked state goes away: checked against the real
+    // ride record, never a local timer or button.
+    function pollForResolution(rideId) {
+      if (resolutionPollTimer) clearInterval(resolutionPollTimer);
+      function check() {
+        fetch(apiBaseUrl + "/api/rides/" + rideId, {
+          headers: { Authorization: "Bearer " + localStorage.getItem(tokenKey) },
+        }).then(function (res) { return res.json(); }).then(function (data) {
+          if (data && data.ride && data.ride.panic_resolved_at) {
+            clearActiveBanner();
+          }
+        }).catch(function () {});
+      }
+      check();
+      resolutionPollTimer = setInterval(check, 20000);
+    }
+
+    (function restoreActiveStateIfAny() {
+      var raw = localStorage.getItem(PANIC_STATE_KEY);
+      if (!raw) return;
+      var saved;
+      try { saved = JSON.parse(raw); } catch (e) { saved = null; }
+      if (!saved || !saved.rideId) { localStorage.removeItem(PANIC_STATE_KEY); return; }
+      showActiveBanner();
+      pollForResolution(saved.rideId);
+    })();
 
     // Aborts an accidental tap before the alert fires — not a reset of an
     // already-active alert, which deliberately has no control here.
@@ -669,44 +700,50 @@
           ? "https://maps.google.com/?q=" + position.coords.latitude + "," + position.coords.longitude
           : null;
 
-        localStorage.setItem(PANIC_STATE_KEY, "1");
         activateListeningDevice(true); // bundled: one trigger, full response
-
-        // The real admin Panic Alerts page (confirmed from arrivo-admin's
-        // source) reads panics as a property OF a ride — panic_triggered_at
-        // and panic_notes live on the ride record itself, surfaced via
-        // GET /api/admin/panics and cleared via PATCH /api/admin/panics/:rideId/resolve.
-        // There's no standalone panic-alert entity, so this can only attach
-        // to an actual in-progress ride. If there isn't one, this call is
-        // skipped entirely — but the WhatsApp/GPS fallback below still fires
-        // regardless, since that doesn't depend on a ride existing.
-        // Verified against the real backend (routes/rides.js): this is a
-        // POST, not a PATCH, and it only accepts an optional "note" — GPS
-        // isn't part of this payload at all. The admin dashboard's "last
-        // known location" comes from the driver's continuously-updated
-        // current_lat/current_lng (PATCH /api/drivers/location), separate
-        // from this call.
-        if (state.activeRide) {
-          try {
-            var token = localStorage.getItem(tokenKey);
-            fetch(apiBaseUrl + "/api/rides/" + state.activeRide.id + "/panic", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-              body: JSON.stringify({ note: "Triggered from the driver web dashboard." }),
-            }).catch(function () {});
-          } catch (e) {}
-        }
 
         var message = "SOS. I need help." + (mapsLink ? " My location: " + mapsLink : " Location unavailable.");
         var waUrl = "https://wa.me/" + ARRIVO_SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(message);
-
         if (pendingWindow) {
           pendingWindow.location.href = waUrl;
         } else {
           window.open(waUrl, "_blank");
         }
 
-        showActiveBanner(); // stays locked — no auto-reset, no manual dismiss
+        // The locked "admin must clear this" state is only for a REAL,
+        // recorded alert. Without an active ride, or if the backend call
+        // fails, there's nothing for an admin to resolve — locking the UI
+        // forever in that case would be a false alarm with no way out.
+        // WhatsApp still went out above either way.
+        if (!state.activeRide) {
+          statusText.hidden = false;
+          statusText.textContent = "No active ride to attach this to. Alert sent to Arrivo support on WhatsApp.";
+          setTimeout(function () {
+            statusText.hidden = true;
+            btn.hidden = false;
+          }, 5000);
+          return;
+        }
+
+        var rideId = state.activeRide.id;
+        var token = localStorage.getItem(tokenKey);
+        fetch(apiBaseUrl + "/api/rides/" + rideId + "/panic", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+          body: JSON.stringify({ note: "Triggered from the driver web dashboard." }),
+        }).then(function (res) {
+          if (!res.ok) throw new Error("panic call failed");
+          localStorage.setItem(PANIC_STATE_KEY, JSON.stringify({ rideId: rideId }));
+          showActiveBanner();
+          pollForResolution(rideId);
+        }).catch(function () {
+          statusText.hidden = false;
+          statusText.textContent = "Couldn't confirm the alert with Arrivo's servers, but a WhatsApp message was sent to support.";
+          setTimeout(function () {
+            statusText.hidden = true;
+            btn.hidden = false;
+          }, 5000);
+        });
       }
 
       if (navigator.geolocation) {

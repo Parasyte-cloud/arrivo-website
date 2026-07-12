@@ -396,9 +396,10 @@
     var activeBanner = document.getElementById("panicActiveBanner");
     var listeningBtn = document.getElementById("listeningDeviceBtn");
     var ARRIVO_SUPPORT_WHATSAPP = "2348162706078"; // same number already live in the Support section
-    var PANIC_STATE_KEY = "arrivo_panic_active";
+    var PANIC_STATE_KEY = "arrivo_panic_active"; // stores JSON: { rideId }
 
     var countdownTimer = null;
+    var resolutionPollTimer = null;
     var pendingWindow = null;
     var listeningActive = false;
 
@@ -410,13 +411,48 @@
       activeBanner.hidden = false;
     }
 
-    // If an alert is already active (e.g. the page was reloaded, or this is
-    // a different page than the one the SOS was triggered from), show the
-    // locked state immediately — this is what makes "no manual reset" real,
-    // rather than just a property of one button's own click handler.
-    if (localStorage.getItem(PANIC_STATE_KEY) === "1") {
-      showActiveBanner();
+    // The reverse of showActiveBanner — used when we find out (via the
+    // backend, never manually) that a real alert has actually been
+    // resolved, so the button comes back for next time.
+    function clearActiveBanner() {
+      if (resolutionPollTimer) { clearInterval(resolutionPollTimer); resolutionPollTimer = null; }
+      localStorage.removeItem(PANIC_STATE_KEY);
+      activeBanner.hidden = true;
+      btn.hidden = false;
     }
+
+    // Polls the one real source of truth — the ride record itself — and
+    // clears the locked UI the moment an admin resolves it. This is the
+    // *only* way the "active" state goes away: never a local timer, never
+    // a button, always checked against the backend.
+    function pollForResolution(rideId) {
+      if (resolutionPollTimer) clearInterval(resolutionPollTimer);
+      function check() {
+        fetch(apiBaseUrl + "/api/rides/" + rideId, {
+          headers: { Authorization: "Bearer " + localStorage.getItem(tokenKey) },
+        }).then(function (res) { return res.json(); }).then(function (data) {
+          if (data && data.ride && data.ride.panic_resolved_at) {
+            clearActiveBanner();
+          }
+        }).catch(function () {});
+      }
+      check(); // check immediately on load, don't wait a full interval
+      resolutionPollTimer = setInterval(check, 20000);
+    }
+
+    // If an alert is already active (e.g. the page was reloaded), show the
+    // locked state immediately and start checking whether it's since been
+    // resolved — this is what makes "no manual reset, but not stuck
+    // forever either" real, rather than just this one click handler's job.
+    (function restoreActiveStateIfAny() {
+      var raw = localStorage.getItem(PANIC_STATE_KEY);
+      if (!raw) return;
+      var saved;
+      try { saved = JSON.parse(raw); } catch (e) { saved = null; }
+      if (!saved || !saved.rideId) { localStorage.removeItem(PANIC_STATE_KEY); return; }
+      showActiveBanner();
+      pollForResolution(saved.rideId);
+    })();
 
     // Cancelling here aborts an accidental tap BEFORE the alert fires —
     // that's different from resetting an alert that's already active, which
@@ -460,36 +496,54 @@
           ? "https://maps.google.com/?q=" + position.coords.latitude + "," + position.coords.longitude
           : null;
 
-        localStorage.setItem(PANIC_STATE_KEY, "1");
         activateListeningDevice(true); // bundled: one trigger, full response
-
-        // Verified against the real backend (routes/rides.js): this is a
-        // POST, not a PATCH, and only accepts an optional "note" — GPS isn't
-        // part of this payload. The admin dashboard's "last known location"
-        // comes from the driver's continuously-updated position, separate
-        // from this call. Without an active ride, this is skipped entirely —
-        // the WhatsApp/GPS fallback below always fires regardless.
-        if (activeRideId) {
-          try {
-            var token = localStorage.getItem(tokenKey);
-            fetch(apiBaseUrl + "/api/rides/" + activeRideId + "/panic", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-              body: JSON.stringify({ note: "Triggered from the rider account page." }),
-            }).catch(function () {});
-          } catch (e) {}
-        }
 
         var message = "SOS. I need help." + (mapsLink ? " My location: " + mapsLink : " Location unavailable.");
         var waUrl = "https://wa.me/" + ARRIVO_SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(message);
-
         if (pendingWindow) {
           pendingWindow.location.href = waUrl;
         } else {
           window.open(waUrl, "_blank");
         }
 
-        showActiveBanner(); // stays locked — no auto-reset, no manual dismiss
+        // The locked "admin must clear this" state is only for a REAL,
+        // recorded alert — a ride that the backend actually confirmed has
+        // panic_triggered_at set. Without an active ride, there's nothing
+        // for an admin to resolve, so locking the UI forever here would be
+        // a false alarm with no way out — which is exactly the bug this
+        // replaces. In that case, WhatsApp still went out above; the
+        // button just becomes available again after a short confirmation.
+        if (!activeRideId) {
+          statusText.hidden = false;
+          statusText.textContent = "No active ride to attach this to. Alert sent to Arrivo support on WhatsApp.";
+          setTimeout(function () {
+            statusText.hidden = true;
+            btn.hidden = false;
+          }, 5000);
+          return;
+        }
+
+        var token = localStorage.getItem(tokenKey);
+        fetch(apiBaseUrl + "/api/rides/" + activeRideId + "/panic", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+          body: JSON.stringify({ note: "Triggered from the rider account page." }),
+        }).then(function (res) {
+          if (!res.ok) throw new Error("panic call failed");
+          localStorage.setItem(PANIC_STATE_KEY, JSON.stringify({ rideId: activeRideId }));
+          showActiveBanner(); // stays locked until pollForResolution finds it cleared
+          pollForResolution(activeRideId);
+        }).catch(function () {
+          // The backend call itself failed (network error, ride no longer
+          // valid, etc.) — same reasoning as no active ride: don't lock a
+          // UI over an alert that was never actually recorded.
+          statusText.hidden = false;
+          statusText.textContent = "Couldn't confirm the alert with Arrivo's servers, but a WhatsApp message was sent to support.";
+          setTimeout(function () {
+            statusText.hidden = true;
+            btn.hidden = false;
+          }, 5000);
+        });
       }
 
       // Look up whether this rider currently has an active ride, in
