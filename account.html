@@ -382,12 +382,10 @@
   //     admin-cleared flag exists to un-set it. (Dev note: to clear it while
   //     testing, run localStorage.removeItem("arrivo_panic_active") in the
   //     console — there is intentionally no UI path to do this.)
-  // What still works today with no backend: GPS capture, and a real WhatsApp
-  // message to Arrivo support. The /api/panic-alerts and /api/listening-device
-  // calls are best-effort and are guesses at the endpoint shape — if the
-  // admin dashboard's existing Panic Alerts page (built for the mobile app)
-  // already has a real one, tell me its exact path/payload so web alerts
-  // land in the same system instead of a second, disconnected one.
+  // POST /api/rides/:id/panic is confirmed real (checked against the actual
+  // arrivo-backend source and end-to-end tested against a live database).
+  // /api/listening-device is still a guess — no such route exists in the
+  // backend yet, so that call is best-effort and currently a no-op server-side.
   function initPanicButton(userType, tokenKey, apiBaseUrl) {
     var btn = document.getElementById("panicBtn");
     if (!btn) return;
@@ -465,21 +463,19 @@
         localStorage.setItem(PANIC_STATE_KEY, "1");
         activateListeningDevice(true); // bundled: one trigger, full response
 
-        // Matches the real admin Panic Alerts page (confirmed from
-        // arrivo-admin's source): panic_triggered_at/panic_notes live on
-        // the ride record itself, not a standalone alert entity, so this
-        // can only attach to an actual in-progress ride. Without one, this
-        // is skipped — but the WhatsApp/GPS fallback below always fires.
+        // Verified against the real backend (routes/rides.js): this is a
+        // POST, not a PATCH, and only accepts an optional "note" — GPS isn't
+        // part of this payload. The admin dashboard's "last known location"
+        // comes from the driver's continuously-updated position, separate
+        // from this call. Without an active ride, this is skipped entirely —
+        // the WhatsApp/GPS fallback below always fires regardless.
         if (activeRideId) {
           try {
             var token = localStorage.getItem(tokenKey);
             fetch(apiBaseUrl + "/api/rides/" + activeRideId + "/panic", {
-              method: "PATCH",
+              method: "POST",
               headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-              body: JSON.stringify({
-                currentLat: position ? position.coords.latitude : null,
-                currentLng: position ? position.coords.longitude : null,
-              }),
+              body: JSON.stringify({ note: "Triggered from the rider account page." }),
             }).catch(function () {});
           } catch (e) {}
         }

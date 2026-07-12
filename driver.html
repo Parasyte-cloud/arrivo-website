@@ -88,13 +88,18 @@
       <li>Safety</li>
     </ol>
     <div class="booking-card">
-      <input type="text" id="sName" class="field" placeholder="Full name">
+      <input type="text" id="sFirstName" class="field" placeholder="First name">
+      <input type="text" id="sLastName" class="field" placeholder="Last name">
       <input type="email" id="sEmail" class="field" placeholder="Email">
       <input type="date" id="sDob" class="field" placeholder="Date of birth" aria-label="Date of birth">
       <label class="field-label" style="margin-top:2px;">WhatsApp number</label>
       <div id="signupPhoneContainer" style="margin-bottom:14px;"></div>
       <input type="password" id="sPassword" class="field" placeholder="Password">
       <input type="password" id="sPasswordConfirm" class="field" placeholder="Confirm password">
+      <label class="checkbox-row">
+        <input type="checkbox" id="sAccountTerms">
+        <span>I agree to Arrivo's <a href="terms.html" target="_blank" style="color:var(--teal);text-decoration:underline;">terms of service</a> and privacy policy.</span>
+      </label>
       <p class="error-text" id="signupAccountError" hidden></p>
       <button class="btn btn-primary" id="signupAccountContinue" style="width:100%;margin-top:6px;">Continue</button>
     </div>

@@ -116,18 +116,20 @@
   });
 
   document.getElementById("signupAccountContinue").addEventListener("click", function () {
-    var name = document.getElementById("sName").value.trim();
+    var firstName = document.getElementById("sFirstName").value.trim();
+    var lastName = document.getElementById("sLastName").value.trim();
     var email = document.getElementById("sEmail").value.trim();
     var dob = document.getElementById("sDob").value;
     var password = document.getElementById("sPassword").value;
     var passwordConfirm = document.getElementById("sPasswordConfirm").value;
+    var agreedTerms = document.getElementById("sAccountTerms").checked;
     var errEl = document.getElementById("signupAccountError");
     errEl.hidden = true;
 
     var phoneResult = signupPhoneField.getValue();
 
-    if (!name || !email) {
-      errEl.hidden = false; errEl.textContent = "Please enter your name and email."; return;
+    if (!firstName || !lastName || !email) {
+      errEl.hidden = false; errEl.textContent = "Please enter your first name, last name, and email."; return;
     }
     if (!dob) {
       errEl.hidden = false; errEl.textContent = "Please enter your date of birth."; return;
@@ -145,12 +147,20 @@
     if (password !== passwordConfirm) {
       errEl.hidden = false; errEl.textContent = "Passwords don't match."; return;
     }
+    if (!agreedTerms) {
+      errEl.hidden = false; errEl.textContent = "Please agree to the terms of service and privacy policy to continue."; return;
+    }
 
-    api("/api/auth/register", {
+    // Endpoint, field names, and required agreedToTerms all confirmed
+    // against the real backend source (routes/auth.js) and tested
+    // end-to-end against a live database — this previously called a
+    // guessed /api/auth/register endpoint with a single "name" field,
+    // which the real backend has never had.
+    api("/api/auth/signup", {
       method: "POST",
       body: JSON.stringify({
-        name: name, email: email, password: password, role: "driver",
-        whatsappNumber: phoneResult.full, dateOfBirth: dob,
+        firstName: firstName, lastName: lastName, email: email, password: password, confirmPassword: passwordConfirm,
+        role: "driver", whatsappNumber: phoneResult.full, dateOfBirth: dob, agreedToTerms: agreedTerms,
       }),
     }).then(function (result) {
       if (!result.ok) {
@@ -584,10 +594,12 @@
   //     admin-cleared flag exists. (Dev note: to clear it while testing, run
   //     localStorage.removeItem("arrivo_panic_active") in the console —
   //     there is intentionally no UI path to do this.)
-  // /api/panic-alerts and /api/listening-device are best-effort guesses at
-  // the endpoint shape — if the admin dashboard's existing Panic Alerts page
-  // (built for the mobile app) already has a real one, swap these to match
-  // it exactly so web alerts land in the same system.
+  // POST /api/rides/:id/panic is confirmed real (checked against the actual
+  // arrivo-backend source) — a driver-triggered alert now shows up in the
+  // admin dashboard's Panic Alerts page exactly like a rider-triggered one.
+  // /api/listening-device is still a guess — no such route exists in the
+  // backend yet, so that call is purely best-effort and currently a no-op
+  // server-side.
   function initPanicButton(userType, tokenKey, apiBaseUrl) {
     var btn = document.getElementById("panicBtn");
     if (!btn) return;
@@ -668,16 +680,19 @@
         // to an actual in-progress ride. If there isn't one, this call is
         // skipped entirely — but the WhatsApp/GPS fallback below still fires
         // regardless, since that doesn't depend on a ride existing.
+        // Verified against the real backend (routes/rides.js): this is a
+        // POST, not a PATCH, and it only accepts an optional "note" — GPS
+        // isn't part of this payload at all. The admin dashboard's "last
+        // known location" comes from the driver's continuously-updated
+        // current_lat/current_lng (PATCH /api/drivers/location), separate
+        // from this call.
         if (state.activeRide) {
           try {
             var token = localStorage.getItem(tokenKey);
             fetch(apiBaseUrl + "/api/rides/" + state.activeRide.id + "/panic", {
-              method: "PATCH",
+              method: "POST",
               headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-              body: JSON.stringify({
-                currentLat: position ? position.coords.latitude : null,
-                currentLng: position ? position.coords.longitude : null,
-              }),
+              body: JSON.stringify({ note: "Triggered from the driver web dashboard." }),
             }).catch(function () {});
           } catch (e) {}
         }
