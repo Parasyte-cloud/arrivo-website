@@ -717,7 +717,7 @@
         // WhatsApp still went out above either way.
         if (!state.activeRide) {
           statusText.hidden = false;
-          statusText.textContent = "No active ride to attach this to. Alert sent to Arrivo support on WhatsApp.";
+          statusText.textContent = "No active ride to attach this to. Alert sent to RideArrivo support on WhatsApp.";
           setTimeout(function () {
             statusText.hidden = true;
             btn.hidden = false;
@@ -738,7 +738,7 @@
           pollForResolution(rideId);
         }).catch(function () {
           statusText.hidden = false;
-          statusText.textContent = "Couldn't confirm the alert with Arrivo's servers, but a WhatsApp message was sent to support.";
+          statusText.textContent = "Couldn't confirm the alert with RideArrivo's servers, but a WhatsApp message was sent to support.";
           setTimeout(function () {
             statusText.hidden = true;
             btn.hidden = false;

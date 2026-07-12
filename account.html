@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your account | Arrivo</title>
+<title>Your account | RideArrivo</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -127,8 +127,7 @@
 <header class="site-header">
   <div class="wrap header-inner">
     <a href="index.html" class="brand">
-      <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
-      <span>arrivo</span>
+      <span class="logo-wrap"><img src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark"></span>
     </a>
   </div>
 </header>
@@ -158,7 +157,7 @@
   <p id="panicStatusText" class="panic-status-text" hidden></p>
   <div id="panicActiveBanner" class="panic-active-banner" hidden>
     <strong>🆘 Emergency alert active.</strong>
-    <p>Arrivo has been notified. This can only be cleared by our team, not from this device.</p>
+    <p>RideArrivo has been notified. This can only be cleared by our team, not from this device.</p>
   </div>
   <button type="button" id="listeningDeviceBtn" class="listening-btn">🎙️ Listening device: off</button>
 
@@ -171,7 +170,7 @@
 
   <h2 style="font-size:15px; margin-bottom:12px;" id="support">Support</h2>
   <div class="booking-card" style="margin-bottom:24px;">
-    <h3 style="font-size:17px; margin-bottom:4px;">How can Arrivo help?</h3>
+    <h3 style="font-size:17px; margin-bottom:4px;">How can RideArrivo help?</h3>
     <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px;">We usually reply within a few hours.</p>
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
       <a href="https://wa.me/2348162706078" target="_blank" rel="noopener" class="btn btn-primary" style="display:inline-flex;">💬 WhatsApp us</a>
@@ -224,8 +223,7 @@
   <div class="wrap footer-top">
     <div class="footer-brand-col">
       <div class="footer-brand">
-        <img src="assets/icon.png" alt="" width="22" height="22">
-        <span data-i18n="brand">arrivo</span>
+        <img src="assets/ridearrivo-wordmark-light.png" alt="RideArrivo" class="footer-brand-wordmark">
       </div>
       <p class="footer-tagline" data-i18n="footer.tagline">Lagos airport pickups, done right.</p>
       <div class="footer-social-row">
@@ -287,25 +285,38 @@
 
     <div class="footer-col">
       <h4 data-i18n="footer.contactHeading">Contact</h4>
-      <a href="mailto:info@ridearrivo.com" class="footer-contact-link">
+      <a href="#" class="footer-contact-link" id="footerEmailLink" data-user="info" data-domain="ridearrivo.com">
         <svg class="footer-contact-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.6"/>
           <path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        info@ridearrivo.com
+        <span id="footerEmailText">Email us</span>
       </a>
-      <a href="https://wa.me/2348162706078" target="_blank" rel="noopener" class="footer-contact-link">
+      <a href="tel:+2348162706078" class="footer-contact-link">
         <svg class="footer-contact-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M4.5 19.5l1.2-3.8A7.7 7.7 0 1 1 8.9 18l-4.4 1.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M7.5 3.5c.6 0 1.2.4 1.4 1l1 2.6c.2.5 0 1.1-.4 1.5L8.3 9.8c1 2.2 2.7 3.9 4.9 4.9l1.2-1.2c.4-.4 1-.5 1.5-.4l2.6 1c.6.2 1 .8 1 1.4v2.2c0 1-.9 1.8-1.9 1.6C11.8 18.4 5.6 12.2 4.7 6.4 4.5 5.4 5.3 4.5 6.3 4.5h1.2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
         </svg>
         081 6270 6078
       </a>
+      <script>
+        (function () {
+          var link = document.getElementById("footerEmailLink");
+          if (!link) return;
+          // Keeping the address out of the raw HTML source stops the most
+          // basic email-scraping bots from harvesting it, while a real
+          // visitor's browser reconstructs it instantly and it still works
+          // exactly like a normal mailto link.
+          var address = link.getAttribute("data-user") + "@" + link.getAttribute("data-domain");
+          link.href = "mailto:" + address;
+          document.getElementById("footerEmailText").textContent = address;
+        })();
+      </script>
     </div>
   </div>
 
   <div class="wrap footer-bottom">
     <div>
-      <p class="footer-legal" data-i18n="footer.legal">© 2026 Arrivo. Made in Lagos.</p>
+      <p class="footer-legal" data-i18n="footer.legal">© 2026 RideArrivo. Made in Lagos.</p>
       <p class="footer-legal-entity">RICHATHAOIR LIMITED (RC 1654710)</p>
     </div>
     <div class="footer-credit-row">
@@ -314,7 +325,7 @@
         <img src="assets/parasyte-logo.png" alt="Parasyte.cloud" class="footer-parasyte-logo">
       </a>
     </div>
-    <img src="assets/ride-arrivo-wordmark.png" alt="Ride Arrivo" class="footer-wordmark">
+    <img src="assets/ride-arrivo-wordmark.png" alt="Ride RideArrivo" class="footer-wordmark">
   </div>
 </footer>
 
@@ -613,7 +624,7 @@
         // button just becomes available again after a short confirmation.
         if (!activeRideId) {
           statusText.hidden = false;
-          statusText.textContent = "No active ride to attach this to. Alert sent to Arrivo support on WhatsApp.";
+          statusText.textContent = "No active ride to attach this to. Alert sent to RideArrivo support on WhatsApp.";
           setTimeout(function () {
             statusText.hidden = true;
             btn.hidden = false;
@@ -636,7 +647,7 @@
           // valid, etc.) — same reasoning as no active ride: don't lock a
           // UI over an alert that was never actually recorded.
           statusText.hidden = false;
-          statusText.textContent = "Couldn't confirm the alert with Arrivo's servers, but a WhatsApp message was sent to support.";
+          statusText.textContent = "Couldn't confirm the alert with RideArrivo's servers, but a WhatsApp message was sent to support.";
           setTimeout(function () {
             statusText.hidden = true;
             btn.hidden = false;

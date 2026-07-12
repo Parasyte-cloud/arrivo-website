@@ -421,7 +421,7 @@
   }
 
   // ───────────────────────── Google Places autocomplete + map preview ─────────────────────────
-  // Arrivo operates in Nigeria, so search results are restricted to Nigerian
+  // RideArrivo operates in Nigeria, so search results are restricted to Nigerian
   // addresses — this also makes suggestions far more relevant than an
   // unrestricted worldwide search would be.
   var LAGOS_CENTER = { lat: 6.5244, lng: 3.3792 };
