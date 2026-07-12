@@ -14,6 +14,15 @@ const I18N = {
       bookCta: "Book a ride",
       cta: "Get notified",
     },
+    footer: {
+      tagline: "Lagos airport pickups, done right.",
+      companyHeading: "Company",
+      legalHeading: "Legal",
+      contactHeading: "Contact",
+      privacy: "Privacy Policy",
+      terms: "Terms of Service",
+      legal: "© 2026 Arrivo. Made in Lagos.",
+    },
     hero: {
       eyebrow: "Lagos airport pickups, done right",
       headline: "Land in Lagos.<br>Someone's already there.",
