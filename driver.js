@@ -254,10 +254,18 @@
 
   // ───────────────────────── Init: restore session ─────────────────────────
   // ───────────────────────── Emergency SOS ─────────────────────────
-  // Same approach as the rider account page: works today without any
-  // panic-specific backend (opens a real WhatsApp message to Arrivo support
-  // with GPS), plus a best-effort POST to /api/panic-alerts for whenever
-  // that's wired up to the real admin dashboard Panic Alerts system.
+  // Per the Product Requirements Briefing (Panic Button & Safety System):
+  //   - One trigger, full response: this fires the alert AND the listening
+  //     device together, not as separate manual steps.
+  //   - No manual reset: once active, neither party can turn it off from
+  //     this device. State persists in localStorage until a real backend/
+  //     admin-cleared flag exists. (Dev note: to clear it while testing, run
+  //     localStorage.removeItem("arrivo_panic_active") in the console —
+  //     there is intentionally no UI path to do this.)
+  // /api/panic-alerts and /api/listening-device are best-effort guesses at
+  // the endpoint shape — if the admin dashboard's existing Panic Alerts page
+  // (built for the mobile app) already has a real one, swap these to match
+  // it exactly so web alerts land in the same system.
   function initPanicButton(userType, tokenKey, apiBaseUrl) {
     var btn = document.getElementById("panicBtn");
     if (!btn) return;
@@ -265,12 +273,30 @@
     var countdownText = document.getElementById("panicCountdownText");
     var cancelBtn = document.getElementById("panicCancelBtn");
     var statusText = document.getElementById("panicStatusText");
+    var activeBanner = document.getElementById("panicActiveBanner");
+    var listeningBtn = document.getElementById("listeningDeviceBtn");
     var ARRIVO_SUPPORT_WHATSAPP = "2348162706078";
+    var PANIC_STATE_KEY = "arrivo_panic_active";
 
     var countdownTimer = null;
     var pendingWindow = null;
+    var listeningActive = false;
 
-    function reset() {
+    function showActiveBanner() {
+      if (countdownTimer) clearInterval(countdownTimer);
+      btn.hidden = true;
+      countdownRow.hidden = true;
+      statusText.hidden = true;
+      activeBanner.hidden = false;
+    }
+
+    if (localStorage.getItem(PANIC_STATE_KEY) === "1") {
+      showActiveBanner();
+    }
+
+    // Aborts an accidental tap before the alert fires — not a reset of an
+    // already-active alert, which deliberately has no control here.
+    function cancelCountdown() {
       if (countdownTimer) clearInterval(countdownTimer);
       countdownRow.hidden = true;
       btn.hidden = false;
@@ -297,7 +323,7 @@
       }, 1000);
     });
 
-    cancelBtn.addEventListener("click", reset);
+    cancelBtn.addEventListener("click", cancelCountdown);
 
     function triggerAlert() {
       countdownRow.hidden = true;
@@ -308,6 +334,9 @@
         var mapsLink = position
           ? "https://maps.google.com/?q=" + position.coords.latitude + "," + position.coords.longitude
           : null;
+
+        localStorage.setItem(PANIC_STATE_KEY, "1");
+        activateListeningDevice(true); // bundled: one trigger, full response
 
         try {
           var token = localStorage.getItem(tokenKey);
@@ -333,11 +362,7 @@
           window.open(waUrl, "_blank");
         }
 
-        statusText.textContent = "Alert sent to Arrivo support on WhatsApp.";
-        setTimeout(function () {
-          statusText.hidden = true;
-          btn.hidden = false;
-        }, 4000);
+        showActiveBanner(); // stays locked — no auto-reset, no manual dismiss
       }
 
       if (navigator.geolocation) {
@@ -345,6 +370,28 @@
       } else {
         finish(null);
       }
+    }
+
+    function activateListeningDevice(viaPanic) {
+      if (listeningActive) return;
+      listeningActive = true;
+      if (listeningBtn) {
+        listeningBtn.textContent = "🎙️ Listening device: on";
+        listeningBtn.classList.add("is-active");
+      }
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ audio: true }).catch(function () {});
+      }
+      try {
+        fetch(apiBaseUrl + "/api/listening-device", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + localStorage.getItem(tokenKey) },
+          body: JSON.stringify({ userType: userType, active: true, viaPanic: !!viaPanic, timestamp: new Date().toISOString() }),
+        }).catch(function () {});
+      } catch (e) {}
+    }
+    if (listeningBtn) {
+      listeningBtn.addEventListener("click", function () { activateListeningDevice(false); });
     }
   }
 

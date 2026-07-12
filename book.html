@@ -105,6 +105,16 @@
       <input type="text" id="fEmergencyName" class="field" data-i18n-placeholder="booking.emergencyContactNamePlaceholder" placeholder="e.g. Tunde Okafor" style="margin-bottom:14px;">
       <div id="emergencyPhoneContainer" style="margin-bottom:14px;"></div>
 
+      <div class="tracking-notice">
+        <span aria-hidden="true">📍</span>
+        <span data-i18n="booking.etaTrackingNotice">Arrivo tracks your ETA in real time from pickup to drop-off, so your driver's location and arrival estimate stay accurate throughout the ride.</span>
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="fDashcamConsent">
+        <span data-i18n="booking.dashcamConsent">I agree that this ride may be recorded by an in-vehicle dash cam for safety, and that footage is stored for 30 days and then automatically deleted.</span>
+      </label>
+
       <label class="checkbox-row">
         <input type="checkbox" id="fAgree">
         <span data-i18n="booking.agree">I agree to Arrivo's <a href="#" id="openPrivacyModalBooking" style="color:var(--teal);text-decoration:underline;">privacy policy</a> and <a href="terms.html" target="_blank">terms of service</a>.</span>
@@ -261,6 +271,10 @@
       <div class="reference-box">
         <span data-i18n="booking.confirmReference">Booking reference</span>
         <strong id="confirmRef"></strong>
+      </div>
+      <div class="reference-box" id="confirmBarcodeBox" hidden>
+        <span data-i18n="booking.confirmBarcode">Booking barcode</span>
+        <strong id="confirmBarcode"></strong>
       </div>
       <a href="book.html" class="btn btn-primary" data-i18n="booking.bookAnother">Book another ride</a>
     </section>

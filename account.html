@@ -96,6 +96,30 @@
     color: var(--text-muted);
     margin-bottom: 16px;
   }
+  .panic-active-banner {
+    background: #FFF3F3;
+    border: 1.5px solid #D64545;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    color: #8a2323;
+  }
+  .panic-active-banner strong { display: block; margin-bottom: 4px; font-size: 14px; }
+  .panic-active-banner p { margin: 0; font-size: 12.5px; }
+  .listening-btn {
+    width: 100%;
+    background: #fff;
+    border: 1.5px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 12px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--ink);
+    cursor: pointer;
+    margin-bottom: 16px;
+  }
+  .listening-btn.is-active { border-color: var(--teal); background: var(--teal-tint); color: var(--teal); }
 </style>
 </head>
 <body>
@@ -132,6 +156,11 @@
     <button type="button" id="panicCancelBtn" class="btn btn-ghost btn-sm">Cancel</button>
   </p>
   <p id="panicStatusText" class="panic-status-text" hidden></p>
+  <div id="panicActiveBanner" class="panic-active-banner" hidden>
+    <strong>🆘 Emergency alert active.</strong>
+    <p>Arrivo has been notified. This can only be cleared by our team, not from this device.</p>
+  </div>
+  <button type="button" id="listeningDeviceBtn" class="listening-btn">🎙️ Listening device: off</button>
 
   <div class="tile-grid">
     <a href="book.html" class="tile">🚗 Book a ride</a>
@@ -344,20 +373,21 @@
   }
 
   // ───────────────────────── Emergency SOS ─────────────────────────
-  // What this does TODAY, with no backend panic system required:
-  //   1. Grabs GPS (best-effort — proceeds without it if denied/unavailable).
-  //   2. Tries a POST to /api/panic-alerts. This path is a guess — if your
-  //      admin dashboard's existing Panic Alerts page (built for the mobile
-  //      app) already has a real endpoint, swap this path/payload to match
-  //      it exactly, so web alerts land in the same place driver-app alerts do.
-  //      Either way this call is wrapped so a failure here never blocks step 3.
-  //   3. Opens a WhatsApp message to Arrivo's own support number (the same
-  //      one used in the Support section) with an SOS message + a Google
-  //      Maps link to their location. This step works today, with nothing
-  //      else needing to exist first — a real person receives a real message.
-  // The window is opened synchronously on the actual click (before the
-  // countdown/GPS lookup finish), then redirected once ready — opening it
-  // asynchronously later would get blocked as a popup by most browsers.
+  // Per the Product Requirements Briefing (Panic Button & Safety System):
+  //   - One trigger, full response: activating this fires the alert AND the
+  //     listening device together, not as separate manual steps.
+  //   - No manual reset: once active, neither driver nor passenger can turn
+  //     it off from this device. There is deliberately no button for this —
+  //     state persists in localStorage across reloads until a real backend/
+  //     admin-cleared flag exists to un-set it. (Dev note: to clear it while
+  //     testing, run localStorage.removeItem("arrivo_panic_active") in the
+  //     console — there is intentionally no UI path to do this.)
+  // What still works today with no backend: GPS capture, and a real WhatsApp
+  // message to Arrivo support. The /api/panic-alerts and /api/listening-device
+  // calls are best-effort and are guesses at the endpoint shape — if the
+  // admin dashboard's existing Panic Alerts page (built for the mobile app)
+  // already has a real one, tell me its exact path/payload so web alerts
+  // land in the same system instead of a second, disconnected one.
   function initPanicButton(userType, tokenKey, apiBaseUrl) {
     var btn = document.getElementById("panicBtn");
     if (!btn) return;
@@ -365,12 +395,35 @@
     var countdownText = document.getElementById("panicCountdownText");
     var cancelBtn = document.getElementById("panicCancelBtn");
     var statusText = document.getElementById("panicStatusText");
+    var activeBanner = document.getElementById("panicActiveBanner");
+    var listeningBtn = document.getElementById("listeningDeviceBtn");
     var ARRIVO_SUPPORT_WHATSAPP = "2348162706078"; // same number already live in the Support section
+    var PANIC_STATE_KEY = "arrivo_panic_active";
 
     var countdownTimer = null;
     var pendingWindow = null;
+    var listeningActive = false;
 
-    function reset() {
+    function showActiveBanner() {
+      if (countdownTimer) clearInterval(countdownTimer);
+      btn.hidden = true;
+      countdownRow.hidden = true;
+      statusText.hidden = true;
+      activeBanner.hidden = false;
+    }
+
+    // If an alert is already active (e.g. the page was reloaded, or this is
+    // a different page than the one the SOS was triggered from), show the
+    // locked state immediately — this is what makes "no manual reset" real,
+    // rather than just a property of one button's own click handler.
+    if (localStorage.getItem(PANIC_STATE_KEY) === "1") {
+      showActiveBanner();
+    }
+
+    // Cancelling here aborts an accidental tap BEFORE the alert fires —
+    // that's different from resetting an alert that's already active, which
+    // this deliberately has no control for.
+    function cancelCountdown() {
       if (countdownTimer) clearInterval(countdownTimer);
       countdownRow.hidden = true;
       btn.hidden = false;
@@ -397,7 +450,7 @@
       }, 1000);
     });
 
-    cancelBtn.addEventListener("click", reset);
+    cancelBtn.addEventListener("click", cancelCountdown);
 
     function triggerAlert() {
       countdownRow.hidden = true;
@@ -408,6 +461,9 @@
         var mapsLink = position
           ? "https://maps.google.com/?q=" + position.coords.latitude + "," + position.coords.longitude
           : null;
+
+        localStorage.setItem(PANIC_STATE_KEY, "1");
+        activateListeningDevice(true); // bundled: one trigger, full response
 
         try {
           var token = localStorage.getItem(tokenKey);
@@ -432,11 +488,7 @@
           window.open(waUrl, "_blank");
         }
 
-        statusText.textContent = "Alert sent to Arrivo support on WhatsApp.";
-        setTimeout(function () {
-          statusText.hidden = true;
-          btn.hidden = false;
-        }, 4000);
+        showActiveBanner(); // stays locked — no auto-reset, no manual dismiss
       }
 
       if (navigator.geolocation) {
@@ -444,6 +496,34 @@
       } else {
         finish(null);
       }
+    }
+
+    // Listening device — shares this same activation logic, and can be
+    // switched on independently by either party, not only via the panic
+    // button. Actually streaming/recording audio to a backend is a separate,
+    // substantial piece of infrastructure that doesn't exist yet; this wires
+    // up the real permission prompt and state so that infrastructure has
+    // something to plug into.
+    function activateListeningDevice(viaPanic) {
+      if (listeningActive) return;
+      listeningActive = true;
+      if (listeningBtn) {
+        listeningBtn.textContent = "🎙️ Listening device: on";
+        listeningBtn.classList.add("is-active");
+      }
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ audio: true }).catch(function () {});
+      }
+      try {
+        fetch(apiBaseUrl + "/api/listening-device", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + localStorage.getItem(tokenKey) },
+          body: JSON.stringify({ userType: userType, active: true, viaPanic: !!viaPanic, timestamp: new Date().toISOString() }),
+        }).catch(function () {});
+      } catch (e) {}
+    }
+    if (listeningBtn) {
+      listeningBtn.addEventListener("click", function () { activateListeningDevice(false); });
     }
   }
 </script>

@@ -21,7 +21,7 @@
   }
 
   var state = {
-    name: "", email: "", phone: "", whatsapp: "", country: "", agreedToTerms: false,
+    name: "", email: "", phone: "", whatsapp: "", country: "", agreedToTerms: false, dashcamConsent: false,
     token: null,
     bookingFor: "self", passengerName: "",
     emergencyContactName: "", emergencyContactPhone: "",
@@ -226,6 +226,7 @@
       state.whatsapp = phoneResult.full;
       state.country = document.getElementById("fCountry").value.trim();
       state.agreedToTerms = document.getElementById("fAgree").checked;
+      state.dashcamConsent = document.getElementById("fDashcamConsent").checked;
 
       if (state.bookingFor === "other") {
         var passengerNameInput = document.getElementById("fPassengerName");
@@ -268,6 +269,10 @@
 
       if (!state.country) {
         showError(contactError, "Please enter your country of residence.");
+        return;
+      }
+      if (!state.dashcamConsent) {
+        showError(contactError, t("booking.dashcamConsentRequired"));
         return;
       }
       if (!state.agreedToTerms) {
@@ -587,6 +592,7 @@
   function handlePaymentSuccess(reference) {
     var payError = document.getElementById("payError");
     payError.hidden = true;
+    var createdRide = null;
 
     return api("/api/payments/verify/" + encodeURIComponent(reference))
       .then(function (verifyResult) {
@@ -606,6 +612,7 @@
             bookingType: state.bookingType,
             durationDays: state.durationDays,
             agreedCancellationPolicy: true,
+            agreedDashcamConsent: state.dashcamConsent,
             bookingFor: state.bookingFor,
             passengerName: state.bookingFor === "other" ? state.passengerName : null,
             passengerWhatsapp: state.passengerWhatsapp,
@@ -618,7 +625,8 @@
       })
       .then(function (rideResult) {
         if (!rideResult.ok) throw new Error(t("booking.paymentFailed"));
-        var rideId = rideResult.data.ride.id;
+        createdRide = rideResult.data.ride;
+        var rideId = createdRide.id;
         return api("/api/rides/" + rideId + "/payment", {
           method: "PATCH",
           headers: authHeader(),
@@ -627,6 +635,12 @@
       })
       .then(function () {
         document.getElementById("confirmRef").textContent = reference;
+        var barcodeEl = document.getElementById("confirmBarcode");
+        var barcodeBox = document.getElementById("confirmBarcodeBox");
+        if (barcodeEl && barcodeBox && createdRide && createdRide.barcode) {
+          barcodeEl.textContent = createdRide.barcode;
+          barcodeBox.hidden = false;
+        }
         goToStep(6);
       })
       .catch(function (err) {
