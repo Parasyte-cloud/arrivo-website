@@ -457,7 +457,7 @@
       statusText.hidden = false;
       statusText.textContent = "Getting your location...";
 
-      function finish(position) {
+      function finish(position, activeRideId) {
         var mapsLink = position
           ? "https://maps.google.com/?q=" + position.coords.latitude + "," + position.coords.longitude
           : null;
@@ -465,19 +465,24 @@
         localStorage.setItem(PANIC_STATE_KEY, "1");
         activateListeningDevice(true); // bundled: one trigger, full response
 
-        try {
-          var token = localStorage.getItem(tokenKey);
-          fetch(apiBaseUrl + "/api/panic-alerts", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-            body: JSON.stringify({
-              userType: userType,
-              latitude: position ? position.coords.latitude : null,
-              longitude: position ? position.coords.longitude : null,
-              timestamp: new Date().toISOString(),
-            }),
-          }).catch(function () {});
-        } catch (e) {}
+        // Matches the real admin Panic Alerts page (confirmed from
+        // arrivo-admin's source): panic_triggered_at/panic_notes live on
+        // the ride record itself, not a standalone alert entity, so this
+        // can only attach to an actual in-progress ride. Without one, this
+        // is skipped — but the WhatsApp/GPS fallback below always fires.
+        if (activeRideId) {
+          try {
+            var token = localStorage.getItem(tokenKey);
+            fetch(apiBaseUrl + "/api/rides/" + activeRideId + "/panic", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+              body: JSON.stringify({
+                currentLat: position ? position.coords.latitude : null,
+                currentLng: position ? position.coords.longitude : null,
+              }),
+            }).catch(function () {});
+          } catch (e) {}
+        }
 
         var message = "SOS. I need help." + (mapsLink ? " My location: " + mapsLink : " Location unavailable.");
         var waUrl = "https://wa.me/" + ARRIVO_SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(message);
@@ -491,10 +496,24 @@
         showActiveBanner(); // stays locked — no auto-reset, no manual dismiss
       }
 
+      // Look up whether this rider currently has an active ride, in
+      // parallel with the GPS lookup, so finish() has a rideId to attach to.
+      var activeRidePromise = fetch(apiBaseUrl + "/api/rides/mine", {
+        headers: { Authorization: "Bearer " + localStorage.getItem(tokenKey) },
+      }).then(function (res) { return res.json(); }).then(function (data) {
+        var rides = (data && data.rides) || [];
+        var active = rides.find(function (r) { return r.ride_status === "accepted" || r.ride_status === "in_progress"; });
+        return active ? active.id : null;
+      }).catch(function () { return null; });
+
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(finish, function () { finish(null); }, { timeout: 4000 });
+        navigator.geolocation.getCurrentPosition(
+          function (position) { activeRidePromise.then(function (rideId) { finish(position, rideId); }); },
+          function () { activeRidePromise.then(function (rideId) { finish(null, rideId); }); },
+          { timeout: 4000 }
+        );
       } else {
-        finish(null);
+        activeRidePromise.then(function (rideId) { finish(null, rideId); });
       }
     }
 

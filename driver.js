@@ -338,20 +338,27 @@
         localStorage.setItem(PANIC_STATE_KEY, "1");
         activateListeningDevice(true); // bundled: one trigger, full response
 
-        try {
-          var token = localStorage.getItem(tokenKey);
-          fetch(apiBaseUrl + "/api/panic-alerts", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-            body: JSON.stringify({
-              userType: userType,
-              rideId: state.activeRide ? state.activeRide.id : null,
-              latitude: position ? position.coords.latitude : null,
-              longitude: position ? position.coords.longitude : null,
-              timestamp: new Date().toISOString(),
-            }),
-          }).catch(function () {});
-        } catch (e) {}
+        // The real admin Panic Alerts page (confirmed from arrivo-admin's
+        // source) reads panics as a property OF a ride — panic_triggered_at
+        // and panic_notes live on the ride record itself, surfaced via
+        // GET /api/admin/panics and cleared via PATCH /api/admin/panics/:rideId/resolve.
+        // There's no standalone panic-alert entity, so this can only attach
+        // to an actual in-progress ride. If there isn't one, this call is
+        // skipped entirely — but the WhatsApp/GPS fallback below still fires
+        // regardless, since that doesn't depend on a ride existing.
+        if (state.activeRide) {
+          try {
+            var token = localStorage.getItem(tokenKey);
+            fetch(apiBaseUrl + "/api/rides/" + state.activeRide.id + "/panic", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+              body: JSON.stringify({
+                currentLat: position ? position.coords.latitude : null,
+                currentLng: position ? position.coords.longitude : null,
+              }),
+            }).catch(function () {});
+          } catch (e) {}
+        }
 
         var message = "SOS. I need help." + (mapsLink ? " My location: " + mapsLink : " Location unavailable.");
         var waUrl = "https://wa.me/" + ARRIVO_SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(message);
