@@ -461,6 +461,100 @@
     };
   }
 
+  // ───────────────────────── My Profile ─────────────────────────
+  var driverProfilePhoneField = arrivoBuildPhoneInput(document.getElementById("driverProfilePhoneContainer"), { placeholder: "WhatsApp number" });
+
+  document.getElementById("viewProfileBtn").addEventListener("click", function () {
+    renderProfileView();
+    showSection("profileViewSection");
+  });
+  document.getElementById("backToDashFromProfileBtn").addEventListener("click", function () { showSection("dashboardSection"); });
+
+  function renderProfileView() {
+    var d = state.driver || {};
+    document.getElementById("driverProfileName").textContent = d.name || "";
+    document.getElementById("driverProfileEmail").textContent = d.email || "";
+    document.getElementById("driverAvatarInitial").textContent = (d.name || "?").charAt(0).toUpperCase();
+
+    var circle = document.getElementById("driverAvatarCircle");
+    if (d.profile_photo_url) {
+      circle.innerHTML = '<div class="avatar-edit-badge">✎</div>';
+      var img = document.createElement("img");
+      img.src = d.profile_photo_url; // property assignment, not string-built HTML — can't break out of an attribute this way
+      circle.prepend(img);
+    }
+
+    if (d.whatsapp_number) {
+      var stored = d.whatsapp_number;
+      var match = ARRIVO_COUNTRY_CODES
+        .slice().sort(function (a, b) { return b.dial.length - a.dial.length; })
+        .find(function (c) { return stored.indexOf(c.dial) === 0; });
+      if (match) driverProfilePhoneField.setRaw(match.dial, stored.slice(match.dial.length));
+    }
+
+    var vehicleEl = document.getElementById("driverVehicleSummary");
+    if (d.make_model) {
+      vehicleEl.innerHTML =
+        escapeHtml(d.make_model) + " · " + escapeHtml(d.plate_number || "") + "<br>" +
+        escapeHtml((d.vehicle_type || "").toUpperCase()) +
+        (d.license_number ? " · License " + escapeHtml(d.license_number) : "") +
+        (d.lasdri_number ? "<br>LASDRI " + escapeHtml(d.lasdri_number) : "") +
+        (d.insurance_number ? "<br>Insurance " + escapeHtml(d.insurance_number) : "");
+    } else {
+      vehicleEl.textContent = "No vehicle details on file yet.";
+    }
+
+    var statusEl = document.getElementById("driverVerificationStatus");
+    if (d.is_verified) {
+      statusEl.innerHTML = '<span style="color:var(--teal);font-weight:700;">✓ Verified.</span> You can go online and accept rides.';
+    } else {
+      statusEl.innerHTML = '<span style="color:var(--coral);font-weight:700;">Pending review.</span> Our team is still checking your documents.';
+    }
+  }
+
+  document.getElementById("driverAvatarCircle").addEventListener("click", function () {
+    document.getElementById("fDriverAvatarInput").click();
+  });
+  document.getElementById("fDriverAvatarInput").addEventListener("change", function (e) {
+    var file = e.target.files[0];
+    var errEl = document.getElementById("driverAvatarError");
+    errEl.hidden = true;
+    if (!file) return;
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      errEl.hidden = false; errEl.textContent = "Please choose a PNG, JPEG, or WEBP image."; return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      errEl.hidden = false; errEl.textContent = "Please choose an image smaller than 4MB."; return;
+    }
+    var reader = new FileReader();
+    reader.onload = function () {
+      var circle = document.getElementById("driverAvatarCircle");
+      circle.innerHTML = '<div class="avatar-edit-badge">✎</div>';
+      var img = document.createElement("img");
+      img.src = reader.result;
+      circle.prepend(img);
+      api("/api/drivers/me", { method: "PATCH", body: JSON.stringify({ profilePhotoDataUrl: reader.result }) })
+        .then(function (result) {
+          if (result.ok) state.driver = result.data.driver;
+          else { errEl.hidden = false; errEl.textContent = result.data.error || "Couldn't save that photo."; }
+        });
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById("saveDriverContactBtn").addEventListener("click", function () {
+    var phoneResult = driverProfilePhoneField.getValue();
+    if (!phoneResult.valid) return;
+    api("/api/drivers/me", { method: "PATCH", body: JSON.stringify({ whatsappNumber: phoneResult.full }) })
+      .then(function (result) {
+        if (!result.ok) return;
+        state.driver = result.data.driver;
+        var note = document.getElementById("driverContactSaveNote");
+        note.hidden = false;
+        setTimeout(function () { note.hidden = true; }, 2000);
+      });
+  });
+
   // ───────────────────────── Earnings ─────────────────────────
   document.getElementById("viewEarningsBtn").addEventListener("click", function () {
     api("/api/drivers/earnings").then(function (result) {

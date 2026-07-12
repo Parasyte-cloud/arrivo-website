@@ -249,9 +249,48 @@
     <div id="availableRidesBox"></div>
 
     <div style="margin-top:24px;">
-      <button class="btn btn-ghost" id="viewEarningsBtn">View Earnings</button>
+      <button class="btn btn-ghost" id="viewProfileBtn">My Profile</button>
+      <button class="btn btn-ghost" id="viewEarningsBtn" style="margin-left:8px;">View Earnings</button>
       <button class="btn btn-ghost" id="logoutBtn" style="margin-left:8px;">Log out</button>
     </div>
+  </section>
+
+  <!-- MY PROFILE -->
+  <section id="profileViewSection">
+    <h1>My Profile</h1>
+
+    <div class="avatar-row" style="margin-bottom:20px;">
+      <div class="avatar-circle" id="driverAvatarCircle">
+        <span class="initial" id="driverAvatarInitial"></span>
+        <div class="avatar-edit-badge">✎</div>
+      </div>
+      <input type="file" id="fDriverAvatarInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
+      <div>
+        <div class="account-name" id="driverProfileName"></div>
+        <div class="account-email" id="driverProfileEmail"></div>
+      </div>
+    </div>
+    <p class="error-text" id="driverAvatarError" hidden></p>
+
+    <div class="booking-card" style="margin-bottom:20px;">
+      <h2 style="font-size:15px;margin-bottom:12px;">Contact details</h2>
+      <label class="field-label">WhatsApp number</label>
+      <div id="driverProfilePhoneContainer" style="margin-bottom:14px;"></div>
+      <button class="btn btn-ghost" id="saveDriverContactBtn">Save</button>
+      <span class="save-note" id="driverContactSaveNote" hidden>Saved ✓</span>
+    </div>
+
+    <div class="booking-card" style="margin-bottom:20px;">
+      <h2 style="font-size:15px;margin-bottom:12px;">Vehicle</h2>
+      <div id="driverVehicleSummary" style="font-size:13.5px;color:var(--text-muted);line-height:1.7;"></div>
+    </div>
+
+    <div class="booking-card" style="margin-bottom:20px;">
+      <h2 style="font-size:15px;margin-bottom:4px;">Verification status</h2>
+      <div id="driverVerificationStatus" style="font-size:13.5px;"></div>
+    </div>
+
+    <button class="btn btn-ghost" id="backToDashFromProfileBtn">← Back to dashboard</button>
   </section>
 
   <!-- EARNINGS -->
