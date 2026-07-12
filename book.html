@@ -339,9 +339,11 @@
 <script src="booking.js?v=30"></script>
 <script src="clock.js"></script>
 <!-- Google Maps Places Autocomplete + map preview for the pickup/drop-off/stop fields.
-     Replace GOOGLE_MAPS_API_KEY_HERE with a real key from Google Cloud Console
-     (enable "Maps JavaScript API" and "Places API"). See README for the full setup guide. -->
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=GOOGLE_MAPS_API_KEY_HERE&libraries=places&callback=initGoogleMaps"></script>
+     Real API key from Google Cloud Console is in place below. If this ever
+     needs rotating, replace the key= value and confirm the new key has
+     "Maps JavaScript API" + "Places API" enabled and ridearrivo.com allowed
+     under HTTP referrer restrictions. -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLWAbQmxIAoGPP0LLDp6oTosaHZBa0Y5s&libraries=places&callback=initGoogleMaps"></script>
 <script src="pwa-register.js"></script>
 </body>
 </html>
