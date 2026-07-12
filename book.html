@@ -22,7 +22,8 @@
 <header class="site-header">
   <div class="wrap header-inner">
     <a href="index.html" class="brand">
-      <span class="logo-wrap"><img src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark"></span>
+      <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
+      <span data-i18n="brand">RideArrivo</span>
     </a>
     <nav class="main-nav" aria-label="Primary">
       <a href="index.html#how" data-i18n="nav.how">How it works</a>
@@ -313,7 +314,8 @@
   <div class="wrap footer-top">
     <div class="footer-brand-col">
       <div class="footer-brand">
-        <img src="assets/ridearrivo-wordmark-light.png" alt="RideArrivo" class="footer-brand-wordmark">
+        <img src="assets/icon.png" alt="" width="22" height="22">
+        <span data-i18n="brand">RideArrivo</span>
       </div>
       <p class="footer-tagline" data-i18n="footer.tagline">Lagos airport pickups, done right.</p>
       <div class="footer-social-row">
@@ -382,11 +384,11 @@
         </svg>
         <span id="footerEmailText">Email us</span>
       </a>
-      <a href="tel:+2348162706078" class="footer-contact-link">
+      <a href="#" class="footer-contact-link" id="footerPhoneLink" data-cc="234" data-num="8162706078" data-display="081 6270 6078">
         <svg class="footer-contact-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M7.5 3.5c.6 0 1.2.4 1.4 1l1 2.6c.2.5 0 1.1-.4 1.5L8.3 9.8c1 2.2 2.7 3.9 4.9 4.9l1.2-1.2c.4-.4 1-.5 1.5-.4l2.6 1c.6.2 1 .8 1 1.4v2.2c0 1-.9 1.8-1.9 1.6C11.8 18.4 5.6 12.2 4.7 6.4 4.5 5.4 5.3 4.5 6.3 4.5h1.2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
         </svg>
-        081 6270 6078
+        <span id="footerPhoneText">Call us</span>
       </a>
       <script>
         (function () {
@@ -399,6 +401,14 @@
           var address = link.getAttribute("data-user") + "@" + link.getAttribute("data-domain");
           link.href = "mailto:" + address;
           document.getElementById("footerEmailText").textContent = address;
+
+          // Same idea for the phone number — split apart in the HTML,
+          // reassembled only once a real browser runs this script.
+          var phoneLink = document.getElementById("footerPhoneLink");
+          if (phoneLink) {
+            phoneLink.href = "tel:+" + phoneLink.getAttribute("data-cc") + phoneLink.getAttribute("data-num");
+            document.getElementById("footerPhoneText").textContent = phoneLink.getAttribute("data-display");
+          }
         })();
       </script>
     </div>
@@ -415,7 +425,7 @@
         <img src="assets/parasyte-logo.png" alt="Parasyte.cloud" class="footer-parasyte-logo">
       </a>
     </div>
-    <img src="assets/ride-arrivo-wordmark.png" alt="Ride RideArrivo" class="footer-wordmark">
+    <img src="assets/ride-arrivo-wordmark.png" alt="RideArrivo" class="footer-wordmark">
   </div>
 </footer>
 

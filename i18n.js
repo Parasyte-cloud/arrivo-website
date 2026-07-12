@@ -4,7 +4,7 @@
 
 const I18N = {
   en: {
-    brand: "arrivo",
+    brand: "RideArrivo",
     nav: {
       how: "How it works",
       audiences: "Who it's for",
@@ -188,7 +188,7 @@ const I18N = {
   },
 
   fr: {
-    brand: "arrivo",
+    brand: "RideArrivo",
     nav: {
       how: "Comment ça marche",
       audiences: "Pour qui",
@@ -337,7 +337,7 @@ const I18N = {
 };
 
 I18N.zh = {
-  brand: "arrivo",
+  brand: "RideArrivo",
   nav: {
     how: "运作方式",
     audiences: "适用对象",
@@ -487,7 +487,7 @@ I18N.zh = {
 if (typeof module !== "undefined") module.exports = I18N;
 
 I18N.de = {
-  brand: "arrivo",
+  brand: "RideArrivo",
   nav: {
     how: "So funktioniert's",
     audiences: "Für wen",
@@ -635,7 +635,7 @@ I18N.de = {
 };
 
 I18N.hi = {
-  brand: "arrivo",
+  brand: "RideArrivo",
   nav: {
     how: "यह कैसे काम करता है",
     audiences: "किनके लिए है",
@@ -783,7 +783,7 @@ I18N.hi = {
 };
 
 I18N.es = {
-  brand: "arrivo",
+  brand: "RideArrivo",
   nav: {
     how: "Cómo funciona",
     audiences: "Para quién",
@@ -931,7 +931,7 @@ I18N.es = {
 };
 
 I18N.pt = {
-  brand: "arrivo",
+  brand: "RideArrivo",
   nav: {
     how: "Como funciona",
     audiences: "Para quem",
