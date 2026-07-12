@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=30">
-<link rel="stylesheet" href="booking.css">
+<link rel="stylesheet" href="booking.css?v=30">
 <style>
   .driver-wrap { max-width: 640px; }
   .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:16px; background:#fff; border-radius:12px; border:1px solid var(--card-border); margin-bottom:20px; }
@@ -35,6 +35,16 @@
   .stat-box .label { font-size:11px; color:var(--text-muted); margin-top:4px; }
   #driverApp section { display:none; }
   #driverApp section.active { display:block; }
+
+  /* Driver signup: document/photo upload tiles */
+  .doc-upload { display:flex; align-items:center; gap:14px; background:#fff; border:1.5px dashed var(--card-border); border-radius:12px; padding:14px; margin-bottom:14px; cursor:pointer; }
+  .doc-upload:hover { border-color:var(--teal); }
+  .doc-upload.has-file { border-style:solid; border-color:var(--teal); }
+  .doc-upload-thumb { width:56px; height:56px; border-radius:8px; background:var(--teal-tint); display:flex; align-items:center; justify-content:center; font-size:22px; overflow:hidden; flex-shrink:0; }
+  .doc-upload-thumb img { width:100%; height:100%; object-fit:cover; }
+  .doc-upload-text strong { display:block; font-size:13.5px; margin-bottom:2px; }
+  .doc-upload-text span { font-size:12px; color:var(--text-muted); }
+  .pending-icon { font-size:48px; text-align:center; margin-bottom:8px; }
 </style>
 </head>
 <body>
@@ -64,16 +74,46 @@
       <a href="forgot-password.html" style="display:block;margin-top:12px;font-size:12.5px;color:var(--teal);">Forgot your password?</a>
     </div>
     <p style="color:var(--text-muted);font-size:12.5px;margin-top:16px;">
-      New driver? Sign up in the Arrivo Driver mobile app, or contact info@ridearrivo.com to get set up here.
+      New driver? <a href="#" id="goToSignupLink" style="color:var(--teal);font-weight:700;">Apply here</a>. Takes about 10 minutes, or sign up in the Arrivo Driver mobile app.
     </p>
   </section>
 
-  <!-- PROFILE SETUP (shown if driver has no profile yet) -->
+  <!-- SIGN UP — Step 1: Account -->
+  <section id="signupAccountSection">
+    <h1>Become an Arrivo driver</h1>
+    <ol class="progress" style="margin-bottom:24px;">
+      <li class="active">Account</li>
+      <li>Vehicle</li>
+      <li>Photos</li>
+      <li>Safety</li>
+    </ol>
+    <div class="booking-card">
+      <input type="text" id="sName" class="field" placeholder="Full name">
+      <input type="email" id="sEmail" class="field" placeholder="Email">
+      <input type="date" id="sDob" class="field" placeholder="Date of birth" aria-label="Date of birth">
+      <label class="field-label" style="margin-top:2px;">WhatsApp number</label>
+      <div id="signupPhoneContainer" style="margin-bottom:14px;"></div>
+      <input type="password" id="sPassword" class="field" placeholder="Password">
+      <input type="password" id="sPasswordConfirm" class="field" placeholder="Confirm password">
+      <p class="error-text" id="signupAccountError" hidden></p>
+      <button class="btn btn-primary" id="signupAccountContinue" style="width:100%;margin-top:6px;">Continue</button>
+    </div>
+    <a href="#" id="backToLoginLink" style="display:block;margin-top:16px;font-size:12.5px;color:var(--teal);">← Back to login</a>
+  </section>
+
+  <!-- PROFILE SETUP — Step 2: Vehicle & License (also reused for accounts created via mobile app with an incomplete profile) -->
   <section id="profileSection">
-    <h1>Complete your driver profile</h1>
+    <h1>Vehicle &amp; license details</h1>
+    <ol class="progress" style="margin-bottom:24px;" id="profileStepProgress" hidden>
+      <li class="done">Account</li>
+      <li class="active">Vehicle</li>
+      <li>Photos</li>
+      <li>Safety</li>
+    </ol>
     <div class="booking-card">
       <input type="text" id="pLicense" class="field" placeholder="Driver's license number">
       <input type="text" id="pLasdri" class="field" placeholder="LASDRI number">
+      <input type="text" id="pInsurance" class="field" placeholder="Vehicle insurance number">
       <input type="text" id="pMakeModel" class="field" placeholder="Vehicle make & model, e.g. Toyota Highlander">
       <input type="text" id="pPlate" class="field" placeholder="Plate number">
       <label class="field-label">Vehicle type</label>
@@ -82,6 +122,15 @@
         <div class="chip" data-type="suv">SUV</div>
         <div class="chip" data-type="truck">Truck / Van</div>
       </div>
+      <label class="field-label">Do you own this vehicle?</label>
+      <div class="for-who-toggle" id="ownershipToggle" style="margin-bottom:14px;">
+        <button type="button" class="for-who-opt is-active" data-owner="self">Yes, it's mine</button>
+        <button type="button" class="for-who-opt" data-owner="other">No, someone else's</button>
+      </div>
+      <div id="ownerFields" hidden>
+        <input type="text" id="pOwnerName" class="field" placeholder="Vehicle owner's full name">
+        <div id="ownerPhoneContainer" style="margin-bottom:14px;"></div>
+      </div>
       <label class="field-label">Languages you speak</label>
       <div class="chip-row" id="langChips">
         <div class="chip selected" data-lang="en">English</div>
@@ -89,7 +138,83 @@
         <div class="chip" data-lang="zh">中文</div>
       </div>
       <p class="error-text" id="profileError" hidden></p>
-      <button class="btn btn-primary" id="saveProfileBtn" style="width:100%;margin-top:10px;">Save & Continue</button>
+      <button class="btn btn-primary" id="saveProfileBtn" style="width:100%;margin-top:10px;">Continue</button>
+    </div>
+  </section>
+
+  <!-- SIGN UP — Step 3: Photos & documents -->
+  <section id="signupPhotosSection">
+    <h1>Photos &amp; documents</h1>
+    <ol class="progress" style="margin-bottom:24px;">
+      <li class="done">Account</li>
+      <li class="done">Vehicle</li>
+      <li class="active">Photos</li>
+      <li>Safety</li>
+    </ol>
+    <div class="booking-card">
+      <p class="step-sub" style="margin-top:-4px;">Riders see your name, photo, and ID before you arrive. These need to be clear and current.</p>
+
+      <label class="doc-upload" id="profilePhotoUpload">
+        <div class="doc-upload-thumb" id="profilePhotoThumb">🧑</div>
+        <div class="doc-upload-text"><strong>Profile photo</strong><span id="profilePhotoStatus">Required. Clear photo of your face</span></div>
+        <input type="file" id="fProfilePhoto" accept="image/png,image/jpeg,image/webp" style="display:none;">
+      </label>
+
+      <label class="doc-upload" id="licensePhotoUpload">
+        <div class="doc-upload-thumb" id="licensePhotoThumb">🪪</div>
+        <div class="doc-upload-text"><strong>Driver's license photo</strong><span id="licensePhotoStatus">Required. Front side, all corners visible</span></div>
+        <input type="file" id="fLicensePhoto" accept="image/png,image/jpeg,image/webp" style="display:none;">
+      </label>
+
+      <label class="doc-upload" id="vehiclePhotoUpload">
+        <div class="doc-upload-thumb" id="vehiclePhotoThumb">🚗</div>
+        <div class="doc-upload-text"><strong>Vehicle photo</strong><span id="vehiclePhotoStatus">Optional. Helps riders spot your car</span></div>
+        <input type="file" id="fVehiclePhoto" accept="image/png,image/jpeg,image/webp" style="display:none;">
+      </label>
+
+      <p class="error-text" id="photosError" hidden></p>
+      <button class="btn btn-primary" id="photosContinue" style="width:100%;margin-top:6px;">Continue</button>
+    </div>
+  </section>
+
+  <!-- SIGN UP — Step 4: Safety & consent -->
+  <section id="signupSafetySection">
+    <h1>Safety &amp; consent</h1>
+    <ol class="progress" style="margin-bottom:24px;">
+      <li class="done">Account</li>
+      <li class="done">Vehicle</li>
+      <li class="done">Photos</li>
+      <li class="active">Safety</li>
+    </ol>
+    <div class="booking-card">
+      <label class="field-label">Emergency contact</label>
+      <p class="step-sub" style="margin-top:-8px;margin-bottom:12px;">Someone we can reach if we can't reach you.</p>
+      <input type="text" id="sEmergencyName" class="field" placeholder="e.g. Tunde Okafor">
+      <div id="driverEmergencyPhoneContainer" style="margin-bottom:14px;"></div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="sBackgroundCheckConsent">
+        <span>I consent to Arrivo running a background check as part of my driver application.</span>
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" id="sTermsConsent">
+        <span>I agree to Arrivo's <a href="terms.html" target="_blank" style="color:var(--teal);text-decoration:underline;">terms of service</a> and independent contractor agreement.</span>
+      </label>
+
+      <p class="error-text" id="safetyError" hidden></p>
+      <button class="btn btn-primary" id="submitApplicationBtn" style="width:100%;margin-top:10px;">Submit application</button>
+    </div>
+  </section>
+
+  <!-- PENDING APPROVAL -->
+  <section id="pendingApprovalSection">
+    <div class="booking-card" style="text-align:center;">
+      <div class="pending-icon">⏳</div>
+      <h1>Application submitted</h1>
+      <p style="color:var(--text-muted);font-size:14px;line-height:1.6;">
+        Thanks for applying to drive with Arrivo. Our team reviews your license, vehicle, and photos before you can go online. This usually takes a day or two. We'll email you once you're approved, and this page will update automatically the next time you visit.
+      </p>
+      <button class="btn btn-ghost" id="pendingLogoutBtn" style="margin-top:12px;">Log out</button>
     </div>
   </section>
 
@@ -142,6 +267,7 @@
 
 </main>
 
+<script src="phone-input.js?v=30"></script>
 <script src="driver.js?v=30"></script>
 <script src="pwa-register.js"></script>
 </body>

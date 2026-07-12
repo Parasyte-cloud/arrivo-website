@@ -68,14 +68,107 @@
     api("/api/drivers/me").then(function (result) {
       if (result.ok) {
         state.driver = result.data.driver;
-        showSection("dashboardSection");
-        initDashboard();
+        if (state.driver.is_verified) {
+          showSection("dashboardSection");
+          initDashboard();
+        } else {
+          showSection("pendingApprovalSection");
+          startPendingPoll();
+        }
       } else {
         showSection("profileSection");
       }
     });
   }
 
+  // Once an application is fully submitted, there's nothing left for the
+  // driver to do but wait — so this checks in the background and moves them
+  // straight to the dashboard the moment an admin verifies them, without
+  // needing to manually refresh or re-log-in.
+  var pendingPollTimer = null;
+  function startPendingPoll() {
+    if (pendingPollTimer) return;
+    pendingPollTimer = setInterval(function () {
+      api("/api/drivers/me").then(function (result) {
+        if (result.ok && result.data.driver.is_verified) {
+          clearInterval(pendingPollTimer);
+          pendingPollTimer = null;
+          state.driver = result.data.driver;
+          showSection("dashboardSection");
+          initDashboard();
+        }
+      });
+    }, 15000);
+  }
+
+  // ───────────────────────── Sign up: Step 1 (Account) ─────────────────────────
+  var signupPhoneField = arrivoBuildPhoneInput(document.getElementById("signupPhoneContainer"), { placeholder: "WhatsApp number" });
+  var ownerPhoneField = arrivoBuildPhoneInput(document.getElementById("ownerPhoneContainer"), { placeholder: "Owner's WhatsApp number" });
+  var driverEmergencyPhoneField = arrivoBuildPhoneInput(document.getElementById("driverEmergencyPhoneContainer"), { placeholder: "Emergency contact number" });
+
+  document.getElementById("goToSignupLink").addEventListener("click", function (e) {
+    e.preventDefault();
+    showSection("signupAccountSection");
+  });
+  document.getElementById("backToLoginLink").addEventListener("click", function (e) {
+    e.preventDefault();
+    showSection("loginSection");
+  });
+
+  document.getElementById("signupAccountContinue").addEventListener("click", function () {
+    var name = document.getElementById("sName").value.trim();
+    var email = document.getElementById("sEmail").value.trim();
+    var dob = document.getElementById("sDob").value;
+    var password = document.getElementById("sPassword").value;
+    var passwordConfirm = document.getElementById("sPasswordConfirm").value;
+    var errEl = document.getElementById("signupAccountError");
+    errEl.hidden = true;
+
+    var phoneResult = signupPhoneField.getValue();
+
+    if (!name || !email) {
+      errEl.hidden = false; errEl.textContent = "Please enter your name and email."; return;
+    }
+    if (!dob) {
+      errEl.hidden = false; errEl.textContent = "Please enter your date of birth."; return;
+    }
+    var age = Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+    if (age < 21) {
+      errEl.hidden = false; errEl.textContent = "Drivers must be at least 21 years old."; return;
+    }
+    if (!phoneResult.valid) {
+      errEl.hidden = false; errEl.textContent = phoneResult.message; return;
+    }
+    if (!password || password.length < 8) {
+      errEl.hidden = false; errEl.textContent = "Password must be at least 8 characters."; return;
+    }
+    if (password !== passwordConfirm) {
+      errEl.hidden = false; errEl.textContent = "Passwords don't match."; return;
+    }
+
+    api("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        name: name, email: email, password: password, role: "driver",
+        whatsappNumber: phoneResult.full, dateOfBirth: dob,
+      }),
+    }).then(function (result) {
+      if (!result.ok) {
+        errEl.hidden = false;
+        errEl.textContent = result.data.error || "Couldn't create your account.";
+        return;
+      }
+      state.token = result.data.token;
+      localStorage.setItem(TOKEN_KEY, state.token);
+      document.getElementById("profileStepProgress").hidden = false;
+      showSection("profileSection");
+    }).catch(function () {
+      errEl.hidden = false;
+      errEl.textContent = "Couldn't reach the server. Please try again.";
+    });
+  });
+
+  // ───────────────────────── Sign up: Step 2 (Vehicle & license) ─────────────────────────
   document.querySelectorAll("#vehicleTypeChips .chip").forEach(function (chip) {
     chip.addEventListener("click", function () {
       document.querySelectorAll("#vehicleTypeChips .chip").forEach(function (c) { c.classList.remove("selected"); });
@@ -86,9 +179,21 @@
     chip.addEventListener("click", function () { chip.classList.toggle("selected"); });
   });
 
+  var vehicleOwnership = "self";
+  var ownershipToggle = document.getElementById("ownershipToggle");
+  var ownerFields = document.getElementById("ownerFields");
+  ownershipToggle.querySelectorAll(".for-who-opt").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      vehicleOwnership = btn.getAttribute("data-owner");
+      ownershipToggle.querySelectorAll(".for-who-opt").forEach(function (b) { b.classList.toggle("is-active", b === btn); });
+      ownerFields.hidden = vehicleOwnership !== "other";
+    });
+  });
+
   document.getElementById("saveProfileBtn").addEventListener("click", function () {
     var license = document.getElementById("pLicense").value.trim();
     var lasdri = document.getElementById("pLasdri").value.trim();
+    var insurance = document.getElementById("pInsurance").value.trim();
     var makeModel = document.getElementById("pMakeModel").value.trim();
     var plate = document.getElementById("pPlate").value.trim();
     var vehicleType = document.querySelector("#vehicleTypeChips .chip.selected").getAttribute("data-type");
@@ -103,22 +208,145 @@
       return;
     }
 
+    var ownerName = "", ownerPhone = "";
+    if (vehicleOwnership === "other") {
+      ownerName = document.getElementById("pOwnerName").value.trim();
+      var ownerPhoneResult = ownerPhoneField.getValue();
+      if (!ownerName || !ownerPhoneResult.valid) {
+        errEl.hidden = false;
+        errEl.textContent = "Please enter the vehicle owner's name and a valid WhatsApp number.";
+        return;
+      }
+      ownerPhone = ownerPhoneResult.full;
+    }
+
     api("/api/drivers/profile", {
       method: "POST",
       body: JSON.stringify({
-        licenseNumber: license, lasdriNumber: lasdri, spokenLanguages: langs || "en",
+        licenseNumber: license, lasdriNumber: lasdri, insuranceNumber: insurance, spokenLanguages: langs || "en",
         vehicle: { makeModel: makeModel, plateNumber: plate, vehicleType: vehicleType },
+        vehicleOwnership: vehicleOwnership, ownerName: ownerName, ownerWhatsapp: ownerPhone,
       }),
     }).then(function (result) {
       if (!result.ok) {
         errEl.hidden = false;
-        errEl.textContent = result.data.error || "Couldn't save profile.";
+        errEl.textContent = result.data.error || "Couldn't save your vehicle details.";
         return;
       }
       state.driver = result.data.driver;
-      showSection("dashboardSection");
-      initDashboard();
+      if (document.getElementById("profileStepProgress").hidden) {
+        // Reached this screen directly (mobile-app account, incomplete
+        // profile) rather than through the new web signup wizard — skip
+        // straight to checking overall status instead of forcing them
+        // through the web-only Photos/Safety steps too.
+        checkProfile();
+      } else {
+        showSection("signupPhotosSection");
+      }
     });
+  });
+
+  // ───────────────────────── Sign up: Step 3 (Photos & documents) ─────────────────────────
+  var docPhotos = { profile: null, license: null, vehicle: null };
+
+  function wireDocUpload(uploadId, inputId, thumbId, statusId, key, requiredLabel) {
+    var upload = document.getElementById(uploadId);
+    var input = document.getElementById(inputId);
+    upload.addEventListener("click", function () { input.click(); });
+    input.addEventListener("change", function (e) {
+      var file = e.target.files[0];
+      var errEl = document.getElementById("photosError");
+      errEl.hidden = true;
+      if (!file) return;
+      if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+        errEl.hidden = false; errEl.textContent = "Please choose a PNG, JPEG, or WEBP image."; return;
+      }
+      if (file.size > 6 * 1024 * 1024) {
+        errEl.hidden = false; errEl.textContent = "Please choose an image smaller than 6MB."; return;
+      }
+      var reader = new FileReader();
+      reader.onload = function () {
+        docPhotos[key] = reader.result;
+        var thumb = document.getElementById(thumbId);
+        thumb.innerHTML = "";
+        var img = document.createElement("img");
+        img.src = reader.result;
+        thumb.appendChild(img);
+        document.getElementById(statusId).textContent = "Selected: " + file.name;
+        upload.classList.add("has-file");
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  wireDocUpload("profilePhotoUpload", "fProfilePhoto", "profilePhotoThumb", "profilePhotoStatus", "profile");
+  wireDocUpload("licensePhotoUpload", "fLicensePhoto", "licensePhotoThumb", "licensePhotoStatus", "license");
+  wireDocUpload("vehiclePhotoUpload", "fVehiclePhoto", "vehiclePhotoThumb", "vehiclePhotoStatus", "vehicle");
+
+  document.getElementById("photosContinue").addEventListener("click", function () {
+    var errEl = document.getElementById("photosError");
+    errEl.hidden = true;
+    if (!docPhotos.profile || !docPhotos.license) {
+      errEl.hidden = false;
+      errEl.textContent = "Your profile photo and driver's license photo are both required.";
+      return;
+    }
+    api("/api/drivers/me", {
+      method: "PATCH",
+      body: JSON.stringify({
+        profilePhotoDataUrl: docPhotos.profile,
+        licensePhotoDataUrl: docPhotos.license,
+        vehiclePhotoDataUrl: docPhotos.vehicle,
+      }),
+    }).then(function (result) {
+      if (!result.ok) {
+        errEl.hidden = false;
+        errEl.textContent = result.data.error || "Couldn't upload your photos. Please try again.";
+        return;
+      }
+      showSection("signupSafetySection");
+    });
+  });
+
+  // ───────────────────────── Sign up: Step 4 (Safety & consent) ─────────────────────────
+  document.getElementById("submitApplicationBtn").addEventListener("click", function () {
+    var emergencyName = document.getElementById("sEmergencyName").value.trim();
+    var emergencyPhoneResult = driverEmergencyPhoneField.getValue();
+    var backgroundConsent = document.getElementById("sBackgroundCheckConsent").checked;
+    var termsConsent = document.getElementById("sTermsConsent").checked;
+    var errEl = document.getElementById("safetyError");
+    errEl.hidden = true;
+
+    if (!emergencyName || !emergencyPhoneResult.valid) {
+      errEl.hidden = false; errEl.textContent = "Please enter an emergency contact name and a valid number."; return;
+    }
+    if (!backgroundConsent || !termsConsent) {
+      errEl.hidden = false; errEl.textContent = "Please agree to both checkboxes to submit your application."; return;
+    }
+
+    api("/api/drivers/me", {
+      method: "PATCH",
+      body: JSON.stringify({
+        emergencyContactName: emergencyName,
+        emergencyContactPhone: emergencyPhoneResult.full,
+        agreedBackgroundCheck: true,
+        agreedTerms: true,
+      }),
+    }).then(function (result) {
+      if (!result.ok) {
+        errEl.hidden = false;
+        errEl.textContent = result.data.error || "Couldn't submit your application. Please try again.";
+        return;
+      }
+      showSection("pendingApprovalSection");
+      startPendingPoll();
+    });
+  });
+
+  document.getElementById("pendingLogoutBtn").addEventListener("click", function () {
+    if (pendingPollTimer) { clearInterval(pendingPollTimer); pendingPollTimer = null; }
+    localStorage.removeItem(TOKEN_KEY);
+    state.token = null;
+    showSection("loginSection");
   });
 
   // ───────────────────────── Dashboard ─────────────────────────
