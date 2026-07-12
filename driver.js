@@ -7,6 +7,16 @@
 
   var state = { token: null, driver: null, activeRide: null, pollTimer: null };
 
+  // Ride data here (pickup address, rider name, flight number) was typed
+  // by the rider, not the driver viewing this screen — it must be escaped
+  // before going into innerHTML, or a malicious rider could run script in
+  // every driver's browser via something as simple as their own name field.
+  function escapeHtml(str) {
+    var div = document.createElement("div");
+    div.textContent = str == null ? "" : String(str);
+    return div.innerHTML;
+  }
+
   function api(path, options) {
     options = options || {};
     var headers = { "Content-Type": "application/json" };
@@ -174,10 +184,10 @@
       }
       box.innerHTML = result.data.rides.map(function (r) {
         return '<div class="ride-card">' +
-          '<div style="display:flex;justify-content:space-between;"><strong>' + r.pickup_address + '</strong><span class="fare">NGN ' + Number(r.fare_naira).toLocaleString() + '</span></div>' +
-          (r.flight_number ? '<div style="font-size:12px;color:var(--text-muted);">Flight ' + r.flight_number + '</div>' : '') +
-          '<div style="font-size:12px;color:var(--text-muted);">Rider: ' + r.rider_name + '</div>' +
-          '<button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="window.__acceptRide(' + r.id + ')">Accept Ride</button>' +
+          '<div style="display:flex;justify-content:space-between;"><strong>' + escapeHtml(r.pickup_address) + '</strong><span class="fare">NGN ' + Number(r.fare_naira).toLocaleString() + '</span></div>' +
+          (r.flight_number ? '<div style="font-size:12px;color:var(--text-muted);">Flight ' + escapeHtml(r.flight_number) + '</div>' : '') +
+          '<div style="font-size:12px;color:var(--text-muted);">Rider: ' + escapeHtml(r.rider_name) + '</div>' +
+          '<button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="window.__acceptRide(' + Number(r.id) + ')">Accept Ride</button>' +
           '</div>';
       }).join("");
     });
@@ -202,9 +212,9 @@
     var r = state.activeRide;
     var isAccepted = r.ride_status === "accepted";
     box.innerHTML = '<div class="ride-card">' +
-      '<div style="display:flex;justify-content:space-between;"><strong>' + r.pickup_address + '</strong><span class="fare">NGN ' + Number(r.fare_naira).toLocaleString() + '</span></div>' +
-      '<div style="font-size:12px;color:var(--text-muted);">Rider: ' + r.rider_name + (r.rider_phone ? " · " + r.rider_phone : "") + '</div>' +
-      '<div style="font-size:12px;color:var(--teal);font-weight:700;margin-top:6px;">' + r.ride_status.replace("_", " ").toUpperCase() + '</div>' +
+      '<div style="display:flex;justify-content:space-between;"><strong>' + escapeHtml(r.pickup_address) + '</strong><span class="fare">NGN ' + Number(r.fare_naira).toLocaleString() + '</span></div>' +
+      '<div style="font-size:12px;color:var(--text-muted);">Rider: ' + escapeHtml(r.rider_name) + (r.rider_phone ? " · " + escapeHtml(r.rider_phone) : "") + '</div>' +
+      '<div style="font-size:12px;color:var(--teal);font-weight:700;margin-top:6px;">' + escapeHtml(r.ride_status.replace("_", " ").toUpperCase()) + '</div>' +
       '<button class="btn btn-primary" style="width:100%;margin-top:10px;" id="advanceBtn">' + (isAccepted ? "Start Trip" : "Complete Trip") + '</button>' +
       '</div>';
     document.getElementById("advanceBtn").onclick = function () {

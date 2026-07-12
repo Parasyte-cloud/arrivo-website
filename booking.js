@@ -9,6 +9,17 @@
   var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT" };
   var LANG_KEY = "arrivo_site_lang";
 
+  // Anything that started as free text the person typed (name, pickup
+  // address, flight number, etc.) gets run through this before it's ever
+  // put into innerHTML. Without it, someone could type e.g. an <img onerror>
+  // payload as their name and have it execute in their own or someone
+  // else's browser (rider info is later rendered on the driver's screen).
+  function escapeHtml(str) {
+    var div = document.createElement("div");
+    div.textContent = str == null ? "" : String(str);
+    return div.innerHTML;
+  }
+
   var state = {
     name: "", email: "", phone: "", whatsapp: "", country: "", agreedToTerms: false,
     token: null,
@@ -260,7 +271,7 @@
         if (result.ok) {
           resultBox.hidden = false;
           resultBox.innerHTML =
-            "<strong>" + (result.data.airline || "") + " " + (result.data.flightNumber || "") + "</strong>" +
+            "<strong>" + escapeHtml(result.data.airline || "") + " " + escapeHtml(result.data.flightNumber || "") + "</strong>" +
             (result.data.arrival && result.data.arrival.estimated
               ? new Date(result.data.arrival.estimated).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
               : "");
@@ -488,16 +499,16 @@
     var totalFare = state.vehicleBasePrice * state.multiplier;
 
     var rows = [
-      [t("booking.reviewContact"), state.name + " · " + state.email],
+      [t("booking.reviewContact"), escapeHtml(state.name) + " · " + escapeHtml(state.email)],
     ];
     if (state.bookingFor === "other" && state.passengerName) {
-      rows.push([t("booking.reviewPassenger"), state.passengerName]);
+      rows.push([t("booking.reviewPassenger"), escapeHtml(state.passengerName)]);
     }
     rows.push(
-      [t("booking.reviewBookingType"), bookingLabel],
-      [t("booking.reviewFlight"), state.flightNumber || "N/A"],
-      [t("booking.reviewVehicle"), vehicleLabel + " · NGN " + totalFare.toLocaleString()],
-      [t("booking.reviewPickup"), [state.pickup].concat(state.stops).join(" → ")]
+      [t("booking.reviewBookingType"), escapeHtml(bookingLabel)],
+      [t("booking.reviewFlight"), escapeHtml(state.flightNumber) || "N/A"],
+      [t("booking.reviewVehicle"), escapeHtml(vehicleLabel) + " · NGN " + totalFare.toLocaleString()],
+      [t("booking.reviewPickup"), escapeHtml([state.pickup].concat(state.stops).join(" → "))]
     );
     list.innerHTML = rows.map(function (r) {
       return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>";

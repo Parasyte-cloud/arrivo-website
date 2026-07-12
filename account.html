@@ -195,8 +195,11 @@
       document.getElementById("fCountry").value = user.country_of_residence || "";
 
       if (user.avatar_url) {
-        document.getElementById("avatarCircle").innerHTML =
-          '<img src="' + user.avatar_url + '"><div class="avatar-edit-badge">✎</div>';
+        var circle = document.getElementById("avatarCircle");
+        circle.innerHTML = '<div class="avatar-edit-badge">✎</div>';
+        var img = document.createElement("img");
+        img.src = user.avatar_url; // set as a property, not concatenated into HTML — can't break out of an attribute this way
+        circle.prepend(img);
       } else {
         document.getElementById("avatarInitial").textContent = (user.name || "?").charAt(0).toUpperCase();
       }
@@ -226,8 +229,11 @@
       var reader = new FileReader();
       reader.onload = function () {
         currentAvatarDataUrl = reader.result;
-        document.getElementById("avatarCircle").innerHTML =
-          '<img src="' + currentAvatarDataUrl + '"><div class="avatar-edit-badge">✎</div>';
+        var circle = document.getElementById("avatarCircle");
+        circle.innerHTML = '<div class="avatar-edit-badge">✎</div>';
+        var img = document.createElement("img");
+        img.src = currentAvatarDataUrl;
+        circle.prepend(img);
         // Save immediately: a photo change is a distinct action from the
         // WhatsApp/Country "Save" button below, so don't make it wait on that.
         api("/api/auth/me", {
