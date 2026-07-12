@@ -96,7 +96,14 @@
       <div id="passengerFields" hidden>
         <label class="field-label" data-i18n="booking.passengerName">Passenger's full name</label>
         <input type="text" id="fPassengerName" class="field" data-i18n-placeholder="booking.passengerNamePlaceholder" placeholder="e.g. Amaka Obi" style="margin-bottom:14px;">
+        <label class="field-label" data-i18n="booking.passengerWhatsapp">Passenger's WhatsApp number</label>
+        <div id="passengerPhoneContainer" style="margin-bottom:14px;"></div>
       </div>
+
+      <label class="field-label" data-i18n="booking.emergencyContactLabel">Emergency contact</label>
+      <p class="step-sub" style="margin-top:-8px; margin-bottom:12px;" data-i18n="booking.emergencyContactSub">Someone we can reach if we can't reach you during this ride.</p>
+      <input type="text" id="fEmergencyName" class="field" data-i18n-placeholder="booking.emergencyContactNamePlaceholder" placeholder="e.g. Tunde Okafor" style="margin-bottom:14px;">
+      <div id="emergencyPhoneContainer" style="margin-bottom:14px;"></div>
 
       <label class="checkbox-row">
         <input type="checkbox" id="fAgree">

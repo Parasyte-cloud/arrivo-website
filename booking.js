@@ -24,6 +24,7 @@
     name: "", email: "", phone: "", whatsapp: "", country: "", agreedToTerms: false,
     token: null,
     bookingFor: "self", passengerName: "",
+    emergencyContactName: "", emergencyContactPhone: "",
     flightNumber: "",
     adults: 1, children: 0,
     bags: 1, bulky: false,
@@ -146,6 +147,12 @@
     var whatsappField = arrivoBuildPhoneInput(document.getElementById("whatsappInputContainer"), {
       placeholder: t("booking.whatsapp"),
     });
+    var passengerPhoneField = arrivoBuildPhoneInput(document.getElementById("passengerPhoneContainer"), {
+      placeholder: t("booking.passengerWhatsapp"),
+    });
+    var emergencyPhoneField = arrivoBuildPhoneInput(document.getElementById("emergencyPhoneContainer"), {
+      placeholder: t("booking.emergencyContactPhonePlaceholder"),
+    });
 
     function showError(el, msg) {
       el.hidden = false;
@@ -153,19 +160,13 @@
     }
     function hideError(el) { el.hidden = true; }
 
-    // "Who is this ride for" — myself vs. someone else. When it's for
-    // someone else, the WhatsApp number collected here needs to be the
-    // actual passenger's (that's who the driver will be contacting and
-    // matching against on pickup), not the account holder's, so the field
-    // label and passenger-name field toggle together. Switching to "someone
-    // else" clears the field (it starts prefilled with the account holder's
-    // own number) so nobody can accidentally submit their own number as the
-    // passenger's; switching back to "myself" restores it.
+    // "Who is this ride for" — myself vs. someone else. The top WhatsApp
+    // field is always the account holder's own number; when it's for
+    // someone else, a separate "Passenger's WhatsApp number" field appears
+    // alongside their name, so the two numbers are always visibly distinct
+    // fields rather than one field being relabeled and reused.
     var forWhoToggle = document.getElementById("forWhoToggle");
     var passengerFields = document.getElementById("passengerFields");
-    var whatsappLabel = document.getElementById("whatsappLabel");
-    var ownWhatsappDial = "+234";
-    var ownWhatsappNumber = "";
     if (forWhoToggle) {
       forWhoToggle.querySelectorAll(".for-who-opt").forEach(function (btn) {
         btn.addEventListener("click", function () {
@@ -173,18 +174,7 @@
           forWhoToggle.querySelectorAll(".for-who-opt").forEach(function (b) {
             b.classList.toggle("is-active", b === btn);
           });
-          var forOther = state.bookingFor === "other";
-          if (passengerFields) passengerFields.hidden = !forOther;
-          if (whatsappLabel) {
-            whatsappLabel.textContent = forOther
-              ? t("booking.whatsappPassenger")
-              : t("booking.whatsapp");
-          }
-          if (forOther) {
-            whatsappField.setRaw(ownWhatsappDial, "");
-          } else {
-            whatsappField.setRaw(ownWhatsappDial, ownWhatsappNumber);
-          }
+          if (passengerFields) passengerFields.hidden = state.bookingFor !== "other";
         });
       });
     }
@@ -206,14 +196,18 @@
             .slice()
             .sort(function (a, b) { return b.dial.length - a.dial.length; }) // longest dial code first, so +234 doesn't get shadowed by +2
             .find(function (c) { return stored.indexOf(c.dial) === 0; });
-          if (match) {
-            ownWhatsappDial = match.dial;
-            ownWhatsappNumber = stored.slice(match.dial.length);
-            whatsappField.setRaw(ownWhatsappDial, ownWhatsappNumber);
-            state.ownWhatsapp = stored;
-          }
+          if (match) whatsappField.setRaw(match.dial, stored.slice(match.dial.length));
         }
         if (result.data.user.country_of_residence) document.getElementById("fCountry").value = result.data.user.country_of_residence;
+        if (result.data.user.emergency_contact_name) document.getElementById("fEmergencyName").value = result.data.user.emergency_contact_name;
+        if (result.data.user.emergency_contact_phone) {
+          var eStored = result.data.user.emergency_contact_phone;
+          var eMatch = ARRIVO_COUNTRY_CODES
+            .slice()
+            .sort(function (a, b) { return b.dial.length - a.dial.length; })
+            .find(function (c) { return eStored.indexOf(c.dial) === 0; });
+          if (eMatch) emergencyPhoneField.setRaw(eMatch.dial, eStored.slice(eMatch.dial.length));
+        }
       } else {
         // Token expired or invalid — send them back to log in properly.
         localStorage.removeItem("arrivo_rider_token");
@@ -229,10 +223,6 @@
         showError(contactError, phoneResult.message);
         return;
       }
-      if (state.bookingFor === "other" && state.ownWhatsapp && phoneResult.full === state.ownWhatsapp) {
-        showError(contactError, t("booking.samePassengerNumber"));
-        return;
-      }
       state.whatsapp = phoneResult.full;
       state.country = document.getElementById("fCountry").value.trim();
       state.agreedToTerms = document.getElementById("fAgree").checked;
@@ -244,9 +234,37 @@
           showError(contactError, t("booking.passengerNameRequired"));
           return;
         }
+        var passengerPhoneResult = passengerPhoneField.getValue();
+        if (!passengerPhoneResult.valid) {
+          showError(contactError, t("booking.passengerWhatsappRequired"));
+          return;
+        }
+        if (passengerPhoneResult.full === state.whatsapp) {
+          showError(contactError, t("booking.samePassengerNumber"));
+          return;
+        }
+        state.passengerWhatsapp = passengerPhoneResult.full;
       } else {
         state.passengerName = "";
+        state.passengerWhatsapp = state.whatsapp;
       }
+
+      var emergencyNameInput = document.getElementById("fEmergencyName");
+      state.emergencyContactName = emergencyNameInput ? emergencyNameInput.value.trim() : "";
+      if (!state.emergencyContactName) {
+        showError(contactError, t("booking.emergencyContactNameRequired"));
+        return;
+      }
+      var emergencyPhoneResult = emergencyPhoneField.getValue();
+      if (!emergencyPhoneResult.valid) {
+        showError(contactError, t("booking.emergencyContactPhoneRequired"));
+        return;
+      }
+      if (emergencyPhoneResult.full === state.whatsapp || emergencyPhoneResult.full === state.passengerWhatsapp) {
+        showError(contactError, t("booking.emergencyContactSameAsRider"));
+        return;
+      }
+      state.emergencyContactPhone = emergencyPhoneResult.full;
 
       if (!state.country) {
         showError(contactError, "Please enter your country of residence.");
@@ -257,11 +275,16 @@
         return;
       }
 
+
       // Save WhatsApp/Country to the rider's profile for next time, then continue.
       // Only when booking for self — if this is a passenger's number, it
       // belongs to the ride, not to the account holder's saved profile.
-      var profilePatch = { countryOfResidence: state.country };
-      if (state.bookingFor === "self") profilePatch.whatsappNumber = state.whatsapp;
+      var profilePatch = {
+        countryOfResidence: state.country,
+        whatsappNumber: state.whatsapp,
+        emergencyContactName: state.emergencyContactName,
+        emergencyContactPhone: state.emergencyContactPhone,
+      };
 
       api("/api/auth/me", {
         method: "PATCH",
@@ -537,8 +560,9 @@
       [t("booking.reviewContact"), escapeHtml(state.name) + " · " + escapeHtml(state.email)],
     ];
     if (state.bookingFor === "other" && state.passengerName) {
-      rows.push([t("booking.reviewPassenger"), escapeHtml(state.passengerName)]);
+      rows.push([t("booking.reviewPassenger"), escapeHtml(state.passengerName) + " · " + escapeHtml(state.passengerWhatsapp)]);
     }
+    rows.push([t("booking.reviewEmergencyContact"), escapeHtml(state.emergencyContactName)]);
     rows.push(
       [t("booking.reviewBookingType"), escapeHtml(bookingLabel)],
       [t("booking.reviewPassengers"), state.adults + " adult" + (state.adults === 1 ? "" : "s") + (state.children > 0 ? ", " + state.children + " child" + (state.children === 1 ? "" : "ren") : "")],
@@ -584,9 +608,11 @@
             agreedCancellationPolicy: true,
             bookingFor: state.bookingFor,
             passengerName: state.bookingFor === "other" ? state.passengerName : null,
-            passengerWhatsapp: state.whatsapp,
+            passengerWhatsapp: state.passengerWhatsapp,
             adults: state.adults,
             children: state.children,
+            emergencyContactName: state.emergencyContactName,
+            emergencyContactPhone: state.emergencyContactPhone,
           }),
         });
       })
