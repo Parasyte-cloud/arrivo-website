@@ -705,6 +705,21 @@ a { color: inherit; text-decoration: none; }
   html { scroll-behavior: auto; }
 }
 
+.nav-account-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.nav-account-link svg { width: 18px; height: 18px; flex-shrink: 0; }
+.nav-account-link:hover { color: var(--teal); }
+@media (max-width: 640px) {
+  .nav-account-link span { display: none; } /* icon-only on small screens to keep the header from crowding */
+}
+
 /* ── Booking: "who is this ride for" toggle (book.html step 1) ── */
 .for-who-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
 .for-who-opt {

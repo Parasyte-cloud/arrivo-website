@@ -136,6 +136,25 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
+    // Homepage account link: shows "Register or Login" for a first-time
+    // visitor, or routes straight to their profile if they're already
+    // signed in — checked fresh on every load, not cached in the markup.
+    function initAccountNav() {
+      var isLoggedIn = !!localStorage.getItem("arrivo_rider_token");
+      var dest = isLoggedIn ? "account.html" : "login.html";
+      var label = isLoggedIn ? "My Account" : "Register or Login";
+
+      [
+        { link: "accountNavLink", text: "accountNavLabel" },
+        { link: "accountNavLinkMobile", text: "accountNavLabelMobile" },
+      ].forEach(function (ids) {
+        var linkEl = document.getElementById(ids.link);
+        var textEl = document.getElementById(ids.text);
+        if (linkEl) linkEl.href = dest;
+        if (textEl) textEl.textContent = label;
+      });
+    }
+
     function initMobileNav() {
       var toggle = document.getElementById("mobileNavToggle");
       var menu = document.getElementById("mobileNavMenu");
@@ -184,6 +203,7 @@
     }
     safeRun(initLanguage, "initLanguage");
     safeRun(initMobileNav, "initMobileNav");
+    safeRun(initAccountNav, "initAccountNav");
     safeRun(initWaitlistForm, "initWaitlistForm");
   });
 })();

@@ -25,6 +25,7 @@
     token: null,
     bookingFor: "self", passengerName: "",
     flightNumber: "",
+    adults: 1, children: 0,
     bags: 1, bulky: false,
     bookingType: "one_way", durationDays: 1, multiplier: 1,
     vehicle: "sedan", vehicleBasePrice: 8500,
@@ -156,10 +157,15 @@
     // someone else, the WhatsApp number collected here needs to be the
     // actual passenger's (that's who the driver will be contacting and
     // matching against on pickup), not the account holder's, so the field
-    // label and passenger-name field toggle together.
+    // label and passenger-name field toggle together. Switching to "someone
+    // else" clears the field (it starts prefilled with the account holder's
+    // own number) so nobody can accidentally submit their own number as the
+    // passenger's; switching back to "myself" restores it.
     var forWhoToggle = document.getElementById("forWhoToggle");
     var passengerFields = document.getElementById("passengerFields");
     var whatsappLabel = document.getElementById("whatsappLabel");
+    var ownWhatsappDial = "+234";
+    var ownWhatsappNumber = "";
     if (forWhoToggle) {
       forWhoToggle.querySelectorAll(".for-who-opt").forEach(function (btn) {
         btn.addEventListener("click", function () {
@@ -173,6 +179,11 @@
             whatsappLabel.textContent = forOther
               ? t("booking.whatsappPassenger")
               : t("booking.whatsapp");
+          }
+          if (forOther) {
+            whatsappField.setRaw(ownWhatsappDial, "");
+          } else {
+            whatsappField.setRaw(ownWhatsappDial, ownWhatsappNumber);
           }
         });
       });
@@ -195,7 +206,12 @@
             .slice()
             .sort(function (a, b) { return b.dial.length - a.dial.length; }) // longest dial code first, so +234 doesn't get shadowed by +2
             .find(function (c) { return stored.indexOf(c.dial) === 0; });
-          if (match) whatsappField.setRaw(match.dial, stored.slice(match.dial.length));
+          if (match) {
+            ownWhatsappDial = match.dial;
+            ownWhatsappNumber = stored.slice(match.dial.length);
+            whatsappField.setRaw(ownWhatsappDial, ownWhatsappNumber);
+            state.ownWhatsapp = stored;
+          }
         }
         if (result.data.user.country_of_residence) document.getElementById("fCountry").value = result.data.user.country_of_residence;
       } else {
@@ -211,6 +227,10 @@
       var phoneResult = whatsappField.getValue();
       if (!phoneResult.valid) {
         showError(contactError, phoneResult.message);
+        return;
+      }
+      if (state.bookingFor === "other" && state.ownWhatsapp && phoneResult.full === state.ownWhatsapp) {
+        showError(contactError, t("booking.samePassengerNumber"));
         return;
       }
       state.whatsapp = phoneResult.full;
@@ -289,15 +309,18 @@
   }
 
   // ───────────────────────── Step 3: Luggage & Vehicle ─────────────────────────
-  function recommendVehicle(bags, bulky) {
-    if (bulky || bags >= 5) return "truck";
-    if (bags >= 3) return "suv";
+  function recommendVehicle(bags, bulky, passengers) {
+    if (bulky || bags >= 5 || passengers >= 5) return "truck";
+    if (bags >= 3 || passengers >= 4) return "suv";
     return "sedan";
   }
 
   function initStep3() {
     var bagsInput = document.getElementById("fBags");
     var bulkyInput = document.getElementById("fBulky");
+    var adultsInput = document.getElementById("fAdults");
+    var childrenInput = document.getElementById("fChildren");
+    var passengersError = document.getElementById("passengersError");
     var vehicleCards = Array.prototype.slice.call(document.querySelectorAll(".vehicle-card"));
     var bookingChips = Array.prototype.slice.call(document.querySelectorAll(".booking-type-chip"));
 
@@ -322,7 +345,8 @@
     function updateRecommendation() {
       var bags = Number(bagsInput.value) || 0;
       var bulky = bulkyInput.checked;
-      var recommended = recommendVehicle(bags, bulky);
+      var passengers = (Number(adultsInput.value) || 0) + (Number(childrenInput.value) || 0);
+      var recommended = recommendVehicle(bags, bulky, passengers);
 
       vehicleCards.forEach(function (card) {
         var isRecommended = card.getAttribute("data-vehicle") === recommended;
@@ -341,6 +365,8 @@
 
     bagsInput.addEventListener("input", updateRecommendation);
     bulkyInput.addEventListener("change", updateRecommendation);
+    adultsInput.addEventListener("input", updateRecommendation);
+    childrenInput.addEventListener("input", updateRecommendation);
     vehicleCards.forEach(function (card) {
       card.addEventListener("click", function () { selectVehicle(card, true); });
     });
@@ -349,6 +375,15 @@
     updateRecommendation(); // set initial state on first load
 
     document.getElementById("luggageContinue").addEventListener("click", function () {
+      var adults = Number(adultsInput.value) || 0;
+      var children = Number(childrenInput.value) || 0;
+      passengersError.hidden = true;
+      if (adults < 1) {
+        passengersError.hidden = false;
+        return;
+      }
+      state.adults = adults;
+      state.children = children;
       state.bags = Number(bagsInput.value) || 0;
       state.bulky = bulkyInput.checked;
       goToStep(4);
@@ -506,6 +541,7 @@
     }
     rows.push(
       [t("booking.reviewBookingType"), escapeHtml(bookingLabel)],
+      [t("booking.reviewPassengers"), state.adults + " adult" + (state.adults === 1 ? "" : "s") + (state.children > 0 ? ", " + state.children + " child" + (state.children === 1 ? "" : "ren") : "")],
       [t("booking.reviewFlight"), escapeHtml(state.flightNumber) || "N/A"],
       [t("booking.reviewVehicle"), escapeHtml(vehicleLabel) + " · NGN " + totalFare.toLocaleString()],
       [t("booking.reviewPickup"), escapeHtml([state.pickup].concat(state.stops).join(" → "))]
@@ -549,6 +585,8 @@
             bookingFor: state.bookingFor,
             passengerName: state.bookingFor === "other" ? state.passengerName : null,
             passengerWhatsapp: state.whatsapp,
+            adults: state.adults,
+            children: state.children,
           }),
         });
       })
