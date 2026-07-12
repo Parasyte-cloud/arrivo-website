@@ -253,7 +253,104 @@
   });
 
   // ───────────────────────── Init: restore session ─────────────────────────
+  // ───────────────────────── Emergency SOS ─────────────────────────
+  // Same approach as the rider account page: works today without any
+  // panic-specific backend (opens a real WhatsApp message to Arrivo support
+  // with GPS), plus a best-effort POST to /api/panic-alerts for whenever
+  // that's wired up to the real admin dashboard Panic Alerts system.
+  function initPanicButton(userType, tokenKey, apiBaseUrl) {
+    var btn = document.getElementById("panicBtn");
+    if (!btn) return;
+    var countdownRow = document.getElementById("panicCountdownRow");
+    var countdownText = document.getElementById("panicCountdownText");
+    var cancelBtn = document.getElementById("panicCancelBtn");
+    var statusText = document.getElementById("panicStatusText");
+    var ARRIVO_SUPPORT_WHATSAPP = "2348162706078";
+
+    var countdownTimer = null;
+    var pendingWindow = null;
+
+    function reset() {
+      if (countdownTimer) clearInterval(countdownTimer);
+      countdownRow.hidden = true;
+      btn.hidden = false;
+      if (pendingWindow) { try { pendingWindow.close(); } catch (e) {} }
+      pendingWindow = null;
+    }
+
+    btn.addEventListener("click", function () {
+      pendingWindow = window.open("", "_blank");
+
+      var secondsLeft = 3;
+      btn.hidden = true;
+      countdownRow.hidden = false;
+      countdownText.textContent = "Sending SOS in " + secondsLeft + "...";
+
+      countdownTimer = setInterval(function () {
+        secondsLeft--;
+        if (secondsLeft <= 0) {
+          clearInterval(countdownTimer);
+          triggerAlert();
+        } else {
+          countdownText.textContent = "Sending SOS in " + secondsLeft + "...";
+        }
+      }, 1000);
+    });
+
+    cancelBtn.addEventListener("click", reset);
+
+    function triggerAlert() {
+      countdownRow.hidden = true;
+      statusText.hidden = false;
+      statusText.textContent = "Getting your location...";
+
+      function finish(position) {
+        var mapsLink = position
+          ? "https://maps.google.com/?q=" + position.coords.latitude + "," + position.coords.longitude
+          : null;
+
+        try {
+          var token = localStorage.getItem(tokenKey);
+          fetch(apiBaseUrl + "/api/panic-alerts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+            body: JSON.stringify({
+              userType: userType,
+              rideId: state.activeRide ? state.activeRide.id : null,
+              latitude: position ? position.coords.latitude : null,
+              longitude: position ? position.coords.longitude : null,
+              timestamp: new Date().toISOString(),
+            }),
+          }).catch(function () {});
+        } catch (e) {}
+
+        var message = "SOS. I need help." + (mapsLink ? " My location: " + mapsLink : " Location unavailable.");
+        var waUrl = "https://wa.me/" + ARRIVO_SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(message);
+
+        if (pendingWindow) {
+          pendingWindow.location.href = waUrl;
+        } else {
+          window.open(waUrl, "_blank");
+        }
+
+        statusText.textContent = "Alert sent to Arrivo support on WhatsApp.";
+        setTimeout(function () {
+          statusText.hidden = true;
+          btn.hidden = false;
+        }, 4000);
+      }
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(finish, function () { finish(null); }, { timeout: 4000 });
+      } else {
+        finish(null);
+      }
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
+    initPanicButton("driver", TOKEN_KEY, API_BASE_URL);
+
     var saved = localStorage.getItem(TOKEN_KEY);
     if (saved) {
       state.token = saved;

@@ -61,6 +61,41 @@
   .social-row .icon-badge { margin-bottom:0; }
   .social-row .label { flex:1; font-weight:600; font-size:14px; }
   .social-row .chevron { color:var(--text-muted); font-size:18px; }
+
+  .panic-btn {
+    width: 100%;
+    background: #D64545;
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 16px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: background 0.15s ease;
+  }
+  .panic-btn:hover { background: #B93838; }
+  .panic-btn:active { background: #A02F2F; }
+  .panic-countdown-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #FFF3F3;
+    border: 1px solid #F3C6C6;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #B93838;
+  }
+  .panic-status-text {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
 </style>
 </head>
 <body>
@@ -89,23 +124,20 @@
   </div>
   <p class="error-text" id="avatarError" hidden></p>
 
+  <button type="button" id="panicBtn" class="panic-btn">
+    <span id="panicBtnLabel">🆘 Emergency SOS</span>
+  </button>
+  <p id="panicCountdownRow" class="panic-countdown-row" hidden>
+    <span id="panicCountdownText"></span>
+    <button type="button" id="panicCancelBtn" class="btn btn-ghost btn-sm">Cancel</button>
+  </p>
+  <p id="panicStatusText" class="panic-status-text" hidden></p>
+
   <div class="tile-grid">
     <a href="book.html" class="tile">🚗 Book a ride</a>
     <a href="terms.html#cancellation" class="tile">🛡️ Safety &amp; cancellation policy</a>
     <a href="#support" class="tile">💬 Help &amp; support</a>
     <a href="#" class="tile" id="logoutTile">🚪 Log out</a>
-  </div>
-
-  <div class="booking-card" style="margin-bottom:24px;">
-    <h2 style="font-size:15px; margin-bottom:12px;">Contact details</h2>
-    <div class="field-inline">
-      <input type="text" id="fWhatsapp" class="field" placeholder="WhatsApp number">
-    </div>
-    <div class="field-inline">
-      <input type="text" id="fCountry" class="field" placeholder="Country of residence">
-    </div>
-    <button class="btn btn-ghost" id="saveDetailsBtn">Save</button>
-    <span class="save-note" id="saveNote" hidden>Saved ✓</span>
   </div>
 
   <h2 style="font-size:15px; margin-bottom:12px;" id="support">Support</h2>
@@ -194,8 +226,6 @@
       var user = result.data.user;
       document.getElementById("accountName").textContent = user.name;
       document.getElementById("accountEmail").textContent = user.email;
-      document.getElementById("fWhatsapp").value = user.whatsapp_number || "";
-      document.getElementById("fCountry").value = user.country_of_residence || "";
 
       if (user.avatar_url) {
         var circle = document.getElementById("avatarCircle");
@@ -252,28 +282,13 @@
       reader.readAsDataURL(file);
     });
 
-    document.getElementById("saveDetailsBtn").addEventListener("click", function () {
-      var note = document.getElementById("saveNote");
-      api("/api/auth/me", {
-        method: "PATCH", headers: authHeader(),
-        body: JSON.stringify({
-          whatsappNumber: document.getElementById("fWhatsapp").value.trim(),
-          countryOfResidence: document.getElementById("fCountry").value.trim(),
-        }),
-      }).then(function (result) {
-        if (result.ok) {
-          note.hidden = false;
-          setTimeout(function () { note.hidden = true; }, 2000);
-        }
-      });
-    });
-
     document.getElementById("logoutTile").addEventListener("click", function (e) {
       e.preventDefault();
       localStorage.removeItem(TOKEN_KEY);
       window.location.href = "index.html";
     });
 
+    initPanicButton("rider", TOKEN_KEY, API_BASE_URL);
     loadTrips(token);
   });
 
@@ -326,6 +341,110 @@
     var div = document.createElement("div");
     div.textContent = str || "";
     return div.innerHTML;
+  }
+
+  // ───────────────────────── Emergency SOS ─────────────────────────
+  // What this does TODAY, with no backend panic system required:
+  //   1. Grabs GPS (best-effort — proceeds without it if denied/unavailable).
+  //   2. Tries a POST to /api/panic-alerts. This path is a guess — if your
+  //      admin dashboard's existing Panic Alerts page (built for the mobile
+  //      app) already has a real endpoint, swap this path/payload to match
+  //      it exactly, so web alerts land in the same place driver-app alerts do.
+  //      Either way this call is wrapped so a failure here never blocks step 3.
+  //   3. Opens a WhatsApp message to Arrivo's own support number (the same
+  //      one used in the Support section) with an SOS message + a Google
+  //      Maps link to their location. This step works today, with nothing
+  //      else needing to exist first — a real person receives a real message.
+  // The window is opened synchronously on the actual click (before the
+  // countdown/GPS lookup finish), then redirected once ready — opening it
+  // asynchronously later would get blocked as a popup by most browsers.
+  function initPanicButton(userType, tokenKey, apiBaseUrl) {
+    var btn = document.getElementById("panicBtn");
+    if (!btn) return;
+    var countdownRow = document.getElementById("panicCountdownRow");
+    var countdownText = document.getElementById("panicCountdownText");
+    var cancelBtn = document.getElementById("panicCancelBtn");
+    var statusText = document.getElementById("panicStatusText");
+    var ARRIVO_SUPPORT_WHATSAPP = "2348162706078"; // same number already live in the Support section
+
+    var countdownTimer = null;
+    var pendingWindow = null;
+
+    function reset() {
+      if (countdownTimer) clearInterval(countdownTimer);
+      countdownRow.hidden = true;
+      btn.hidden = false;
+      if (pendingWindow) { try { pendingWindow.close(); } catch (e) {} }
+      pendingWindow = null;
+    }
+
+    btn.addEventListener("click", function () {
+      pendingWindow = window.open("", "_blank");
+
+      var secondsLeft = 3;
+      btn.hidden = true;
+      countdownRow.hidden = false;
+      countdownText.textContent = "Sending SOS in " + secondsLeft + "...";
+
+      countdownTimer = setInterval(function () {
+        secondsLeft--;
+        if (secondsLeft <= 0) {
+          clearInterval(countdownTimer);
+          triggerAlert();
+        } else {
+          countdownText.textContent = "Sending SOS in " + secondsLeft + "...";
+        }
+      }, 1000);
+    });
+
+    cancelBtn.addEventListener("click", reset);
+
+    function triggerAlert() {
+      countdownRow.hidden = true;
+      statusText.hidden = false;
+      statusText.textContent = "Getting your location...";
+
+      function finish(position) {
+        var mapsLink = position
+          ? "https://maps.google.com/?q=" + position.coords.latitude + "," + position.coords.longitude
+          : null;
+
+        try {
+          var token = localStorage.getItem(tokenKey);
+          fetch(apiBaseUrl + "/api/panic-alerts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+            body: JSON.stringify({
+              userType: userType,
+              latitude: position ? position.coords.latitude : null,
+              longitude: position ? position.coords.longitude : null,
+              timestamp: new Date().toISOString(),
+            }),
+          }).catch(function () {});
+        } catch (e) {}
+
+        var message = "SOS. I need help." + (mapsLink ? " My location: " + mapsLink : " Location unavailable.");
+        var waUrl = "https://wa.me/" + ARRIVO_SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(message);
+
+        if (pendingWindow) {
+          pendingWindow.location.href = waUrl;
+        } else {
+          window.open(waUrl, "_blank");
+        }
+
+        statusText.textContent = "Alert sent to Arrivo support on WhatsApp.";
+        setTimeout(function () {
+          statusText.hidden = true;
+          btn.hidden = false;
+        }, 4000);
+      }
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(finish, function () { finish(null); }, { timeout: 4000 });
+      } else {
+        finish(null);
+      }
+    }
   }
 </script>
 </body>

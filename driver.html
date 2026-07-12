@@ -97,6 +97,15 @@
   <section id="dashboardSection">
     <h1>Dashboard</h1>
 
+    <button type="button" id="panicBtn" class="panic-btn">
+      <span id="panicBtnLabel">🆘 Emergency SOS</span>
+    </button>
+    <p id="panicCountdownRow" class="panic-countdown-row" hidden>
+      <span id="panicCountdownText"></span>
+      <button type="button" id="panicCancelBtn" class="btn btn-ghost btn-sm">Cancel</button>
+    </p>
+    <p id="panicStatusText" class="panic-status-text" hidden></p>
+
     <div class="toggle-row">
       <div>
         <div style="font-weight:700;" id="onlineLabel">You're offline</div>
