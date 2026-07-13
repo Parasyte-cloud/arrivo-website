@@ -7,6 +7,7 @@
   --teal-tint: #E5F4F3;
   --primary: #2E4C8C;      /* lighter navy blue — new primary accent per design feedback, replaces teal for icons/links/accents */
   --primary-tint: #EAEFF9;
+  --vehicle-navy: #1A2332; /* sampled directly from the real fleet vehicle's paint — used for CTAs specifically, per request */
   --cream: #F7F4EC;
   --coral: #E1523D;
   --text-muted: #6b6b85;
@@ -113,7 +114,7 @@ a { color: inherit; text-decoration: none; }
 .btn-primary {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(255,255,255,0.38), rgba(255,255,255,0.04) 60%), rgba(46,76,140,0.60);
+  background: linear-gradient(180deg, rgba(255,255,255,0.38), rgba(255,255,255,0.04) 60%), rgba(26,35,50,0.62);
   backdrop-filter: url(#liquid-glass-refraction) blur(14px) saturate(190%);
   -webkit-backdrop-filter: blur(14px) saturate(190%);
   color: #fff;
@@ -126,7 +127,7 @@ a { color: inherit; text-decoration: none; }
    and the rim brightens, the way a curved glass surface looks when it
    tips toward a light source. No color added anywhere. */
 .btn-primary:hover {
-  background: linear-gradient(180deg, rgba(255,255,255,0.48), rgba(255,255,255,0.06) 60%), rgba(46,76,140,0.5);
+  background: linear-gradient(180deg, rgba(255,255,255,0.48), rgba(255,255,255,0.06) 60%), rgba(26,35,50,0.52);
   box-shadow: 0 1px 0 rgba(255,255,255,0.7) inset, 0 -1px 0 rgba(0,0,0,0.1) inset, 0 10px 26px rgba(18,18,59,0.22);
 }
 /* A quick one-shot diagonal shine, like the header's ambient sheen but
@@ -166,10 +167,23 @@ a { color: inherit; text-decoration: none; }
    button, hamburger) gets tight enough that "Book a ride" was wrapping
    into 2-3 lines — tighten spacing here instead of letting that happen. */
 @media (max-width: 440px) {
-  .header-inner { gap: 8px; }
-  .lang-trigger { padding: 10px 8px; font-size: 10.5px; }
-  .btn-sm { padding: 11px 10px; font-size: 11.5px; }
-  .brand span:last-child { display: none; } /* icon-only logo on the narrowest phones — "RideArrivo" text hidden, frees real space */
+  .header-inner { gap: 6px; }
+  .lang-trigger { padding: 9px 7px; font-size: 10px; }
+  .btn-sm { padding: 10px 9px; font-size: 11px; }
+  .nav-account-link { padding: 6px; }
+}
+@media (min-width: 401px) and (max-width: 440px) {
+  .brand span:last-child { font-size: 13px; } /* shrink instead of hiding — still readable, just doesn't crowd the header */
+}
+@media (max-width: 400px) {
+  .brand span:last-child { display: none; } /* genuinely no room left at this width even at the smallest readable size */
+}
+@media (max-width: 330px) {
+  .header-inner { gap: 4px; }
+  .header-actions { gap: 6px; }
+  .lang-trigger { padding: 8px 6px; }
+  .btn-sm { padding: 9px 8px; }
+  .nav-account-link { padding: 4px; }
 }
 
 /* ── Header (Liquid Glass) ── */
@@ -1024,8 +1038,8 @@ a { color: inherit; text-decoration: none; }
 .showcase-card {
   position: relative;
   flex: 0 0 auto;
-  width: 220px;
-  aspect-ratio: 3 / 4;
+  width: 260px;
+  aspect-ratio: 4 / 3;
   border-radius: 16px;
   overflow: hidden;
   scroll-snap-align: start;
@@ -1050,7 +1064,7 @@ a { color: inherit; text-decoration: none; }
   font-weight: 600;
 }
 @media (max-width: 640px) {
-  .showcase-card { width: 168px; }
+  .showcase-card { width: 210px; }
 }
 @media (max-width: 560px) {
   .fleet-caption { left: 12px; right: 12px; bottom: 12px; padding: 12px 16px; }
