@@ -123,7 +123,7 @@
         })
         .catch(function () {
           if (note) {
-            note.textContent = "Couldn't reach the server — please try again in a moment.";
+            note.textContent = "Couldn't reach the server. Please try again in a moment.";
             note.style.color = "var(--coral)";
             note.style.fontWeight = "600";
           }
