@@ -113,11 +113,36 @@ a { color: inherit; text-decoration: none; }
 .btn-primary {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0) 40%), rgba(46,76,140,0.88);
-  backdrop-filter: url(#liquid-glass-refraction) blur(6px) saturate(160%);
-  -webkit-backdrop-filter: blur(6px) saturate(160%);
+  background: linear-gradient(180deg, rgba(255,255,255,0.32), rgba(255,255,255,0) 45%), rgba(46,76,140,0.82);
+  backdrop-filter: url(#liquid-glass-refraction) blur(10px) saturate(170%);
+  -webkit-backdrop-filter: blur(10px) saturate(170%);
   color: #fff;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset, 0 6px 16px rgba(46,76,140,0.32);
+  border: 1px solid rgba(255,255,255,0.28);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 6px 16px rgba(46,76,140,0.32);
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+/* Amber is the accent everywhere else on the site, so on hover a CTA picks
+   up a warm amber glow around the glass rather than just darkening —
+   ties the button back to the brand color without repainting its fill. */
+.btn-primary:hover {
+  box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 8px 22px rgba(244,163,0,0.38), 0 0 0 2px rgba(244,163,0,0.45);
+}
+/* A quick one-shot diagonal shine, like the header's ambient sheen but
+   triggered by intent (hover) rather than looping forever — the same
+   "light catching glass" cue, applied to a moment of interaction. */
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.55) 50%, transparent 60%);
+  background-size: 250% 250%;
+  background-position: 200% 200%;
+  pointer-events: none;
+}
+.btn-primary:hover::after { animation: ctaShine 0.7s ease; }
+@keyframes ctaShine {
+  from { background-position: 200% 200%; }
+  to { background-position: -50% -50%; }
 }
 .btn-ghost {
   position: relative;
@@ -127,6 +152,11 @@ a { color: inherit; text-decoration: none; }
   -webkit-backdrop-filter: blur(12px) saturate(160%);
   color: var(--ink);
   border: 1.5px solid var(--ink);
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease, color 0.2s ease;
+}
+.btn-ghost:hover { border-color: var(--amber); color: var(--amber); }
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary:hover::after { animation: none; }
 }
 .btn-sm { padding: 11px 16px; font-size: 12.5px; min-height: 40px; box-sizing: border-box; display: inline-flex; align-items: center; white-space: nowrap; }
 
@@ -150,23 +180,29 @@ a { color: inherit; text-decoration: none; }
   -webkit-backdrop-filter: blur(22px) saturate(190%); /* Safari ignores url() filters in backdrop-filter — falls back to a still-good blur */
   border-bottom: 1px solid rgba(255,255,255,0.6);
   box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 8px 30px rgba(18,18,59,0.08);
-  overflow: hidden;
+  /* Deliberately no overflow:hidden here — the language dropdown and
+     mobile menu both render below this box and must not be clipped.
+     The sheen below is contained within its own bounds instead. */
 }
 /* The moving sheen — a soft diagonal highlight that drifts slowly across
-   the glass, like light catching a curved surface. This one detail is
-   what reads as "glass" rather than "tinted panel" at a glance. */
+   the glass, like light catching a curved surface. Uses background-position
+   on a fixed-size box (not transform + overflow:hidden) specifically so it
+   never clips the language dropdown or mobile nav menu that render below
+   the header. */
 .site-header::before {
   content: "";
   position: absolute;
-  inset: -50% -20%;
-  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.5) 46%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0.5) 54%, transparent 70%);
+  inset: 0;
+  background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.55) 47%, rgba(255,255,255,0.75) 50%, rgba(255,255,255,0.55) 53%, transparent 65%);
+  background-size: 300% 300%;
   animation: glassSheen 9s ease-in-out infinite;
   pointer-events: none;
   mix-blend-mode: overlay;
+  z-index: 0;
 }
 @keyframes glassSheen {
-  0%, 100% { transform: translateX(-35%) translateY(-10%); }
-  50% { transform: translateX(35%) translateY(10%); }
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 @media (prefers-reduced-motion: reduce) {
   .site-header::before { animation: none; }
@@ -239,9 +275,9 @@ a { color: inherit; text-decoration: none; }
   font-size: 13.5px;
   font-weight: 600;
 }
-.main-nav a { margin-right: 28px; }
+.main-nav a { margin-right: 28px; transition: color 0.2s ease; }
 .main-nav a:last-child { margin-right: 0; }
-.main-nav a:hover { color: var(--primary); }
+.main-nav a:hover { color: var(--amber); }
 .header-actions { display: flex; align-items: center; gap: 12px; }
 
 /* ── Mobile hamburger nav — the secondary links (How it works / Who it's
@@ -340,8 +376,10 @@ a { color: inherit; text-decoration: none; }
   font-size: 14.5px;
   font-weight: 600;
   border-bottom: 1px solid var(--card-border);
+  transition: color 0.2s ease;
 }
 .mobile-nav-menu a:last-child { border-bottom: none; }
+.mobile-nav-menu a:hover, .mobile-nav-menu a:active { color: var(--amber); }
 @media (min-width: 860px) {
   .mobile-nav-toggle, .mobile-nav-menu, .mobile-nav-backdrop { display: none; }
 }
