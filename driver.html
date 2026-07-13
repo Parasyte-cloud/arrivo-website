@@ -21,7 +21,7 @@
   .driver-wrap { max-width: 640px; }
   .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:16px; background:#fff; border-radius:12px; border:1px solid var(--card-border); margin-bottom:20px; }
   .toggle-switch { position:relative; width:48px; height:26px; background:#ccc; border-radius:999px; cursor:pointer; transition:background .2s; }
-  .toggle-switch.on { background:var(--teal); }
+  .toggle-switch.on { background:var(--primary); }
   .toggle-switch .knob { position:absolute; top:2px; left:2px; width:22px; height:22px; background:#fff; border-radius:50%; transition:transform .2s; }
   .toggle-switch.on .knob { transform:translateX(22px); }
   .ride-card { background:#fff; border:1px solid var(--card-border); border-radius:12px; padding:16px; margin-bottom:12px; }
@@ -38,9 +38,9 @@
 
   /* Driver signup: document/photo upload tiles */
   .doc-upload { display:flex; align-items:center; gap:14px; background:#fff; border:1.5px dashed var(--card-border); border-radius:12px; padding:14px; margin-bottom:14px; cursor:pointer; }
-  .doc-upload:hover { border-color:var(--teal); }
-  .doc-upload.has-file { border-style:solid; border-color:var(--teal); }
-  .doc-upload-thumb { width:56px; height:56px; border-radius:8px; background:var(--teal-tint); display:flex; align-items:center; justify-content:center; font-size:22px; overflow:hidden; flex-shrink:0; }
+  .doc-upload:hover { border-color:var(--primary); }
+  .doc-upload.has-file { border-style:solid; border-color:var(--primary); }
+  .doc-upload-thumb { width:56px; height:56px; border-radius:8px; background:var(--primary-tint); display:flex; align-items:center; justify-content:center; font-size:22px; overflow:hidden; flex-shrink:0; }
   .doc-upload-thumb img { width:100%; height:100%; object-fit:cover; }
   .doc-upload-text strong { display:block; font-size:13.5px; margin-bottom:2px; }
   .doc-upload-text span { font-size:12px; color:var(--text-muted); }
@@ -49,6 +49,19 @@
 </head>
 <body>
 
+<!-- Real Liquid Glass needs actual refraction of what's behind it, not just
+     blur — this is the difference between "frosted panel" and "glass".
+     feTurbulence generates an organic noise field, feDisplacementMap uses it
+     to warp the content underneath, the way light bends through curved
+     glass. Applied via backdrop-filter: url(#liquid-glass-refraction). -->
+<svg style="position:absolute; width:0; height:0; overflow:hidden;" aria-hidden="true">
+  <filter id="liquid-glass-refraction" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.010 0.018" numOctaves="2" seed="7" result="noise"/>
+    <feGaussianBlur in="noise" stdDeviation="2" result="softNoise"/>
+    <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
 <header class="site-header">
   <div class="wrap header-inner">
     <a href="index.html" class="brand">
@@ -56,7 +69,7 @@
       <span data-i18n="brand">RideArrivo</span>
     </a>
     <div class="header-actions">
-      <span style="font-size:11px;font-weight:700;letter-spacing:0.1em;color:var(--teal);">DRIVER PORTAL</span>
+      <span style="font-size:11px;font-weight:700;letter-spacing:0.1em;color:var(--primary);">DRIVER PORTAL</span>
     </div>
   </div>
 </header>
@@ -71,10 +84,10 @@
       <input type="password" id="loginPassword" class="field" placeholder="Password">
       <p class="error-text" id="loginError" hidden></p>
       <button class="btn btn-primary" id="loginBtn" style="width:100%;">Log in</button>
-      <a href="forgot-password.html" style="display:block;margin-top:12px;font-size:12.5px;color:var(--teal);">Forgot your password?</a>
+      <a href="forgot-password.html" style="display:block;margin-top:12px;font-size:12.5px;color:var(--primary);">Forgot your password?</a>
     </div>
     <p style="color:var(--text-muted);font-size:12.5px;margin-top:16px;">
-      New driver? <a href="#" id="goToSignupLink" style="color:var(--teal);font-weight:700;">Apply here</a>. Takes about 10 minutes, or sign up in the RideArrivo Driver mobile app.
+      New driver? <a href="#" id="goToSignupLink" style="color:var(--primary);font-weight:700;">Apply here</a>. Takes about 10 minutes, or sign up in the RideArrivo Driver mobile app.
     </p>
   </section>
 
@@ -98,12 +111,12 @@
       <input type="password" id="sPasswordConfirm" class="field" placeholder="Confirm password">
       <label class="checkbox-row">
         <input type="checkbox" id="sAccountTerms">
-        <span>I agree to RideArrivo's <a href="terms.html" target="_blank" style="color:var(--teal);text-decoration:underline;">terms of service</a> and privacy policy.</span>
+        <span>I agree to RideArrivo's <a href="terms.html" target="_blank" style="color:var(--primary);text-decoration:underline;">terms of service</a> and privacy policy.</span>
       </label>
       <p class="error-text" id="signupAccountError" hidden></p>
       <button class="btn btn-primary" id="signupAccountContinue" style="width:100%;margin-top:6px;">Continue</button>
     </div>
-    <a href="#" id="backToLoginLink" style="display:block;margin-top:16px;font-size:12.5px;color:var(--teal);">← Back to login</a>
+    <a href="#" id="backToLoginLink" style="display:block;margin-top:16px;font-size:12.5px;color:var(--primary);">← Back to login</a>
   </section>
 
   <!-- PROFILE SETUP — Step 2: Vehicle & License (also reused for accounts created via mobile app with an incomplete profile) -->
@@ -203,7 +216,7 @@
       </label>
       <label class="checkbox-row">
         <input type="checkbox" id="sTermsConsent">
-        <span>I agree to RideArrivo's <a href="terms.html" target="_blank" style="color:var(--teal);text-decoration:underline;">terms of service</a> and independent contractor agreement.</span>
+        <span>I agree to RideArrivo's <a href="terms.html" target="_blank" style="color:var(--primary);text-decoration:underline;">terms of service</a> and independent contractor agreement.</span>
       </label>
 
       <p class="error-text" id="safetyError" hidden></p>

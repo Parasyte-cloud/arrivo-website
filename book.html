@@ -19,6 +19,19 @@
 </head>
 <body>
 
+<!-- Real Liquid Glass needs actual refraction of what's behind it, not just
+     blur — this is the difference between "frosted panel" and "glass".
+     feTurbulence generates an organic noise field, feDisplacementMap uses it
+     to warp the content underneath, the way light bends through curved
+     glass. Applied via backdrop-filter: url(#liquid-glass-refraction). -->
+<svg style="position:absolute; width:0; height:0; overflow:hidden;" aria-hidden="true">
+  <filter id="liquid-glass-refraction" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.010 0.018" numOctaves="2" seed="7" result="noise"/>
+    <feGaussianBlur in="noise" stdDeviation="2" result="softNoise"/>
+    <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
 <header class="site-header">
   <div class="wrap header-inner">
     <a href="index.html" class="brand">
@@ -81,7 +94,7 @@
       <div id="profileSummary" style="background:#FBF9F3; border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
         <div><strong id="profileName"></strong><br>
         <span id="profileEmail" style="color:var(--text-muted);"></span></div>
-        <a href="account.html" style="font-size:12px; color:var(--teal); font-weight:700;">My account</a>
+        <a href="account.html" style="font-size:12px; color:var(--primary); font-weight:700;">My account</a>
       </div>
       <label class="field-label" id="whatsappLabel" data-i18n="booking.whatsapp">WhatsApp number</label>
       <div id="whatsappInputContainer" style="margin-bottom:14px;"></div>
@@ -117,7 +130,7 @@
 
       <label class="checkbox-row">
         <input type="checkbox" id="fAgree">
-        <span data-i18n="booking.agree">I agree to RideArrivo's <a href="#" id="openPrivacyModalBooking" style="color:var(--teal);text-decoration:underline;">privacy policy</a> and <a href="terms.html" target="_blank">terms of service</a>.</span>
+        <span data-i18n="booking.agree">I agree to RideArrivo's <a href="#" id="openPrivacyModalBooking" style="color:var(--primary);text-decoration:underline;">privacy policy</a> and <a href="terms.html" target="_blank">terms of service</a>.</span>
       </label>
 
       <p class="error-text" id="contactError" hidden></p>
@@ -252,7 +265,7 @@
 
       <label class="checkbox-row">
         <input type="checkbox" id="fAgreeCancellation">
-        <span data-i18n="booking.agreeCancellation">I agree to RideArrivo's <a href="#" id="openCancellationModal" style="color:var(--teal);text-decoration:underline;">Cancellation &amp; Refund Policy</a>.</span>
+        <span data-i18n="booking.agreeCancellation">I agree to RideArrivo's <a href="#" id="openCancellationModal" style="color:var(--primary);text-decoration:underline;">Cancellation &amp; Refund Policy</a>.</span>
       </label>
 
       <p class="error-text" id="payError" hidden></p>
