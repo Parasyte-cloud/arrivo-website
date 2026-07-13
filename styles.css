@@ -1,15 +1,20 @@
 :root {
   --ink: #12123B;
   --ink-soft: #1E1E4D;
+  --title: #0C0C10; /* near-black, used specifically for headings per design feedback — body text stays --ink */
   --amber: #F4A300;
   --teal: #0E7C7B;
   --teal-tint: #E5F4F3;
+  --primary: #2E4C8C;      /* lighter navy blue — new primary accent per design feedback, replaces teal for icons/links/accents */
+  --primary-tint: #EAEFF9;
   --cream: #F7F4EC;
   --coral: #E1523D;
   --text-muted: #6b6b85;
   --card-border: #E7E5F0;
   --radius: 16px;
   --wrap: 1120px;
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.65);
 }
 
 * { box-sizing: border-box; }
@@ -26,12 +31,29 @@ body {
   color: var(--ink);
   background: var(--cream);
   line-height: 1.5;
+  position: relative;
+}
+
+/* Liquid Glass UI: soft, fixed color blobs behind everything, so the
+   translucent/blurred surfaces (header, cards) have real depth and color
+   to refract — glass over a flat solid color just looks like a tint. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(600px circle at 12% 8%, rgba(46, 76, 140, 0.10), transparent 60%),
+    radial-gradient(700px circle at 92% 18%, rgba(244, 163, 0, 0.09), transparent 60%),
+    radial-gradient(650px circle at 25% 85%, rgba(46, 76, 140, 0.07), transparent 60%),
+    radial-gradient(550px circle at 88% 92%, rgba(244, 163, 0, 0.07), transparent 60%);
+  pointer-events: none;
 }
 
 h1, h2, h3, h4 {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--title);
   margin: 0 0 14px;
   line-height: 1.15;
 }
@@ -65,7 +87,7 @@ a { color: inherit; text-decoration: none; }
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--teal);
+  color: var(--primary);
   margin-bottom: 10px;
 }
 .eyebrow-light { color: var(--amber); }
@@ -84,8 +106,18 @@ a { color: inherit; text-decoration: none; }
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
 .btn:hover { transform: translateY(-1px); }
-.btn-primary { background: var(--amber); color: var(--ink); }
-.btn-ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--ink); }
+.btn-primary {
+  background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0) 40%), var(--primary);
+  color: #fff;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.3) inset, 0 6px 16px rgba(46,76,140,0.32);
+}
+.btn-ghost {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+}
 .btn-sm { padding: 11px 16px; font-size: 12.5px; min-height: 40px; box-sizing: border-box; display: inline-flex; align-items: center; white-space: nowrap; }
 
 /* On the narrowest phones, the header-actions row (clock, language, book
@@ -103,9 +135,11 @@ a { color: inherit; text-decoration: none; }
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(247, 244, 236, 0.92);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--card-border);
+  background: rgba(247, 244, 236, 0.65);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 8px 30px rgba(18,18,59,0.06);
 }
 .header-inner {
   display: flex;
@@ -175,7 +209,7 @@ a { color: inherit; text-decoration: none; }
 }
 .main-nav a { margin-right: 28px; }
 .main-nav a:last-child { margin-right: 0; }
-.main-nav a:hover { color: var(--teal); }
+.main-nav a:hover { color: var(--primary); }
 .header-actions { display: flex; align-items: center; gap: 12px; }
 
 /* ── Mobile hamburger nav — the secondary links (How it works / Who it's
@@ -433,7 +467,7 @@ a { color: inherit; text-decoration: none; }
   color: var(--ink);
 }
 .trust-strip li { display: flex; align-items: center; gap: 7px; margin-right: 22px; margin-bottom: 8px; }
-.trust-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); flex-shrink: 0; margin-right: 7px; }
+.trust-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-right: 7px; }
 
 .hero-visual {
   position: relative;
@@ -538,11 +572,11 @@ a { color: inherit; text-decoration: none; }
               radial-gradient(circle at 70% 65%, rgba(244,163,0,0.3), transparent 45%), #0C0C2E;
 }
 .ps-card { display: flex; gap: 8px; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 9px; }
-.ps-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--teal); color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ps-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .ps-name { color: var(--cream); font-size: 10.5px; font-weight: 700; }
 .ps-meta { color: #9494BE; font-size: 9px; margin-top: 1px; }
 .ps-tag { display: inline-block; background: rgba(14,124,123,0.25); color: #5FE0DE; font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 6px; margin-top: 4px; }
-.ps-btn { background: var(--teal); color: #fff; text-align: center; font-size: 11px; font-weight: 700; padding: 10px; border-radius: 10px; }
+.ps-btn { background: var(--primary); color: #fff; text-align: center; font-size: 11px; font-weight: 700; padding: 10px; border-radius: 10px; }
 
 /* ── Sections ── */
 .section { padding: 72px 0; }
@@ -550,9 +584,28 @@ a { color: inherit; text-decoration: none; }
 .section h2 { font-size: clamp(24px, 4vw, 34px); max-width: 620px; }
 
 .section-dark {
-  background: var(--ink);
+  position: relative;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(244,163,0,0.22), transparent 45%),
+    radial-gradient(circle at 85% 75%, rgba(46,76,140,0.35), transparent 50%),
+    linear-gradient(135deg, #12123B 0%, #1a1a4d 55%, #12123B 100%);
   color: var(--cream);
+  overflow: hidden;
 }
+/* Subtle route/dot texture standing in for a real photo — a flat solid
+   navy behind this text had no visual depth. I don't have an actual Lagos
+   photo to use here; happy to swap this for one if you have a real shot
+   you want featured instead. */
+.section-dark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.06) 1.5px, transparent 1.5px);
+  background-size: 26px 26px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+.section-dark .wrap { position: relative; z-index: 1; }
 .section-dark h2 { color: var(--cream); }
 .section-dark p { color: #C9C9E6; }
 
@@ -593,16 +646,19 @@ a { color: inherit; text-decoration: none; }
   margin-top: 36px;
 }
 .card {
-  background: #fff;
-  border: 1px solid var(--card-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   padding: 28px 24px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 12px 28px rgba(18,18,59,0.06);
 }
 .icon-badge {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: var(--teal-tint);
+  background: var(--primary-tint);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -754,7 +810,7 @@ a { color: inherit; text-decoration: none; }
   white-space: nowrap;
 }
 .nav-account-link svg { width: 18px; height: 18px; flex-shrink: 0; }
-.nav-account-link:hover { color: var(--teal); }
+.nav-account-link:hover { color: var(--primary); }
 @media (max-width: 640px) {
   .nav-account-link span { display: none; } /* icon-only on small screens to keep the header from crowding */
 }
@@ -817,13 +873,13 @@ a { color: inherit; text-decoration: none; }
   cursor: pointer;
   margin-bottom: 16px;
 }
-.listening-btn.is-active { border-color: var(--teal); background: var(--teal-tint); color: var(--teal); }
+.listening-btn.is-active { border-color: var(--primary); background: var(--primary-tint); color: var(--primary); }
 
 .tracking-notice {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  background: var(--teal-tint);
+  background: var(--primary-tint);
   border-radius: 10px;
   padding: 12px 14px;
   margin-bottom: 16px;
@@ -848,7 +904,35 @@ a { color: inherit; text-decoration: none; }
 }
 .account-name { font-size: 19px; font-weight:700; }
 .account-email { font-size:12.5px; color: var(--text-muted); }
-.save-note { font-size:11.5px; color: var(--teal); font-weight:700; }
+.save-note { font-size:11.5px; color: var(--primary); font-weight:700; }
+
+/* ── Fleet showcase: real vehicle photo, glass caption overlay ── */
+.fleet-photo-frame {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(18,18,59,0.14);
+}
+.fleet-photo { width: 100%; height: auto; display: block; }
+.fleet-caption {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  background: rgba(18,18,59,0.55);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 16px;
+  padding: 16px 20px;
+  color: #fff;
+}
+.fleet-caption .eyebrow { color: var(--amber); }
+.fleet-caption h3 { color: #fff; margin: 4px 0 0; font-size: 19px; }
+@media (max-width: 560px) {
+  .fleet-caption { left: 12px; right: 12px; bottom: 12px; padding: 12px 16px; }
+  .fleet-caption h3 { font-size: 16px; }
+}
 
 /* ── Booking: "who is this ride for" toggle (book.html step 1) ── */
 .for-who-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
@@ -866,8 +950,8 @@ a { color: inherit; text-decoration: none; }
   transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 .for-who-opt.is-active {
-  border-color: var(--teal);
-  background: var(--teal-tint);
-  color: var(--teal);
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary);
 }
-.for-who-opt:hover { border-color: var(--teal); }
+.for-who-opt:hover { border-color: var(--primary); }
