@@ -34,7 +34,7 @@
     pickup: "", stops: [],
     pickupLatLng: null, dropoffLatLng: null,
     securityEscort: false, fleetSize: 0,
-    distanceKm: null, durationMin: null, calculatedFareNaira: null,
+    distanceKm: null, durationMin: null,
     paymentMethod: "card", walletBalanceNaira: 0,
     userLocation: null, locationPermission: null,
   };
@@ -337,6 +337,7 @@
     document.getElementById("flightContinue").addEventListener("click", function () {
       state.flightNumber = document.getElementById("fFlight").value.trim().toUpperCase();
       goToStep(3);
+      setupPlacesForStep4(); // Pickup is now step 3 — the map container only has real dimensions once this step is visible. Function name predates the reorder.
     });
     document.getElementById("backTo1").addEventListener("click", function () { goToStep(1); });
   }
@@ -356,13 +357,6 @@
     var passengersError = document.getElementById("passengersError");
     var vehicleCards = Array.prototype.slice.call(document.querySelectorAll(".vehicle-card"));
     var bookingChips = Array.prototype.slice.call(document.querySelectorAll(".booking-type-chip"));
-
-    function updatePriceLabels() {
-      vehicleCards.forEach(function (card) {
-        var base = Number(card.getAttribute("data-price"));
-        card.querySelector(".v-price").textContent = "NGN " + (base * state.multiplier).toLocaleString();
-      });
-    }
 
     bookingChips.forEach(function (chip) {
       chip.addEventListener("click", function () {
@@ -419,10 +413,10 @@
       state.children = children;
       state.bags = Number(bagsInput.value) || 0;
       state.bulky = bulkyInput.checked;
-      goToStep(4);
-      setupPlacesForStep4(); // the map container only has real dimensions once step 4 is visible
+      renderReview();
+      goToStep(5);
     });
-    document.getElementById("backTo2").addEventListener("click", function () { goToStep(2); });
+    document.getElementById("backTo2").addEventListener("click", function () { goToStep(3); }); // Pickup is now the previous step — id predates the reorder
   }
 
   // ───────────────────────── Google Places autocomplete + map preview ─────────────────────────
@@ -441,24 +435,60 @@
     window.__googleMapsReady = true;
   };
 
-  // ───────────────────────── Uber-style distance-based pricing ─────────────────────────
+  // ───────────────────────── Zone-based pricing ─────────────────────────
   // Only applies to one-way bookings. Full day/week/month bookings are
-  // chauffeur-style flat-rate pricing (a day rate doesn't scale with a
-  // single route's distance the way a one-off pickup does) — those keep
-  // using the existing vehicleBasePrice × booking-type multiplier shown
-  // at the vehicle-selection step.
-  var FARE_BASE = 1000;
-  var FARE_PER_KM = 150;
-  var FARE_PER_MIN = 30;
-  var FARE_MINIMUM = 2500;
-  var VEHICLE_FARE_MULTIPLIER = { sedan: 1, suv: 1.3, truck: 1.6 };
+  // chauffeur-style flat-rate pricing and keep using the existing
+  // vehicleBasePrice × booking-type multiplier shown on the vehicle cards.
+  //
+  // Flat rate per vehicle type × Lagos zone, not a per-km/per-minute
+  // formula — this is deliberately simple for now rather than a live
+  // distance calculation. Zone is detected from the drop-off address
+  // text against known Lagos Island place names, since that's a named,
+  // specific region rather than something a simple lat/lng line can
+  // reliably separate from the mainland given Lagos's coastline shape.
+  var ZONE_VEHICLE_PRICES = {
+    sedan: { mainland: 30000, island: 50000 },
+    suv: { mainland: 70000, island: 120000 },
+    truck: { mainland: 70000, island: 120000 }, // not specified separately yet — using the SUV rate as a placeholder until given real truck figures
+  };
+  // Fleet accompaniment add-on, per vehicle type. Sedan and SUV happen to
+  // share the same figures right now, but this is kept as a per-vehicle
+  // table (not one flat number) since that's how it was specified —
+  // ready for the day these diverge without needing a restructure.
+  var FLEET_PRICE = {
+    sedan: { 2: 70000, 3: 100000 },
+    suv: { 2: 70000, 3: 100000 },
+    truck: { 2: 70000, 3: 100000 },
+  };
   var SECURITY_ESCORT_PRICE = 100000;
-  var FLEET_PRICE = { 2: 70000, 3: 100000 };
 
-  function calculateDistanceBasedFare(distanceKm, durationMin) {
-    var raw = FARE_BASE + (distanceKm * FARE_PER_KM) + (durationMin * FARE_PER_MIN);
-    var withMinimum = Math.max(raw, FARE_MINIMUM);
-    return Math.round(withMinimum * (VEHICLE_FARE_MULTIPLIER[state.vehicle] || 1));
+  var ISLAND_KEYWORDS = ["victoria island", "ikoyi", "lekki", "lagos island", "eko atlantic", "banana island", "obalende", " vi ", "v.i."];
+
+  function detectZone(address) {
+    var a = (" " + (address || "").toLowerCase() + " ");
+    for (var i = 0; i < ISLAND_KEYWORDS.length; i++) {
+      if (a.indexOf(ISLAND_KEYWORDS[i]) !== -1) return "island";
+    }
+    return "mainland";
+  }
+
+  function zoneVehiclePrice(vehicle, zone) {
+    var table = ZONE_VEHICLE_PRICES[vehicle] || ZONE_VEHICLE_PRICES.sedan;
+    return table[zone] || table.mainland;
+  }
+
+  function updatePriceLabels() {
+    document.querySelectorAll(".vehicle-card").forEach(function (card) {
+      var vehicle = card.getAttribute("data-vehicle");
+      var price;
+      if (state.bookingType === "one_way" && state.zone) {
+        price = zoneVehiclePrice(vehicle, state.zone);
+      } else {
+        var base = Number(card.getAttribute("data-price"));
+        price = base * state.multiplier;
+      }
+      card.querySelector(".v-price").textContent = "NGN " + price.toLocaleString();
+    });
   }
 
   function applyLocationBiasTo(autocomplete) {
@@ -499,7 +529,6 @@
           box.hidden = true;
           declinedNote.hidden = true;
           applyLocationBiasToAllAutocompletes();
-          updateCurrencyEstimateVisibility();
         },
         function () {
           // Browser prompt was shown but the rider said no at that layer —
@@ -544,13 +573,6 @@
     return "NGN " + nairaAmount.toLocaleString() + " (~$" + usd.toLocaleString() + ")";
   }
 
-  function updateCurrencyEstimateVisibility() {
-    var totalEl = document.getElementById("fareTotalText");
-    if (totalEl && state.calculatedFareNaira != null) {
-      totalEl.textContent = formatNairaWithUsdEstimate(state.calculatedFareNaira);
-    }
-  }
-
   function recalculateFareEstimate() {
     var box = document.getElementById("fareEstimateBox");
     var errEl = document.getElementById("fareError");
@@ -561,52 +583,51 @@
       errEl.hidden = true;
       return;
     }
-    if (!state.pickupLatLng || !state.dropoffLatLng) {
+    if (!state.stops.length && !state.dropoffLatLng) {
       box.hidden = true;
       return;
     }
-    if (!window.google || !window.google.maps) {
-      errEl.hidden = false;
-      return;
+
+    // Zone comes from the drop-off address text — no distance/duration API
+    // call needed for pricing at all, which is deliberately simpler and has
+    // no external dependency that can fail. Vehicle type isn't chosen yet
+    // at this step (Pickup now comes before vehicle selection), so this
+    // only shows the detected zone — actual per-vehicle prices appear on
+    // the vehicle cards at the next step, once both zone and type are known.
+    var dropoffAddress = state.stops.length ? state.stops[state.stops.length - 1] : document.getElementById("fDropoff").value;
+    state.zone = detectZone(dropoffAddress);
+    errEl.hidden = true;
+
+    document.getElementById("fareDistanceText").textContent = state.zone === "island" ? "Lagos Island" : "Lagos Mainland";
+    document.getElementById("fareBaseText").textContent = "Sedan NGN " + ZONE_VEHICLE_PRICES.sedan[state.zone].toLocaleString() + " · SUV NGN " + ZONE_VEHICLE_PRICES.suv[state.zone].toLocaleString();
+    document.getElementById("fareSecurityRow").hidden = !state.securityEscort;
+    var fleetRow = document.getElementById("fareFleetRow");
+    fleetRow.hidden = !state.fleetSize;
+    if (state.fleetSize) {
+      document.getElementById("fareFleetLabel").textContent = "Fleet of " + state.fleetSize;
+      document.getElementById("fareFleetAmount").textContent = "+NGN " + (FLEET_PRICE.sedan[state.fleetSize] || 0).toLocaleString();
     }
+    document.getElementById("fareTotalText").textContent = "Choose your vehicle on the next step to see the exact price.";
+    box.hidden = false;
 
-    var service = new google.maps.DistanceMatrixService();
-    service.getDistanceMatrix({
-      origins: [state.pickupLatLng],
-      destinations: [state.dropoffLatLng],
-      travelMode: google.maps.TravelMode.DRIVING,
-    }, function (response, status) {
-      var el = status === "OK" && response.rows[0] && response.rows[0].elements[0];
-      if (!el || el.status !== "OK") {
-        errEl.hidden = false;
-        box.hidden = true;
-        return;
-      }
-      errEl.hidden = true;
-
-      var km = el.distance.value / 1000;
-      var min = el.duration.value / 60;
-      state.distanceKm = km;
-      state.durationMin = min;
-
-      var baseFare = calculateDistanceBasedFare(km, min);
-      var total = baseFare;
-      if (state.securityEscort) total += SECURITY_ESCORT_PRICE;
-      if (state.fleetSize) total += FLEET_PRICE[state.fleetSize] || 0;
-      state.calculatedFareNaira = total;
-
-      document.getElementById("fareDistanceText").textContent = km.toFixed(1) + " km, ~" + Math.round(min) + " min";
-      document.getElementById("fareBaseText").textContent = "NGN " + baseFare.toLocaleString();
-      document.getElementById("fareSecurityRow").hidden = !state.securityEscort;
-      var fleetRow = document.getElementById("fareFleetRow");
-      fleetRow.hidden = !state.fleetSize;
-      if (state.fleetSize) {
-        document.getElementById("fareFleetLabel").textContent = "Fleet of " + state.fleetSize;
-        document.getElementById("fareFleetAmount").textContent = "+NGN " + FLEET_PRICE[state.fleetSize].toLocaleString();
-      }
-      document.getElementById("fareTotalText").textContent = formatNairaWithUsdEstimate(total);
-      box.hidden = false;
-    });
+    // Optional nice-to-have: real distance/duration for display only, never
+    // used for pricing — if this fails for any reason, zone-based pricing
+    // above already works regardless.
+    if (state.pickupLatLng && state.dropoffLatLng && window.google && window.google.maps) {
+      var service = new google.maps.DistanceMatrixService();
+      service.getDistanceMatrix({
+        origins: [state.pickupLatLng],
+        destinations: [state.dropoffLatLng],
+        travelMode: google.maps.TravelMode.DRIVING,
+      }, function (response, status) {
+        var el = status === "OK" && response.rows[0] && response.rows[0].elements[0];
+        if (!el || el.status !== "OK") return;
+        state.distanceKm = el.distance.value / 1000;
+        state.durationMin = el.duration.value / 60;
+        document.getElementById("fareDistanceText").textContent =
+          (state.zone === "island" ? "Lagos Island" : "Lagos Mainland") + " · " + state.distanceKm.toFixed(1) + " km, ~" + Math.round(state.durationMin) + " min";
+      });
+    }
   }
 
   var securityEscortCheckbox = document.getElementById("fSecurityEscort");
@@ -748,10 +769,10 @@
 
       state.pickup = pickup;
       state.stops = waypoints.concat([dropoff]); // waypoints first, drop-off always last
-      renderReview();
-      goToStep(5);
+      updatePriceLabels(); // zone is known now — refresh vehicle card prices before showing them
+      goToStep(4);
     });
-    document.getElementById("backTo3").addEventListener("click", function () { goToStep(3); });
+    document.getElementById("backTo3").addEventListener("click", function () { goToStep(2); }); // Flight is now the previous step — id predates the reorder
   }
 
   // ───────────────────────── Step 5: Review & Pay ─────────────────────────
@@ -761,14 +782,15 @@
   // distance, security escort, or fleet accompaniment at all.
   function getFinalFare() {
     var baseFare;
-    if (state.bookingType === "one_way" && state.calculatedFareNaira != null) {
-      baseFare = state.calculatedFareNaira - (state.securityEscort ? SECURITY_ESCORT_PRICE : 0) - (FLEET_PRICE[state.fleetSize] || 0);
+    if (state.bookingType === "one_way" && state.zone) {
+      baseFare = zoneVehiclePrice(state.vehicle, state.zone);
     } else {
       baseFare = state.vehicleBasePrice * state.multiplier;
     }
+    var fleetTable = FLEET_PRICE[state.vehicle] || FLEET_PRICE.sedan;
     var total = baseFare;
     if (state.securityEscort) total += SECURITY_ESCORT_PRICE;
-    if (state.fleetSize) total += FLEET_PRICE[state.fleetSize] || 0;
+    if (state.fleetSize) total += fleetTable[state.fleetSize] || 0;
     return { baseFare: baseFare, total: total };
   }
 
@@ -799,7 +821,7 @@
       return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>";
     }).join("");
 
-    document.getElementById("reviewFare").textContent = "NGN " + totalFare.toLocaleString();
+    document.getElementById("reviewFare").textContent = formatNairaWithUsdEstimate(totalFare);
     document.getElementById("payAmount").textContent = "NGN " + totalFare.toLocaleString();
 
     // Check the rider's wallet balance so we can tell them upfront whether

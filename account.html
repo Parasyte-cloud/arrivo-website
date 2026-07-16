@@ -97,6 +97,7 @@
     font-weight: 600;
     color: #B93838;
   }
+  .panic-countdown-row[hidden] { display: none; } /* the class's display:flex was overriding the hidden attribute's default display:none — this is what actually made Cancel visible before the SOS button was ever clicked */
   .panic-cancel-btn {
     position: relative;
     overflow: hidden;

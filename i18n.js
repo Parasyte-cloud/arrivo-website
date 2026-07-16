@@ -4,7 +4,7 @@
 
 const I18N = {
   en: {
-    brand: "RideArrivo",
+    brand: "<span class=\"brand-ride\">Ride</span><span class=\"brand-arrivo\">Arrivo</span>",
     nav: {
       how: "How it works",
       audiences: "Who it's for",
@@ -40,15 +40,15 @@ const I18N = {
       eyebrow: "The process",
       title: "Five steps, start to finish",
       step1Title: "Pick your language",
-      step1Body: "Choose English or Français from the start. The whole booking flow follows in whichever you're most comfortable with.",
+      step1Body: "Choose English or Français from the start.",
       step2Title: "Enter your flight",
-      step2Body: "Tell us your flight number. We track it, so your pickup adjusts automatically if you're early or delayed.",
+      step2Body: "We track your flight, so pickup adjusts automatically.",
       step3Title: "Tell us your luggage",
-      step3Body: "Check in how many bags and how big. We match you to a sedan, SUV, or truck that actually fits everything.",
+      step3Body: "We match you to a vehicle that fits your bags.",
       step4Title: "Get matched",
-      step4Body: "A verified driver and the right-sized vehicle are assigned. You see their name, photo, and ID before they arrive.",
+      step4Body: "See your driver's name, photo, and ID before they arrive.",
       step5Title: "Track and share",
-      step5Body: "Watch your ride live on the map, and share the trip with someone who wants to know you're safe.",
+      step5Body: "Watch your ride live, and share it with someone you trust.",
     },
     audiences: {
       eyebrow: "Built for three kinds of people",
@@ -66,7 +66,7 @@ const I18N = {
       sub: "Every part of RideArrivo was built around one question: would you feel comfortable if this were someone you love landing alone at night?",
       item1Title: "Verified identity, every time",
       item1Body: "See your driver's name, photo, and verification status before they ever arrive.",
-      item2Title: "Live tracking, not a promise",
+      item2Title: "Live tracking, not a promise but a fact",
       item2Body: "Watch the actual route on a live map from pickup to drop-off.",
       item3Title: "Share your ride",
       item3Body: "Send live trip details to someone you trust, in one tap.",
@@ -188,7 +188,7 @@ const I18N = {
   },
 
   fr: {
-    brand: "RideArrivo",
+    brand: "<span class=\"brand-ride\">Ride</span><span class=\"brand-arrivo\">Arrivo</span>",
     nav: {
       how: "Comment ça marche",
       audiences: "Pour qui",
@@ -337,7 +337,7 @@ const I18N = {
 };
 
 I18N.zh = {
-  brand: "RideArrivo",
+  brand: "<span class=\"brand-ride\">Ride</span><span class=\"brand-arrivo\">Arrivo</span>",
   nav: {
     how: "运作方式",
     audiences: "适用对象",
@@ -487,7 +487,7 @@ I18N.zh = {
 if (typeof module !== "undefined") module.exports = I18N;
 
 I18N.de = {
-  brand: "RideArrivo",
+  brand: "<span class=\"brand-ride\">Ride</span><span class=\"brand-arrivo\">Arrivo</span>",
   nav: {
     how: "So funktioniert's",
     audiences: "Für wen",
@@ -635,7 +635,7 @@ I18N.de = {
 };
 
 I18N.hi = {
-  brand: "RideArrivo",
+  brand: "<span class=\"brand-ride\">Ride</span><span class=\"brand-arrivo\">Arrivo</span>",
   nav: {
     how: "यह कैसे काम करता है",
     audiences: "किनके लिए है",
@@ -783,7 +783,7 @@ I18N.hi = {
 };
 
 I18N.es = {
-  brand: "RideArrivo",
+  brand: "<span class=\"brand-ride\">Ride</span><span class=\"brand-arrivo\">Arrivo</span>",
   nav: {
     how: "Cómo funciona",
     audiences: "Para quién",
@@ -931,7 +931,7 @@ I18N.es = {
 };
 
 I18N.pt = {
-  brand: "RideArrivo",
+  brand: "<span class=\"brand-ride\">Ride</span><span class=\"brand-arrivo\">Arrivo</span>",
   nav: {
     how: "Como funciona",
     audiences: "Para quem",
