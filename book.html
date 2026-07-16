@@ -70,8 +70,8 @@
   <ol class="progress" id="progress">
     <li data-step="1" class="active"><span data-i18n="booking.stepContact">Contact</span></li>
     <li data-step="2"><span data-i18n="booking.stepFlight">Flight</span></li>
-    <li data-step="3"><span data-i18n="booking.stepLuggage">Luggage</span></li>
-    <li data-step="4"><span data-i18n="booking.stepPickup">Pickup</span></li>
+    <li data-step="3"><span data-i18n="booking.stepPickup">Pickup</span></li>
+    <li data-step="4"><span data-i18n="booking.stepLuggage">Luggage</span></li>
     <li data-step="5"><span data-i18n="booking.stepReview">Review &amp; Pay</span></li>
   </ol>
 
@@ -156,7 +156,7 @@
     </section>
 
     <!-- STEP 3: Luggage & Vehicle -->
-    <section class="step" data-step="3" hidden>
+    <section class="step" data-step="4" hidden>
       <h2 data-i18n="booking.luggageTitle">Tell us your luggage</h2>
       <p class="step-sub" data-i18n="booking.luggageSub">So we send a vehicle that actually fits everything.</p>
 
@@ -222,7 +222,7 @@
     </section>
 
     <!-- STEP 4: Pickup & Drop-off -->
-    <section class="step" data-step="4" hidden>
+    <section class="step" data-step="3" hidden>
       <h2 data-i18n="booking.pickupTitle">Where should we pick you up?</h2>
 
       <div class="location-permission-box" id="locationPermissionBox">
@@ -494,5 +494,6 @@
      under HTTP referrer restrictions. -->
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLWAbQmxIAoGPP0LLDp6oTosaHZBa0Y5s&libraries=places&callback=initGoogleMaps"></script>
 <script src="pwa-register.js"></script>
+<script src="glass-effects.js?v=30"></script>
 </body>
 </html>

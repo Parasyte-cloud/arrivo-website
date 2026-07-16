@@ -97,8 +97,8 @@ a { color: inherit; text-decoration: none; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 13px 22px;
-  border-radius: 12px;
+  padding: 13px 26px;
+  border-radius: 999px;
   font-weight: 700;
   font-size: 14px;
   border: none;
@@ -120,6 +120,22 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid rgba(255,255,255,0.5);
   box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 -1px 0 rgba(0,0,0,0.1) inset, 0 8px 20px rgba(244,163,0,0.22);
   transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, background 0.3s ease;
+  --mx: 30%;
+  --my: 25%;
+}
+/* The real hallmark of Liquid Glass reference material (WWDC25): a bright,
+   concentrated highlight — not a flat tint — that reads as light bouncing
+   off a curved wet surface. This one sits at a fixed resting spot by
+   default and actually tracks the cursor on hover (see glass-effects.js),
+   which is what makes it feel dynamic rather than a static texture. */
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mx) var(--my), rgba(255,255,255,0.95), rgba(255,255,255,0.25) 30%, transparent 55%);
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  transition: background 0.4s ease;
 }
 /* Real Liquid Glass doesn't tint on interaction — it just catches more
    light. On hover the fill thins out (more of what's behind shows through)
@@ -155,12 +171,23 @@ a { color: inherit; text-decoration: none; }
   color: var(--ink);
   border: 1.5px solid var(--ink);
   transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease, background 0.2s ease;
+  --mx: 30%;
+  --my: 25%;
+}
+.btn-ghost::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mx) var(--my), rgba(255,255,255,0.9), rgba(255,255,255,0.2) 30%, transparent 55%);
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  transition: background 0.4s ease;
 }
 .btn-ghost:hover { background: rgba(255,255,255,0.75); border-color: rgba(18,18,59,0.5); }
 @media (prefers-reduced-motion: reduce) {
   .btn-primary:hover::after { animation: none; }
 }
-.btn-sm { padding: 11px 16px; font-size: 12.5px; min-height: 40px; box-sizing: border-box; display: inline-flex; align-items: center; white-space: nowrap; }
+.btn-sm { padding: 11px 20px; font-size: 12.5px; min-height: 40px; box-sizing: border-box; display: inline-flex; align-items: center; white-space: nowrap; }
 
 /* On the narrowest phones, the header-actions row (clock, language, book
    button, hamburger) gets tight enough that "Book a ride" was wrapping
@@ -734,6 +761,8 @@ a { color: inherit; text-decoration: none; }
   margin-top: 36px;
 }
 .card {
+  position: relative;
+  overflow: hidden;
   background: var(--glass-bg);
   backdrop-filter: url(#liquid-glass-refraction) blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
@@ -742,6 +771,17 @@ a { color: inherit; text-decoration: none; }
   padding: 28px 24px;
   box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 12px 28px rgba(18,18,59,0.06);
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --mx: 20%;
+  --my: 15%;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mx) var(--my), rgba(255,255,255,0.7), rgba(255,255,255,0.15) 30%, transparent 55%);
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  transition: background 0.4s ease;
 }
 .card:hover { transform: translateY(-3px) scale(1.008); }
 .icon-badge {
