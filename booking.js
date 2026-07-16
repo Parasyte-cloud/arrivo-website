@@ -36,7 +36,7 @@
     securityEscort: false, fleetSize: 0,
     distanceKm: null, durationMin: null,
     paymentMethod: "card", walletBalanceNaira: 0,
-    userLocation: null, locationPermission: null,
+    userLocation: null, locationPermission: null, excludedAreaMatch: null,
   };
 
   // ───────────────────────── i18n (same pattern as script.js) ─────────────────────────
@@ -378,8 +378,26 @@
       vehicleCards.forEach(function (card) {
         var isRecommended = card.getAttribute("data-vehicle") === recommended;
         card.classList.toggle("recommended", isRecommended);
-        if (!state.vehicleManuallyPicked && isRecommended) selectVehicle(card, false);
+
+        var maxPassengers = Number(card.getAttribute("data-max-passengers"));
+        var overCapacity = passengers > maxPassengers;
+        card.classList.toggle("over-capacity", overCapacity);
+
+        if (!state.vehicleManuallyPicked && isRecommended && !overCapacity) selectVehicle(card, false);
       });
+
+      // If the passenger count grew past what the manually-picked vehicle
+      // can actually hold, don't leave an invalid selection standing —
+      // fall back to whatever the auto-recommendation says fits instead.
+      if (state.vehicleManuallyPicked) {
+        var currentCard = vehicleCards.filter(function (c) { return c.getAttribute("data-vehicle") === state.vehicle; })[0];
+        var currentMax = currentCard ? Number(currentCard.getAttribute("data-max-passengers")) : Infinity;
+        if (passengers > currentMax) {
+          state.vehicleManuallyPicked = false;
+          var recommendedCard = vehicleCards.filter(function (c) { return c.getAttribute("data-vehicle") === recommended; })[0];
+          if (recommendedCard) selectVehicle(recommendedCard, false);
+        }
+      }
     }
 
     function selectVehicle(card, manual) {
@@ -395,7 +413,15 @@
     adultsInput.addEventListener("input", updateRecommendation);
     childrenInput.addEventListener("input", updateRecommendation);
     vehicleCards.forEach(function (card) {
-      card.addEventListener("click", function () { selectVehicle(card, true); });
+      card.addEventListener("click", function () {
+        var capacityError = document.getElementById("vehicleCapacityError");
+        if (card.classList.contains("over-capacity")) {
+          capacityError.hidden = false;
+          return;
+        }
+        capacityError.hidden = true;
+        selectVehicle(card, true);
+      });
     });
 
     updatePriceLabels();
@@ -405,8 +431,15 @@
       var adults = Number(adultsInput.value) || 0;
       var children = Number(childrenInput.value) || 0;
       passengersError.hidden = true;
+      document.getElementById("vehicleCapacityError").hidden = true;
       if (adults < 1) {
         passengersError.hidden = false;
+        return;
+      }
+      var selectedCard = vehicleCards.filter(function (c) { return c.getAttribute("data-vehicle") === state.vehicle; })[0];
+      var maxPassengers = selectedCard ? Number(selectedCard.getAttribute("data-max-passengers")) : Infinity;
+      if (adults + children > maxPassengers) {
+        document.getElementById("vehicleCapacityError").hidden = false;
         return;
       }
       state.adults = adults;
@@ -451,6 +484,14 @@
     suv: { mainland: 70000, island: 120000 },
     truck: { mainland: 70000, island: 120000 }, // not specified separately yet — using the SUV rate as a placeholder until given real truck figures
   };
+  // Hard capacity caps, not just a recommendation — a sedan genuinely
+  // can't safely carry more than a few passengers, and the point of this
+  // is to actually push larger groups toward a bigger vehicle or fleet
+  // accompaniment rather than let them cram into whatever they clicked.
+  // Truck's cap matches SUV here since its real differentiator is cargo/
+  // bulky-luggage space, not extra passenger seating — adjust if that's
+  // not the right assumption.
+  var MAX_PASSENGERS = { sedan: 3, suv: 6, truck: 6 };
   // Fleet accompaniment add-on, per vehicle type. Sedan and SUV happen to
   // share the same figures right now, but this is kept as a per-vehicle
   // table (not one flat number) since that's how it was specified —
@@ -462,19 +503,84 @@
   };
   var SECURITY_ESCORT_PRICE = 100000;
 
-  var ISLAND_KEYWORDS = ["victoria island", "ikoyi", "lekki", "lagos island", "eko atlantic", "banana island", "obalende", " vi ", "v.i."];
+  var ISLAND_KEYWORDS = ["victoria island", "ikoyi", "lekki", "lagos island", "eko atlantic", "banana island", "obalende", " vi ", "v.i.", "ajah", "chevron dr", "oniru"];
 
-  function detectZone(address) {
+  // Lagos Island (VI/Ikoyi/Lekki/Ajah) sits east of roughly this
+  // longitude; the mainland (Ikeja, Yaba, Surulere, Apapa, the airport)
+  // sits west of it. This is an approximation, not a precise boundary,
+  // but it's far more reliable than text matching alone — a keyword list
+  // only catches addresses where Google's formatted text happens to
+  // include the area name, and silently falls through to "mainland" for
+  // anything else (e.g. a specific building address with no neighbourhood
+  // name in it), which is exactly what made every fare look the same
+  // regardless of destination. Coordinates don't have that blind spot.
+  var ISLAND_LONGITUDE_THRESHOLD = 3.40;
+
+  function detectZone(address, latLng) {
     var a = (" " + (address || "").toLowerCase() + " ");
     for (var i = 0; i < ISLAND_KEYWORDS.length; i++) {
       if (a.indexOf(ISLAND_KEYWORDS[i]) !== -1) return "island";
     }
+    if (latLng) {
+      var lng = typeof latLng.lng === "function" ? latLng.lng() : latLng.lng;
+      if (typeof lng === "number" && lng > ISLAND_LONGITUDE_THRESHOLD) return "island";
+    }
     return "mainland";
   }
 
+  // ───────────────────────── Service area exclusion ─────────────────────────
+  // Areas we don't currently operate in — checked against both pickup and
+  // drop-off before a booking can proceed. Each entry can have keywords
+  // (matched against the address text — fast, catches anything Google
+  // formats with the area name in it) and/or a rough lat/lng bounding box
+  // (catches everything else, the way the zone-pricing fix above does,
+  // since keyword text alone silently misses addresses that don't happen
+  // to contain the area name). A box is defined as
+  // { minLat, maxLat, minLng, maxLng } — a simple rectangle is enough for
+  // a rough "don't operate out here yet" boundary; it doesn't need to be
+  // a precise polygon.
+  //
+  // THIS LIST IS CURRENTLY EMPTY — nothing is blocked yet. Replace the
+  // placeholder example below with the real areas once you send them, or
+  // add new entries in the same shape. Until real data goes in here, this
+  // whole feature is wired up and tested but has nothing to actually block.
+  var EXCLUDED_AREAS = [
+    // Example shape only — delete this once real areas are added:
+    // { name: "Example Outskirt", keywords: ["example area name"], box: { minLat: 6.0, maxLat: 6.1, minLng: 3.0, maxLng: 3.1 } },
+  ];
+
+  function findExcludedArea(address, latLng) {
+    var a = (" " + (address || "").toLowerCase() + " ");
+    for (var i = 0; i < EXCLUDED_AREAS.length; i++) {
+      var area = EXCLUDED_AREAS[i];
+      if (area.keywords) {
+        for (var k = 0; k < area.keywords.length; k++) {
+          if (a.indexOf(area.keywords[k].toLowerCase()) !== -1) return area;
+        }
+      }
+      if (area.box && latLng) {
+        var lat = typeof latLng.lat === "function" ? latLng.lat() : latLng.lat;
+        var lng = typeof latLng.lng === "function" ? latLng.lng() : latLng.lng;
+        if (typeof lat === "number" && typeof lng === "number" &&
+            lat >= area.box.minLat && lat <= area.box.maxLat &&
+            lng >= area.box.minLng && lng <= area.box.maxLng) {
+          return area;
+        }
+      }
+    }
+    return null;
+  }
+
+  // Flat operational surcharge on top of the base zone/vehicle rate —
+  // covers trolleys, fuel, and driver costs. Higher for Island since those
+  // trips typically run longer and cost more to service.
+  var ZONE_SURCHARGE = { mainland: 5000, island: 10000 };
+
   function zoneVehiclePrice(vehicle, zone) {
     var table = ZONE_VEHICLE_PRICES[vehicle] || ZONE_VEHICLE_PRICES.sedan;
-    return table[zone] || table.mainland;
+    var base = table[zone] || table.mainland;
+    var surcharge = ZONE_SURCHARGE[zone] || ZONE_SURCHARGE.mainland;
+    return base + surcharge;
   }
 
   function updatePriceLabels() {
@@ -588,18 +694,18 @@
       return;
     }
 
-    // Zone comes from the drop-off address text — no distance/duration API
-    // call needed for pricing at all, which is deliberately simpler and has
-    // no external dependency that can fail. Vehicle type isn't chosen yet
-    // at this step (Pickup now comes before vehicle selection), so this
-    // only shows the detected zone — actual per-vehicle prices appear on
-    // the vehicle cards at the next step, once both zone and type are known.
+    // Zone is detected from the drop-off's coordinates first (reliable
+    // regardless of how Google formats the address text), falling back to
+    // keyword matching on the address only when no coordinates were
+    // captured — e.g. the rider typed a destination and hit Enter without
+    // picking a suggestion from the autocomplete dropdown, so there's no
+    // geometry to check.
     var dropoffAddress = state.stops.length ? state.stops[state.stops.length - 1] : document.getElementById("fDropoff").value;
-    state.zone = detectZone(dropoffAddress);
+    state.zone = detectZone(dropoffAddress, state.dropoffLatLng);
     errEl.hidden = true;
 
     document.getElementById("fareDistanceText").textContent = state.zone === "island" ? "Lagos Island" : "Lagos Mainland";
-    document.getElementById("fareBaseText").textContent = "Sedan NGN " + ZONE_VEHICLE_PRICES.sedan[state.zone].toLocaleString() + " · SUV NGN " + ZONE_VEHICLE_PRICES.suv[state.zone].toLocaleString();
+    document.getElementById("fareBaseText").textContent = "Sedan NGN " + zoneVehiclePrice("sedan", state.zone).toLocaleString() + " · SUV NGN " + zoneVehiclePrice("suv", state.zone).toLocaleString();
     document.getElementById("fareSecurityRow").hidden = !state.securityEscort;
     var fleetRow = document.getElementById("fareFleetRow");
     fleetRow.hidden = !state.fleetSize;
@@ -672,8 +778,25 @@
       } else if (inputEl.id === "fDropoff") {
         state.dropoffLatLng = place.geometry.location;
       }
+      checkExcludedAreas();
       recalculateFareEstimate();
     });
+  }
+
+  function checkExcludedAreas() {
+    var errEl = document.getElementById("excludedAreaError");
+    if (!errEl) return;
+    var pickupText = document.getElementById("fPickup") ? document.getElementById("fPickup").value : "";
+    var dropoffText = document.getElementById("fDropoff") ? document.getElementById("fDropoff").value : "";
+    var matched = findExcludedArea(pickupText, state.pickupLatLng) || findExcludedArea(dropoffText, state.dropoffLatLng);
+    state.excludedAreaMatch = matched;
+    if (matched) {
+      errEl.hidden = false;
+      errEl.textContent = "We don't currently operate in " + matched.name + ". Please choose a different pickup or drop-off location.";
+    } else {
+      errEl.hidden = true;
+    }
+    return matched;
   }
 
   function initRouteMap() {
@@ -762,6 +885,8 @@
         if (!dropoff) document.getElementById("fDropoff").style.borderColor = "var(--coral)";
         return;
       }
+
+      if (checkExcludedAreas()) return; // error message already shown by checkExcludedAreas()
 
       var waypoints = Array.prototype.slice.call(stopsList.querySelectorAll(".stop-input"))
         .map(function (i) { return i.value.trim(); })

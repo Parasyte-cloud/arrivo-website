@@ -65,7 +65,7 @@ const I18N = {
       title: "Safety isn't a feature.<br>It's the whole design.",
       sub: "Every part of <span class=\"brand-ride\">Ride</span><span class=\"brand-arrivo\">Arrivo</span> was built around one question: would you feel comfortable if this were someone you love landing alone at night?",
       item1Title: "Verified identity, every time",
-      item1Body: "See your driver's name, photo, and verification status before they ever arrive.",
+      item1Body: "See your driver's name, photo, and verification status before they even arrive.",
       item2Title: "Live tracking, not a promise but a fact",
       item2Body: "Watch the actual route on a live map from pickup to drop-off.",
       item3Title: "Share your ride",
