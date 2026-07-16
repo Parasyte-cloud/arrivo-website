@@ -32,6 +32,9 @@
     vehicle: "sedan", vehicleBasePrice: 8500,
     vehicleManuallyPicked: false,
     pickup: "", stops: [],
+    pickupLatLng: null, dropoffLatLng: null,
+    securityEscort: false, fleetSize: 0,
+    distanceKm: null, durationMin: null, calculatedFareNaira: null,
   };
 
   // ───────────────────────── i18n (same pattern as script.js) ─────────────────────────
@@ -435,6 +438,100 @@
     window.__googleMapsReady = true;
   };
 
+  // ───────────────────────── Uber-style distance-based pricing ─────────────────────────
+  // Only applies to one-way bookings. Full day/week/month bookings are
+  // chauffeur-style flat-rate pricing (a day rate doesn't scale with a
+  // single route's distance the way a one-off pickup does) — those keep
+  // using the existing vehicleBasePrice × booking-type multiplier shown
+  // at the vehicle-selection step.
+  var FARE_BASE = 1000;
+  var FARE_PER_KM = 150;
+  var FARE_PER_MIN = 30;
+  var FARE_MINIMUM = 2500;
+  var VEHICLE_FARE_MULTIPLIER = { sedan: 1, suv: 1.3, truck: 1.6 };
+  var SECURITY_ESCORT_PRICE = 100000;
+  var FLEET_PRICE = { 2: 70000, 3: 100000 };
+
+  function calculateDistanceBasedFare(distanceKm, durationMin) {
+    var raw = FARE_BASE + (distanceKm * FARE_PER_KM) + (durationMin * FARE_PER_MIN);
+    var withMinimum = Math.max(raw, FARE_MINIMUM);
+    return Math.round(withMinimum * (VEHICLE_FARE_MULTIPLIER[state.vehicle] || 1));
+  }
+
+  function recalculateFareEstimate() {
+    var box = document.getElementById("fareEstimateBox");
+    var errEl = document.getElementById("fareError");
+    if (!box) return;
+
+    if (state.bookingType !== "one_way") {
+      box.hidden = true;
+      errEl.hidden = true;
+      return;
+    }
+    if (!state.pickupLatLng || !state.dropoffLatLng) {
+      box.hidden = true;
+      return;
+    }
+    if (!window.google || !window.google.maps) {
+      errEl.hidden = false;
+      return;
+    }
+
+    var service = new google.maps.DistanceMatrixService();
+    service.getDistanceMatrix({
+      origins: [state.pickupLatLng],
+      destinations: [state.dropoffLatLng],
+      travelMode: google.maps.TravelMode.DRIVING,
+    }, function (response, status) {
+      var el = status === "OK" && response.rows[0] && response.rows[0].elements[0];
+      if (!el || el.status !== "OK") {
+        errEl.hidden = false;
+        box.hidden = true;
+        return;
+      }
+      errEl.hidden = true;
+
+      var km = el.distance.value / 1000;
+      var min = el.duration.value / 60;
+      state.distanceKm = km;
+      state.durationMin = min;
+
+      var baseFare = calculateDistanceBasedFare(km, min);
+      var total = baseFare;
+      if (state.securityEscort) total += SECURITY_ESCORT_PRICE;
+      if (state.fleetSize) total += FLEET_PRICE[state.fleetSize] || 0;
+      state.calculatedFareNaira = total;
+
+      document.getElementById("fareDistanceText").textContent = km.toFixed(1) + " km, ~" + Math.round(min) + " min";
+      document.getElementById("fareBaseText").textContent = "NGN " + baseFare.toLocaleString();
+      document.getElementById("fareSecurityRow").hidden = !state.securityEscort;
+      var fleetRow = document.getElementById("fareFleetRow");
+      fleetRow.hidden = !state.fleetSize;
+      if (state.fleetSize) {
+        document.getElementById("fareFleetLabel").textContent = "Fleet of " + state.fleetSize;
+        document.getElementById("fareFleetAmount").textContent = "+NGN " + FLEET_PRICE[state.fleetSize].toLocaleString();
+      }
+      document.getElementById("fareTotalText").textContent = "NGN " + total.toLocaleString();
+      box.hidden = false;
+    });
+  }
+
+  var securityEscortCheckbox = document.getElementById("fSecurityEscort");
+  if (securityEscortCheckbox) {
+    securityEscortCheckbox.addEventListener("change", function () {
+      state.securityEscort = securityEscortCheckbox.checked;
+      recalculateFareEstimate();
+    });
+  }
+  document.querySelectorAll("#fleetChips .chip").forEach(function (chip) {
+    chip.addEventListener("click", function () {
+      document.querySelectorAll("#fleetChips .chip").forEach(function (c) { c.classList.remove("selected"); });
+      chip.classList.add("selected");
+      state.fleetSize = Number(chip.getAttribute("data-fleet"));
+      recalculateFareEstimate();
+    });
+  });
+
   function attachPlacesAutocomplete(inputEl) {
     if (!inputEl || autocompleteAttachedTo.indexOf(inputEl) !== -1) return;
     if (!window.google || !window.google.maps || !window.google.maps.places) return;
@@ -449,9 +546,17 @@
       var place = autocomplete.getPlace();
       // A place with no geometry means the visitor typed free text and hit
       // Enter without picking a suggestion from the dropdown — that's still
-      // a valid address to us, we just can't show it on the map preview.
+      // a valid address to us, we just can't show it on the map preview,
+      // and we can't calculate a real distance-based fare for it either.
       if (!place.geometry || !place.geometry.location) return;
       updateMapMarker(place.geometry.location, place.formatted_address || place.name || inputEl.value);
+
+      if (inputEl.id === "fPickup") {
+        state.pickupLatLng = place.geometry.location;
+      } else if (inputEl.id === "fDropoff") {
+        state.dropoffLatLng = place.geometry.location;
+      }
+      recalculateFareEstimate();
     });
   }
 
@@ -555,11 +660,29 @@
   }
 
   // ───────────────────────── Step 5: Review & Pay ─────────────────────────
+  // One shared source of truth for the final fare, used both in the review
+  // display and the actual submission payload — this was previously
+  // computed inline in three separate places, and never accounted for
+  // distance, security escort, or fleet accompaniment at all.
+  function getFinalFare() {
+    var baseFare;
+    if (state.bookingType === "one_way" && state.calculatedFareNaira != null) {
+      baseFare = state.calculatedFareNaira - (state.securityEscort ? SECURITY_ESCORT_PRICE : 0) - (FLEET_PRICE[state.fleetSize] || 0);
+    } else {
+      baseFare = state.vehicleBasePrice * state.multiplier;
+    }
+    var total = baseFare;
+    if (state.securityEscort) total += SECURITY_ESCORT_PRICE;
+    if (state.fleetSize) total += FLEET_PRICE[state.fleetSize] || 0;
+    return { baseFare: baseFare, total: total };
+  }
+
   function renderReview() {
     var list = document.getElementById("reviewList");
     var vehicleLabel = t("booking.vehicle" + state.vehicle.charAt(0).toUpperCase() + state.vehicle.slice(1));
     var bookingLabel = t("booking.type" + toPascalCase(state.bookingType));
-    var totalFare = state.vehicleBasePrice * state.multiplier;
+    var fare = getFinalFare();
+    var totalFare = fare.total;
 
     var rows = [
       [t("booking.reviewContact"), escapeHtml(state.name) + " · " + escapeHtml(state.email)],
@@ -572,9 +695,11 @@
       [t("booking.reviewBookingType"), escapeHtml(bookingLabel)],
       [t("booking.reviewPassengers"), state.adults + " adult" + (state.adults === 1 ? "" : "s") + (state.children > 0 ? ", " + state.children + " child" + (state.children === 1 ? "" : "ren") : "")],
       [t("booking.reviewFlight"), escapeHtml(state.flightNumber) || "N/A"],
-      [t("booking.reviewVehicle"), escapeHtml(vehicleLabel) + " · NGN " + totalFare.toLocaleString()],
+      [t("booking.reviewVehicle"), escapeHtml(vehicleLabel) + " · NGN " + fare.baseFare.toLocaleString()],
       [t("booking.reviewPickup"), escapeHtml([state.pickup].concat(state.stops).join(" → "))]
     );
+    if (state.securityEscort) rows.push(["Security escort", "+NGN " + SECURITY_ESCORT_PRICE.toLocaleString()]);
+    if (state.fleetSize) rows.push(["Fleet accompaniment", "Fleet of " + state.fleetSize + " · +NGN " + FLEET_PRICE[state.fleetSize].toLocaleString()]);
     list.innerHTML = rows.map(function (r) {
       return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>";
     }).join("");
@@ -607,7 +732,11 @@
             stops: state.stops,
             flightNumber: state.flightNumber || null,
             vehicleType: state.vehicle,
-            fareNaira: state.vehicleBasePrice * state.multiplier,
+            fareNaira: getFinalFare().total,
+            distanceKm: state.distanceKm,
+            durationMin: state.durationMin,
+            securityEscort: state.securityEscort,
+            fleetSize: state.fleetSize,
             paymentReference: reference,
             bookingType: state.bookingType,
             durationDays: state.durationDays,
@@ -699,7 +828,7 @@
       var handler = PaystackPop.setup({
         key: PAYSTACK_PUBLIC_KEY,
         email: state.email,
-        amount: state.vehicleBasePrice * state.multiplier * 100,
+        amount: getFinalFare().total * 100,
         currency: "NGN",
         metadata: { name: state.name, phone: state.phone },
         callback: function (response) { handlePaymentSuccess(response.reference); },

@@ -51,6 +51,43 @@
 .field:focus { outline: 2px solid var(--amber); outline-offset: 1px; }
 .field-label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
 
+.addon-section { margin: 18px 0; padding: 16px; background: var(--cream); border-radius: 12px; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.chip {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--card-border);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.chip:hover { transform: translateY(-1px); }
+.chip.selected { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+.fare-estimate-box {
+  margin: 18px 0;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1.5px solid var(--card-border);
+  border-radius: 12px;
+}
+.fare-estimate-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  padding: 5px 0;
+}
+.fare-estimate-total {
+  border-top: 1px solid var(--card-border);
+  margin-top: 6px;
+  padding-top: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink);
+}
+
 .checkbox-row {
   display: flex;
   align-items: flex-start;

@@ -36,7 +36,7 @@
   <div class="wrap header-inner">
     <a href="index.html" class="brand">
       <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
-      <span data-i18n="brand">RideArrivo</span>
+      <span data-i18n="brand"><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span></span>
     </a>
     <nav class="main-nav" aria-label="Primary">
       <a href="index.html#how" data-i18n="nav.how">How it works</a>
@@ -244,6 +244,28 @@
       <div id="routeMap" class="route-map"></div>
       <p class="error-text" id="mapsError" hidden>Map search isn't available right now. You can still type an address directly.</p>
 
+      <div class="addon-section">
+        <label class="checkbox-row">
+          <input type="checkbox" id="fSecurityEscort">
+          <span>Add a personal security escort <strong>(+NGN 100,000)</strong></span>
+        </label>
+        <label class="field-label" style="margin-top:6px;">Fleet accompaniment</label>
+        <div class="chip-row" id="fleetChips">
+          <div class="chip selected" data-fleet="0">None</div>
+          <div class="chip" data-fleet="2">2 vehicles <strong>(+NGN 70,000)</strong></div>
+          <div class="chip" data-fleet="3">3 vehicles <strong>(+NGN 100,000)</strong></div>
+        </div>
+      </div>
+
+      <div class="fare-estimate-box" id="fareEstimateBox" hidden>
+        <div class="fare-estimate-row"><span data-i18n="booking.fareDistance">Estimated distance</span><span id="fareDistanceText"></span></div>
+        <div class="fare-estimate-row"><span data-i18n="booking.fareBase">Base fare</span><span id="fareBaseText"></span></div>
+        <div class="fare-estimate-row" id="fareSecurityRow" hidden><span>Security escort</span><span>+NGN 100,000</span></div>
+        <div class="fare-estimate-row" id="fareFleetRow" hidden><span id="fareFleetLabel">Fleet accompaniment</span><span id="fareFleetAmount"></span></div>
+        <div class="fare-estimate-row fare-estimate-total"><span data-i18n="booking.fareTotal">Estimated total</span><span id="fareTotalText"></span></div>
+      </div>
+      <p class="error-text" id="fareError" hidden>Couldn't calculate a distance-based fare for this route. You can still continue — we'll confirm the exact fare before you pay.</p>
+
       <div class="step-actions">
         <button class="btn btn-ghost" id="backTo3" data-i18n="booking.back">Back</button>
         <button class="btn btn-primary" id="pickupContinue" data-i18n="booking.continue">Continue</button>
@@ -328,7 +350,7 @@
     <div class="footer-brand-col">
       <div class="footer-brand">
         <img src="assets/icon.png" alt="" width="22" height="22">
-        <span data-i18n="brand">RideArrivo</span>
+        <span data-i18n="brand"><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span></span>
       </div>
       <p class="footer-tagline" data-i18n="footer.tagline">Lagos airport pickups, done right.</p>
       <div class="footer-social-row">

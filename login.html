@@ -1,94 +1,124 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Log in — Arrivo</title>
+<title>Log in | RideArrivo</title>
+<meta name="description" content="Log in to your RideArrivo account.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#12123B">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Arrivo">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="booking.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=30">
+<link rel="stylesheet" href="booking.css?v=30">
+<style>
+  .auth-wrap { max-width: 440px; margin: 0 auto; padding: 48px 20px 60px; }
+  .auth-wrap h1 { margin-bottom: 24px; }
+  .auth-card { }
+  .auth-footer-link { text-align: center; margin-top: 20px; font-size: 13.5px; color: var(--text-muted); }
+  .auth-footer-link a { color: var(--teal, var(--primary)); font-weight: 600; }
+</style>
 </head>
 <body>
+
+<svg style="position:absolute; width:0; height:0; overflow:hidden;" aria-hidden="true">
+  <filter id="liquid-glass-refraction" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.010 0.018" numOctaves="2" seed="7" result="noise"/>
+    <feGaussianBlur in="noise" stdDeviation="2" result="softNoise"/>
+    <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
 
 <header class="site-header">
   <div class="wrap header-inner">
     <a href="index.html" class="brand">
       <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
-      <span>arrivo</span>
+      <span><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span></span>
     </a>
   </div>
 </header>
 
-<main class="wrap booking-wrap" style="max-width: 420px;">
+<main class="auth-wrap">
   <h1>Log in</h1>
-
-  <div class="booking-card">
-    <input type="email" id="fEmail" class="field" placeholder="Email address">
-    <input type="password" id="fPassword" class="field" placeholder="Password">
-
+  <div class="booking-card auth-card">
+    <input type="email" id="fEmail" class="field" placeholder="Email address" autocomplete="email">
+    <input type="password" id="fPassword" class="field" placeholder="Password" autocomplete="current-password">
     <p class="error-text" id="loginError" hidden></p>
-    <button class="btn btn-primary" id="loginBtn" style="width:100%;">Log in</button>
-    <a href="forgot-password.html" style="display:block;margin-top:12px;font-size:12.5px;color:var(--teal); text-align:center;">Forgot your password?</a>
+    <button type="button" class="btn btn-primary" id="loginBtn" style="width:100%;">Log in</button>
+    <p style="text-align:center; margin-top:14px;">
+      <a href="forgot-password.html" style="font-size:13px; color:var(--teal, var(--primary));">Forgot your password?</a>
+    </p>
   </div>
-
-  <p style="color:var(--text-muted);font-size:12.5px;margin-top:16px;">
-    New to Arrivo? <a href="signup.html" id="signupLink" style="color:var(--teal);">Create a profile</a>.
-  </p>
+  <p class="auth-footer-link">New to RideArrivo? <a href="signup.html">Create a profile</a>.</p>
 </main>
 
 <script>
   var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
+  var TOKEN_KEY = "arrivo_rider_token";
 
-  var nextParam = new URLSearchParams(window.location.search).get("next") || "book.html";
-  document.getElementById("signupLink").setAttribute("href", "signup.html?next=" + encodeURIComponent(nextParam));
+  function api(path, options) {
+    options = options || {};
+    return fetch(API_BASE_URL + path, options).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        return { ok: res.ok, status: res.status, data: data };
+      });
+    });
+  }
 
-  document.getElementById("loginBtn").addEventListener("click", function () {
-    var email = document.getElementById("fEmail").value.trim();
-    var password = document.getElementById("fPassword").value;
-    var errEl = document.getElementById("loginError");
-    errEl.hidden = true;
+  function getNextUrl() {
+    var params = new URLSearchParams(window.location.search);
+    return params.get("next") || "account.html";
+  }
 
-    if (!email || !password) {
-      errEl.hidden = false;
-      errEl.textContent = "Please enter your email and password.";
+  document.addEventListener("DOMContentLoaded", function () {
+    // Already logged in? Skip straight past this page.
+    if (localStorage.getItem(TOKEN_KEY)) {
+      window.location.href = getNextUrl();
       return;
     }
 
+    var errEl = document.getElementById("loginError");
     var btn = document.getElementById("loginBtn");
-    btn.disabled = true;
-    btn.textContent = "Logging in…";
 
-    fetch(API_BASE_URL + "/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email, password: password }),
-    })
-      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-      .then(function (result) {
-        if (!result.ok) {
-          errEl.hidden = false;
-          errEl.textContent = result.data.error || "Invalid email or password.";
-          btn.disabled = false;
-          btn.textContent = "Log in";
-          return;
-        }
-        localStorage.setItem("arrivo_rider_token", result.data.token);
-        window.location.href = nextParam;
-      })
-      .catch(function () {
+    function attemptLogin() {
+      var email = document.getElementById("fEmail").value.trim();
+      var password = document.getElementById("fPassword").value;
+      errEl.hidden = true;
+
+      if (!email || !password) {
         errEl.hidden = false;
-        errEl.textContent = "Couldn't reach the server. Please try again.";
+        errEl.textContent = "Please enter your email and password.";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Logging in…";
+
+      api("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email, password: password }),
+      }).then(function (result) {
         btn.disabled = false;
         btn.textContent = "Log in";
+        if (!result.ok) {
+          errEl.hidden = false;
+          errEl.textContent = result.data.error || "Couldn't log in. Check your email and password.";
+          return;
+        }
+        localStorage.setItem(TOKEN_KEY, result.data.token);
+        window.location.href = getNextUrl();
+      }).catch(function () {
+        btn.disabled = false;
+        btn.textContent = "Log in";
+        errEl.hidden = false;
+        errEl.textContent = "Couldn't reach the server. Please try again.";
       });
+    }
+
+    btn.addEventListener("click", attemptLogin);
+    document.getElementById("fPassword").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") attemptLogin();
+    });
   });
 </script>
 </body>

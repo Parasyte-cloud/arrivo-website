@@ -1,210 +1,149 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Create your profile — Arrivo</title>
+<title>Create a profile | RideArrivo</title>
+<meta name="description" content="Create your RideArrivo profile to book airport pickups and rides across Lagos.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#12123B">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Arrivo">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="booking.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=30">
+<link rel="stylesheet" href="booking.css?v=30">
+<style>
+  .auth-wrap { max-width: 460px; margin: 0 auto; padding: 48px 20px 60px; }
+  .auth-wrap h1 { margin-bottom: 24px; }
+  .auth-footer-link { text-align: center; margin-top: 20px; font-size: 13.5px; color: var(--text-muted); }
+  .auth-footer-link a { color: var(--teal, var(--primary)); font-weight: 600; }
+</style>
 </head>
 <body>
+
+<svg style="position:absolute; width:0; height:0; overflow:hidden;" aria-hidden="true">
+  <filter id="liquid-glass-refraction" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.010 0.018" numOctaves="2" seed="7" result="noise"/>
+    <feGaussianBlur in="noise" stdDeviation="2" result="softNoise"/>
+    <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
 
 <header class="site-header">
   <div class="wrap header-inner">
     <a href="index.html" class="brand">
       <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
-      <span>arrivo</span>
+      <span><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span></span>
     </a>
   </div>
 </header>
 
-<main class="wrap booking-wrap" style="max-width: 480px;">
-  <h1>Create your profile</h1>
-
-  <div class="booking-card" id="formCard">
-    <div style="text-align:center; margin-bottom:18px;">
-      <label for="fAvatarInput" style="cursor:pointer; display:inline-block;">
-        <div id="avatarPreview" style="width:88px; height:88px; border-radius:50%; background:#eee; margin:0 auto; display:flex; align-items:center; justify-content:center; overflow:hidden; border:2px dashed var(--card-border);">
-          <span style="font-size:28px; color:#bbb;">＋</span>
-        </div>
-        <div style="font-size:12px; color:var(--teal); font-weight:700; margin-top:8px;">Add profile photo</div>
-      </label>
-      <input type="file" id="fAvatarInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
-      <p class="error-text" id="avatarError" hidden style="text-align:center;"></p>
-    </div>
-    <input type="text" id="fFirstName" class="field" placeholder="First name">
-    <input type="text" id="fLastName" class="field" placeholder="Last name">
-    <input type="email" id="fEmail" class="field" placeholder="Email address">
-    <input type="text" id="fPassport" class="field" placeholder="Identification number (optional)">
-    <p style="font-size:11.5px;color:var(--text-muted);margin:-6px 0 12px;">Any government-licensed ID — passport, NIN, etc.</p>
-    <input type="tel" id="fPhone" class="field" placeholder="Telephone number">
-    <input type="password" id="fPassword" class="field" placeholder="Create password">
-    <input type="password" id="fConfirmPassword" class="field" placeholder="Confirm password">
+<main class="auth-wrap">
+  <h1>Create a profile</h1>
+  <div class="booking-card">
+    <input type="text" id="fFirstName" class="field" placeholder="First name" autocomplete="given-name">
+    <input type="text" id="fLastName" class="field" placeholder="Last name" autocomplete="family-name">
+    <input type="email" id="fEmail" class="field" placeholder="Email" autocomplete="email">
+    <label class="field-label">WhatsApp number</label>
+    <div id="signupPhoneContainer" style="margin-bottom:14px;"></div>
+    <input type="text" id="fCountry" class="field" placeholder="Country of residence" autocomplete="country-name">
+    <input type="password" id="fPassword" class="field" placeholder="Password" autocomplete="new-password">
+    <input type="password" id="fPasswordConfirm" class="field" placeholder="Confirm password" autocomplete="new-password">
 
     <label class="checkbox-row">
       <input type="checkbox" id="fAgree">
-      <span>I agree to Arrivo's <a href="#" id="openPrivacyModal" style="color:var(--teal);text-decoration:underline;">data protection &amp; privacy policy</a>.</span>
+      <span>I agree to RideArrivo's <a href="privacy.html" target="_blank" style="color:var(--teal, var(--primary));text-decoration:underline;">privacy policy</a> and <a href="terms.html" target="_blank" style="color:var(--teal, var(--primary));text-decoration:underline;">terms of service</a>.</span>
     </label>
 
     <p class="error-text" id="signupError" hidden></p>
-    <button class="btn btn-primary" id="signupBtn" style="width:100%;">Create profile</button>
+    <button type="button" class="btn btn-primary" id="signupBtn" style="width:100%;margin-top:6px;">Create profile</button>
   </div>
-
-  <div class="booking-card" id="successCard" hidden style="text-align:center;">
-    <div style="width:56px;height:56px;border-radius:50%;background:var(--teal);color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">✓</div>
-    <h2 style="font-size:19px;">Profile created</h2>
-    <p style="color:var(--text-muted);font-size:13.5px;">We've sent a verification link to your email — no need to wait for it though, you're already signed in.</p>
-    <a href="book.html" class="btn btn-primary" id="continueLink" style="width:100%;margin-top:12px;">Continue to booking</a>
-  </div>
-
-  <p style="color:var(--text-muted);font-size:12.5px;margin-top:16px;">
-    Already have a profile? <a href="login.html" id="loginLink" style="color:var(--teal);">Log in</a>.
-  </p>
+  <p class="auth-footer-link">Already have a profile? <a href="login.html">Log in</a>.</p>
 </main>
 
-<!-- Privacy policy popup -->
-<div id="privacyModal" style="display:none; position:fixed; inset:0; background:rgba(18,18,59,0.6); z-index:100; align-items:center; justify-content:center; padding:20px;">
-  <div style="background:#fff; border-radius:16px; max-width:560px; width:100%; max-height:80vh; display:flex; flex-direction:column;">
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 20px; border-bottom:1px solid var(--card-border);">
-      <strong style="font-family:'Space Grotesk',sans-serif;">Data Protection &amp; Privacy Policy</strong>
-      <button id="closePrivacyModal" style="all:unset; cursor:pointer; font-size:18px; color:var(--text-muted); padding:4px 8px;">✕</button>
-    </div>
-    <iframe src="privacy.html" style="flex:1; border:none; min-height:400px;"></iframe>
-    <div style="padding:16px 20px; border-top:1px solid var(--card-border);">
-      <button class="btn btn-primary" id="agreeInModalBtn" style="width:100%;">I've read this — I agree</button>
-    </div>
-  </div>
-</div>
-
+<script src="phone-input.js?v=30"></script>
 <script>
   var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
+  var TOKEN_KEY = "arrivo_rider_token";
 
-  var nextParam = new URLSearchParams(window.location.search).get("next");
-  if (nextParam) {
-    document.getElementById("loginLink").setAttribute("href", "login.html?next=" + encodeURIComponent(nextParam));
+  function api(path, options) {
+    options = options || {};
+    return fetch(API_BASE_URL + path, options).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        return { ok: res.ok, status: res.status, data: data };
+      });
+    });
   }
 
-  document.getElementById("openPrivacyModal").addEventListener("click", function (e) {
-    e.preventDefault();
-    document.getElementById("privacyModal").style.display = "flex";
-  });
-  document.getElementById("closePrivacyModal").addEventListener("click", function () {
-    document.getElementById("privacyModal").style.display = "none";
-  });
-  document.getElementById("agreeInModalBtn").addEventListener("click", function () {
-    document.getElementById("fAgree").checked = true;
-    document.getElementById("privacyModal").style.display = "none";
-  });
+  function getNextUrl() {
+    var params = new URLSearchParams(window.location.search);
+    return params.get("next") || "account.html";
+  }
 
-  var avatarDataUrl = null;
-  var MAX_AVATAR_MB = 4;
-
-  document.getElementById("fAvatarInput").addEventListener("change", function (e) {
-    var file = e.target.files[0];
-    var avatarErr = document.getElementById("avatarError");
-    avatarErr.hidden = true;
-    if (!file) return;
-
-    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
-      avatarErr.hidden = false;
-      avatarErr.textContent = "Please choose a PNG, JPEG, or WEBP image.";
-      e.target.value = "";
-      return;
-    }
-    if (file.size > MAX_AVATAR_MB * 1024 * 1024) {
-      avatarErr.hidden = false;
-      avatarErr.textContent = "Please choose an image smaller than " + MAX_AVATAR_MB + "MB.";
-      e.target.value = "";
+  document.addEventListener("DOMContentLoaded", function () {
+    if (localStorage.getItem(TOKEN_KEY)) {
+      window.location.href = getNextUrl();
       return;
     }
 
-    var reader = new FileReader();
-    reader.onload = function () {
-      avatarDataUrl = reader.result;
-      document.getElementById("avatarPreview").innerHTML =
-        '<img src="' + avatarDataUrl + '" style="width:100%; height:100%; object-fit:cover;">';
-    };
-    reader.readAsDataURL(file);
-  });
-
-  document.getElementById("signupBtn").addEventListener("click", function () {
+    var phoneField = arrivoBuildPhoneInput(document.getElementById("signupPhoneContainer"), { placeholder: "WhatsApp number" });
     var errEl = document.getElementById("signupError");
-    errEl.hidden = true;
-
-    var payload = {
-      firstName: document.getElementById("fFirstName").value.trim(),
-      lastName: document.getElementById("fLastName").value.trim(),
-      email: document.getElementById("fEmail").value.trim(),
-      passportNumber: document.getElementById("fPassport").value.trim() || undefined,
-      phone: document.getElementById("fPhone").value.trim(),
-      password: document.getElementById("fPassword").value,
-      confirmPassword: document.getElementById("fConfirmPassword").value,
-      agreedToTerms: document.getElementById("fAgree").checked,
-      avatarDataUrl: avatarDataUrl || undefined,
-    };
-
-    if (!payload.firstName || !payload.lastName || !payload.email || !payload.password) {
-      errEl.hidden = false;
-      errEl.textContent = "Please fill in your name, email, and password.";
-      return;
-    }
-    if (payload.password !== payload.confirmPassword) {
-      errEl.hidden = false;
-      errEl.textContent = "Passwords do not match.";
-      return;
-    }
-    if (!payload.agreedToTerms) {
-      errEl.hidden = false;
-      errEl.textContent = "You must agree to the privacy policy to continue.";
-      return;
-    }
-
     var btn = document.getElementById("signupBtn");
-    btn.disabled = true;
-    btn.textContent = "Creating…";
 
-    fetch(API_BASE_URL + "/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
-      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-      .then(function (result) {
-        if (!result.ok) {
-          errEl.hidden = false;
-          errEl.textContent = result.data.error || "Something went wrong.";
-          btn.disabled = false;
-          btn.textContent = "Create profile";
-          return;
-        }
-        localStorage.setItem("arrivo_rider_token", result.data.token);
+    btn.addEventListener("click", function () {
+      var firstName = document.getElementById("fFirstName").value.trim();
+      var lastName = document.getElementById("fLastName").value.trim();
+      var email = document.getElementById("fEmail").value.trim();
+      var country = document.getElementById("fCountry").value.trim();
+      var password = document.getElementById("fPassword").value;
+      var passwordConfirm = document.getElementById("fPasswordConfirm").value;
+      var agreed = document.getElementById("fAgree").checked;
+      errEl.hidden = true;
 
-        document.getElementById("formCard").hidden = true;
-        document.getElementById("successCard").hidden = false;
+      var phoneResult = phoneField.getValue();
 
-        var nextUrl = new URLSearchParams(window.location.search).get("next") || "book.html";
-        document.getElementById("continueLink").setAttribute("href", nextUrl);
-        // Auto-continue after a moment — the button above still works
-        // immediately for anyone who doesn't want to wait.
-        setTimeout(function () { window.location.href = nextUrl; }, 1800);
-      })
-      .catch(function () {
-        errEl.hidden = false;
-        errEl.textContent = "Couldn't reach the server. Please try again.";
+      if (!firstName || !lastName || !email) {
+        errEl.hidden = false; errEl.textContent = "Please fill in your name and email."; return;
+      }
+      if (!phoneResult.valid) {
+        errEl.hidden = false; errEl.textContent = phoneResult.message; return;
+      }
+      if (!password || password.length < 8) {
+        errEl.hidden = false; errEl.textContent = "Password must be at least 8 characters."; return;
+      }
+      if (password !== passwordConfirm) {
+        errEl.hidden = false; errEl.textContent = "Passwords don't match."; return;
+      }
+      if (!agreed) {
+        errEl.hidden = false; errEl.textContent = "Please agree to the privacy policy and terms of service."; return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Creating your profile…";
+
+      api("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: firstName, lastName: lastName, email: email, password: password, confirmPassword: passwordConfirm,
+          whatsappNumber: phoneResult.full, countryOfResidence: country || null, agreedToTerms: agreed, role: "rider",
+        }),
+      }).then(function (result) {
         btn.disabled = false;
         btn.textContent = "Create profile";
+        if (!result.ok) {
+          errEl.hidden = false;
+          errEl.textContent = result.data.error || "Couldn't create your profile. Please try again.";
+          return;
+        }
+        localStorage.setItem(TOKEN_KEY, result.data.token);
+        window.location.href = getNextUrl();
+      }).catch(function () {
+        btn.disabled = false;
+        btn.textContent = "Create profile";
+        errEl.hidden = false;
+        errEl.textContent = "Couldn't reach the server. Please try again.";
       });
+    });
   });
 </script>
-<script src="pwa-register.js"></script>
 </body>
 </html>
