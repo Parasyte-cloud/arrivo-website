@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Book a pickup | <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span></title>
+<title>Book a pickup | RideArrivo</title>
 <meta name="description" content="Book your Lagos airport pickup online. Choose your vehicle, pay securely, and track your ride live. No app required.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RideArrivo">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=30">
 <link rel="stylesheet" href="booking.css?v=30">
 </head>
@@ -198,22 +198,26 @@
       </label>
 
       <div class="vehicle-options" id="vehicleOptions">
-        <button type="button" class="vehicle-card" data-vehicle="sedan" data-price="8500">
-          <span class="v-name" data-i18n="booking.vehicleSedan">Sedan</span>
+        <button type="button" class="vehicle-card" data-vehicle="sedan" data-price="8500" data-max-passengers="3">
+          <span class="v-name" data-i18n="booking.vehicleSedan">Standard Sedan</span>
           <span class="v-price">NGN 8,500</span>
+          <span class="v-capacity">Fits up to 3 passengers</span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
-        <button type="button" class="vehicle-card" data-vehicle="suv" data-price="12500">
-          <span class="v-name" data-i18n="booking.vehicleSuv">SUV</span>
+        <button type="button" class="vehicle-card" data-vehicle="suv" data-price="12500" data-max-passengers="6">
+          <span class="v-name" data-i18n="booking.vehicleSuv">Premium SUV</span>
           <span class="v-price">NGN 12,500</span>
+          <span class="v-capacity">Fits up to 6 passengers</span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
-        <button type="button" class="vehicle-card" data-vehicle="truck" data-price="16000">
-          <span class="v-name" data-i18n="booking.vehicleTruck">Truck / Van</span>
+        <button type="button" class="vehicle-card" data-vehicle="truck" data-price="16000" data-max-passengers="6">
+          <span class="v-name" data-i18n="booking.vehicleTruck">Executive Vehicle</span>
           <span class="v-price">NGN 16,000</span>
+          <span class="v-capacity">Fits up to 6 passengers</span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
       </div>
+      <p class="error-text" id="vehicleCapacityError" hidden>This vehicle doesn't fit your group size. Choose a larger vehicle, or go back to the Pickup step to add fleet accompaniment for bigger groups.</p>
 
       <div class="step-actions">
         <button class="btn btn-ghost" id="backTo2" data-i18n="booking.back">Back</button>
@@ -252,6 +256,7 @@
 
       <div id="routeMap" class="route-map"></div>
       <p class="error-text" id="mapsError" hidden>Map search isn't available right now. You can still type an address directly.</p>
+      <p class="error-text" id="excludedAreaError" hidden></p>
 
       <div class="addon-section">
         <label class="checkbox-row">
@@ -273,7 +278,7 @@
         <div class="fare-estimate-row" id="fareFleetRow" hidden><span id="fareFleetLabel">Fleet accompaniment</span><span id="fareFleetAmount"></span></div>
         <div class="fare-estimate-row fare-estimate-total"><span data-i18n="booking.fareTotal">Estimated total</span><span id="fareTotalText"></span></div>
       </div>
-      <p class="error-text" id="fareError" hidden>Couldn't calculate a distance-based fare for this route. You can still continue — we'll confirm the exact fare before you pay.</p>
+      <p class="error-text" id="fareError" hidden>Couldn't calculate a distance-based fare for this route. You can still continue. We'll confirm the exact fare before you pay.</p>
 
       <div class="step-actions">
         <button class="btn btn-ghost" id="backTo3" data-i18n="booking.back">Back</button>

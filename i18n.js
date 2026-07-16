@@ -25,7 +25,7 @@ const I18N = {
     },
     hero: {
       eyebrow: "Lagos airport pickups, done right",
-      headline: "Land in Lagos.<br>Someone's already there.",
+      headline: "Land in Lagos.<br>Arrive. Relax. RideArrivo.",
       sub: "A verified driver, a live-tracked ride, and a trip you can share with someone who cares about your safe arrival. Available in 7 languages, including English, Français, and 中文.",
       ctaPrimary: "Book a ride now",
       ctaSecondary: "See how it works",
@@ -181,9 +181,9 @@ const I18N = {
       bookAnother: "Book another ride",
       paymentFailed: "Payment could not be confirmed. If you were charged, contact info@ridearrivo.com with your reference.",
       back: "Back",
-      vehicleSedan: "Sedan",
-      vehicleSuv: "SUV",
-      vehicleTruck: "Truck / Van",
+      vehicleSedan: "Standard Sedan",
+      vehicleSuv: "Premium SUV",
+      vehicleTruck: "Executive Vehicle",
     },
   },
 

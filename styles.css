@@ -263,7 +263,7 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Poppins', 'Space Grotesk', sans-serif;
   font-weight: 700;
   font-size: 19px;
   color: var(--ink);
@@ -287,16 +287,6 @@ a { color: inherit; text-decoration: none; }
 .logo-wrap .brand-mark {
   animation: logoDropIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
-.logo-wrap::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 6px;
-  background: var(--ink);
-  opacity: 0;
-  animation: logoPulse 3.2s ease-out 0.6s infinite;
-  z-index: 1;
-}
 
 @keyframes logoDropIn {
   0% { transform: translateY(-14px); opacity: 0; }
@@ -304,15 +294,8 @@ a { color: inherit; text-decoration: none; }
   100% { transform: translateY(0); opacity: 1; }
 }
 
-@keyframes logoPulse {
-  0% { transform: scale(1); opacity: 0.35; }
-  70% { transform: scale(1.8); opacity: 0; }
-  100% { transform: scale(1.8); opacity: 0; }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .logo-wrap .brand-mark { animation: none; }
-  .logo-wrap::before { animation: none; display: none; }
 }
 .main-nav {
   display: none;
@@ -852,7 +835,6 @@ a { color: inherit; text-decoration: none; }
 .form-note { font-size: 12px; color: var(--text-muted); margin-bottom: 28px; }
 
 .store-badges { display: flex; gap: 12px; flex-wrap: wrap; }
-.store-badges { display: flex; gap: 12px; flex-wrap: wrap; }
 .store-badge {
   display: flex;
   align-items: center;
@@ -872,7 +854,7 @@ a { color: inherit; text-decoration: none; }
 
 .footer-brand {
   display: flex; align-items: center; gap: 8px;
-  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 17px;
+  font-family: 'Poppins', 'Space Grotesk', sans-serif; font-weight: 700; font-size: 17px;
 }
 .footer-legal { font-size: 12px; color: #8a8ab0; margin: 0; }
 .footer-legal-entity { font-size: 11px; color: #6f6f96; margin: 3px 0 0; }

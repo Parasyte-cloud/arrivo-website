@@ -472,30 +472,22 @@
   // Only applies to one-way bookings. Full day/week/month bookings are
   // chauffeur-style flat-rate pricing and keep using the existing
   // vehicleBasePrice × booking-type multiplier shown on the vehicle cards.
-  //
-  // Flat rate per vehicle type × Lagos zone, not a per-km/per-minute
-  // formula — this is deliberately simple for now rather than a live
-  // distance calculation. Zone is detected from the drop-off address
-  // text against known Lagos Island place names, since that's a named,
-  // specific region rather than something a simple lat/lng line can
-  // reliably separate from the mainland given Lagos's coastline shape.
-  var ZONE_VEHICLE_PRICES = {
-    sedan: { mainland: 30000, island: 50000 },
-    suv: { mainland: 70000, island: 120000 },
-    truck: { mainland: 70000, island: 120000 }, // not specified separately yet — using the SUV rate as a placeholder until given real truck figures
-  };
+  // Lagos Zone Classification & Pricing — per the operations team's PRD.
+  // Each area maps to a tier (green = operate freely, yellow = dynamic
+  // pricing due to traffic/distance, red = don't operate) and a sedan
+  // base price. Where the PRD gave a range (e.g. "₦45,000–₦50,000"), the
+  // midpoint is used as the actual charged price — a range isn't
+  // something a checkout can charge directly, and picking the low or
+  // high end arbitrarily would be a bigger assumption than the middle.
+  // Where the PRD's "Recommended Fixed Pricing" table (which explicitly
+  // supersedes the earlier range) gave a number for an area, that number
+  // is used instead of the general range table.
   // Hard capacity caps, not just a recommendation — a sedan genuinely
   // can't safely carry more than a few passengers, and the point of this
   // is to actually push larger groups toward a bigger vehicle or fleet
   // accompaniment rather than let them cram into whatever they clicked.
-  // Truck's cap matches SUV here since its real differentiator is cargo/
-  // bulky-luggage space, not extra passenger seating — adjust if that's
-  // not the right assumption.
   var MAX_PASSENGERS = { sedan: 3, suv: 6, truck: 6 };
-  // Fleet accompaniment add-on, per vehicle type. Sedan and SUV happen to
-  // share the same figures right now, but this is kept as a per-vehicle
-  // table (not one flat number) since that's how it was specified —
-  // ready for the day these diverge without needing a restructure.
+  // Fleet accompaniment add-on, per vehicle type.
   var FLEET_PRICE = {
     sedan: { 2: 70000, 3: 100000 },
     suv: { 2: 70000, 3: 100000 },
@@ -503,51 +495,76 @@
   };
   var SECURITY_ESCORT_PRICE = 100000;
 
-  var ISLAND_KEYWORDS = ["victoria island", "ikoyi", "lekki", "lagos island", "eko atlantic", "banana island", "obalende", " vi ", "v.i.", "ajah", "chevron dr", "oniru"];
+  var AREA_PRICING = {
+    // Green zone — operate freely (closer to airport, best roads)
+    "ikeja gra": 27500, "maryland": 30000, "ogba": 30000, "magodo": 32500,
+    "surulere": 32500, "yaba": 34500, "anthony": 30000, "anthony village": 30000,
+    "ilupeju": 30000, "gbagada": 37500, "allen avenue": 30000, "alausa": 30000,
+    "ajao estate": 30000, "victoria island": 45000, "ikoyi": 50000,
+    "lekki phase 1": 45000,
 
-  // Lagos Island (VI/Ikoyi/Lekki/Ajah) sits east of roughly this
-  // longitude; the mainland (Ikeja, Yaba, Surulere, Apapa, the airport)
-  // sits west of it. This is an approximation, not a precise boundary,
-  // but it's far more reliable than text matching alone — a keyword list
-  // only catches addresses where Google's formatted text happens to
-  // include the area name, and silently falls through to "mainland" for
-  // anything else (e.g. a specific building address with no neighbourhood
-  // name in it), which is exactly what made every fare look the same
-  // regardless of destination. Coordinates don't have that blind spot.
-  var ISLAND_LONGITUDE_THRESHOLD = 3.40;
+    // Yellow zone — traffic corridors, using the Recommended Fixed
+    // Pricing table (supersedes the earlier general range for these)
+    "iyana-ipaja": 47500, "iyana ipaja": 47500, "egbeda": 47500, "akowonjo": 47500,
+    "idimu": 52500, "ipaja": 47500, "ayobo": 55000, "baruwa": 55000,
+    "alimosho": 50000, "command": 57500, "abule egba": 55000,
+    "ijaiye": 47500, "oko oba": 47500, "dopemu": 42500, "shasha": 50000,
 
-  function detectZone(address, latLng) {
+    // Yellow zone — premium/distance pricing
+    "lekki": 45000, "ajah": 55000, "ikorodu": 50000, "festac": 50000,
+    "satellite town": 60000,
+  };
+
+  // Red zone — limited or no operations. Reuses the same exclusion
+  // mechanism built for the generic "outskirts" blocking feature, since
+  // this is exactly that feature with real data now filled in.
+  var EXCLUDED_AREAS = [
+    { name: "Badagry", keywords: ["badagry"] },
+    { name: "Epe", keywords: ["epe"] },
+    { name: "Ibeju-Lekki", keywords: ["ibeju-lekki", "ibeju lekki"] },
+    { name: "Makoko", keywords: ["makoko"] },
+  ];
+
+  // Areas not explicitly listed above still need *some* price — rather
+  // than silently defaulting to the cheapest tier (which would make
+  // unlisted-but-genuinely-far areas underpriced), unmatched addresses
+  // fall back to this mid-range green-zone figure. Flag this to whoever
+  // owns pricing if a specific area keeps hitting the fallback — it
+  // probably needs its own entry.
+  var DEFAULT_AREA_PRICE = 32000;
+
+  function findAreaPrice(address) {
     var a = (" " + (address || "").toLowerCase() + " ");
-    for (var i = 0; i < ISLAND_KEYWORDS.length; i++) {
-      if (a.indexOf(ISLAND_KEYWORDS[i]) !== -1) return "island";
+    var bestMatch = null;
+    for (var key in AREA_PRICING) {
+      if (a.indexOf(key) !== -1) {
+        // Prefer the longest/most specific keyword match (e.g. "lekki
+        // phase 1" over the more general "lekki") rather than whichever
+        // happens to be checked first in object iteration order.
+        if (!bestMatch || key.length > bestMatch.length) bestMatch = key;
+      }
     }
-    if (latLng) {
-      var lng = typeof latLng.lng === "function" ? latLng.lng() : latLng.lng;
-      if (typeof lng === "number" && lng > ISLAND_LONGITUDE_THRESHOLD) return "island";
-    }
-    return "mainland";
+    return bestMatch ? AREA_PRICING[bestMatch] : DEFAULT_AREA_PRICE;
   }
 
-  // ───────────────────────── Service area exclusion ─────────────────────────
-  // Areas we don't currently operate in — checked against both pickup and
-  // drop-off before a booking can proceed. Each entry can have keywords
-  // (matched against the address text — fast, catches anything Google
-  // formats with the area name in it) and/or a rough lat/lng bounding box
-  // (catches everything else, the way the zone-pricing fix above does,
-  // since keyword text alone silently misses addresses that don't happen
-  // to contain the area name). A box is defined as
-  // { minLat, maxLat, minLng, maxLng } — a simple rectangle is enough for
-  // a rough "don't operate out here yet" boundary; it doesn't need to be
-  // a precise polygon.
-  //
-  // THIS LIST IS CURRENTLY EMPTY — nothing is blocked yet. Replace the
-  // placeholder example below with the real areas once you send them, or
-  // add new entries in the same shape. Until real data goes in here, this
-  // whole feature is wired up and tested but has nothing to actually block.
-  var EXCLUDED_AREAS = [
-    // Example shape only — delete this once real areas are added:
-    // { name: "Example Outskirt", keywords: ["example area name"], box: { minLat: 6.0, maxLat: 6.1, minLng: 3.0, maxLng: 3.1 } },
-  ];
+  // Vehicle tier pricing is the area's base (sedan) price plus a fixed
+  // delta per tier, matching the "from ₦30,000 / ₦45,000 / ₦60,000"
+  // spacing given for Standard Sedan / Premium SUV / Executive Vehicle —
+  // a flat +15k / +30k rather than re-deriving a per-area number for
+  // every vehicle type across 20+ areas.
+  var VEHICLE_TIER_DELTA = { sedan: 0, suv: 15000, truck: 30000 }; // "truck" is the internal id for Executive Vehicle — kept stable to avoid renaming every reference; only the *label* shown to riders changed
+
+  // Situational charges — applied automatically where they can be
+  // determined from what the rider has already entered, rather than
+  // requiring a separate manual toggle for each one.
+  var EXCESS_LUGGAGE_FEE = 5000;   // more than 3 large suitcases
+  var MULTI_STOP_FEE = 7500;       // per additional stop beyond the first drop-off (midpoint of ₦5,000–₦10,000)
+  var MIDNIGHT_PICKUP_FEE = 7500;  // pickups between 11 PM and 5 AM (midpoint of ₦5,000–₦10,000)
+
+  function isMidnightPickup() {
+    var hour = new Date().getHours();
+    return hour >= 23 || hour < 5;
+  }
 
   function findExcludedArea(address, latLng) {
     var a = (" " + (address || "").toLowerCase() + " ");
@@ -571,16 +588,30 @@
     return null;
   }
 
-  // Flat operational surcharge on top of the base zone/vehicle rate —
-  // covers trolleys, fuel, and driver costs. Higher for Island since those
-  // trips typically run longer and cost more to service.
-  var ZONE_SURCHARGE = { mainland: 5000, island: 10000 };
-
   function zoneVehiclePrice(vehicle, zone) {
-    var table = ZONE_VEHICLE_PRICES[vehicle] || ZONE_VEHICLE_PRICES.sedan;
-    var base = table[zone] || table.mainland;
-    var surcharge = ZONE_SURCHARGE[zone] || ZONE_SURCHARGE.mainland;
-    return base + surcharge;
+    var areaBase = zone && zone.areaPrice != null ? zone.areaPrice : DEFAULT_AREA_PRICE;
+    var delta = VEHICLE_TIER_DELTA[vehicle] != null ? VEHICLE_TIER_DELTA[vehicle] : 0;
+    return areaBase + delta;
+  }
+
+  function calculateSituationalCharges(state) {
+    var total = 0;
+    var items = [];
+    if ((state.bags || 0) > 3) {
+      total += EXCESS_LUGGAGE_FEE;
+      items.push({ label: "Excess luggage (4+ suitcases)", amount: EXCESS_LUGGAGE_FEE });
+    }
+    var extraStops = Math.max(0, (state.stops ? state.stops.length : 1) - 1);
+    if (extraStops > 0) {
+      var stopsFee = extraStops * MULTI_STOP_FEE;
+      total += stopsFee;
+      items.push({ label: extraStops + " additional stop" + (extraStops === 1 ? "" : "s"), amount: stopsFee });
+    }
+    if (isMidnightPickup()) {
+      total += MIDNIGHT_PICKUP_FEE;
+      items.push({ label: "Midnight pickup (11 PM – 5 AM)", amount: MIDNIGHT_PICKUP_FEE });
+    }
+    return { total: total, items: items };
   }
 
   function updatePriceLabels() {
@@ -694,17 +725,12 @@
       return;
     }
 
-    // Zone is detected from the drop-off's coordinates first (reliable
-    // regardless of how Google formats the address text), falling back to
-    // keyword matching on the address only when no coordinates were
-    // captured — e.g. the rider typed a destination and hit Enter without
-    // picking a suggestion from the autocomplete dropdown, so there's no
-    // geometry to check.
     var dropoffAddress = state.stops.length ? state.stops[state.stops.length - 1] : document.getElementById("fDropoff").value;
-    state.zone = detectZone(dropoffAddress, state.dropoffLatLng);
+    state.zone = { areaPrice: findAreaPrice(dropoffAddress) };
     errEl.hidden = true;
 
-    document.getElementById("fareDistanceText").textContent = state.zone === "island" ? "Lagos Island" : "Lagos Mainland";
+    var situational = calculateSituationalCharges(state);
+    document.getElementById("fareDistanceText").textContent = "Base fare for this area";
     document.getElementById("fareBaseText").textContent = "Sedan NGN " + zoneVehiclePrice("sedan", state.zone).toLocaleString() + " · SUV NGN " + zoneVehiclePrice("suv", state.zone).toLocaleString();
     document.getElementById("fareSecurityRow").hidden = !state.securityEscort;
     var fleetRow = document.getElementById("fareFleetRow");
@@ -717,7 +743,7 @@
     box.hidden = false;
 
     // Optional nice-to-have: real distance/duration for display only, never
-    // used for pricing — if this fails for any reason, zone-based pricing
+    // used for pricing — if this fails for any reason, area-based pricing
     // above already works regardless.
     if (state.pickupLatLng && state.dropoffLatLng && window.google && window.google.maps) {
       var service = new google.maps.DistanceMatrixService();
@@ -730,8 +756,7 @@
         if (!el || el.status !== "OK") return;
         state.distanceKm = el.distance.value / 1000;
         state.durationMin = el.duration.value / 60;
-        document.getElementById("fareDistanceText").textContent =
-          (state.zone === "island" ? "Lagos Island" : "Lagos Mainland") + " · " + state.distanceKm.toFixed(1) + " km, ~" + Math.round(state.durationMin) + " min";
+        document.getElementById("fareDistanceText").textContent = state.distanceKm.toFixed(1) + " km, ~" + Math.round(state.durationMin) + " min";
       });
     }
   }
@@ -913,10 +938,11 @@
       baseFare = state.vehicleBasePrice * state.multiplier;
     }
     var fleetTable = FLEET_PRICE[state.vehicle] || FLEET_PRICE.sedan;
-    var total = baseFare;
+    var situational = calculateSituationalCharges(state);
+    var total = baseFare + situational.total;
     if (state.securityEscort) total += SECURITY_ESCORT_PRICE;
     if (state.fleetSize) total += fleetTable[state.fleetSize] || 0;
-    return { baseFare: baseFare, total: total };
+    return { baseFare: baseFare, situational: situational, total: total };
   }
 
   function renderReview() {
@@ -941,7 +967,13 @@
       [t("booking.reviewPickup"), escapeHtml([state.pickup].concat(state.stops).join(" → "))]
     );
     if (state.securityEscort) rows.push(["Security escort", "+NGN " + SECURITY_ESCORT_PRICE.toLocaleString()]);
-    if (state.fleetSize) rows.push(["Fleet accompaniment", "Fleet of " + state.fleetSize + " · +NGN " + FLEET_PRICE[state.fleetSize].toLocaleString()]);
+    if (state.fleetSize) {
+      var reviewFleetTable = FLEET_PRICE[state.vehicle] || FLEET_PRICE.sedan;
+      rows.push(["Fleet accompaniment", "Fleet of " + state.fleetSize + " · +NGN " + (reviewFleetTable[state.fleetSize] || 0).toLocaleString()]);
+    }
+    fare.situational.items.forEach(function (item) {
+      rows.push([item.label, "+NGN " + item.amount.toLocaleString()]);
+    });
     list.innerHTML = rows.map(function (r) {
       return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>";
     }).join("");
