@@ -35,6 +35,8 @@
     pickupLatLng: null, dropoffLatLng: null,
     securityEscort: false, fleetSize: 0,
     distanceKm: null, durationMin: null, calculatedFareNaira: null,
+    paymentMethod: "card", walletBalanceNaira: 0,
+    userLocation: null, locationPermission: null,
   };
 
   // ───────────────────────── i18n (same pattern as script.js) ─────────────────────────
@@ -431,6 +433,7 @@
   var googleMapInstance = null;
   var googleMapMarker = null;
   var autocompleteAttachedTo = [];
+  var activeAutocompleteInstances = [];
 
   // Referenced by name in the Google Maps <script> tag's callback= parameter,
   // so it must exist on window before that script finishes loading.
@@ -456,6 +459,96 @@
     var raw = FARE_BASE + (distanceKm * FARE_PER_KM) + (durationMin * FARE_PER_MIN);
     var withMinimum = Math.max(raw, FARE_MINIMUM);
     return Math.round(withMinimum * (VEHICLE_FARE_MULTIPLIER[state.vehicle] || 1));
+  }
+
+  function applyLocationBiasTo(autocomplete) {
+    if (!state.userLocation || !window.google) return;
+    try {
+      var circle = new google.maps.Circle({ center: state.userLocation, radius: 20000 }); // 20km, biases without hard-restricting
+      autocomplete.setBounds(circle.getBounds());
+    } catch (e) {
+      // Biasing is a nice-to-have, never worth breaking address search over.
+    }
+  }
+
+  function applyLocationBiasToAllAutocompletes() {
+    activeAutocompleteInstances.forEach(applyLocationBiasTo);
+  }
+
+  // ───────────────────────── Location permission ─────────────────────────
+  // Explicit, visible prompt rather than silently calling
+  // getCurrentPosition() and letting the browser's own native permission
+  // dialog be the only thing asking — the requirement was that the rider
+  // clearly understands what's being requested and why before it happens.
+  function initLocationPermission() {
+    var box = document.getElementById("locationPermissionBox");
+    var declinedNote = document.getElementById("locationDeclinedNote");
+    if (!box) return;
+
+    document.getElementById("allowLocationBtn").addEventListener("click", function () {
+      if (!navigator.geolocation) {
+        state.locationPermission = "unavailable";
+        box.hidden = true;
+        declinedNote.hidden = false;
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          state.locationPermission = "granted";
+          state.userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+          box.hidden = true;
+          declinedNote.hidden = true;
+          applyLocationBiasToAllAutocompletes();
+          updateCurrencyEstimateVisibility();
+        },
+        function () {
+          // Browser prompt was shown but the rider said no at that layer —
+          // same outcome as clicking "Not now" here, just via a different path.
+          state.locationPermission = "declined";
+          box.hidden = true;
+          declinedNote.hidden = false;
+        },
+        { timeout: 6000 }
+      );
+    });
+
+    document.getElementById("declineLocationBtn").addEventListener("click", function () {
+      state.locationPermission = "declined";
+      box.hidden = true;
+      declinedNote.hidden = false;
+    });
+  }
+
+  // ───────────────────────── Lightweight currency estimate ─────────────────────────
+  // Payments themselves stay in Naira — Paystack/wallet only ever charge
+  // NGN here. This is display-only: for a rider who isn't currently in
+  // Nigeria, show an approximate USD figure next to the fare so the price
+  // means something to them, using a fixed rate rather than a live FX
+  // API. A prior review of adding real USD payment processing (Stripe)
+  // found it blocked by foreign-entity requirements for a Nigerian
+  // business — the recommendation then was to keep pricing in Naira and
+  // let the card network handle conversion, which this still does; this
+  // just adds a clearer estimate on screen, not a new payment path.
+  var USD_NGN_RATE = 1600; // update periodically — not a live rate
+  var NIGERIA_BOUNDS = { minLat: 4.0, maxLat: 14.0, minLng: 2.5, maxLng: 15.0 };
+
+  function isLikelyOutsideNigeria() {
+    if (!state.userLocation) return false;
+    var lat = state.userLocation.lat, lng = state.userLocation.lng;
+    return lat < NIGERIA_BOUNDS.minLat || lat > NIGERIA_BOUNDS.maxLat || lng < NIGERIA_BOUNDS.minLng || lng > NIGERIA_BOUNDS.maxLng;
+  }
+
+  function formatNairaWithUsdEstimate(nairaAmount) {
+    if (!isLikelyOutsideNigeria()) return "NGN " + nairaAmount.toLocaleString();
+    var usd = Math.round(nairaAmount / USD_NGN_RATE);
+    return "NGN " + nairaAmount.toLocaleString() + " (~$" + usd.toLocaleString() + ")";
+  }
+
+  function updateCurrencyEstimateVisibility() {
+    var totalEl = document.getElementById("fareTotalText");
+    if (totalEl && state.calculatedFareNaira != null) {
+      totalEl.textContent = formatNairaWithUsdEstimate(state.calculatedFareNaira);
+    }
   }
 
   function recalculateFareEstimate() {
@@ -511,7 +604,7 @@
         document.getElementById("fareFleetLabel").textContent = "Fleet of " + state.fleetSize;
         document.getElementById("fareFleetAmount").textContent = "+NGN " + FLEET_PRICE[state.fleetSize].toLocaleString();
       }
-      document.getElementById("fareTotalText").textContent = "NGN " + total.toLocaleString();
+      document.getElementById("fareTotalText").textContent = formatNairaWithUsdEstimate(total);
       box.hidden = false;
     });
   }
@@ -541,6 +634,8 @@
       componentRestrictions: { country: "ng" },
       fields: ["formatted_address", "geometry", "name"],
     });
+    activeAutocompleteInstances.push(autocomplete);
+    if (state.userLocation) applyLocationBiasTo(autocomplete);
 
     autocomplete.addListener("place_changed", function () {
       var place = autocomplete.getPlace();
@@ -706,6 +801,45 @@
 
     document.getElementById("reviewFare").textContent = "NGN " + totalFare.toLocaleString();
     document.getElementById("payAmount").textContent = "NGN " + totalFare.toLocaleString();
+
+    // Check the rider's wallet balance so we can tell them upfront whether
+    // paying from it is actually an option for this specific fare, rather
+    // than letting them pick it and only finding out it fails at checkout.
+    api("/api/wallet", { headers: authHeader() }).then(function (result) {
+      if (!result.ok) return;
+      state.walletBalanceNaira = result.data.balanceNaira;
+      var hint = document.getElementById("walletBalanceHint");
+      var walletOpt = document.getElementById("walletPaymentOpt");
+      var insufficientNote = document.getElementById("walletInsufficientNote");
+      var sufficient = state.walletBalanceNaira >= totalFare;
+      hint.textContent = "(NGN " + state.walletBalanceNaira.toLocaleString() + ")";
+      walletOpt.disabled = !sufficient;
+      walletOpt.style.opacity = sufficient ? "1" : "0.5";
+      if (state.paymentMethod === "wallet" && !sufficient) {
+        state.paymentMethod = "card";
+        document.querySelectorAll("#paymentMethodToggle .for-who-opt").forEach(function (b) {
+          b.classList.toggle("is-active", b.getAttribute("data-method") === "card");
+        });
+        insufficientNote.hidden = false;
+      }
+    });
+
+    api("/api/memberships/mine", { headers: authHeader() }).then(function (result) {
+      if (!result.ok) return;
+      var membershipOpt = document.getElementById("membershipPaymentOpt");
+      if (result.data.membership) {
+        membershipOpt.hidden = false;
+        // A membership covers the ride outright — the obviously better
+        // default the moment it's available, rather than making someone
+        // notice and switch to it themselves.
+        state.paymentMethod = "membership";
+        document.querySelectorAll("#paymentMethodToggle .for-who-opt").forEach(function (b) {
+          b.classList.toggle("is-active", b.getAttribute("data-method") === "membership");
+        });
+      } else {
+        membershipOpt.hidden = true;
+      }
+    });
   }
 
   function toPascalCase(snake) {
@@ -714,6 +848,57 @@
 
   // Exposed separately so it can be tested independently of the real
   // Paystack popup (which needs a real key + real browser + a real card).
+  function handleDirectPayment() {
+    var payError = document.getElementById("payError");
+    payError.hidden = true;
+
+    return api("/api/rides", {
+      method: "POST",
+      headers: authHeader(),
+      body: JSON.stringify({
+        pickupAddress: state.pickup,
+        stops: state.stops,
+        flightNumber: state.flightNumber || null,
+        vehicleType: state.vehicle,
+        fareNaira: getFinalFare().total,
+        distanceKm: state.distanceKm,
+        durationMin: state.durationMin,
+        securityEscort: state.securityEscort,
+        fleetSize: state.fleetSize,
+        paymentMethod: state.paymentMethod,
+        bookingType: state.bookingType,
+        durationDays: state.durationDays,
+        agreedCancellationPolicy: true,
+        agreedDashcamConsent: state.dashcamConsent,
+        bookingFor: state.bookingFor,
+        passengerName: state.bookingFor === "other" ? state.passengerName : null,
+        passengerWhatsapp: state.passengerWhatsapp,
+        adults: state.adults,
+        children: state.children,
+        emergencyContactName: state.emergencyContactName,
+        emergencyContactPhone: state.emergencyContactPhone,
+      }),
+    }).then(function (rideResult) {
+      if (!rideResult.ok) {
+        payError.hidden = false;
+        payError.textContent = rideResult.data.error || t("booking.paymentFailed");
+        return;
+      }
+      var createdRide = rideResult.data.ride;
+      document.getElementById("confirmRef").textContent = "Ride #" + createdRide.id;
+      var barcodeEl = document.getElementById("confirmBarcode");
+      var barcodeBox = document.getElementById("confirmBarcodeBox");
+      if (barcodeEl && barcodeBox && createdRide.barcode) {
+        barcodeEl.textContent = createdRide.barcode;
+        barcodeBox.hidden = false;
+      }
+      goToStep(6);
+    }).catch(function () {
+      payError.hidden = false;
+      payError.textContent = t("booking.paymentFailed");
+    });
+  }
+
   function handlePaymentSuccess(reference) {
     var payError = document.getElementById("payError");
     payError.hidden = true;
@@ -810,6 +995,15 @@
       document.getElementById("cancellationModal").style.display = "none";
     });
 
+    document.querySelectorAll("#paymentMethodToggle .for-who-opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (btn.disabled) return;
+        state.paymentMethod = btn.getAttribute("data-method");
+        document.querySelectorAll("#paymentMethodToggle .for-who-opt").forEach(function (b) { b.classList.toggle("is-active", b === btn); });
+        document.getElementById("walletInsufficientNote").hidden = true;
+      });
+    });
+
     document.getElementById("payBtn").addEventListener("click", function () {
       var payError = document.getElementById("payError");
       payError.hidden = true;
@@ -817,6 +1011,11 @@
       if (!document.getElementById("fAgreeCancellation").checked) {
         payError.hidden = false;
         payError.textContent = "Please agree to the Cancellation & Refund Policy before paying.";
+        return;
+      }
+
+      if (state.paymentMethod === "wallet" || state.paymentMethod === "membership") {
+        handleDirectPayment();
         return;
       }
 
@@ -863,6 +1062,7 @@
     safeRun(initStep2, "initStep2");
     safeRun(initStep3, "initStep3");
     safeRun(initStep4, "initStep4");
+    safeRun(initLocationPermission, "initLocationPermission");
     safeRun(initStep5, "initStep5");
   });
 

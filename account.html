@@ -199,6 +199,29 @@
   </div>
   <button type="button" id="listeningDeviceBtn" class="listening-btn">🎙️ Listening device: off</button>
 
+  <h2 style="font-size:15px; margin-bottom:12px;">Wallet</h2>
+  <div class="booking-card" style="margin-bottom:24px;">
+    <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px;">
+      <div>
+        <div style="font-size:12px; color:var(--text-muted);">Balance</div>
+        <div style="font-size:28px; font-weight:700; font-family:'Space Grotesk',sans-serif;" id="walletBalance">NGN 0</div>
+      </div>
+      <button type="button" class="btn btn-primary" id="topUpBtn">Top up</button>
+    </div>
+    <div id="topUpForm" hidden style="margin-bottom:16px;">
+      <input type="number" id="topUpAmount" class="field" placeholder="Amount (NGN)" min="100" step="100">
+      <button type="button" class="btn btn-primary" id="topUpConfirmBtn" style="width:100%;">Continue to payment</button>
+      <p class="error-text" id="topUpError" hidden></p>
+    </div>
+    <p style="font-size:12px; color:var(--text-muted); margin:0 0 10px;">Pay for rides straight from your balance at checkout, no card needed each time.</p>
+    <div id="walletHistory"></div>
+  </div>
+
+  <h2 style="font-size:15px; margin-bottom:12px;">Membership</h2>
+  <div class="booking-card" style="margin-bottom:24px;" id="membershipCard">
+    <p style="font-size:13px; color:var(--text-muted);">Loading…</p>
+  </div>
+
   <div class="tile-grid">
     <a href="book.html" class="tile">🚗 Book a ride</a>
     <a href="terms.html#cancellation" class="tile">🛡️ Safety &amp; cancellation policy</a>
@@ -475,6 +498,8 @@
 
     initPanicButton("rider", TOKEN_KEY, API_BASE_URL);
     loadTrips(token);
+    initWallet(token);
+    initMembership(token);
   });
 
   function routeStripSvg() {
@@ -483,6 +508,149 @@
       '<line x1="7" y1="12" x2="7" y2="34" stroke="#ccc" stroke-width="2" stroke-dasharray="3,3"/>' +
       '<circle cx="7" cy="40" r="5" fill="none" stroke="#E1523D" stroke-width="2"/>' +
       "</svg>";
+  }
+
+  // ───────────────────────── Wallet ─────────────────────────
+  var WALLET_PUBLIC_KEY = "pk_test_replace_me"; // same placeholder as booking.js — swap for the real Paystack public key to go live
+
+  function formatWalletDate(iso) {
+    var d = new Date(iso);
+    return d.toLocaleDateString() + " · " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+  }
+
+  function renderWalletHistory(transactions) {
+    var box = document.getElementById("walletHistory");
+    if (!transactions.length) {
+      box.innerHTML = '<p style="font-size:12.5px;color:var(--text-muted);">No transactions yet.</p>';
+      return;
+    }
+    box.innerHTML = transactions.map(function (tx) {
+      var amt = Number(tx.amount_naira);
+      var isCredit = amt > 0;
+      var label = tx.type === "topup" ? "Wallet top-up"
+        : tx.type === "ride_charge" ? "Ride payment"
+        : tx.type === "membership_charge" ? "Membership"
+        : escapeHtml(tx.description || tx.type);
+      return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--card-border);font-size:12.5px;">' +
+        '<div><div>' + escapeHtml(label) + '</div><div style="color:var(--text-muted);font-size:11px;">' + formatWalletDate(tx.created_at) + '</div></div>' +
+        '<div style="color:' + (isCredit ? 'var(--teal, #0E7C7B)' : 'var(--coral, #E1523D)') + ';font-weight:700;">' + (isCredit ? "+" : "") + "NGN " + amt.toLocaleString() + '</div>' +
+        '</div>';
+    }).join("");
+  }
+
+  function loadWallet(token) {
+    return api("/api/wallet", { headers: authHeader() }).then(function (result) {
+      if (!result.ok) return;
+      document.getElementById("walletBalance").textContent = "NGN " + result.data.balanceNaira.toLocaleString();
+      renderWalletHistory(result.data.transactions);
+    });
+  }
+
+  function initWallet(token) {
+    loadWallet(token);
+
+    var topUpBtn = document.getElementById("topUpBtn");
+    var topUpForm = document.getElementById("topUpForm");
+    var topUpConfirmBtn = document.getElementById("topUpConfirmBtn");
+    var topUpError = document.getElementById("topUpError");
+
+    topUpBtn.addEventListener("click", function () {
+      topUpForm.hidden = !topUpForm.hidden;
+    });
+
+    topUpConfirmBtn.addEventListener("click", function () {
+      var amount = Number(document.getElementById("topUpAmount").value);
+      topUpError.hidden = true;
+
+      if (!amount || amount < 100) {
+        topUpError.hidden = false;
+        topUpError.textContent = "Please enter an amount of at least NGN 100.";
+        return;
+      }
+      if (typeof PaystackPop === "undefined") {
+        topUpError.hidden = false;
+        topUpError.textContent = "Payment isn't configured yet. Set PAYSTACK_PUBLIC_KEY in account.html.";
+        return;
+      }
+
+      var email = document.getElementById("accountEmail") ? document.getElementById("accountEmail").textContent : "";
+      var handler = PaystackPop.setup({
+        key: WALLET_PUBLIC_KEY,
+        email: email || "rider@ridearrivo.com",
+        amount: amount * 100,
+        currency: "NGN",
+        callback: function (response) {
+          topUpConfirmBtn.disabled = true;
+          topUpConfirmBtn.textContent = "Confirming…";
+          api("/api/wallet/topup/verify", {
+            method: "POST",
+            headers: authHeader(),
+            body: JSON.stringify({ reference: response.reference }),
+          }).then(function (result) {
+            topUpConfirmBtn.disabled = false;
+            topUpConfirmBtn.textContent = "Continue to payment";
+            if (!result.ok) {
+              topUpError.hidden = false;
+              topUpError.textContent = result.data.error || "Couldn't confirm the top-up. Please contact support with reference " + response.reference + ".";
+              return;
+            }
+            topUpForm.hidden = true;
+            document.getElementById("topUpAmount").value = "";
+            loadWallet(token);
+          });
+        },
+        onClose: function () {},
+      });
+      handler.openIframe();
+    });
+  }
+
+  // ───────────────────────── Membership ─────────────────────────
+  function renderMembershipCard(data, token) {
+    var card = document.getElementById("membershipCard");
+    if (data.membership) {
+      var expires = new Date(data.membership.expires_at).toLocaleDateString();
+      var planLabel = data.membership.plan_type === "corporate_delegate" ? "Corporate delegate" : "Individual annual";
+      card.innerHTML =
+        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+        '<div><strong>' + planLabel + ' plan</strong><div style="font-size:12px;color:var(--text-muted);">Active until ' + expires + '</div></div>' +
+        '<span style="background:var(--teal-tint, var(--primary-tint));color:var(--teal, var(--primary));font-weight:700;font-size:11.5px;padding:4px 10px;border-radius:999px;">ACTIVE</span>' +
+        '</div>' +
+        (data.delegateCount > 0 ? '<p style="font-size:12px;color:var(--text-muted);margin-top:10px;">' + data.delegateCount + ' delegate' + (data.delegateCount === 1 ? '' : 's') + ' linked to this account.</p>' : '') +
+        '<p style="font-size:12px;color:var(--text-muted);margin-top:10px;">Rides you book are covered by this plan, no per-trip payment needed.</p>';
+      return;
+    }
+    card.innerHTML =
+      '<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Ride RideArrivo all year without paying per trip. NGN ' + INDIVIDUAL_ANNUAL_PRICE_DISPLAY + ' once, billed from your wallet.</p>' +
+      '<button type="button" class="btn btn-primary" id="subscribeBtn" style="width:100%;">Subscribe for NGN ' + INDIVIDUAL_ANNUAL_PRICE_DISPLAY + '</button>' +
+      '<p class="error-text" id="subscribeError" hidden style="margin-top:10px;"></p>';
+    document.getElementById("subscribeBtn").addEventListener("click", function () {
+      var btn = document.getElementById("subscribeBtn");
+      var errEl = document.getElementById("subscribeError");
+      errEl.hidden = true;
+      btn.disabled = true;
+      btn.textContent = "Subscribing…";
+      api("/api/memberships/individual/subscribe", { method: "POST", headers: authHeader() }).then(function (result) {
+        btn.disabled = false;
+        btn.textContent = "Subscribe for NGN " + INDIVIDUAL_ANNUAL_PRICE_DISPLAY;
+        if (!result.ok) {
+          errEl.hidden = false;
+          errEl.textContent = result.data.error || "Couldn't subscribe. Please try again.";
+          return;
+        }
+        initMembership(token);
+        loadWallet(token);
+      });
+    });
+  }
+
+  var INDIVIDUAL_ANNUAL_PRICE_DISPLAY = "250,000"; // keep in sync with INDIVIDUAL_ANNUAL_PRICE in arrivo-backend/routes/memberships.js
+
+  function initMembership(token) {
+    api("/api/memberships/mine", { headers: authHeader() }).then(function (result) {
+      if (!result.ok) return;
+      renderMembershipCard(result.data, token);
+    });
   }
 
   function statusClass(status) {
@@ -752,5 +920,6 @@
     }
   }
 </script>
+<script src="https://js.paystack.co/v1/inline.js"></script>
 </body>
 </html>

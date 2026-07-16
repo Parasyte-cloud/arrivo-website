@@ -225,6 +225,15 @@
     <section class="step" data-step="4" hidden>
       <h2 data-i18n="booking.pickupTitle">Where should we pick you up?</h2>
 
+      <div class="location-permission-box" id="locationPermissionBox">
+        <p>Share your location to get better address suggestions and the right currency for where you are. We only use this for the search below, nothing is tracked in the background.</p>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn btn-primary btn-sm" id="allowLocationBtn">Allow location</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="declineLocationBtn">Not now</button>
+        </div>
+      </div>
+      <p class="location-declined-note" id="locationDeclinedNote" hidden>You can still type any address below, search just won't be narrowed to where you are right now.</p>
+
       <div class="route-builder">
         <div class="route-row">
           <span class="route-dot route-dot-start"></span>
@@ -284,6 +293,14 @@
       </div>
 
       <p class="pay-note" data-i18n="booking.payNote">Payment is handled securely by Paystack. RideArrivo never sees your card details.</p>
+
+      <label class="field-label">How would you like to pay?</label>
+      <div class="for-who-toggle" id="paymentMethodToggle" style="margin-bottom:14px;">
+        <button type="button" class="for-who-opt is-active" data-method="card">Card</button>
+        <button type="button" class="for-who-opt" data-method="wallet" id="walletPaymentOpt">Wallet <span id="walletBalanceHint" style="font-weight:400;"></span></button>
+        <button type="button" class="for-who-opt" data-method="membership" id="membershipPaymentOpt" hidden>Membership</button>
+      </div>
+      <p class="error-text" id="walletInsufficientNote" hidden>Your wallet balance isn't enough for this ride. Top up in My Account, or pay by card instead.</p>
 
       <label class="checkbox-row">
         <input type="checkbox" id="fAgreeCancellation">
