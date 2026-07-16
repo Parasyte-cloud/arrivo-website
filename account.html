@@ -63,10 +63,14 @@
   .social-row .chevron { color:var(--text-muted); font-size:18px; }
 
   .panic-btn {
+    position: relative;
+    overflow: hidden;
     width: 100%;
-    background: #D64545;
+    background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.03) 55%), #D64545;
+    backdrop-filter: url(#liquid-glass-refraction) blur(10px) saturate(160%);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
     color: #fff;
-    border: none;
+    border: 1px solid rgba(255,255,255,0.35);
     border-radius: var(--radius);
     padding: 16px;
     font-family: inherit;
@@ -74,23 +78,43 @@
     font-size: 16px;
     cursor: pointer;
     margin-bottom: 8px;
-    transition: background 0.15s ease;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 6px 16px rgba(214,69,69,0.28);
+    transition: background 0.15s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .panic-btn:hover { background: #B93838; }
-  .panic-btn:active { background: #A02F2F; }
+  .panic-btn:hover { background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.03) 55%), #B93838; }
+  .panic-btn:active { background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.03) 55%), #A02F2F; transform: scale(0.97); }
   .panic-countdown-row {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
     background: #FFF3F3;
     border: 1px solid #F3C6C6;
     border-radius: 10px;
-    padding: 10px 14px;
+    padding: 12px 14px;
     margin-bottom: 16px;
     font-size: 13.5px;
     font-weight: 600;
     color: #B93838;
   }
+  .panic-cancel-btn {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: url(#liquid-glass-refraction) blur(10px) saturate(160%);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    border: 1.5px solid #B93838;
+    color: #B93838;
+    border-radius: 999px;
+    padding: 6px 20px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease;
+  }
+  .panic-cancel-btn:hover { background: rgba(255,255,255,0.75); }
+  .panic-cancel-btn:active { transform: scale(0.94); }
   .panic-status-text {
     font-size: 13px;
     color: var(--text-muted);
@@ -141,7 +165,7 @@
   <div class="wrap header-inner">
     <a href="index.html" class="brand">
       <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
-      <span data-i18n="brand">RideArrivo</span>
+      <span data-i18n="brand"><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span></span>
     </a>
   </div>
 </header>
@@ -166,7 +190,7 @@
   </button>
   <p id="panicCountdownRow" class="panic-countdown-row" hidden>
     <span id="panicCountdownText"></span>
-    <button type="button" id="panicCancelBtn" class="btn btn-ghost btn-sm">Cancel</button>
+    <button type="button" id="panicCancelBtn" class="panic-cancel-btn">Cancel</button>
   </p>
   <p id="panicStatusText" class="panic-status-text" hidden></p>
   <div id="panicActiveBanner" class="panic-active-banner" hidden>
@@ -238,7 +262,7 @@
     <div class="footer-brand-col">
       <div class="footer-brand">
         <img src="assets/icon.png" alt="" width="22" height="22">
-        <span data-i18n="brand">RideArrivo</span>
+        <span data-i18n="brand"><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span></span>
       </div>
       <p class="footer-tagline" data-i18n="footer.tagline">Lagos airport pickups, done right.</p>
       <div class="footer-social-row">

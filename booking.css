@@ -21,14 +21,17 @@
   letter-spacing: 0.03em;
 }
 .progress li.active { color: var(--ink); border-bottom-color: var(--amber); }
-.progress li.done { color: var(--teal); border-bottom-color: var(--teal); }
+.progress li.done { color: var(--primary); border-bottom-color: var(--primary); }
 
 /* ── Card & steps ── */
 .booking-card {
-  background: #fff;
-  border: 1px solid var(--card-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   padding: 32px 28px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 12px 28px rgba(18,18,59,0.06);
 }
 .step h2 { font-size: 19px; margin-bottom: 6px; }
 .step-sub { color: var(--text-muted); font-size: 13.5px; margin-bottom: 20px; }
@@ -40,7 +43,7 @@
   border-radius: 10px;
   border: 1.5px solid var(--card-border);
   font-family: 'Inter', sans-serif;
-  font-size: 14px;
+  font-size: 16px; /* iOS Safari auto-zooms on focus for any input under 16px — this was making the whole page jump/resize the moment someone tapped a field */
   margin-bottom: 12px;
   background: #fff;
   color: var(--ink);
@@ -85,7 +88,7 @@
   margin-top: 14px;
   padding: 14px;
   border-radius: 10px;
-  background: var(--teal-tint);
+  background: var(--primary-tint);
   font-size: 13px;
 }
 .flight-result strong { display: block; margin-bottom: 4px; }
@@ -116,9 +119,13 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 4px;
-  border: 1.5px solid var(--card-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border: 1.5px solid var(--glass-border);
   border-radius: 12px;
   padding: 14px 16px;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 .vehicle-card .v-name { font-weight: 700; font-size: 14px; }
 .vehicle-card .v-price { font-weight: 700; font-size: 14px; color: var(--ink); margin-left: auto; }
@@ -126,7 +133,7 @@
   display: none;
   font-size: 10.5px;
   font-weight: 700;
-  color: var(--teal);
+  color: var(--primary);
   width: 100%;
 }
 .vehicle-card.selected { border-color: var(--amber); background: #FFFBF0; }
@@ -152,7 +159,7 @@
   position: relative;
   z-index: 2;
 }
-.route-dot-start { background: var(--teal); }
+.route-dot-start { background: var(--primary); }
 .route-dot-end {
   background: transparent;
   border: 2px solid var(--coral);
@@ -178,7 +185,7 @@
   all: unset;
   box-sizing: border-box;
   cursor: pointer;
-  color: var(--teal);
+  color: var(--primary);
   font-size: 12.5px;
   font-weight: 700;
   margin-bottom: 20px;
@@ -214,7 +221,7 @@
 .step[data-step="6"] { text-align: center; }
 .confirm-icon {
   width: 56px; height: 56px; border-radius: 50%;
-  background: var(--teal); color: #fff;
+  background: var(--primary); color: #fff;
   font-size: 26px; display: flex; align-items: center; justify-content: center;
   margin: 0 auto 20px;
 }
