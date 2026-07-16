@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your account | RideArrivo</title>
+<title>Your account | <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span></title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -196,7 +196,7 @@
   <p id="panicStatusText" class="panic-status-text" hidden></p>
   <div id="panicActiveBanner" class="panic-active-banner" hidden>
     <strong>🆘 Emergency alert active.</strong>
-    <p>RideArrivo has been notified. This can only be cleared by our team, not from this device.</p>
+    <p><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> has been notified. This can only be cleared by our team, not from this device.</p>
   </div>
   <button type="button" id="listeningDeviceBtn" class="listening-btn">🎙️ Listening device: off</button>
 
@@ -232,7 +232,7 @@
 
   <h2 style="font-size:15px; margin-bottom:12px;" id="support">Support</h2>
   <div class="booking-card" style="margin-bottom:24px;">
-    <h3 style="font-size:17px; margin-bottom:4px;">How can RideArrivo help?</h3>
+    <h3 style="font-size:17px; margin-bottom:4px;">How can <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> help?</h3>
     <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px;">We usually reply within a few hours.</p>
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
       <a href="https://wa.me/2348162706078" target="_blank" rel="noopener" class="btn btn-primary" style="display:inline-flex;">💬 WhatsApp us</a>
@@ -387,7 +387,7 @@
 
   <div class="wrap footer-bottom">
     <div>
-      <p class="footer-legal" data-i18n="footer.legal">© 2026 RideArrivo. Made in Lagos.</p>
+      <p class="footer-legal" data-i18n="footer.legal">© 2026 <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>. Made in Lagos.</p>
       <p class="footer-legal-entity">RICHATHAOIR LIMITED (RC 1654710)</p>
     </div>
     <div class="footer-credit-row">
@@ -622,7 +622,7 @@
       return;
     }
     card.innerHTML =
-      '<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Ride RideArrivo all year without paying per trip. NGN ' + INDIVIDUAL_ANNUAL_PRICE_DISPLAY + ' once, billed from your wallet.</p>' +
+      '<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Ride <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> all year without paying per trip. NGN ' + INDIVIDUAL_ANNUAL_PRICE_DISPLAY + ' once, billed from your wallet.</p>' +
       '<button type="button" class="btn btn-primary" id="subscribeBtn" style="width:100%;">Subscribe for NGN ' + INDIVIDUAL_ANNUAL_PRICE_DISPLAY + '</button>' +
       '<p class="error-text" id="subscribeError" hidden style="margin-top:10px;"></p>';
     document.getElementById("subscribeBtn").addEventListener("click", function () {
