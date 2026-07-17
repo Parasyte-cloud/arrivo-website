@@ -822,7 +822,11 @@ a { color: inherit; text-decoration: none; }
 .how-it-works-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(12,12,16,0.55), rgba(12,12,16,0.72));
+  /* A radial spotlight instead of a flat wash — darkest behind the actual
+     cards and heading (where text needs contrast), fading out toward the
+     edges so the photo stays visible around the perimeter rather than
+     the whole section reading as one uniform dark rectangle. */
+  background: radial-gradient(ellipse 70% 65% at center, rgba(12,12,16,0.78) 0%, rgba(12,12,16,0.55) 45%, rgba(12,12,16,0.15) 75%, rgba(12,12,16,0) 100%);
   z-index: -1;
 }
 .how-it-works-heading { text-align: center; margin-bottom: 44px; }
