@@ -192,7 +192,7 @@ a { color: inherit; text-decoration: none; }
 /* On the narrowest phones, the header-actions row (clock, language, book
    button, hamburger) gets tight enough that "Book a ride" was wrapping
    into 2-3 lines — tighten spacing here instead of letting that happen. */
-@media (max-width: 440px) {
+@media (max-width: 470px) {
   .header-inner { gap: 6px; }
   .lang-trigger { padding: 9px 7px; font-size: 10px; }
   .btn-sm { padding: 10px 9px; font-size: 11px; }
@@ -215,16 +215,34 @@ a { color: inherit; text-decoration: none; }
 /* ── Header (Liquid Glass) ── */
 .site-header {
   position: sticky;
-  top: 0;
+  top: 12px;
   z-index: 50;
-  background: rgba(247, 244, 236, 0.55);
-  backdrop-filter: url(#liquid-glass-refraction) blur(22px) saturate(190%);
-  -webkit-backdrop-filter: blur(22px) saturate(190%); /* Safari ignores url() filters in backdrop-filter — falls back to a still-good blur */
-  border-bottom: 1px solid rgba(255,255,255,0.6);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 8px 30px rgba(18,18,59,0.08);
+  margin: 0 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: url(#liquid-glass-refraction) blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.35);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 12px 34px rgba(18,18,59,0.18);
   /* Deliberately no overflow:hidden here — the language dropdown and
      mobile menu both render below this box and must not be clipped.
      The sheen below is contained within its own bounds instead. */
+}
+@media (max-width: 470px) {
+  .site-header {
+    /* The floating inset margin looks great with room to spare, but on
+       the narrowest phones the header content was already fitted right
+       up to the edge — losing 24px total to margins here is exactly what
+       pushed it into overflow. Revert to edge-to-edge on these widths.
+       This override must come AFTER the base .site-header rule above —
+       equal-specificity CSS rules resolve by document order regardless
+       of which one is inside a media query, so placing this earlier in
+       the file (as a first attempt did) silently lost to the rule below
+       it and never actually applied. */
+    margin: 0;
+    top: 0;
+    border-radius: 0;
+  }
 }
 /* The moving sheen — a soft diagonal highlight that drifts slowly across
    the glass, like light catching a curved surface. Uses background-position
@@ -537,6 +555,7 @@ a { color: inherit; text-decoration: none; }
 .hero {
   position: relative;
   padding: 100px 0 64px;
+  margin-bottom: 20px;
   overflow: hidden;
   isolation: isolate;
 }
@@ -558,7 +577,7 @@ a { color: inherit; text-decoration: none; }
 .hero-glass-panel {
   position: relative;
   overflow: hidden;
-  max-width: 620px;
+  max-width: 980px;
   background: rgba(255,255,255,0.1);
   backdrop-filter: url(#liquid-glass-refraction) blur(18px) saturate(150%);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
@@ -607,7 +626,7 @@ a { color: inherit; text-decoration: none; }
 
 @media (min-width: 780px) {
   .hero { padding: 130px 0 90px; }
-  .hero-glass-panel { padding: 44px 40px; max-width: 660px; }
+  .hero-glass-panel { padding: 44px 40px; max-width: 980px; }
 }
 
 .hero-visual {
