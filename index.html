@@ -324,59 +324,61 @@
   </section>
 
   <!-- ============ SAFETY ============ -->
-  <section class="section" id="safety">
-    <div class="wrap safety-wrap">
-      <div>
-        <span class="eyebrow" data-i18n="safety.eyebrow">Trust, built in. Not bolted on.</span>
+  <section class="safety-hero" id="safety">
+    <div class="safety-hero-bg"></div>
+    <div class="safety-hero-overlay"></div>
+    <div class="wrap safety-hero-content">
+      <div class="safety-glass-panel">
+        <span class="eyebrow eyebrow-light" data-i18n="safety.eyebrow">Trust, built in. Not bolted on.</span>
         <h2 data-i18n="safety.title">Safety isn't a feature.<br>It's the whole design.</h2>
         <p class="safety-sub" data-i18n="safety.sub">Every part of <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> was built around one question: would you feel comfortable if this were someone you love landing alone at night?</p>
-      </div>
 
-      <ul class="safety-list">
-        <li>
-          <div class="icon-badge">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="var(--primary)" stroke-width="1.7" stroke-linejoin="round"/>
-              <path d="M9 12l2 2 4-4.5" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <h4 data-i18n="safety.item1Title">Verified identity, every time</h4>
-          <p data-i18n="safety.item1Body">See your driver's name, photo, and verification status before they even arrive.</p>
-        </li>
-        <li>
-          <div class="icon-badge">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 21s-6.5-5.4-6.5-11A6.5 6.5 0 0 1 12 3.5 6.5 6.5 0 0 1 18.5 10c0 5.6-6.5 11-6.5 11z" stroke="var(--primary)" stroke-width="1.7" stroke-linejoin="round"/>
-              <circle cx="12" cy="10" r="2.3" stroke="var(--primary)" stroke-width="1.7"/>
-            </svg>
-          </div>
-          <h4 data-i18n="safety.item2Title">Live tracking, not a promise but a fact</h4>
-          <p data-i18n="safety.item2Body">Watch the actual route on a live map from pickup to drop-off.</p>
-        </li>
-        <li>
-          <div class="icon-badge">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="6" cy="12" r="2.3" stroke="var(--primary)" stroke-width="1.7"/>
-              <circle cx="17.5" cy="6" r="2.3" stroke="var(--primary)" stroke-width="1.7"/>
-              <circle cx="17.5" cy="18" r="2.3" stroke="var(--primary)" stroke-width="1.7"/>
-              <path d="M8 11l7.5-3.7M8 13l7.5 3.7" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <h4 data-i18n="safety.item3Title">Share your ride</h4>
-          <p data-i18n="safety.item3Body">Send live trip details to someone you trust, in one tap.</p>
-        </li>
-        <li>
-          <div class="icon-badge">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 16h16M5 16l1.4-4.7A2 2 0 0 1 8.3 10h7.4a2 2 0 0 1 1.9 1.3L19 16" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M5 16v2.3a.7.7 0 0 0 .7.7H7a.7.7 0 0 0 .7-.7V16M19 16v2.3a.7.7 0 0 1-.7.7H17a.7.7 0 0 1-.7-.7V16" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round"/>
-              <path d="M15.5 3.5l1.6 1.6-4 4-2.2-.6-.6-2.2 4-4z" stroke="var(--primary)" stroke-width="1.5" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <h4 data-i18n="safety.item4Title">Vetted vehicles &amp; owners</h4>
-          <p data-i18n="safety.item4Body">Every vehicle in the network is tied to a documented, agreed vehicle-owner relationship, not an anonymous car.</p>
-        </li>
-      </ul>
+        <ul class="safety-chip-list">
+          <li class="safety-chip">
+            <div class="safety-chip-icon">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+                <path d="M9 12l2 2 4-4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h4 data-i18n="safety.item1Title">Verified identity, every time</h4>
+            <p data-i18n="safety.item1Body">See your driver's name, photo, and verification status before they even arrive.</p>
+          </li>
+          <li class="safety-chip">
+            <div class="safety-chip-icon">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 21s-6.5-5.4-6.5-11A6.5 6.5 0 0 1 12 3.5 6.5 6.5 0 0 1 18.5 10c0 5.6-6.5 11-6.5 11z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+                <circle cx="12" cy="10" r="2.3" stroke="currentColor" stroke-width="1.7"/>
+              </svg>
+            </div>
+            <h4 data-i18n="safety.item2Title">Live tracking, not a promise but a fact</h4>
+            <p data-i18n="safety.item2Body">Watch the actual route on a live map from pickup to drop-off.</p>
+          </li>
+          <li class="safety-chip">
+            <div class="safety-chip-icon">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="6" cy="12" r="2.3" stroke="currentColor" stroke-width="1.7"/>
+                <circle cx="17.5" cy="6" r="2.3" stroke="currentColor" stroke-width="1.7"/>
+                <circle cx="17.5" cy="18" r="2.3" stroke="currentColor" stroke-width="1.7"/>
+                <path d="M8 11l7.5-3.7M8 13l7.5 3.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h4 data-i18n="safety.item3Title">Share your ride</h4>
+            <p data-i18n="safety.item3Body">Send live trip details to someone you trust, in one tap.</p>
+          </li>
+          <li class="safety-chip">
+            <div class="safety-chip-icon">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 16h16M5 16l1.4-4.7A2 2 0 0 1 8.3 10h7.4a2 2 0 0 1 1.9 1.3L19 16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5 16v2.3a.7.7 0 0 0 .7.7H7a.7.7 0 0 0 .7-.7V16M19 16v2.3a.7.7 0 0 1-.7.7H17a.7.7 0 0 1-.7-.7V16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                <path d="M15.5 3.5l1.6 1.6-4 4-2.2-.6-.6-2.2 4-4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h4 data-i18n="safety.item4Title">Vetted vehicles &amp; owners</h4>
+            <p data-i18n="safety.item4Body">Every vehicle in the network is tied to a documented, agreed vehicle-owner relationship, not an anonymous car.</p>
+          </li>
+        </ul>
+      </div>
     </div>
   </section>
 

@@ -913,21 +913,87 @@ a { color: inherit; text-decoration: none; }
   .cards { grid-template-columns: repeat(3, 1fr); }
 }
 
-/* ── Safety ── */
-.safety-wrap {
+/* ── Safety hero — full-bleed photo background with a glass panel ── */
+.safety-hero {
+  position: relative;
+  padding: 48px 0;
+  overflow: hidden;
+  isolation: isolate;
+}
+.safety-hero-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url("assets/safety-hero-bg.jpg");
+  background-size: cover;
+  background-position: center 30%;
+  z-index: -2;
+}
+.safety-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, rgba(12,12,16,0.72) 0%, rgba(12,12,16,0.55) 45%, rgba(12,12,16,0.3) 100%);
+  z-index: -1;
+}
+.safety-glass-panel {
+  position: relative;
+  overflow: hidden;
+  max-width: 640px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: url(#liquid-glass-refraction) blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 24px;
+  padding: 32px 24px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.16) inset, 0 20px 50px rgba(0,0,0,0.3);
+}
+.safety-glass-panel h2 { color: #fff; }
+.safety-sub { color: rgba(255,255,255,0.82); font-size: 15px; max-width: 440px; }
+
+.safety-chip-list {
+  list-style: none;
+  padding: 0;
+  margin: 28px 0 0;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 40px;
+  gap: 12px;
 }
-.safety-sub { color: var(--text-muted); font-size: 15px; max-width: 440px; }
-.safety-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 26px; }
-.safety-list li { display: flex; flex-direction: column; }
-.safety-list h4 { font-size: 15.5px; margin-bottom: 6px; }
-.safety-list p { color: var(--text-muted); font-size: 13.5px; margin: 0; }
+.safety-chip {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 14px;
+  padding: 16px;
+}
+.safety-chip-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(244,163,0,0.18);
+  color: var(--amber);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.safety-chip-icon svg { width: 19px; height: 19px; }
+.safety-chip h4 { font-size: 14.5px; margin-bottom: 5px; color: #fff; }
+.safety-chip p { color: rgba(255,255,255,0.72); font-size: 12.5px; margin: 0; line-height: 1.4; }
 
-@media (min-width: 780px) {
-  .safety-wrap { grid-template-columns: 1fr 1fr; gap: 60px; }
+@media (min-width: 560px) {
+  .safety-chip-list { grid-template-columns: 1fr 1fr; }
 }
+@media (min-width: 780px) {
+  .safety-hero { padding: 72px 0; }
+  .safety-glass-panel { padding: 44px 40px; }
+}
+@media (min-width: 1020px) {
+  .safety-chip-list { grid-template-columns: repeat(4, 1fr); gap: 14px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .safety-glass-panel { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+}
+
 
 /* ── Language callout ── */
 .lang-callout { max-width: 640px; }
