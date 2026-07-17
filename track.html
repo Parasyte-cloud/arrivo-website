@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Track your ride — Arrivo</title>
+<title>Track your ride — RideArrivo</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -132,7 +132,7 @@
     setInterval(refresh, POLL_INTERVAL_MS);
 
     document.getElementById("panicBtn").addEventListener("click", function () {
-      if (!confirm("This will immediately alert Arrivo's support team with your ride details and location. Only use this if you feel unsafe right now. Continue?")) return;
+      if (!confirm("This will immediately alert RideArrivo's support team with your ride details and location. Only use this if you feel unsafe right now. Continue?")) return;
 
       fetch(API_BASE_URL + "/api/rides/" + rideId + "/panic", {
         method: "POST",
