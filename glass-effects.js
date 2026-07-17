@@ -29,7 +29,7 @@
   }
 
   function attachAll() {
-    document.querySelectorAll(".btn-primary, .btn-ghost, .card, .showcase-card").forEach(attach);
+    document.querySelectorAll(".btn-primary, .btn-ghost, .card, .showcase-card, .safety-chip, .how-card, .hero-glass-panel").forEach(attach);
   }
 
   if (document.readyState === "loading") {
