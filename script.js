@@ -158,7 +158,6 @@
     function initMobileNav() {
       var toggle = document.getElementById("mobileNavToggle");
       var menu = document.getElementById("mobileNavMenu");
-      var closeBtn = document.getElementById("mobileNavClose");
       var backdrop = document.getElementById("mobileNavBackdrop");
       if (!toggle || !menu) return;
 
@@ -178,7 +177,6 @@
       toggle.addEventListener("click", function () {
         if (menu.hidden) openMenu(); else closeMenu();
       });
-      if (closeBtn) closeBtn.addEventListener("click", closeMenu);
       if (backdrop) backdrop.addEventListener("click", closeMenu);
 
       // Close the menu after tapping a link — otherwise it stays open
