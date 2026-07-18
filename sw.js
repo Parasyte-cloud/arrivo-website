@@ -73,8 +73,15 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
   // Never intercept non-GET requests (POST/PATCH/etc. — bookings, payments,
-  // login) or anything to the hosts listed above.
-  if (event.request.method !== "GET" || NEVER_CACHE_HOSTS.some((host) => url.hostname.includes(host))) {
+  // login), anything to the hosts listed above, or anything that isn't a
+  // plain http(s) request. Browser extensions can trigger fetch events
+  // with schemes like chrome-extension:// — the Cache API only supports
+  // http(s), so trying to cache.put() one of those throws.
+  if (
+    event.request.method !== "GET" ||
+    !url.protocol.startsWith("http") ||
+    NEVER_CACHE_HOSTS.some((host) => url.hostname.includes(host))
+  ) {
     return; // let the browser handle it normally, untouched
   }
 
