@@ -50,4 +50,16 @@
       observer.observe(document.body, { childList: true, subtree: true });
     });
   }
+
+  // Header starts flush against the top (no gap, no pill) so nothing
+  // shows through behind it on page load — it becomes the floating pill
+  // only once scrolled, at which point there's always real page content
+  // behind that gap rather than a stray strip of plain background.
+  function updateHeaderScrollState() {
+    var header = document.querySelector(".site-header");
+    if (!header) return;
+    header.classList.toggle("is-scrolled", window.scrollY > 8);
+  }
+  updateHeaderScrollState();
+  window.addEventListener("scroll", updateHeaderScrollState, { passive: true });
 })();

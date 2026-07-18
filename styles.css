@@ -215,30 +215,54 @@ a { color: inherit; text-decoration: none; }
 /* ── Header (Liquid Glass) ── */
 .site-header {
   position: sticky;
-  top: 12px;
+  top: 0;
   z-index: 50;
-  margin: 0 12px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.14);
+  margin: 0;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.55);
   backdrop-filter: url(#liquid-glass-refraction) blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255,255,255,0.35);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 12px 34px rgba(18,18,59,0.18);
+  border: 1px solid transparent;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 8px 24px rgba(18,18,59,0.08);
+  transition: top 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), margin 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-radius 0.35s ease, background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   /* Deliberately no overflow:hidden here — the language dropdown and
      mobile menu both render below this box and must not be clipped.
      The sheen below is contained within its own bounds instead. */
 }
+/* On initial load the header sits flush against the top — no gap above
+   it, so on pages like the hero (a full-bleed photo) there's nothing
+   showing through behind it. It only becomes the floating pill once the
+   person has actually scrolled past the very top (see script.js), at
+   which point there's always page content behind that gap regardless of
+   which page you're on, so it never exposes a stray strip of plain
+   background. This was a real, reported bug — a cream sliver was
+   visible above the header specifically at the top of the hero page,
+   because the hero photo only starts below the header in document flow,
+   not behind it. */
+.site-header.is-scrolled {
+  top: 12px;
+  margin: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255,255,255,0.35);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 12px 34px rgba(18,18,59,0.18);
+}
 @media (max-width: 470px) {
-  .site-header {
-    /* The floating inset margin looks great with room to spare, but on
-       the narrowest phones the header content was already fitted right
-       up to the edge — losing 24px total to margins here is exactly what
-       pushed it into overflow. Revert to edge-to-edge on these widths.
-       This override must come AFTER the base .site-header rule above —
-       equal-specificity CSS rules resolve by document order regardless
-       of which one is inside a media query, so placing this earlier in
-       the file (as a first attempt did) silently lost to the rule below
-       it and never actually applied. */
+  .site-header.is-scrolled {
+    /* Full 12px margins on the narrowest phones previously caused real
+       overflow (the header content was already fitted right to the
+       edge) — a smaller margin here still gives the pill/floating look
+       without losing the width the header actually needs. */
+    margin: 0 6px;
+    top: 6px;
+  }
+}
+@media (max-width: 340px) {
+  .site-header.is-scrolled {
+    /* Even 6px margins are one 320px device too many — genuinely zero
+       room to spare at this width, so the pill look is dropped in favor
+       of not overflowing. */
     margin: 0;
     top: 0;
     border-radius: 0;
@@ -317,13 +341,16 @@ a { color: inherit; text-decoration: none; }
 }
 .main-nav {
   display: none;
-  gap: 28px;
+  gap: 4px;
   font-size: 13.5px;
   font-weight: 600;
 }
-.main-nav a { margin-right: 28px; transition: color 0.2s ease; }
-.main-nav a:last-child { margin-right: 0; }
-.main-nav a:hover { color: var(--amber); }
+.main-nav a {
+  padding: 8px 16px;
+  border-radius: 999px;
+  transition: color 0.2s ease, background 0.25s ease;
+}
+.main-nav a:hover { color: var(--amber); background: rgba(244,163,0,0.14); }
 .header-actions { display: flex; align-items: center; gap: 12px; }
 
 /* ── Mobile hamburger nav — the secondary links (How it works / Who it's
@@ -828,6 +855,19 @@ a { color: inherit; text-decoration: none; }
      the whole section reading as one uniform dark rectangle. */
   background: radial-gradient(ellipse 70% 65% at center, rgba(12,12,16,0.78) 0%, rgba(12,12,16,0.55) 45%, rgba(12,12,16,0.15) 75%, rgba(12,12,16,0) 100%);
   z-index: -1;
+}
+.how-glass-panel {
+  position: relative;
+  overflow: hidden;
+  max-width: 1020px;
+  margin: 0 auto;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: url(#liquid-glass-refraction) blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 24px;
+  padding: 40px 24px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.16) inset, 0 24px 60px rgba(0,0,0,0.32);
 }
 .how-it-works-heading { text-align: center; margin-bottom: 44px; }
 .how-it-works-accent {
