@@ -145,6 +145,7 @@
     margin-bottom: 16px;
   }
   .listening-btn.is-active { border-color: var(--primary); background: var(--primary-tint); color: var(--primary); }
+  .listening-btn.is-error { border-color: var(--coral, #E1523D); color: var(--coral, #E1523D); }
 </style>
 </head>
 <body>
@@ -541,7 +542,13 @@
 
   function loadWallet(token) {
     return api("/api/wallet", { headers: authHeader() }).then(function (result) {
-      if (!result.ok) return;
+      if (!result.ok) {
+        // Previously a silent return — the balance stayed frozen on its
+        // "NGN 0" placeholder with no indication that's not a real balance.
+        document.getElementById("walletHistory").innerHTML =
+          '<p style="font-size:12.5px;color:var(--coral, #E1523D);">Couldn\'t load your wallet. Try refreshing the page.</p>';
+        return;
+      }
       document.getElementById("walletBalance").textContent = "NGN " + result.data.balanceNaira.toLocaleString();
       renderWalletHistory(result.data.transactions);
     });
@@ -649,7 +656,13 @@
 
   function initMembership(token) {
     api("/api/memberships/mine", { headers: authHeader() }).then(function (result) {
-      if (!result.ok) return;
+      if (!result.ok) {
+        // Previously a silent return — the card stayed stuck on "Loading…"
+        // forever instead of telling the rider anything went wrong.
+        document.getElementById("membershipCard").innerHTML =
+          '<p style="font-size:13px;color:var(--coral, #E1523D);">Couldn\'t load your membership status. Try refreshing the page.</p>';
+        return;
+      }
       renderMembershipCard(result.data, token);
     });
   }
@@ -707,10 +720,8 @@
   //     admin-cleared flag exists to un-set it. (Dev note: to clear it while
   //     testing, run localStorage.removeItem("arrivo_panic_active") in the
   //     console — there is intentionally no UI path to do this.)
-  // POST /api/rides/:id/panic is confirmed real (checked against the actual
-  // arrivo-backend source and end-to-end tested against a live database).
-  // /api/listening-device is still a guess — no such route exists in the
-  // backend yet, so that call is best-effort and currently a no-op server-side.
+  // POST /api/rides/:id/panic and POST /api/rides/:id/listening-device are
+  // both confirmed real (checked against the actual arrivo-backend source).
   function initPanicButton(userType, tokenKey, apiBaseUrl) {
     var btn = document.getElementById("panicBtn");
     if (!btn) return;
@@ -722,6 +733,7 @@
     var listeningBtn = document.getElementById("listeningDeviceBtn");
     var ARRIVO_SUPPORT_WHATSAPP = "2348162706078"; // same number already live in the Support section
     var PANIC_STATE_KEY = "arrivo_panic_active"; // stores JSON: { rideId }
+    var LISTENING_STATE_KEY = "arrivo_listening_active"; // stores JSON: { rideId }
 
     var countdownTimer = null;
     var resolutionPollTimer = null;
@@ -777,6 +789,24 @@
       if (!saved || !saved.rideId) { localStorage.removeItem(PANIC_STATE_KEY); return; }
       showActiveBanner();
       pollForResolution(saved.rideId);
+      // Panic bundles listening-device activation server-side in the same
+      // write, so if panic is active, listening is guaranteed active too —
+      // reflect that immediately rather than showing "off" until some
+      // other action happens to correct it (the bug this replaces: a
+      // reload right after SOS made the indicator lie).
+      setListeningUiOn();
+    })();
+
+    // Same idea, for a listening-device activation that happened
+    // independently of panic (the standalone button, not bundled).
+    (function restoreListeningStateIfAny() {
+      if (listeningActive) return; // already restored via panic above
+      var raw = localStorage.getItem(LISTENING_STATE_KEY);
+      if (!raw) return;
+      var saved;
+      try { saved = JSON.parse(raw); } catch (e) { saved = null; }
+      if (!saved || !saved.rideId) { localStorage.removeItem(LISTENING_STATE_KEY); return; }
+      setListeningUiOn();
     })();
 
     // Cancelling here aborts an accidental tap BEFORE the alert fires —
@@ -821,7 +851,12 @@
           ? "https://maps.google.com/?q=" + position.coords.latitude + "," + position.coords.longitude
           : null;
 
-        activateListeningDevice(true); // bundled: one trigger, full response
+        // Previously called here, unconditionally, before it was known
+        // whether the panic request (or even the ride lookup) would
+        // succeed — so the "Listening device: on" indicator could show
+        // even when nothing was ever recorded server-side. Now it's only
+        // shown once the panic POST below actually succeeds, since panic
+        // bundles the real activation into that same write.
 
         var message = "SOS. I need help." + (mapsLink ? " My location: " + mapsLink : " Location unavailable.");
         var waUrl = "https://wa.me/" + ARRIVO_SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(message);
@@ -858,6 +893,12 @@
           localStorage.setItem(PANIC_STATE_KEY, JSON.stringify({ rideId: activeRideId }));
           showActiveBanner(); // stays locked until pollForResolution finds it cleared
           pollForResolution(activeRideId);
+          // "One trigger, full response" — panic bundles listening-device
+          // activation into the same server-side write, confirmed by the
+          // same res.ok check above, so no separate request is needed here.
+          listeningActive = true;
+          localStorage.setItem(LISTENING_STATE_KEY, JSON.stringify({ rideId: activeRideId }));
+          setListeningUiOn();
         }).catch(function () {
           // The backend call itself failed (network error, ride no longer
           // valid, etc.) — same reasoning as no active ride: don't lock a
@@ -892,32 +933,66 @@
       }
     }
 
-    // Listening device — shares this same activation logic, and can be
-    // switched on independently by either party, not only via the panic
-    // button. Actually streaming/recording audio to a backend is a separate,
-    // substantial piece of infrastructure that doesn't exist yet; this wires
-    // up the real permission prompt and state so that infrastructure has
-    // something to plug into.
-    function activateListeningDevice(viaPanic) {
-      if (listeningActive) return;
+    // Marks the UI "on" — called either once the panic POST above actually
+    // confirms success, or once the standalone activation below does.
+    // Never called speculatively/optimistically anymore.
+    function setListeningUiOn() {
       listeningActive = true;
       if (listeningBtn) {
         listeningBtn.textContent = "🎙️ Listening device: on";
+        listeningBtn.classList.remove("is-error");
         listeningBtn.classList.add("is-active");
       }
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia({ audio: true }).catch(function () {});
       }
-      try {
-        fetch(apiBaseUrl + "/api/listening-device", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: "Bearer " + localStorage.getItem(tokenKey) },
-          body: JSON.stringify({ userType: userType, active: true, viaPanic: !!viaPanic, timestamp: new Date().toISOString() }),
-        }).catch(function () {});
-      } catch (e) {}
+    }
+
+    function setListeningUiError() {
+      if (listeningBtn) {
+        listeningBtn.textContent = "🎙️ Couldn't confirm — tap to retry";
+        listeningBtn.classList.add("is-error");
+      }
+    }
+
+    // Listening device, activated independently of panic (the standalone
+    // button below) — ride-scoped, so a rideId is required. Only marks the
+    // UI "on" once the server actually confirms it; a failed request now
+    // shows a distinct, clickable retry state instead of either silently
+    // claiming success (the previous bug) or leaving the button dead for
+    // the rest of the session.
+    function activateListeningDevice(rideId) {
+      if (listeningActive || !rideId) return;
+      fetch(apiBaseUrl + "/api/rides/" + rideId + "/listening-device", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + localStorage.getItem(tokenKey) },
+      }).then(function (res) {
+        if (!res.ok) throw new Error("listening-device call failed");
+        localStorage.setItem(LISTENING_STATE_KEY, JSON.stringify({ rideId: rideId }));
+        setListeningUiOn();
+      }).catch(function () {
+        setListeningUiError();
+      });
     }
     if (listeningBtn) {
-      listeningBtn.addEventListener("click", function () { activateListeningDevice(false); });
+      listeningBtn.addEventListener("click", function () {
+        if (listeningActive) return; // already on, or a retry is handled by re-running this same handler
+        // Same "find my active ride" lookup used by the panic button above —
+        // the endpoint is ride-scoped, so there's nothing to activate
+        // without one.
+        fetch(apiBaseUrl + "/api/rides/mine", {
+          headers: { Authorization: "Bearer " + localStorage.getItem(tokenKey) },
+        }).then(function (res) { return res.json(); }).then(function (data) {
+          var rides = (data && data.rides) || [];
+          var active = rides.find(function (r) { return r.ride_status === "accepted" || r.ride_status === "in_progress"; });
+          if (!active) {
+            listeningBtn.textContent = "🎙️ No active ride to activate this for";
+            setTimeout(function () { listeningBtn.textContent = "🎙️ Listening device: off"; }, 3000);
+            return;
+          }
+          activateListeningDevice(active.id);
+        }).catch(function () { setListeningUiError(); });
+      });
     }
   }
 </script>
