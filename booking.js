@@ -28,7 +28,7 @@
     flightNumber: "",
     adults: 1, children: 0,
     carryOnBags: 1, checkedBags: 1, bulky: false,
-    bookingType: "one_way", durationDays: 1, multiplier: 1,
+    bookingType: "one_way", durationDays: 1, multiplier: 1, fullDayCount: 1,
     scheduledPickupAt: null, linkedRideId: null,
     vehicle: "sedan", vehicleBasePrice: 8500,
     vehicleManuallyPicked: false,
@@ -338,7 +338,41 @@
     var scheduledErrorBox = document.getElementById("scheduledPickupError");
     var dateInput = document.getElementById("fScheduledDate");
     var timeInput = document.getElementById("fScheduledTime");
-    var bookingChips = Array.prototype.slice.call(document.querySelectorAll(".booking-type-chip"));
+    // Scoped to #bookingTypeOptions specifically — #fullDayCountOptions
+    // below reuses the same .booking-type-chip class for visual styling,
+    // but those chips only carry data-days (no data-type/data-multiplier)
+    // and must never be picked up by this handler.
+    var bookingChips = Array.prototype.slice.call(document.querySelectorAll("#bookingTypeOptions .booking-type-chip"));
+    var fullDayCountSection = document.getElementById("fullDayCountSection");
+    var fullDayCountChips = Array.prototype.slice.call(document.querySelectorAll("#fullDayCountOptions .booking-type-chip"));
+    var fullDayCountInput = document.getElementById("fFullDayCountInput");
+    // Matches CHARTER_MULTIPLIER.full_day in arrivo-backend/services/fare.js
+    // — a single full day's multiplier, before any multi-day count is applied.
+    var FULL_DAY_BASE_MULTIPLIER = 6;
+    var MAX_FULL_DAY_COUNT = 6;
+
+    function setFullDayCount(n) {
+      var clamped = Math.min(Math.max(Math.round(Number(n)) || 1, 1), MAX_FULL_DAY_COUNT);
+      state.fullDayCount = clamped;
+      state.durationDays = clamped;
+      state.multiplier = FULL_DAY_BASE_MULTIPLIER * clamped;
+      fullDayCountChips.forEach(function (c) {
+        c.classList.toggle("selected", Number(c.getAttribute("data-days")) === clamped);
+      });
+      if (fullDayCountInput) fullDayCountInput.value = clamped;
+      updatePriceLabels();
+    }
+
+    fullDayCountChips.forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        setFullDayCount(Number(chip.getAttribute("data-days")));
+      });
+    });
+    if (fullDayCountInput) {
+      fullDayCountInput.addEventListener("change", function () {
+        setFullDayCount(fullDayCountInput.value);
+      });
+    }
 
     // Default the date picker to tomorrow — a sensible starting point for a
     // next-day departure — rather than leaving it blank.
@@ -352,8 +386,10 @@
     function updateFlightSectionVisibility() {
       var isOneWay = state.bookingType === "one_way";
       var isDropoff = state.bookingType === "dropoff";
+      var isFullDay = state.bookingType === "full_day";
       flightSection.hidden = !isOneWayStyle(state.bookingType);
       scheduledSection.hidden = !isDropoff;
+      fullDayCountSection.hidden = !isFullDay;
       if (!isOneWay) requiredErrorBox.hidden = true;
       if (!isDropoff) scheduledErrorBox.hidden = true;
 
@@ -377,6 +413,9 @@
         state.bookingType = chip.getAttribute("data-type");
         state.durationDays = Number(chip.getAttribute("data-days"));
         state.multiplier = Number(chip.getAttribute("data-multiplier"));
+        // Reset back to a single day each time "Full Day" is (re)selected —
+        // same "leave it as it is" default as landing on the step fresh.
+        if (state.bookingType === "full_day") setFullDayCount(1);
         updateFlightSectionVisibility();
         updatePriceLabels();
       });
@@ -1093,6 +1132,10 @@
       vehicleType: state.vehicle,
       securityEscort: state.securityEscort,
       fleetSize: state.fleetSize,
+      // Only actually changes the charged fare for 'full_day' (see
+      // arrivo-backend/services/fare.js computeCharterFare) — harmless to
+      // always send it.
+      durationDays: state.durationDays,
     };
     if (isOneWayStyle(state.bookingType)) {
       if (!state.pickupLatLng || !state.dropoffLatLng) {
@@ -1184,6 +1227,9 @@
         t("booking.reviewScheduledPickup"),
         new Date(state.scheduledPickupAt).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
       ]);
+    }
+    if (state.bookingType === "full_day" && state.durationDays > 1) {
+      rows.push([t("booking.reviewFullDayCount"), state.durationDays + " days"]);
     }
     // No per-item naira breakdown for escort/fleet here anymore — the
     // backend only returns one final total, not a line-item split, and
