@@ -140,14 +140,15 @@
     <!-- STEP 2: Flight -->
     <section class="step" data-step="2" hidden>
       <h2 data-i18n="booking.flightTitle">Got a flight number?</h2>
-      <p class="step-sub" data-i18n="booking.flightSub">Optional, but it means your pickup time adjusts automatically if you're early or delayed.</p>
+      <p class="step-sub" data-i18n="booking.flightSub">Required — it's how we track your flight and know exactly when to have your driver waiting.</p>
 
       <div class="flight-row">
-        <input type="text" id="fFlight" class="field" data-i18n-placeholder="booking.flightPlaceholder" placeholder="e.g. BA075" style="text-transform:uppercase;">
+        <input type="text" id="fFlight" class="field" data-i18n-placeholder="booking.flightPlaceholder" placeholder="e.g. BA075" style="text-transform:uppercase;" required>
         <button class="btn btn-ghost" id="trackFlightBtn" data-i18n="booking.track" type="button">Track</button>
       </div>
       <div id="flightResult" class="flight-result" hidden></div>
       <p class="error-text" id="flightError" hidden data-i18n="booking.flightNotFound"></p>
+      <p class="error-text" id="flightRequiredError" hidden data-i18n="booking.flightRequired">Please enter your flight number to continue.</p>
 
       <div class="step-actions">
         <button class="btn btn-ghost" id="backTo1" data-i18n="booking.back">Back</button>
@@ -261,7 +262,7 @@
       <div class="addon-section">
         <label class="checkbox-row">
           <input type="checkbox" id="fSecurityEscort">
-          <span>Add a personal security escort <strong>(+NGN 100,000)</strong></span>
+          <span>Add a personal security escort <strong>(priced at checkout)</strong></span>
         </label>
         <label class="field-label" style="margin-top:6px;">Fleet accompaniment</label>
         <div class="chip-row" id="fleetChips">
@@ -274,7 +275,7 @@
       <div class="fare-estimate-box" id="fareEstimateBox" hidden>
         <div class="fare-estimate-row"><span data-i18n="booking.fareDistance">Estimated distance</span><span id="fareDistanceText"></span></div>
         <div class="fare-estimate-row"><span data-i18n="booking.fareBase">Base fare</span><span id="fareBaseText"></span></div>
-        <div class="fare-estimate-row" id="fareSecurityRow" hidden><span>Security escort</span><span>+NGN 100,000</span></div>
+        <div class="fare-estimate-row" id="fareSecurityRow" hidden><span>Security escort</span><span>Priced at checkout</span></div>
         <div class="fare-estimate-row" id="fareFleetRow" hidden><span id="fareFleetLabel">Fleet accompaniment</span><span id="fareFleetAmount"></span></div>
         <div class="fare-estimate-row fare-estimate-total"><span data-i18n="booking.fareTotal">Estimated total</span><span id="fareTotalText"></span></div>
       </div>
@@ -290,22 +291,29 @@
     <section class="step" data-step="5" hidden>
       <h2 data-i18n="booking.reviewTitle">Review &amp; pay</h2>
 
-      <dl class="review-list" id="reviewList"></dl>
+      <p id="quoteLoadingText">Calculating your exact fare…</p>
+      <p class="error-text" id="quoteErrorText" hidden></p>
 
-      <div class="review-total">
-        <span data-i18n="booking.reviewFare">Total fare</span>
-        <strong id="reviewFare">NGN 0</strong>
+      <div id="reviewContent" hidden>
+        <dl class="review-list" id="reviewList"></dl>
+
+        <div class="review-total">
+          <span data-i18n="booking.reviewFare">Total fare</span>
+          <strong id="reviewFare">NGN 0</strong>
+        </div>
+
+        <p class="pay-note" data-i18n="booking.payNote">Payment is handled securely by Paystack. <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> never sees your card details.</p>
+
+        <p class="error-text" id="walletMinimumNote" hidden></p>
+
+        <label class="field-label">How would you like to pay?</label>
+        <div class="for-who-toggle" id="paymentMethodToggle" style="margin-bottom:14px;">
+          <button type="button" class="for-who-opt is-active" data-method="card">Card</button>
+          <button type="button" class="for-who-opt" data-method="wallet" id="walletPaymentOpt">Wallet <span id="walletBalanceHint" style="font-weight:400;"></span></button>
+          <button type="button" class="for-who-opt" data-method="membership" id="membershipPaymentOpt" hidden>Membership</button>
+        </div>
+        <p class="error-text" id="walletInsufficientNote" hidden>Your wallet balance isn't enough for this ride. Top up in My Account, or pay by card instead.</p>
       </div>
-
-      <p class="pay-note" data-i18n="booking.payNote">Payment is handled securely by Paystack. <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> never sees your card details.</p>
-
-      <label class="field-label">How would you like to pay?</label>
-      <div class="for-who-toggle" id="paymentMethodToggle" style="margin-bottom:14px;">
-        <button type="button" class="for-who-opt is-active" data-method="card">Card</button>
-        <button type="button" class="for-who-opt" data-method="wallet" id="walletPaymentOpt">Wallet <span id="walletBalanceHint" style="font-weight:400;"></span></button>
-        <button type="button" class="for-who-opt" data-method="membership" id="membershipPaymentOpt" hidden>Membership</button>
-      </div>
-      <p class="error-text" id="walletInsufficientNote" hidden>Your wallet balance isn't enough for this ride. Top up in My Account, or pay by card instead.</p>
 
       <label class="checkbox-row">
         <input type="checkbox" id="fAgreeCancellation">
