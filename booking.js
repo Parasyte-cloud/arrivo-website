@@ -27,8 +27,9 @@
     emergencyContactName: "", emergencyContactPhone: "",
     flightNumber: "",
     adults: 1, children: 0,
-    bags: 1, bulky: false,
+    carryOnBags: 1, checkedBags: 1, bulky: false,
     bookingType: "one_way", durationDays: 1, multiplier: 1,
+    scheduledPickupAt: null, linkedRideId: null,
     vehicle: "sedan", vehicleBasePrice: 8500,
     vehicleManuallyPicked: false,
     pickup: "", stops: [],
@@ -72,6 +73,15 @@
 
   function t(path) {
     return getNested(I18N[currentLang()], path) || path;
+  }
+
+  // "dropoff" (Airport Drop-off) is priced and location-gathered exactly
+  // like "one_way" (Airport Pickup) — both are per-location trips with a
+  // real pickup/destination address, unlike the flat-rate multi-day
+  // charter types. Used everywhere a check used to just be
+  // `bookingType === "one_way"` before Airport Drop-off existed.
+  function isOneWayStyle(bookingType) {
+    return bookingType === "one_way" || bookingType === "dropoff";
   }
 
   function closeLangMenu() {
@@ -322,12 +332,42 @@
     var requiredErrorBox = document.getElementById("flightRequiredError");
     var flightInput = document.getElementById("fFlight");
     var flightSection = document.getElementById("flightNumberSection");
+    var flightLabel = document.getElementById("flightSectionLabel");
+    var flightSub = document.getElementById("flightSectionSub");
+    var scheduledSection = document.getElementById("scheduledPickupSection");
+    var scheduledErrorBox = document.getElementById("scheduledPickupError");
+    var dateInput = document.getElementById("fScheduledDate");
+    var timeInput = document.getElementById("fScheduledTime");
     var bookingChips = Array.prototype.slice.call(document.querySelectorAll(".booking-type-chip"));
 
+    // Default the date picker to tomorrow — a sensible starting point for a
+    // next-day departure — rather than leaving it blank.
+    if (dateInput && !dateInput.value) {
+      var tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      dateInput.value = tomorrow.toISOString().slice(0, 10);
+    }
+    if (timeInput && !timeInput.value) timeInput.value = "09:00";
+
     function updateFlightSectionVisibility() {
-      var needsFlight = state.bookingType === "one_way";
-      flightSection.hidden = !needsFlight;
-      if (!needsFlight) requiredErrorBox.hidden = true;
+      var isOneWay = state.bookingType === "one_way";
+      var isDropoff = state.bookingType === "dropoff";
+      flightSection.hidden = !isOneWayStyle(state.bookingType);
+      scheduledSection.hidden = !isDropoff;
+      if (!isOneWay) requiredErrorBox.hidden = true;
+      if (!isDropoff) scheduledErrorBox.hidden = true;
+
+      // Airport Pickup: flight number required (it's the only way to track
+      // an arriving rider's ETA). Airport Drop-off: optional (useful for
+      // delay-awareness — timing already comes from the scheduled date/time
+      // above, not from a flight-landing event).
+      if (isDropoff) {
+        flightLabel.textContent = t("booking.flightTitleOptional");
+        flightSub.textContent = t("booking.flightSubOptional");
+      } else if (isOneWay) {
+        flightLabel.textContent = t("booking.flightTitle");
+        flightSub.textContent = t("booking.flightSub");
+      }
     }
 
     bookingChips.forEach(function (chip) {
@@ -351,6 +391,9 @@
     flightInput.addEventListener("input", function () {
       requiredErrorBox.hidden = true;
     });
+    [dateInput, timeInput].forEach(function (el) {
+      if (el) el.addEventListener("input", function () { scheduledErrorBox.hidden = true; });
+    });
 
     document.getElementById("trackFlightBtn").addEventListener("click", function () {
       var flightNumber = flightInput.value.trim().toUpperCase();
@@ -373,15 +416,32 @@
     });
 
     document.getElementById("flightContinue").addEventListener("click", function () {
-      if (state.bookingType !== "one_way") {
+      if (!isOneWayStyle(state.bookingType)) {
         // Charter bookings don't have a flight to track.
         state.flightNumber = "";
         goToStep(3);
         setupPlacesForStep4(); // Pickup is now step 3 — the map container only has real dimensions once this step is visible. Function name predates the reorder.
         return;
       }
+
+      if (state.bookingType === "dropoff") {
+        var dateVal = dateInput.value;
+        var timeVal = timeInput.value || "09:00";
+        var scheduled = dateVal ? new Date(dateVal + "T" + timeVal + ":00") : null;
+        if (!scheduled || isNaN(scheduled.getTime()) || scheduled.getTime() <= Date.now()) {
+          scheduledErrorBox.hidden = false;
+          return;
+        }
+        scheduledErrorBox.hidden = true;
+        state.scheduledPickupAt = scheduled.toISOString();
+      } else {
+        state.scheduledPickupAt = null;
+      }
+
+      // Flight number is required for Airport Pickup, optional for Airport
+      // Drop-off (timing already comes from the scheduled date/time above).
       var flightNumber = flightInput.value.trim().toUpperCase();
-      if (!flightNumber) {
+      if (state.bookingType === "one_way" && !flightNumber) {
         requiredErrorBox.hidden = false;
         flightInput.focus();
         return;
@@ -395,14 +455,25 @@
   }
 
   // ───────────────────────── Step 3: Luggage & Vehicle ─────────────────────────
-  function recommendVehicle(bags, bulky, passengers) {
-    if (bulky || bags >= 5 || passengers >= 5) return "truck";
-    if (bags >= 3 || passengers >= 4) return "suv";
+  // Airline-style luggage entry: carry-on (stays with the rider, never
+  // affects vehicle choice) + checked bags (the actual cargo load) + a
+  // heavy/oversized flag (mirrors an airline's "excess baggage" question).
+  // Heavy/oversized or a large checked-bag count is what should steer
+  // someone toward the Pickup Truck — it's a cargo vehicle, not a bigger
+  // passenger vehicle, so it's recommended independently of passenger
+  // count. A big passenger count with normal luggage still recommends
+  // Executive (truck), same as before. Recommending is the only thing
+  // this does — the rider can always pick a different vehicle manually
+  // (see selectVehicle below), same as the existing suv/truck behavior.
+  function recommendVehicle(checkedBags, bulky, passengers) {
+    if (bulky || checkedBags >= 5) return "pickup";
+    if (passengers >= 5) return "truck";
+    if (checkedBags >= 3 || passengers >= 4) return "suv";
     return "sedan";
   }
 
   function initStep3() {
-    var bagsInput = document.getElementById("fBags");
+    var checkedInput = document.getElementById("fChecked");
     var bulkyInput = document.getElementById("fBulky");
     var adultsInput = document.getElementById("fAdults");
     var childrenInput = document.getElementById("fChildren");
@@ -413,10 +484,10 @@
     // anymore.
 
     function updateRecommendation() {
-      var bags = Number(bagsInput.value) || 0;
+      var checkedBags = Number(checkedInput.value) || 0;
       var bulky = bulkyInput.checked;
       var passengers = (Number(adultsInput.value) || 0) + (Number(childrenInput.value) || 0);
-      var recommended = recommendVehicle(bags, bulky, passengers);
+      var recommended = recommendVehicle(checkedBags, bulky, passengers);
 
       vehicleCards.forEach(function (card) {
         var isRecommended = card.getAttribute("data-vehicle") === recommended;
@@ -451,7 +522,8 @@
       if (manual) state.vehicleManuallyPicked = true;
     }
 
-    bagsInput.addEventListener("input", updateRecommendation);
+    var carryOnInput = document.getElementById("fCarryOn");
+    checkedInput.addEventListener("input", updateRecommendation);
     bulkyInput.addEventListener("change", updateRecommendation);
     adultsInput.addEventListener("input", updateRecommendation);
     childrenInput.addEventListener("input", updateRecommendation);
@@ -487,7 +559,8 @@
       }
       state.adults = adults;
       state.children = children;
-      state.bags = Number(bagsInput.value) || 0;
+      state.carryOnBags = Number(carryOnInput.value) || 0;
+      state.checkedBags = Number(checkedInput.value) || 0;
       state.bulky = bulkyInput.checked;
       renderReview();
       goToStep(5);
@@ -529,12 +602,17 @@
   // can't safely carry more than a few passengers, and the point of this
   // is to actually push larger groups toward a bigger vehicle or fleet
   // accompaniment rather than let them cram into whatever they clicked.
-  var MAX_PASSENGERS = { sedan: 3, suv: 5, truck: 5 };
+  // Pickup Truck seats fewer passengers than SUV/Executive — it's a cargo
+  // vehicle first, so the bed isn't passenger space. Riders with a big
+  // group AND heavy luggage should add fleet accompaniment rather than
+  // expect one pickup truck to do both jobs.
+  var MAX_PASSENGERS = { sedan: 3, suv: 5, truck: 5, pickup: 3 };
   // Fleet accompaniment add-on, per vehicle type.
   var FLEET_PRICE = {
     sedan: { 2: 70000, 3: 100000 },
     suv: { 2: 70000, 3: 100000 },
     truck: { 2: 70000, 3: 100000 },
+    pickup: { 2: 70000, 3: 100000 },
   };
   // Security escort is now priced at $100-equivalent, computed live by the
   // backend (services/fare.js SECURITY_ESCORT_PRICE_USD) via the real quote
@@ -598,20 +676,23 @@
   // delta per tier, matching the "from ₦30,000 / ₦45,000 / ₦60,000"
   // spacing given for Standard Sedan / Premium SUV / Executive Vehicle —
   // a flat +15k / +30k rather than re-deriving a per-area number for
-  // every vehicle type across 20+ areas.
-  var VEHICLE_TIER_DELTA = { sedan: 0, suv: 15000, truck: 30000 }; // "truck" is the internal id for Executive Vehicle — kept stable to avoid renaming every reference; only the *label* shown to riders changed
+  // every vehicle type across 20+ areas. "pickup" (Pickup Truck) is a
+  // later addition for heavy/bulky cargo — a working vehicle, not a
+  // luxury one, so it's priced between Sedan and SUV rather than at/above
+  // Executive. Mirrors arrivo-backend/services/fare.js exactly — that's
+  // the real source of truth; this is just what's shown before a live
+  // quote loads. "truck" is the internal id for Executive Vehicle — kept
+  // stable to avoid renaming every reference; only the *label* shown to
+  // riders changed.
+  var VEHICLE_TIER_DELTA = { sedan: 0, suv: 15000, truck: 30000, pickup: 10000 };
 
-  // Situational charges — applied automatically where they can be
-  // determined from what the rider has already entered, rather than
-  // requiring a separate manual toggle for each one.
-  var EXCESS_LUGGAGE_FEE = 5000;   // more than 3 large suitcases
-  var MULTI_STOP_FEE = 7500;       // per additional stop beyond the first drop-off (midpoint of ₦5,000–₦10,000)
-  var MIDNIGHT_PICKUP_FEE = 7500;  // pickups between 11 PM and 5 AM (midpoint of ₦5,000–₦10,000)
-
-  function isMidnightPickup() {
-    var hour = new Date().getHours();
-    return hour >= 23 || hour < 5;
-  }
+  // Night pricing (8pm–5am) and the one-fee-per-location model live
+  // entirely server-side now (arrivo-backend/services/fare.js) — the old
+  // itemized excess-luggage/multi-stop/midnight-pickup fees this file used
+  // to calculate here were removed from actual billing a while back, per
+  // the "one fee per location, no more fees" product decision. Luggage
+  // counts below only drive which vehicle gets auto-recommended, same as
+  // before — they were never sent to the backend or billed directly.
 
   function findExcludedArea(address, latLng) {
     var a = (" " + (address || "").toLowerCase() + " ");
@@ -641,31 +722,11 @@
     return areaBase + delta;
   }
 
-  function calculateSituationalCharges(state) {
-    var total = 0;
-    var items = [];
-    if ((state.bags || 0) > 3) {
-      total += EXCESS_LUGGAGE_FEE;
-      items.push({ label: "Excess luggage (4+ suitcases)", amount: EXCESS_LUGGAGE_FEE });
-    }
-    var extraStops = Math.max(0, (state.stops ? state.stops.length : 1) - 1);
-    if (extraStops > 0) {
-      var stopsFee = extraStops * MULTI_STOP_FEE;
-      total += stopsFee;
-      items.push({ label: extraStops + " additional stop" + (extraStops === 1 ? "" : "s"), amount: stopsFee });
-    }
-    if (isMidnightPickup()) {
-      total += MIDNIGHT_PICKUP_FEE;
-      items.push({ label: "Midnight pickup (11 PM – 5 AM)", amount: MIDNIGHT_PICKUP_FEE });
-    }
-    return { total: total, items: items };
-  }
-
   function updatePriceLabels() {
     document.querySelectorAll(".vehicle-card").forEach(function (card) {
       var vehicle = card.getAttribute("data-vehicle");
       var price;
-      if (state.bookingType === "one_way" && state.zone) {
+      if (isOneWayStyle(state.bookingType) && state.zone) {
         price = zoneVehiclePrice(vehicle, state.zone);
       } else {
         var base = Number(card.getAttribute("data-price"));
@@ -797,7 +858,7 @@
     var errEl = document.getElementById("fareError");
     if (!box) return;
 
-    if (state.bookingType !== "one_way") {
+    if (!isOneWayStyle(state.bookingType)) {
       box.hidden = true;
       errEl.hidden = true;
       return;
@@ -811,7 +872,6 @@
     state.zone = { areaPrice: findAreaPrice(dropoffAddress) };
     errEl.hidden = true;
 
-    var situational = calculateSituationalCharges(state);
     document.getElementById("fareDistanceText").textContent = "Base fare for this area";
     document.getElementById("fareBaseText").textContent = "Sedan NGN " + zoneVehiclePrice("sedan", state.zone).toLocaleString() + " · SUV NGN " + zoneVehiclePrice("suv", state.zone).toLocaleString();
     document.getElementById("fareSecurityRow").hidden = !state.securityEscort;
@@ -1034,7 +1094,7 @@
       securityEscort: state.securityEscort,
       fleetSize: state.fleetSize,
     };
-    if (state.bookingType === "one_way") {
+    if (isOneWayStyle(state.bookingType)) {
       if (!state.pickupLatLng || !state.dropoffLatLng) {
         return Promise.resolve({
           ok: false,
@@ -1060,7 +1120,7 @@
   // Coordinates for the actual POST /api/rides call below — same
   // derivation as getLiveQuote, only needed for one-way bookings.
   function getCoordsPayload() {
-    if (state.bookingType !== "one_way" || !state.pickupLatLng || !state.dropoffLatLng) return {};
+    if (!isOneWayStyle(state.bookingType) || !state.pickupLatLng || !state.dropoffLatLng) return {};
     return {
       pickupLat: typeof state.pickupLatLng.lat === "function" ? state.pickupLatLng.lat() : state.pickupLatLng.lat,
       pickupLng: typeof state.pickupLatLng.lng === "function" ? state.pickupLatLng.lng() : state.pickupLatLng.lng,
@@ -1116,6 +1176,15 @@
       [t("booking.reviewVehicle"), escapeHtml(vehicleLabel)],
       [t("booking.reviewPickup"), escapeHtml([state.pickup].concat(state.stops).join(" → "))]
     );
+    // Only Airport Drop-off collects an explicit scheduled time — Airport
+    // Pickup is flight-landing-driven instead, and charter bookings don't
+    // show a review row for it at all here.
+    if (state.bookingType === "dropoff" && state.scheduledPickupAt) {
+      rows.push([
+        t("booking.reviewScheduledPickup"),
+        new Date(state.scheduledPickupAt).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
+      ]);
+    }
     // No per-item naira breakdown for escort/fleet here anymore — the
     // backend only returns one final total, not a line-item split, and
     // showing a made-up number for "how much of the total was the escort"
@@ -1233,6 +1302,8 @@
       children: state.children,
       emergencyContactName: state.emergencyContactName,
       emergencyContactPhone: state.emergencyContactPhone,
+      scheduledPickupAt: state.scheduledPickupAt || null,
+      linkedRideId: state.linkedRideId || null,
     }, getCoordsPayload());
 
     return api("/api/rides", {
@@ -1253,11 +1324,85 @@
         barcodeEl.textContent = createdRide.barcode;
         barcodeBox.hidden = false;
       }
+      if (state.bookingType === "one_way") showReturnDropoffPrompt(createdRide.id);
       goToStep(6);
     }).catch(function () {
       payError.hidden = false;
       payError.textContent = t("booking.paymentFailed");
     });
+  }
+
+  // Offered right after paying for an Airport Pickup ("one_way") — builds a
+  // link back into this same booking flow with the reversed route
+  // (destination becomes pickup, original pickup/airport becomes
+  // destination) and the airport pickup's own resolved coordinates
+  // pre-filled, so the rider isn't forced to re-search either address for
+  // the return trip. See initReturnDropoffPreset below, which reads these
+  // back out of the URL on a fresh page load.
+  function showReturnDropoffPrompt(rideId) {
+    var promptBox = document.getElementById("returnDropoffPrompt");
+    var link = document.getElementById("bookReturnDropoffLink");
+    var bookAnotherLink = document.getElementById("bookAnotherLink");
+    if (!promptBox || !link) return;
+
+    var reversedPickup = state.stops.length ? state.stops[state.stops.length - 1] : "";
+    var reversedDestination = state.pickup;
+    var pickupLatLng = state.dropoffLatLng;
+    var dropoffLatLng = state.pickupLatLng;
+
+    var params = new URLSearchParams();
+    params.set("preset", "dropoff");
+    params.set("pickup", reversedPickup);
+    params.set("destination", reversedDestination);
+    params.set("linkedRideId", rideId);
+    if (pickupLatLng) {
+      params.set("pickupLat", typeof pickupLatLng.lat === "function" ? pickupLatLng.lat() : pickupLatLng.lat);
+      params.set("pickupLng", typeof pickupLatLng.lng === "function" ? pickupLatLng.lng() : pickupLatLng.lng);
+    }
+    if (dropoffLatLng) {
+      params.set("destinationLat", typeof dropoffLatLng.lat === "function" ? dropoffLatLng.lat() : dropoffLatLng.lat);
+      params.set("destinationLng", typeof dropoffLatLng.lng === "function" ? dropoffLatLng.lng() : dropoffLatLng.lng);
+    }
+    link.href = "book.html?" + params.toString();
+    promptBox.hidden = false;
+    // "Add my return drop-off" becomes the prominent action here — "Book
+    // another ride" (a completely blank booking) steps back to secondary.
+    if (bookAnotherLink) {
+      bookAnotherLink.classList.remove("btn-primary");
+      bookAnotherLink.classList.add("btn-ghost");
+    }
+  }
+
+  // Reads the query params showReturnDropoffPrompt above builds, on a fresh
+  // page load — pre-fills the reversed route and selects the "dropoff"
+  // booking-type chip by simulating the same click a rider would make
+  // themselves (reuses that handler's existing logic exactly, rather than
+  // duplicating what it sets).
+  function initReturnDropoffPreset() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get("preset") !== "dropoff") return;
+
+    var pickup = params.get("pickup") || "";
+    var destination = params.get("destination") || "";
+    var pickupLat = parseFloat(params.get("pickupLat"));
+    var pickupLng = parseFloat(params.get("pickupLng"));
+    var destinationLat = parseFloat(params.get("destinationLat"));
+    var destinationLng = parseFloat(params.get("destinationLng"));
+    var linkedRideId = params.get("linkedRideId");
+
+    state.pickup = pickup;
+    state.stops = [destination];
+    if (!isNaN(pickupLat) && !isNaN(pickupLng)) state.pickupLatLng = { lat: pickupLat, lng: pickupLng };
+    if (!isNaN(destinationLat) && !isNaN(destinationLng)) state.dropoffLatLng = { lat: destinationLat, lng: destinationLng };
+    if (linkedRideId) state.linkedRideId = linkedRideId;
+
+    var pickupInput = document.getElementById("fPickup");
+    if (pickupInput) pickupInput.value = pickup;
+    var dropoffInput = document.getElementById("fDropoff");
+    if (dropoffInput) dropoffInput.value = destination;
+
+    var dropoffChip = document.querySelector('.booking-type-chip[data-type="dropoff"]');
+    if (dropoffChip) dropoffChip.click();
   }
 
   function handlePaymentSuccess(reference) {
@@ -1292,6 +1437,8 @@
           children: state.children,
           emergencyContactName: state.emergencyContactName,
           emergencyContactPhone: state.emergencyContactPhone,
+          scheduledPickupAt: state.scheduledPickupAt || null,
+          linkedRideId: state.linkedRideId || null,
         }, getCoordsPayload());
 
         return api("/api/rides", {
@@ -1331,6 +1478,7 @@
           barcodeEl.textContent = createdRide.barcode;
           barcodeBox.hidden = false;
         }
+        if (state.bookingType === "one_way" && createdRide) showReturnDropoffPrompt(createdRide.id);
         goToStep(6);
       })
       .catch(function (err) {
@@ -1447,6 +1595,9 @@
     safeRun(initStep4, "initStep4");
     safeRun(initLocationPermission, "initLocationPermission");
     safeRun(initStep5, "initStep5");
+    // Must run after initStep2 (it simulates a click on the "dropoff" chip,
+    // which only has its listener bound once initStep2 has run).
+    safeRun(initReturnDropoffPreset, "initReturnDropoffPreset");
   });
 
   // Exposed for automated testing only.

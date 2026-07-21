@@ -367,22 +367,51 @@
       </form>
       <p class="form-note" id="formNote" data-i18n="download.note">We'll only email you about the <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> launch. Nothing else.</p>
 
-      <div class="store-badges" aria-hidden="true">
-        <span class="store-badge">
+      <div class="store-badges" id="storeBadges" aria-hidden="true">
+        <span class="store-badge" id="iosStoreBadge">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17.05 12.536c-.03-2.79 2.28-4.14 2.38-4.2-1.3-1.9-3.32-2.16-4.04-2.19-1.72-.17-3.36 1.01-4.23 1.01-.87 0-2.21-.99-3.64-.96-1.87.03-3.6 1.09-4.56 2.76-1.95 3.38-.5 8.38 1.4 11.12.93 1.34 2.03 2.85 3.48 2.8 1.4-.06 1.93-.9 3.62-.9 1.69 0 2.17.9 3.65.87 1.51-.02 2.46-1.36 3.38-2.71 1.07-1.55 1.51-3.05 1.53-3.13-.03-.01-2.94-1.13-2.97-4.47Z"/><path d="M14.55 4.24c.77-.94 1.29-2.24 1.15-3.54-1.11.05-2.46.75-3.26 1.68-.71.82-1.34 2.15-1.17 3.42 1.24.1 2.5-.63 3.28-1.56Z"/></svg>
-          <span class="store-badge-text">
+          <span class="store-badge-text" id="iosStoreBadgeText">
             <small data-i18n="download.iosSoonSmall">Coming soon on the</small>
             <strong>App Store</strong>
           </span>
         </span>
-        <span class="store-badge">
+        <span class="store-badge" id="androidStoreBadge">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M3.6 2.4a1.2 1.2 0 0 0-.6 1.04v17.12c0 .43.23.82.6 1.04l9.4-9.6-9.4-9.6Z"/><path d="M15.4 10.6 5.1 1.7l11.9 6.85-1.6 2.05Z"/><path d="M15.4 13.4l1.6 2.05L5.1 22.3l10.3-8.9Z"/><path d="M17.9 9.4 20.6 11c.5.3.5 1 0 1.3l-2.7 1.6-2-2 2-2.5Z"/></svg>
-          <span class="store-badge-text">
+          <span class="store-badge-text" id="androidStoreBadgeText">
             <small data-i18n="download.androidSoonSmall">Coming soon on</small>
             <strong>Google Play</strong>
           </span>
         </span>
       </div>
+      <script>
+        // Flip these on the moment each app is actually live — that's the
+        // whole change needed. Leave a badge's URL as null and it keeps
+        // showing "Coming soon" exactly as before; fill one in and that
+        // badge alone becomes a real clickable download link (each store
+        // goes live independently, since e.g. Android can ship before iOS).
+        var APP_STORE_URL = null; // e.g. "https://apps.apple.com/app/ridearrivo/id0000000000"
+        var PLAY_STORE_URL = null; // e.g. "https://play.google.com/store/apps/details?id=com.ridearrivo.app"
+
+        function activateStoreBadge(badgeId, textId, url, smallText, bigText) {
+          if (!url) return;
+          var badge = document.getElementById(badgeId);
+          var textEl = document.getElementById(textId);
+          if (!badge || !textEl) return;
+          var link = document.createElement("a");
+          link.href = url;
+          link.target = "_blank";
+          link.rel = "noopener";
+          link.className = badge.className;
+          link.innerHTML = badge.innerHTML;
+          badge.replaceWith(link);
+          var linkTextEl = link.querySelector("#" + textId) || link.querySelector(".store-badge-text");
+          if (linkTextEl) linkTextEl.innerHTML = "<small>" + smallText + "</small><strong>" + bigText + "</strong>";
+          document.getElementById("storeBadges").removeAttribute("aria-hidden");
+        }
+
+        activateStoreBadge("iosStoreBadge", "iosStoreBadgeText", APP_STORE_URL, "Download on the", "App Store");
+        activateStoreBadge("androidStoreBadge", "androidStoreBadgeText", PLAY_STORE_URL, "Get it on", "Google Play");
+      </script>
     </div>
   </section>
 

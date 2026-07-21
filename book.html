@@ -144,7 +144,10 @@
       <label class="field-label" data-i18n="booking.bookingTypeLabel">Booking type</label>
       <div class="booking-type-options" id="bookingTypeOptions">
         <button type="button" class="booking-type-chip selected" data-type="one_way" data-days="1" data-multiplier="1">
-          <span data-i18n="booking.typeOneWay">One-way pickup</span>
+          <span data-i18n="booking.typeOneWay">Airport Pickup</span>
+        </button>
+        <button type="button" class="booking-type-chip" data-type="dropoff" data-days="1" data-multiplier="1">
+          <span data-i18n="booking.typeDropoff">Airport Drop-off</span>
         </button>
         <button type="button" class="booking-type-chip" data-type="full_day" data-days="1" data-multiplier="6">
           <span data-i18n="booking.typeFullDay">Full day</span>
@@ -157,12 +160,34 @@
         </button>
       </div>
 
-      <!-- Only shown/required for one-way bookings — a multi-day charter
-           booking has no single flight to track, so it skips this
-           entirely rather than being blocked by it. -->
+      <!-- Airport Drop-off has no flight-landing event to anchor timing on
+           (unlike an arrival pickup), so it needs an explicit scheduled
+           date/time instead. Only shown/required for 'dropoff'. -->
+      <div id="scheduledPickupSection" hidden>
+        <label class="field-label" data-i18n="booking.scheduledPickupLabel" style="margin-top:16px; display:block;">When should we pick you up?</label>
+        <p class="step-sub" data-i18n="booking.scheduledPickupSub">There's no flight to track for a drop-off, so we go by the date and time you set.</p>
+        <div style="display:flex; gap:12px; margin-bottom:14px;">
+          <div style="flex:1;">
+            <label for="fScheduledDate" style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;" data-i18n="booking.scheduledDateLabel">Date</label>
+            <input type="date" id="fScheduledDate" class="field">
+          </div>
+          <div style="flex:1;">
+            <label for="fScheduledTime" style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;" data-i18n="booking.scheduledTimeLabel">Time</label>
+            <input type="time" id="fScheduledTime" class="field">
+          </div>
+        </div>
+        <p class="error-text" id="scheduledPickupError" hidden data-i18n="booking.scheduledPickupError">Please choose a pickup date and time in the future.</p>
+      </div>
+
+      <!-- Shown for both Airport Pickup and Airport Drop-off — required
+           only for Pickup (it's the only way to track an arriving rider's
+           flight); optional for Drop-off (useful for delay-awareness, not
+           required since timing already comes from the scheduled time
+           above); hidden entirely for multi-day charter bookings, which
+           have no single flight to track. -->
       <div id="flightNumberSection">
-        <label class="field-label" data-i18n="booking.flightTitle" style="margin-top:16px; display:block;">Got a flight number?</label>
-        <p class="step-sub" data-i18n="booking.flightSub">Required — it's how we track your flight and know exactly when to have your driver waiting.</p>
+        <label class="field-label" id="flightSectionLabel" data-i18n="booking.flightTitle" style="margin-top:16px; display:block;">Got a flight number?</label>
+        <p class="step-sub" id="flightSectionSub" data-i18n="booking.flightSub">Required — it's how we track your flight and know exactly when to have your driver waiting.</p>
 
         <div class="flight-row">
           <input type="text" id="fFlight" class="field" data-i18n-placeholder="booking.flightPlaceholder" placeholder="e.g. BA075" style="text-transform:uppercase;">
@@ -199,12 +224,21 @@
       </div>
       <p class="error-text" id="passengersError" hidden data-i18n="booking.passengersError">Please add at least one adult passenger.</p>
 
-      <label class="field-label" for="fBags" data-i18n="booking.bagsLabel">Number of bags</label>
-      <input type="number" id="fBags" class="field" min="0" max="12" value="1">
+      <label class="field-label" data-i18n="booking.luggageLabel">Luggage</label>
+      <div style="display:flex; gap:12px; margin-bottom:14px;">
+        <div style="flex:1;">
+          <label for="fCarryOn" style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;" data-i18n="booking.carryOnLabel">Carry-on bags</label>
+          <input type="number" id="fCarryOn" class="field" min="0" max="8" value="1">
+        </div>
+        <div style="flex:1;">
+          <label for="fChecked" style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;" data-i18n="booking.checkedLabel">Checked bags</label>
+          <input type="number" id="fChecked" class="field" min="0" max="12" value="1">
+        </div>
+      </div>
 
       <label class="checkbox-row">
         <input type="checkbox" id="fBulky">
-        <span data-i18n="booking.bulkyLabel">I have oversized or bulky items (surfboard, extra-large suitcase, equipment, etc.)</span>
+        <span data-i18n="booking.bulkyLabel">One or more checked bags is heavy or oversized (over 32kg, a large duffel, cooler, sports or musical equipment, etc.)</span>
       </label>
 
       <div class="vehicle-options" id="vehicleOptions">
@@ -224,6 +258,12 @@
           <span class="v-name" data-i18n="booking.vehicleTruck">Executive Vehicle</span>
           <span class="v-price">NGN 16,000</span>
           <span class="v-capacity">Fits up to 5 passengers</span>
+          <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
+        </button>
+        <button type="button" class="vehicle-card" data-vehicle="pickup" data-price="11000" data-max-passengers="3">
+          <span class="v-name" data-i18n="booking.vehiclePickup">Pickup Truck</span>
+          <span class="v-price">NGN 11,000</span>
+          <span class="v-capacity" data-i18n="booking.pickupCapacity">Fits up to 3 passengers · best for heavy or bulky luggage</span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
       </div>
@@ -350,7 +390,19 @@
         <span data-i18n="booking.confirmBarcode">Booking barcode</span>
         <strong id="confirmBarcode"></strong>
       </div>
-      <a href="book.html" class="btn btn-primary" data-i18n="booking.bookAnother">Book another ride</a>
+
+      <!-- Only shown after an Airport Pickup ("one_way") booking — the
+           whole point of "if they know their expected time and day of
+           return, book it at once" rather than making them come find
+           Book a Ride again later. Never shown for a drop-off or charter
+           booking (see showReturnDropoffPrompt in booking.js). -->
+      <div id="returnDropoffPrompt" hidden style="margin-top:20px; padding-top:20px; border-top:1px solid rgba(0,0,0,0.08); text-align:left;">
+        <h3 data-i18n="booking.returnPromptTitle" style="font-size:16px; margin-bottom:6px;">Know when you're flying back?</h3>
+        <p class="step-sub" data-i18n="booking.returnPromptBody">Book your airport drop-off now and we'll have it all set — or come back and book it any time under Book a Ride once you know your return date and time.</p>
+        <a href="#" id="bookReturnDropoffLink" class="btn btn-primary" data-i18n="booking.returnPromptCta" style="width:100%; display:block; text-align:center; margin-bottom:8px; box-sizing:border-box;">Add my return drop-off</a>
+      </div>
+
+      <a href="book.html" class="btn btn-primary" data-i18n="booking.bookAnother" id="bookAnotherLink" style="width:100%; display:block; text-align:center; box-sizing:border-box;">Book another ride</a>
     </section>
 
   </div>

@@ -60,6 +60,63 @@
     <div class="panic-active" id="panicActiveMsg" hidden>🚨 Support has been alerted about this ride.</div>
   </div>
 
+  <!-- Flight cancelled/rescheduled (services/scheduler.js on the backend
+       flags ride.flight_issue and refunds the original fare to the
+       rider's wallet) — prompts a top-up before the trip can start again,
+       with the fare re-charged at drop-off instead of upfront this time. -->
+  <div class="booking-card" id="flightIssueCard" hidden style="border:1.5px solid var(--amber, #F4A300);">
+    <h2 style="font-size:16px; margin-bottom:6px;" id="flightIssueTitle"></h2>
+    <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:10px;" id="flightIssueBody"></p>
+    <a href="account.html" class="btn btn-primary" style="width:100%; display:block; text-align:center; box-sizing:border-box;">Top up wallet</a>
+  </div>
+
+  <!-- "Rate & Relax" — one rating per completed trip. When the rated trip
+       was an Airport Pickup, also offers "keep the same driver & vehicle
+       for my return trip" (keepSameDriver), carried over automatically to
+       whatever drop-off ride later gets linked back to this one. -->
+  <div class="booking-card" id="rateCard" hidden>
+    <h2 style="font-size:16px; margin-bottom:6px;">Rate &amp; Relax</h2>
+    <p id="rateDoneMsg" style="font-size:13px; color:var(--text-muted);" hidden></p>
+    <div id="rateForm">
+      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:10px;" id="rateFormPrompt">How was your trip?</p>
+      <div id="rateStars" style="font-size:28px; letter-spacing:4px; margin-bottom:10px; cursor:pointer;"></div>
+      <input type="text" id="rateComment" class="field" placeholder="Add a comment (optional)" style="margin-bottom:10px;">
+      <div id="keepSameDriverBlock" hidden style="margin-bottom:12px;">
+        <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:6px;">Keep the same driver &amp; vehicle for your return trip?</p>
+        <div class="for-who-toggle" id="keepSameDriverToggle">
+          <button type="button" class="for-who-opt is-active" data-keep="yes">Yes, same driver</button>
+          <button type="button" class="for-who-opt" data-keep="no">No, don't need to</button>
+        </div>
+      </div>
+      <p class="error-text" id="rateError" hidden></p>
+      <button class="btn btn-primary" id="rateSendBtn" style="width:100%;">Submit rating</button>
+    </div>
+  </div>
+
+  <!-- Optional post-trip tip — only shown once the ride is completed and
+       hasn't already been tipped. Never cash: wallet debits immediately,
+       card goes through Paystack same as the fare itself. -->
+  <div class="booking-card" id="tipCard" hidden>
+    <h2 style="font-size:16px; margin-bottom:6px;">Tip your driver</h2>
+    <p id="tipDoneMsg" style="font-size:13px; color:var(--text-muted);" hidden></p>
+    <div id="tipForm">
+      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:10px;">Entirely optional — 100% goes to your driver. Never cash, same as your fare.</p>
+      <div class="for-who-toggle" id="tipPercentToggle" style="margin-bottom:10px;">
+        <button type="button" class="for-who-opt is-active" data-percent="15">15%</button>
+        <button type="button" class="for-who-opt" data-percent="20">20%</button>
+        <button type="button" class="for-who-opt" data-percent="25">25%</button>
+        <button type="button" class="for-who-opt" data-percent="custom">Custom</button>
+      </div>
+      <input type="number" id="tipCustomAmount" class="field" placeholder="Amount (NGN)" style="margin-bottom:10px;" hidden>
+      <div class="for-who-toggle" id="tipMethodToggle" style="margin-bottom:12px;">
+        <button type="button" class="for-who-opt is-active" data-method="wallet">Wallet <span id="tipWalletHint" style="font-weight:400;"></span></button>
+        <button type="button" class="for-who-opt" data-method="card">Card</button>
+      </div>
+      <p class="error-text" id="tipError" hidden></p>
+      <button class="btn btn-primary" id="tipSendBtn" style="width:100%;">Send tip</button>
+    </div>
+  </div>
+
   <div class="booking-card" id="errorCard" hidden style="text-align:center;">
     <p id="errorMsg" style="color: var(--coral);"></p>
   </div>
@@ -72,6 +129,14 @@
 
   var rideId = new URLSearchParams(window.location.search).get("ride");
   var token = localStorage.getItem(TOKEN_KEY);
+  var PAYSTACK_PUBLIC_KEY = "pk_test_replace_me"; // from dashboard.paystack.com/#/settings/developer
+  var currentRide = null;
+  var riderEmail = null;
+  var walletBalanceNaira = null;
+  var tipPercent = 15;
+  var tipMethod = "wallet";
+  var starsSelected = 0;
+  var keepSameDriverChoice = "yes";
 
   function showError(msg) {
     document.getElementById("loadingCard").hidden = true;
@@ -98,6 +163,7 @@
             return;
           }
           var ride = result.data.ride;
+          currentRide = ride;
           document.getElementById("loadingCard").hidden = true;
           document.getElementById("rideCard").hidden = false;
 
@@ -124,9 +190,235 @@
             document.getElementById("panicBtn").hidden = true;
             document.getElementById("panicActiveMsg").hidden = false;
           }
+
+          refreshTipCard();
+          refreshRateCard();
+          refreshFlightIssueCard();
         })
         .catch(function () { /* transient — next poll will retry */ });
     }
+
+    // ───────────────────────── Rate & Relax (post-trip) ─────────────────────────
+    function renderStars() {
+      var el = document.getElementById("rateStars");
+      var html = "";
+      for (var i = 1; i <= 5; i++) {
+        html += "<span data-star=\"" + i + "\" style=\"color:" + (i <= starsSelected ? "var(--amber, #F4A300)" : "#ccc") + ";\">★</span>";
+      }
+      el.innerHTML = html;
+      Array.prototype.slice.call(el.querySelectorAll("[data-star]")).forEach(function (star) {
+        star.addEventListener("click", function () {
+          starsSelected = Number(star.getAttribute("data-star"));
+          renderStars();
+        });
+      });
+    }
+    renderStars();
+
+    document.querySelectorAll("#keepSameDriverToggle .for-who-opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll("#keepSameDriverToggle .for-who-opt").forEach(function (b) { b.classList.remove("is-active"); });
+        btn.classList.add("is-active");
+        keepSameDriverChoice = btn.getAttribute("data-keep");
+      });
+    });
+
+    function refreshRateCard() {
+      var card = document.getElementById("rateCard");
+      var canRate = currentRide && currentRide.ride_status === "completed" && currentRide.driver_id;
+      var alreadyRated = currentRide && currentRide.rider_rating != null;
+      if (!canRate) {
+        card.hidden = true;
+        return;
+      }
+      card.hidden = false;
+      document.getElementById("keepSameDriverBlock").hidden = currentRide.booking_type !== "one_way";
+      if (alreadyRated) {
+        document.getElementById("rateForm").hidden = true;
+        var doneMsg = document.getElementById("rateDoneMsg");
+        doneMsg.hidden = false;
+        doneMsg.textContent = "You rated this trip " + "★".repeat(currentRide.rider_rating) + "☆".repeat(5 - currentRide.rider_rating) +
+          (currentRide.rider_rating_comment ? " — \"" + currentRide.rider_rating_comment + "\"" : "");
+      }
+    }
+
+    document.getElementById("rateSendBtn").addEventListener("click", function () {
+      var errEl = document.getElementById("rateError");
+      errEl.hidden = true;
+      if (!starsSelected) {
+        errEl.hidden = false;
+        errEl.textContent = "Tap a star to rate your trip.";
+        return;
+      }
+      var comment = document.getElementById("rateComment").value.trim();
+      var body = { rating: starsSelected, comment: comment || undefined };
+      if (currentRide.booking_type === "one_way") {
+        body.keepSameDriver = keepSameDriverChoice === "yes";
+      }
+      fetch(API_BASE_URL + "/api/rides/" + rideId + "/rate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify(body),
+      })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok) {
+            errEl.hidden = false;
+            errEl.textContent = result.data.error || "Couldn't submit your rating. Please try again.";
+            return;
+          }
+          refresh();
+        })
+        .catch(function () {
+          errEl.hidden = false;
+          errEl.textContent = "Couldn't submit your rating. Please try again.";
+        });
+    });
+
+    // ───────────────────── Flight cancelled/rescheduled banner ─────────────────────
+    // Mirrors the rider app's TrackingScreen: services/scheduler.js flags
+    // ride.flight_issue and refunds the fare to the wallet; this shows the
+    // $100-equivalent top-up prompt (re-enforced server-side too, in
+    // PATCH /:id/status) before the trip can start again.
+    function refreshFlightIssueCard() {
+      var card = document.getElementById("flightIssueCard");
+      var hasIssue = currentRide && currentRide.flight_issue && currentRide.payment_status !== "paid";
+      if (!hasIssue) {
+        card.hidden = true;
+        return;
+      }
+      card.hidden = false;
+      document.getElementById("flightIssueTitle").textContent =
+        "✈️ Flight " + (currentRide.flight_issue === "cancelled" ? "cancelled" : "rescheduled");
+      var bodyEl = document.getElementById("flightIssueBody");
+      bodyEl.textContent = "Your flight " + (currentRide.flight_number || "") + " was " + currentRide.flight_issue +
+        ". We've refunded your original fare to your wallet — top up to at least $100 to keep this ride booked. " +
+        "You'll be charged the fare again at drop-off.";
+    }
+
+    // ───────────────────────── Tipping (optional, post-trip) ─────────────────────────
+    // Never cash — same rails as the fare: an immediate wallet debit, or a
+    // fresh Paystack card charge verified against Paystack directly (see
+    // POST /api/rides/:id/tip on the backend). Same feature as the apps.
+    function tipAmountNaira() {
+      if (tipPercent === "custom") {
+        return Math.max(0, Math.round(Number(document.getElementById("tipCustomAmount").value) || 0));
+      }
+      return Math.round((Number(currentRide.fare_naira) || 0) * (tipPercent / 100));
+    }
+
+    function refreshTipCard() {
+      var card = document.getElementById("tipCard");
+      var canTip = currentRide && currentRide.ride_status === "completed" && currentRide.driver_id && !(Number(currentRide.tip_naira) > 0);
+      var alreadyTipped = currentRide && Number(currentRide.tip_naira) > 0;
+      if (!canTip && !alreadyTipped) {
+        card.hidden = true;
+        return;
+      }
+      card.hidden = false;
+      if (alreadyTipped) {
+        document.getElementById("tipForm").hidden = true;
+        var doneMsg = document.getElementById("tipDoneMsg");
+        doneMsg.hidden = false;
+        doneMsg.textContent = "You tipped NGN " + Number(currentRide.tip_naira).toLocaleString() + ". Thank you!";
+        return;
+      }
+
+      // Fetch the rider's email (for the card charge) and wallet balance
+      // once, the first time the card becomes relevant — not on every poll.
+      if (riderEmail == null) {
+        fetch(API_BASE_URL + "/api/auth/me", { headers: { Authorization: "Bearer " + token } })
+          .then(function (res) { return res.json(); })
+          .then(function (data) { if (data.user) riderEmail = data.user.email; })
+          .catch(function () {});
+      }
+      if (walletBalanceNaira == null) {
+        fetch(API_BASE_URL + "/api/wallet", { headers: { Authorization: "Bearer " + token } })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (data.balanceNaira != null) {
+              walletBalanceNaira = data.balanceNaira;
+              document.getElementById("tipWalletHint").textContent = "(NGN " + Number(walletBalanceNaira).toLocaleString() + ")";
+            }
+          })
+          .catch(function () {});
+      }
+    }
+
+    document.querySelectorAll("#tipPercentToggle .for-who-opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll("#tipPercentToggle .for-who-opt").forEach(function (b) { b.classList.remove("is-active"); });
+        btn.classList.add("is-active");
+        tipPercent = btn.getAttribute("data-percent") === "custom" ? "custom" : Number(btn.getAttribute("data-percent"));
+        document.getElementById("tipCustomAmount").hidden = tipPercent !== "custom";
+      });
+    });
+
+    document.querySelectorAll("#tipMethodToggle .for-who-opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll("#tipMethodToggle .for-who-opt").forEach(function (b) { b.classList.remove("is-active"); });
+        btn.classList.add("is-active");
+        tipMethod = btn.getAttribute("data-method");
+      });
+    });
+
+    function applyTip(paymentMethod, paymentReference) {
+      var amountNaira = tipAmountNaira();
+      return fetch(API_BASE_URL + "/api/rides/" + rideId + "/tip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify({ amountNaira: amountNaira, paymentMethod: paymentMethod, paymentReference: paymentReference }),
+      }).then(function (res) {
+        return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+      });
+    }
+
+    document.getElementById("tipSendBtn").addEventListener("click", function () {
+      var errEl = document.getElementById("tipError");
+      errEl.hidden = true;
+      var amountNaira = tipAmountNaira();
+      if (!(amountNaira > 0)) {
+        errEl.hidden = false;
+        errEl.textContent = "Choose an amount to tip.";
+        return;
+      }
+
+      if (tipMethod === "wallet") {
+        applyTip("wallet").then(function (result) {
+          if (!result.ok) {
+            errEl.hidden = false;
+            errEl.textContent = result.data.error || "Couldn't complete your tip. Please try again.";
+            return;
+          }
+          refresh();
+        });
+        return;
+      }
+
+      if (typeof PaystackPop === "undefined" || PAYSTACK_PUBLIC_KEY.indexOf("replace_me") !== -1) {
+        errEl.hidden = false;
+        errEl.textContent = "Card tipping isn't configured yet. You can still tip from your wallet.";
+        return;
+      }
+      var handler = PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: riderEmail || "",
+        amount: amountNaira * 100,
+        currency: "NGN",
+        callback: function (response) {
+          applyTip("card", response.reference).then(function (result) {
+            if (!result.ok) {
+              errEl.hidden = false;
+              errEl.textContent = result.data.error || "Your card was charged but we couldn't confirm the tip — contact support with reference " + response.reference + ".";
+              return;
+            }
+            refresh();
+          });
+        },
+        onClose: function () {},
+      });
+      handler.openIframe();
+    });
 
     refresh();
     setInterval(refresh, POLL_INTERVAL_MS);
@@ -151,5 +443,7 @@
     });
   }
 </script>
+<!-- Paystack's official inline checkout library — used for card tips only. -->
+<script src="https://js.paystack.co/v1/inline.js"></script>
 </body>
 </html>
