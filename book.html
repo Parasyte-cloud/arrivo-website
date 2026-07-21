@@ -137,29 +137,9 @@
       <button class="btn btn-primary" id="contactContinue" data-i18n="booking.continue">Continue</button>
     </section>
 
-    <!-- STEP 2: Flight -->
+    <!-- STEP 2: Trip type + Flight -->
     <section class="step" data-step="2" hidden>
-      <h2 data-i18n="booking.flightTitle">Got a flight number?</h2>
-      <p class="step-sub" data-i18n="booking.flightSub">Required — it's how we track your flight and know exactly when to have your driver waiting.</p>
-
-      <div class="flight-row">
-        <input type="text" id="fFlight" class="field" data-i18n-placeholder="booking.flightPlaceholder" placeholder="e.g. BA075" style="text-transform:uppercase;" required>
-        <button class="btn btn-ghost" id="trackFlightBtn" data-i18n="booking.track" type="button">Track</button>
-      </div>
-      <div id="flightResult" class="flight-result" hidden></div>
-      <p class="error-text" id="flightError" hidden data-i18n="booking.flightNotFound"></p>
-      <p class="error-text" id="flightRequiredError" hidden data-i18n="booking.flightRequired">Please enter your flight number to continue.</p>
-
-      <div class="step-actions">
-        <button class="btn btn-ghost" id="backTo1" data-i18n="booking.back">Back</button>
-        <button class="btn btn-primary" id="flightContinue" data-i18n="booking.continue">Continue</button>
-      </div>
-    </section>
-
-    <!-- STEP 3: Luggage & Vehicle -->
-    <section class="step" data-step="4" hidden>
-      <h2 data-i18n="booking.luggageTitle">Tell us your luggage</h2>
-      <p class="step-sub" data-i18n="booking.luggageSub">So we send a vehicle that actually fits everything.</p>
+      <h2 data-i18n="booking.tripDetailsTitle">Trip details</h2>
 
       <label class="field-label" data-i18n="booking.bookingTypeLabel">Booking type</label>
       <div class="booking-type-options" id="bookingTypeOptions">
@@ -176,6 +156,35 @@
           <span data-i18n="booking.typeFullMonth">Full month</span>
         </button>
       </div>
+
+      <!-- Only shown/required for one-way bookings — a multi-day charter
+           booking has no single flight to track, so it skips this
+           entirely rather than being blocked by it. -->
+      <div id="flightNumberSection">
+        <label class="field-label" data-i18n="booking.flightTitle" style="margin-top:16px; display:block;">Got a flight number?</label>
+        <p class="step-sub" data-i18n="booking.flightSub">Required — it's how we track your flight and know exactly when to have your driver waiting.</p>
+
+        <div class="flight-row">
+          <input type="text" id="fFlight" class="field" data-i18n-placeholder="booking.flightPlaceholder" placeholder="e.g. BA075" style="text-transform:uppercase;">
+          <button class="btn btn-ghost" id="trackFlightBtn" data-i18n="booking.track" type="button">Track</button>
+        </div>
+        <div id="flightResult" class="flight-result" hidden></div>
+        <p class="error-text" id="flightError" hidden data-i18n="booking.flightNotFound"></p>
+        <p class="error-text" id="flightRequiredError" hidden data-i18n="booking.flightRequired">Please enter your flight number to continue.</p>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-ghost" id="backTo1" data-i18n="booking.back">Back</button>
+        <button class="btn btn-primary" id="flightContinue" data-i18n="booking.continue">Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 3: Luggage & Vehicle -->
+    <section class="step" data-step="4" hidden>
+      <h2 data-i18n="booking.luggageTitle">Tell us your luggage</h2>
+      <p class="step-sub" data-i18n="booking.luggageSub">So we send a vehicle that actually fits everything.</p>
+
+      <!-- Booking type now lives in Step 2, before the flight question. -->
 
       <label class="field-label" data-i18n="booking.passengersLabel">Number of passengers</label>
       <div style="display:flex; gap:12px; margin-bottom:14px;">
@@ -205,16 +214,16 @@
           <span class="v-capacity">Fits up to 3 passengers</span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
-        <button type="button" class="vehicle-card" data-vehicle="suv" data-price="12500" data-max-passengers="6">
+        <button type="button" class="vehicle-card" data-vehicle="suv" data-price="12500" data-max-passengers="5">
           <span class="v-name" data-i18n="booking.vehicleSuv">Premium SUV</span>
           <span class="v-price">NGN 12,500</span>
-          <span class="v-capacity">Fits up to 6 passengers</span>
+          <span class="v-capacity">Fits up to 5 passengers</span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
-        <button type="button" class="vehicle-card" data-vehicle="truck" data-price="16000" data-max-passengers="6">
+        <button type="button" class="vehicle-card" data-vehicle="truck" data-price="16000" data-max-passengers="5">
           <span class="v-name" data-i18n="booking.vehicleTruck">Executive Vehicle</span>
           <span class="v-price">NGN 16,000</span>
-          <span class="v-capacity">Fits up to 6 passengers</span>
+          <span class="v-capacity">Fits up to 5 passengers</span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
       </div>
@@ -231,7 +240,7 @@
       <h2 data-i18n="booking.pickupTitle">Where should we pick you up?</h2>
 
       <div class="location-permission-box" id="locationPermissionBox">
-        <p>Share your location to get better address suggestions and the right currency for where you are. We only use this for the search below, nothing is tracked in the background.</p>
+        <p>Share your location to get better address suggestions nearby. We only use this for the search below, nothing is tracked in the background.</p>
         <div style="display:flex; gap:8px;">
           <button type="button" class="btn btn-primary btn-sm" id="allowLocationBtn">Allow location</button>
           <button type="button" class="btn btn-ghost btn-sm" id="declineLocationBtn">Not now</button>

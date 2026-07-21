@@ -309,18 +309,45 @@
     });
   }
 
-  // ───────────────────────── Step 2: Flight ─────────────────────────
+  // ───────────────────────── Step 2: Trip type + Flight ─────────────────────────
+  // Booking type now lives here (moved from the old Luggage & Vehicle
+  // step) specifically so the flight-number question can react to it:
+  // one-way airport pickups need a flight number (it's the only way to
+  // track ETA), but multi-day charter bookings (full_day/week/month) have
+  // no single flight to track, so they skip this question entirely rather
+  // than being blocked by a required field that doesn't apply to them.
   function initStep2() {
     var resultBox = document.getElementById("flightResult");
     var errorBox = document.getElementById("flightError");
     var requiredErrorBox = document.getElementById("flightRequiredError");
     var flightInput = document.getElementById("fFlight");
+    var flightSection = document.getElementById("flightNumberSection");
+    var bookingChips = Array.prototype.slice.call(document.querySelectorAll(".booking-type-chip"));
 
-    // Flight number is required — it's the only way we can actually track
-    // a rider's flight and know their real arrival time (see
-    // arrivo-backend/routes/flights.js). Clear the "required" warning as
-    // soon as they start typing again, rather than leaving it stuck up
-    // after they've already fixed it.
+    function updateFlightSectionVisibility() {
+      var needsFlight = state.bookingType === "one_way";
+      flightSection.hidden = !needsFlight;
+      if (!needsFlight) requiredErrorBox.hidden = true;
+    }
+
+    bookingChips.forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        bookingChips.forEach(function (c) { c.classList.remove("selected"); });
+        chip.classList.add("selected");
+        state.bookingType = chip.getAttribute("data-type");
+        state.durationDays = Number(chip.getAttribute("data-days"));
+        state.multiplier = Number(chip.getAttribute("data-multiplier"));
+        updateFlightSectionVisibility();
+        updatePriceLabels();
+      });
+    });
+    updateFlightSectionVisibility(); // set initial state on first load (defaults to one-way)
+
+    // Flight number is required for one-way bookings — it's the only way
+    // we can actually track a rider's flight and know their real arrival
+    // time (see arrivo-backend/routes/flights.js). Clear the "required"
+    // warning as soon as they start typing again, rather than leaving it
+    // stuck up after they've already fixed it.
     flightInput.addEventListener("input", function () {
       requiredErrorBox.hidden = true;
     });
@@ -346,6 +373,13 @@
     });
 
     document.getElementById("flightContinue").addEventListener("click", function () {
+      if (state.bookingType !== "one_way") {
+        // Charter bookings don't have a flight to track.
+        state.flightNumber = "";
+        goToStep(3);
+        setupPlacesForStep4(); // Pickup is now step 3 — the map container only has real dimensions once this step is visible. Function name predates the reorder.
+        return;
+      }
       var flightNumber = flightInput.value.trim().toUpperCase();
       if (!flightNumber) {
         requiredErrorBox.hidden = false;
@@ -374,18 +408,9 @@
     var childrenInput = document.getElementById("fChildren");
     var passengersError = document.getElementById("passengersError");
     var vehicleCards = Array.prototype.slice.call(document.querySelectorAll(".vehicle-card"));
-    var bookingChips = Array.prototype.slice.call(document.querySelectorAll(".booking-type-chip"));
-
-    bookingChips.forEach(function (chip) {
-      chip.addEventListener("click", function () {
-        bookingChips.forEach(function (c) { c.classList.remove("selected"); });
-        chip.classList.add("selected");
-        state.bookingType = chip.getAttribute("data-type");
-        state.durationDays = Number(chip.getAttribute("data-days"));
-        state.multiplier = Number(chip.getAttribute("data-multiplier"));
-        updatePriceLabels();
-      });
-    });
+    // Booking-type chips now live in Step 2 (initStep2) — moved there so
+    // the flight-number question can react to them. Nothing to bind here
+    // anymore.
 
     function updateRecommendation() {
       var bags = Number(bagsInput.value) || 0;
@@ -504,7 +529,7 @@
   // can't safely carry more than a few passengers, and the point of this
   // is to actually push larger groups toward a bigger vehicle or fleet
   // accompaniment rather than let them cram into whatever they clicked.
-  var MAX_PASSENGERS = { sedan: 3, suv: 6, truck: 6 };
+  var MAX_PASSENGERS = { sedan: 3, suv: 5, truck: 5 };
   // Fleet accompaniment add-on, per vehicle type.
   var FLEET_PRICE = {
     sedan: { 2: 70000, 3: 100000 },
@@ -707,29 +732,64 @@
     });
   }
 
-  // ───────────────────────── Lightweight currency estimate ─────────────────────────
+  // ───────────────────────── Currency display ─────────────────────────
   // Payments themselves stay in Naira — Paystack/wallet only ever charge
   // NGN here. This is display-only: for a rider who isn't currently in
   // Nigeria, show an approximate USD figure next to the fare so the price
-  // means something to them, using a fixed rate rather than a live FX
-  // API. A prior review of adding real USD payment processing (Stripe)
-  // found it blocked by foreign-entity requirements for a Nigerian
-  // business — the recommendation then was to keep pricing in Naira and
-  // let the card network handle conversion, which this still does; this
-  // just adds a clearer estimate on screen, not a new payment path.
-  var USD_NGN_RATE = 1600; // update periodically — not a live rate
-  var NIGERIA_BOUNDS = { minLat: 4.0, maxLat: 14.0, minLng: 2.5, maxLng: 15.0 };
+  // means something to them. A prior review of adding real USD payment
+  // processing (Stripe) found it blocked by foreign-entity requirements for
+  // a Nigerian business — the recommendation then was to keep pricing in
+  // Naira and let the card network handle conversion, which this still
+  // does; this just adds a clearer estimate on screen, not a new payment
+  // path.
+  //
+  // Detection uses the browser's language/region setting, matching how the
+  // apps do it via device locale (see arrivo-app/hooks/useCurrency.js) —
+  // this used to depend on the geolocation permission prompt above
+  // ("share your location for... the right currency"), which conflated two
+  // unrelated things (address-search proximity bias vs. what currency to
+  // display) and simply didn't work for anyone who declined location
+  // sharing. The conversion rate is fetched live from the backend (same
+  // GET /api/rides/fx-rate the apps use) instead of a hardcoded constant
+  // that would silently go stale as the real exchange rate moves.
+  function getRegionCode() {
+    var lang = navigator.language || navigator.userLanguage || "";
+    try {
+      if (window.Intl && Intl.Locale) {
+        var loc = new Intl.Locale(lang);
+        if (loc.region) return loc.region;
+        if (typeof loc.maximize === "function") {
+          var maxed = loc.maximize();
+          if (maxed.region) return maxed.region;
+        }
+      }
+    } catch (e) {
+      // Fall through to the manual parse below (older browsers, or a
+      // language tag Intl.Locale doesn't like).
+    }
+    var parts = lang.split("-");
+    return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : null;
+  }
 
-  function isLikelyOutsideNigeria() {
-    if (!state.userLocation) return false;
-    var lat = state.userLocation.lat, lng = state.userLocation.lng;
-    return lat < NIGERIA_BOUNDS.minLat || lat > NIGERIA_BOUNDS.maxLat || lng < NIGERIA_BOUNDS.minLng || lng > NIGERIA_BOUNDS.maxLng;
+  state.isNigeria = getRegionCode() === "NG";
+  state.ngnPerUsd = null;
+
+  function loadFxRate() {
+    if (state.isNigeria) return; // no need to fetch a rate for naira-only display
+    api("/api/rides/fx-rate", { headers: authHeader() }).then(function (result) {
+      if (result.ok) state.ngnPerUsd = result.data.ngnPerUsd;
+    }).catch(function () {
+      // Best-effort — formatNairaWithUsdEstimate below just keeps showing
+      // naira if this never resolves (e.g. offline). Explicit no-op catch
+      // so a network failure here doesn't surface as an unhandled
+      // rejection in the console.
+    });
   }
 
   function formatNairaWithUsdEstimate(nairaAmount) {
-    if (!isLikelyOutsideNigeria()) return "NGN " + nairaAmount.toLocaleString();
-    var usd = Math.round(nairaAmount / USD_NGN_RATE);
-    return "NGN " + nairaAmount.toLocaleString() + " (~$" + usd.toLocaleString() + ")";
+    if (state.isNigeria || !state.ngnPerUsd) return "NGN " + nairaAmount.toLocaleString();
+    var usd = (nairaAmount / state.ngnPerUsd).toFixed(2);
+    return "NGN " + nairaAmount.toLocaleString() + " (~$" + usd + ")";
   }
 
   function recalculateFareEstimate() {
@@ -981,6 +1041,14 @@
           data: { error: "Please select a suggested pickup and drop-off address (from the dropdown) on the previous step so we can calculate your exact fare." },
         });
       }
+      // pickupAddress/destinationAddress are what actually price a one-way
+      // trip now — a flat per-location fare (see
+      // arrivo-backend/services/fare.js), same formula the apps use.
+      // lat/lng are sent too, but only used server-side for an
+      // informational distance/duration display, never for the fare
+      // itself.
+      body.pickupAddress = state.pickup;
+      body.destinationAddress = state.stops.length ? state.stops[state.stops.length - 1] : "";
       body.pickupLat = typeof state.pickupLatLng.lat === "function" ? state.pickupLatLng.lat() : state.pickupLatLng.lat;
       body.pickupLng = typeof state.pickupLatLng.lng === "function" ? state.pickupLatLng.lng() : state.pickupLatLng.lng;
       body.destinationLat = typeof state.dropoffLatLng.lat === "function" ? state.dropoffLatLng.lat() : state.dropoffLatLng.lat;
@@ -1372,6 +1440,7 @@
     document.getElementById("authGate").hidden = true;
     document.getElementById("bookingCard").hidden = false;
 
+    safeRun(loadFxRate, "loadFxRate");
     safeRun(initStep1, "initStep1");
     safeRun(initStep2, "initStep2");
     safeRun(initStep3, "initStep3");
