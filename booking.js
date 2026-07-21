@@ -338,36 +338,27 @@
     var scheduledErrorBox = document.getElementById("scheduledPickupError");
     var dateInput = document.getElementById("fScheduledDate");
     var timeInput = document.getElementById("fScheduledTime");
-    // Scoped to #bookingTypeOptions specifically — #fullDayCountOptions
-    // below reuses the same .booking-type-chip class for visual styling,
-    // but those chips only carry data-days (no data-type/data-multiplier)
-    // and must never be picked up by this handler.
     var bookingChips = Array.prototype.slice.call(document.querySelectorAll("#bookingTypeOptions .booking-type-chip"));
     var fullDayCountSection = document.getElementById("fullDayCountSection");
-    var fullDayCountChips = Array.prototype.slice.call(document.querySelectorAll("#fullDayCountOptions .booking-type-chip"));
     var fullDayCountInput = document.getElementById("fFullDayCountInput");
     // Matches CHARTER_MULTIPLIER.full_day in arrivo-backend/services/fare.js
     // — a single full day's multiplier, before any multi-day count is applied.
     var FULL_DAY_BASE_MULTIPLIER = 6;
-    var MAX_FULL_DAY_COUNT = 6;
 
+    // No preset ceiling here — any whole number the rider types (8, 18, 78...)
+    // is accepted and the fare calculated on checkout. Only a floor of 1 and
+    // a fallback to 1 for non-numeric input. The backend still enforces a
+    // generous sanity-check upper bound server-side (MAX_FULL_DAY_COUNT in
+    // arrivo-backend/services/fare.js) purely to reject garbage input.
     function setFullDayCount(n) {
-      var clamped = Math.min(Math.max(Math.round(Number(n)) || 1, 1), MAX_FULL_DAY_COUNT);
-      state.fullDayCount = clamped;
-      state.durationDays = clamped;
-      state.multiplier = FULL_DAY_BASE_MULTIPLIER * clamped;
-      fullDayCountChips.forEach(function (c) {
-        c.classList.toggle("selected", Number(c.getAttribute("data-days")) === clamped);
-      });
-      if (fullDayCountInput) fullDayCountInput.value = clamped;
+      var normalized = Math.max(Math.round(Number(n)) || 1, 1);
+      state.fullDayCount = normalized;
+      state.durationDays = normalized;
+      state.multiplier = FULL_DAY_BASE_MULTIPLIER * normalized;
+      if (fullDayCountInput) fullDayCountInput.value = normalized;
       updatePriceLabels();
     }
 
-    fullDayCountChips.forEach(function (chip) {
-      chip.addEventListener("click", function () {
-        setFullDayCount(Number(chip.getAttribute("data-days")));
-      });
-    });
     if (fullDayCountInput) {
       fullDayCountInput.addEventListener("change", function () {
         setFullDayCount(fullDayCountInput.value);

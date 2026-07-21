@@ -160,25 +160,16 @@
         </button>
       </div>
 
-      <!-- "Full Day" can be booked for more than a single day — a dropdown
-           of 2-6 days, or type a number directly. Capped at 6: past that,
-           "Full week" is already the cheaper way to book that much time
-           (see arrivo-backend/services/fare.js MAX_FULL_DAY_COUNT). Only
-           shown for full_day; defaults to 1 ("leave it as it is"). -->
+      <!-- "Full Day" can be booked for any number of consecutive days —
+           just type a number, the fare is calculated on checkout. No preset
+           ceiling here; arrivo-backend/services/fare.js still enforces a
+           generous sanity-check upper bound server-side (MAX_FULL_DAY_COUNT
+           there), purely to reject garbage input. Only shown for full_day;
+           defaults to 1 ("leave it as it is"). -->
       <div id="fullDayCountSection" hidden style="margin-top:16px;">
-        <label class="field-label" data-i18n="booking.fullDayCountLabel">How many full days?</label>
-        <p class="step-sub" data-i18n="booking.fullDayCountSub">Leave at 1 day if it's just the one.</p>
-        <div class="booking-type-options" id="fullDayCountOptions">
-          <button type="button" class="booking-type-chip selected" data-days="1">1 day</button>
-          <button type="button" class="booking-type-chip" data-days="2">2 days</button>
-          <button type="button" class="booking-type-chip" data-days="3">3 days</button>
-          <button type="button" class="booking-type-chip" data-days="4">4 days</button>
-          <button type="button" class="booking-type-chip" data-days="5">5 days</button>
-          <button type="button" class="booking-type-chip" data-days="6">6 days</button>
-        </div>
+        <label class="field-label" data-i18n="booking.fullDayCountLabel">Number of days</label>
         <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
-          <label for="fFullDayCountInput" style="font-size:12.5px; color:var(--text-muted);" data-i18n="booking.fullDayCountManual">Or type a number (1–6):</label>
-          <input type="number" id="fFullDayCountInput" class="field" min="1" max="6" value="1" style="width:70px;">
+          <input type="number" id="fFullDayCountInput" class="field" min="1" value="1" style="width:90px;">
         </div>
       </div>
 
