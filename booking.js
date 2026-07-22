@@ -3,7 +3,7 @@
 
   // ── Configuration — replace before going live ──────────────────────────
   var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com"; // same as script.js — point at your deployed backend
-  var PAYSTACK_PUBLIC_KEY = "pk_test_replace_me"; // from dashboard.paystack.com/#/settings/developer
+  var PAYSTACK_PUBLIC_KEY = "pk_live_138a2b3fc8f4518974a3b404858e62ac5255f893"; // live key, from dashboard.paystack.com/#/settings/developer
 
   var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt"];
   var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT" };
