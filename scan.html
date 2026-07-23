@@ -28,8 +28,14 @@
 <main class="wrap booking-wrap" style="max-width: 440px; text-align:center;">
   <h1>Confirm your ride</h1>
   <div class="booking-card">
+    <div id="driverPreview" style="display:none; margin-bottom:14px; padding:12px; border:1px solid var(--card-border,#e7e5f0); border-radius:10px; text-align:left;">
+      <p style="font-size:11.5px; color:var(--text-muted); margin-bottom:2px;">YOUR DRIVER</p>
+      <p id="driverPreviewName" style="font-weight:700; font-size:15px;"></p>
+      <p id="driverPreviewVehicle" style="font-size:13px; color:var(--text-muted);"></p>
+    </div>
     <div id="statusIcon" style="font-size:40px; margin-bottom:12px;">🔎</div>
     <p id="statusMsg" style="color: var(--text-muted); font-size: 14.5px;">Checking your ride…</p>
+    <button type="button" id="retryBtn" class="btn btn-primary" style="width:100%; margin-top:16px; display:none;">Retry</button>
     <a href="#" id="trackLink" class="btn btn-primary" style="width:100%; margin-top:16px; display:none;">Track my ride live</a>
   </div>
 </main>
@@ -39,27 +45,42 @@
   var TOKEN_KEY = "arrivo_rider_token";
 
   function getToken() { return localStorage.getItem(TOKEN_KEY); }
-  function getScanToken() { return new URLSearchParams(window.location.search).get("token"); }
+  var params = new URLSearchParams(window.location.search);
+  function getScanToken() { return params.get("token"); }
 
   var statusIcon = document.getElementById("statusIcon");
   var statusMsg = document.getElementById("statusMsg");
   var trackLink = document.getElementById("trackLink");
+  var retryBtn = document.getElementById("retryBtn");
 
-  function showError(msg) {
+  function showError(msg, offerRetry) {
     statusIcon.textContent = "⚠️";
     statusMsg.style.color = "var(--coral)";
     statusMsg.textContent = msg;
+    retryBtn.style.display = offerRetry ? "block" : "none";
   }
 
-  var scanToken = getScanToken();
-  if (!scanToken) {
-    showError("This link is missing its code — please scan the QR code on your driver's placard directly.");
-  } else if (!getToken()) {
-    // Not logged in — send them to log in, then bounce right back to this
-    // exact scan link (with the token still in the URL) to finish the job.
-    var here = window.location.pathname + window.location.search;
-    window.location.href = "login.html?next=" + encodeURIComponent(here);
-  } else {
+  // Show the driver's name/vehicle/plate straight from the QR code's own
+  // URL params — no network call needed for this part at all, so a
+  // traveler with zero signal still sees "this is your driver" the moment
+  // they scan, before anything is confirmed server-side.
+  (function showDriverPreviewFromQr() {
+    var name = params.get("name");
+    var vehicle = params.get("vehicle");
+    var plate = params.get("plate");
+    if (!name && !vehicle && !plate) return;
+    document.getElementById("driverPreview").style.display = "block";
+    document.getElementById("driverPreviewName").textContent = name || "Your driver";
+    document.getElementById("driverPreviewVehicle").textContent =
+      [vehicle, plate ? "Plate: " + plate : null].filter(Boolean).join(" · ");
+  })();
+
+  function attemptConfirm(scanToken) {
+    statusIcon.textContent = "🔎";
+    statusMsg.style.color = "var(--text-muted)";
+    statusMsg.textContent = "Checking your ride…";
+    retryBtn.style.display = "none";
+
     fetch(API_BASE_URL + "/api/rides/scan", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + getToken() },
@@ -68,7 +89,9 @@
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (result) {
         if (!result.ok) {
-          showError(result.data.error || "Couldn't confirm your ride. Please try again or ask your driver for help.");
+          // The server was reachable and gave a definitive answer (wrong
+          // ride, wrong driver, etc.) — retrying won't help, so no retry button.
+          showError(result.data.error || "Couldn't confirm your ride. Please try again or ask your driver for help.", false);
           return;
         }
         statusIcon.textContent = "✅";
@@ -78,8 +101,24 @@
         trackLink.setAttribute("href", "track.html?ride=" + result.data.ride.id);
       })
       .catch(function () {
-        showError("Couldn't reach the server. Please check your connection and try again.");
+        // fetch() itself threw — this is a connectivity failure, not a
+        // definitive server answer, so offer Retry rather than a dead end.
+        // The driver-preview card above still shows who to look for either way.
+        showError("No internet connection right now. Your driver's details are shown above — connect to WiFi (airport WiFi works fine, no SIM needed) and tap Retry to confirm your ride and start live tracking.", true);
       });
+  }
+
+  var scanToken = getScanToken();
+  if (!scanToken) {
+    showError("This link is missing its code — please scan the QR code on your driver's placard directly.", false);
+  } else if (!getToken()) {
+    // Not logged in — send them to log in, then bounce right back to this
+    // exact scan link (with the token still in the URL) to finish the job.
+    var here = window.location.pathname + window.location.search;
+    window.location.href = "login.html?next=" + encodeURIComponent(here);
+  } else {
+    retryBtn.addEventListener("click", function () { attemptConfirm(scanToken); });
+    attemptConfirm(scanToken);
   }
 </script>
 </body>
