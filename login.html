@@ -10,12 +10,26 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=30">
 <link rel="stylesheet" href="booking.css?v=30">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js" async defer></script>
 <style>
   .auth-wrap { max-width: 440px; margin: 0 auto; padding: 48px 20px 60px; }
   .auth-wrap h1 { margin-bottom: 24px; }
   .auth-card { }
   .auth-footer-link { text-align: center; margin-top: 20px; font-size: 13.5px; color: var(--text-muted); }
   .auth-footer-link a { color: var(--teal, var(--primary)); font-weight: 600; }
+  .oauth-divider { display: flex; align-items: center; gap: 10px; margin: 18px 0 14px; }
+  .oauth-divider::before, .oauth-divider::after { content: ""; flex: 1; height: 1px; background: var(--card-border, #e7e5f0); }
+  .oauth-divider span { font-size: 12px; color: var(--text-muted); }
+  #googleSignInBtn { display: flex; justify-content: center; margin-bottom: 10px; }
+  .btn-apple {
+    width: 100%; background: #000; color: #fff; border: none; border-radius: 10px;
+    padding: 11px 14px; font-size: 14.5px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-apple:hover { opacity: 0.9; }
+  .oauth-notice { font-size: 11.5px; color: var(--text-muted); text-align: center; margin-top: 12px; line-height: 1.5; }
+  .oauth-error { color: var(--coral, #e1523d); font-size: 12.5px; text-align: center; margin: 4px 0 0; }
 </style>
 </head>
 <body>
@@ -47,6 +61,14 @@
     <p style="text-align:center; margin-top:14px;">
       <a href="forgot-password.html" style="font-size:13px; color:var(--teal, var(--primary));">Forgot your password?</a>
     </p>
+
+    <div class="oauth-divider"><span>or</span></div>
+    <div id="googleSignInBtn"></div>
+    <button type="button" class="btn-apple" id="appleSignInBtn" style="display:none;margin-top:8px;">
+       Continue with Apple
+    </button>
+    <p class="error-text oauth-error" id="oauthError" hidden></p>
+    <p class="oauth-notice">By continuing with Google or Apple, you agree to RideArrivo's <a href="privacy.html" style="color:inherit;text-decoration:underline;">Data Protection &amp; Privacy Policy</a>.</p>
   </div>
   <p class="auth-footer-link">New to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>? <a href="signup.html">Create a profile</a>.</p>
 </main>
@@ -119,6 +141,92 @@
     document.getElementById("fPassword").addEventListener("keydown", function (e) {
       if (e.key === "Enter") attemptLogin();
     });
+
+    // ── Google / Apple sign-in ──
+    // Login (unlike Signup) has no separate consent checkbox — tapping
+    // "Continue with Google/Apple" under the visible privacy notice below
+    // IS the consent action, same pattern used in the rider/driver apps'
+    // Login screens. agreedToTerms is still sent through and still enforced
+    // server-side for any genuinely new account (routes/auth.js), so this
+    // isn't a client-only formality.
+    var oauthErrEl = document.getElementById("oauthError");
+
+    function submitOAuth(path, payload) {
+      oauthErrEl.hidden = true;
+      api(path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }).then(function (result) {
+        if (!result.ok) {
+          oauthErrEl.hidden = false;
+          oauthErrEl.textContent = result.data.error || "Couldn't sign you in. Please try again.";
+          return;
+        }
+        localStorage.setItem(TOKEN_KEY, result.data.token);
+        window.location.href = getNextUrl();
+      }).catch(function () {
+        oauthErrEl.hidden = false;
+        oauthErrEl.textContent = "Couldn't reach the server. Please try again.";
+      });
+    }
+
+    // Google Identity Services — web Client ID (already whitelisted server-side
+    // in GOOGLE_OAUTH_CLIENT_IDS alongside the mobile apps' iOS/Android ones).
+    var GOOGLE_WEB_CLIENT_ID = "425853448895-r6ha3gh7b4i4lcsl3lohncuk3ecblsl3.apps.googleusercontent.com";
+
+    function handleGoogleCredential(response) {
+      submitOAuth("/api/auth/google", { idToken: response.credential, role: "rider", agreedToTerms: true });
+    }
+
+    function initGoogleSignIn(attemptsLeft) {
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        google.accounts.id.initialize({ client_id: GOOGLE_WEB_CLIENT_ID, callback: handleGoogleCredential });
+        google.accounts.id.renderButton(document.getElementById("googleSignInBtn"), {
+          theme: "outline", size: "large", text: "continue_with", width: 300,
+        });
+      } else if (attemptsLeft > 0) {
+        setTimeout(function () { initGoogleSignIn(attemptsLeft - 1); }, 150);
+      }
+    }
+    initGoogleSignIn(40);
+
+    // Sign in with Apple (web) — needs a Services ID from Apple Developer
+    // (separate from the app Bundle IDs used natively), configured with this
+    // site's domain + a return URL, before it can go live. Left blank on
+    // purpose: the button simply won't render until that's set up, so
+    // nothing breaks in the meantime. Once you have it:
+    //   1. Fill in APPLE_WEB_SERVICES_ID below with the Services ID string.
+    //   2. Add that same string to APPLE_BUNDLE_IDS on Render (comma-separated
+    //      alongside com.arrivo.app,com.arrivo.driver) — the backend checks
+    //      the token's audience against that list.
+    var APPLE_WEB_SERVICES_ID = "";
+
+    function handleAppleCredential(idToken) {
+      submitOAuth("/api/auth/apple", { identityToken: idToken, role: "rider", agreedToTerms: true });
+    }
+
+    function initAppleSignIn(attemptsLeft) {
+      if (!APPLE_WEB_SERVICES_ID) return; // not configured yet — button stays hidden
+      if (window.AppleID) {
+        AppleID.auth.init({
+          clientId: APPLE_WEB_SERVICES_ID,
+          scope: "name email",
+          redirectURI: window.location.origin + "/login.html",
+          usePopup: true,
+        });
+        var appleBtn = document.getElementById("appleSignInBtn");
+        appleBtn.style.display = "flex";
+        appleBtn.addEventListener("click", function () {
+          AppleID.auth.signIn().then(function (res) {
+            handleAppleCredential(res.authorization.id_token);
+          }).catch(function () { /* user cancelled — no error needed */ });
+        });
+      } else if (attemptsLeft > 0) {
+        setTimeout(function () { initAppleSignIn(attemptsLeft - 1); }, 150);
+      }
+    }
+    initAppleSignIn(40);
   });
 </script>
 <script src="glass-effects.js?v=30"></script>
