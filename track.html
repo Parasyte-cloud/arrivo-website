@@ -400,7 +400,12 @@
         return;
       }
 
-      if (typeof PaystackPop === "undefined" || PAYSTACK_PUBLIC_KEY.indexOf("replace_me") !== -1) {
+      // typeof-undefined check on PAYSTACK_PUBLIC_KEY itself (not just
+      // PaystackPop) matters here: if paystack-config.js ever fails to load,
+      // referencing PAYSTACK_PUBLIC_KEY.indexOf(...) directly would throw
+      // an uncaught ReferenceError instead of showing the message below —
+      // same fix already applied to account.html's wallet top-up guard.
+      if (typeof PaystackPop === "undefined" || typeof PAYSTACK_PUBLIC_KEY === "undefined" || PAYSTACK_PUBLIC_KEY.indexOf("replace_me") !== -1) {
         errEl.hidden = false;
         errEl.textContent = "Card tipping isn't configured yet. You can still tip from your wallet.";
         return;

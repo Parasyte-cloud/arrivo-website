@@ -77,6 +77,19 @@
     return getNested(I18N[currentLang()], path) || path;
   }
 
+  // Same idea as t(), but for copy that needs a runtime value spliced in
+  // (a passenger count, a vehicle name) — replaces {token} placeholders in
+  // the translated string. Simple on purpose: this app has no existing
+  // templated-string convention, and a real i18n formatting library would
+  // be overkill for a handful of strings.
+  function tFormat(path, replacements) {
+    var str = t(path);
+    Object.keys(replacements || {}).forEach(function (key) {
+      str = str.replace(new RegExp("\\{" + key + "\\}", "g"), replacements[key]);
+    });
+    return str;
+  }
+
   // "dropoff" (Airport Drop-off) is priced and location-gathered exactly
   // like "one_way" (Airport Pickup) — both are per-location trips with a
   // real pickup/destination address, unlike the flat-rate multi-day
@@ -532,30 +545,46 @@
     // the flight-number question can react to them. Nothing to bind here
     // anymore.
 
+    // Updates each vehicle card's "× N" multi-vehicle note and disables
+    // only the vehicles that would need MORE than MAX_AUTO_VEHICLE_COUNT of
+    // themselves to fit the group — a group bigger than one vehicle holds
+    // no longer blocks anything, it just books more than one (see
+    // computeVehicleCount above), same as both apps already do.
     function updateRecommendation() {
       var checkedBags = Number(checkedInput.value) || 0;
       var bulky = bulkyInput.checked;
-      var passengers = (Number(adultsInput.value) || 0) + (Number(childrenInput.value) || 0);
+      var passengers = Math.max(1, (Number(adultsInput.value) || 0) + (Number(childrenInput.value) || 0));
       var recommended = recommendVehicle(checkedBags, bulky, passengers);
 
       vehicleCards.forEach(function (card) {
-        var isRecommended = card.getAttribute("data-vehicle") === recommended;
+        var vehicleType = card.getAttribute("data-vehicle");
+        var isRecommended = vehicleType === recommended;
         card.classList.toggle("recommended", isRecommended);
 
-        var maxPassengers = Number(card.getAttribute("data-max-passengers"));
-        var overCapacity = passengers > maxPassengers;
-        card.classList.toggle("over-capacity", overCapacity);
+        var neededCount = computeVehicleCount(passengers, vehicleType);
+        var tooLarge = neededCount > MAX_AUTO_VEHICLE_COUNT;
+        card.classList.toggle("over-capacity", tooLarge);
 
-        if (!state.vehicleManuallyPicked && isRecommended && !overCapacity) selectVehicle(card, false);
+        var noteEl = card.querySelector(".v-multi-note");
+        if (noteEl) {
+          if (!tooLarge && neededCount > 1) {
+            noteEl.textContent = tFormat("booking.multiVehicleCardNote", { count: neededCount });
+            noteEl.hidden = false;
+          } else {
+            noteEl.hidden = true;
+          }
+        }
+
+        if (!state.vehicleManuallyPicked && isRecommended && !tooLarge) selectVehicle(card, false);
       });
 
       // If the passenger count grew past what the manually-picked vehicle
-      // can actually hold, don't leave an invalid selection standing —
-      // fall back to whatever the auto-recommendation says fits instead.
+      // can handle even across MAX_AUTO_VEHICLE_COUNT of it, don't leave an
+      // invalid selection standing — fall back to the auto-recommendation.
       if (state.vehicleManuallyPicked) {
         var currentCard = vehicleCards.filter(function (c) { return c.getAttribute("data-vehicle") === state.vehicle; })[0];
-        var currentMax = currentCard ? Number(currentCard.getAttribute("data-max-passengers")) : Infinity;
-        if (passengers > currentMax) {
+        var currentTooLarge = currentCard ? computeVehicleCount(passengers, state.vehicle) > MAX_AUTO_VEHICLE_COUNT : false;
+        if (currentTooLarge) {
           state.vehicleManuallyPicked = false;
           var recommendedCard = vehicleCards.filter(function (c) { return c.getAttribute("data-vehicle") === recommended; })[0];
           if (recommendedCard) selectVehicle(recommendedCard, false);
@@ -579,6 +608,9 @@
     vehicleCards.forEach(function (card) {
       card.addEventListener("click", function () {
         var capacityError = document.getElementById("vehicleCapacityError");
+        // over-capacity now only means "even MAX_AUTO_VEHICLE_COUNT of this
+        // vehicle can't fit the group" — anything short of that is a
+        // perfectly bookable multi-vehicle trip, so it's selectable.
         if (card.classList.contains("over-capacity")) {
           capacityError.hidden = false;
           return;
@@ -600,9 +632,13 @@
         passengersError.hidden = false;
         return;
       }
-      var selectedCard = vehicleCards.filter(function (c) { return c.getAttribute("data-vehicle") === state.vehicle; })[0];
-      var maxPassengers = selectedCard ? Number(selectedCard.getAttribute("data-max-passengers")) : Infinity;
-      if (adults + children > maxPassengers) {
+      // Only genuinely blocks when the selected vehicle would need MORE
+      // than MAX_AUTO_VEHICLE_COUNT of itself to fit the whole group — a
+      // group that fits within that (even across several vehicles of the
+      // same type) proceeds normally; vehicleCount is recomputed from
+      // adults/children server-side at quote and booking time regardless.
+      var passengers = adults + children;
+      if (computeVehicleCount(passengers, state.vehicle) > MAX_AUTO_VEHICLE_COUNT) {
         document.getElementById("vehicleCapacityError").hidden = false;
         return;
       }
@@ -647,15 +683,36 @@
   // Where the PRD's "Recommended Fixed Pricing" table (which explicitly
   // supersedes the earlier range) gave a number for an area, that number
   // is used instead of the general range table.
-  // Hard capacity caps, not just a recommendation — a sedan genuinely
-  // can't safely carry more than a few passengers, and the point of this
-  // is to actually push larger groups toward a bigger vehicle or fleet
-  // accompaniment rather than let them cram into whatever they clicked.
+  // How many passengers each vehicle type seats — mirrors
+  // arrivo-backend/services/fare.js's MAX_PASSENGERS exactly (same numbers
+  // kept in sync manually, same as both apps' booking screens). This used
+  // to be treated as a hard per-vehicle cap that dead-ended any group over
+  // 5-6 people with a prompt to "add fleet accompaniment" — but fleet
+  // accompaniment is a flat escort/convoy add-on (see FLEET_PRICE below),
+  // not a way to carry more passengers. The real mechanism for a big group
+  // is booking multiple of the SAME vehicle (see computeVehicleCount below),
+  // which the backend and both apps already do — this brings the website in
+  // line with that instead of blocking bookings it can actually fulfill.
   // Pickup Truck seats fewer passengers than SUV/Executive — it's a cargo
-  // vehicle first, so the bed isn't passenger space. Riders with a big
-  // group AND heavy luggage should add fleet accompaniment rather than
-  // expect one pickup truck to do both jobs.
+  // vehicle first, so the bed isn't passenger space.
   var MAX_PASSENGERS = { sedan: 3, suv: 5, truck: 5, pickup: 3 };
+  // Past this many vehicles, no driver pool can realistically staff one
+  // group's trip at once — mirrors arrivo-backend/services/fare.js's
+  // MAX_AUTO_VEHICLE_COUNT exactly. Above this, the rider is asked to
+  // contact RideArrivo directly, same message the backend itself would
+  // give if this client-side check were somehow bypassed.
+  var MAX_AUTO_VEHICLE_COUNT = 6;
+
+  // Given a passenger count and a vehicle type, works out how many of that
+  // vehicle are actually needed to fit everyone (e.g. 8 passengers in a
+  // 5-seat SUV needs 2 SUVs) — same math as the backend's computeVehicleCount
+  // and the rider app's RouteScreen.js. This is purely a UI preview; the
+  // backend independently re-derives the real vehicleCount from adults/
+  // children at quote and booking time and never trusts a client-sent count.
+  function computeVehicleCount(passengerCount, vehicleType) {
+    var capacity = MAX_PASSENGERS[vehicleType] || 1;
+    return Math.max(1, Math.ceil((Number(passengerCount) || 1) / capacity));
+  }
   // Fleet accompaniment add-on, per vehicle type.
   var FLEET_PRICE = {
     sedan: { 2: 70000, 3: 100000 },
@@ -1146,6 +1203,13 @@
       // arrivo-backend/services/fare.js computeCharterFare) — harmless to
       // always send it.
       durationDays: state.durationDays,
+      // Previously never sent — the backend defaulted passengerCount to 1
+      // (vehicleCount 1) for every quote, so a 6+ passenger group booking 2
+      // SUVs would see a 1-SUV preview fare here and only get charged the
+      // real (vehicleCount-scaled) amount at POST /api/rides. Sending these
+      // makes the review-step preview match what's actually charged.
+      adults: state.adults,
+      children: state.children,
     };
     if (isOneWayStyle(state.bookingType)) {
       if (!state.pickupLatLng || !state.dropoffLatLng) {
@@ -1235,13 +1299,30 @@
       rows.push([t("booking.reviewPassenger"), escapeHtml(state.passengerName) + " · " + escapeHtml(state.passengerWhatsapp)]);
     }
     rows.push([t("booking.reviewEmergencyContact"), escapeHtml(state.emergencyContactName)]);
+    // adult/adults and child/children pluralization is still hardcoded
+    // English here (a pre-existing, separately-flagged i18n gap — see
+    // reviewPassengers row) — not changed by this edit.
+    var passengersText = state.adults + " adult" + (state.adults === 1 ? "" : "s") + (state.children > 0 ? ", " + state.children + " child" + (state.children === 1 ? "" : "ren") : "");
+    // vehicleCount comes from the live quote (the backend's own
+    // computeVehicleCount, re-derived from adults/children — see
+    // getLiveQuote above) — not recomputed locally, so this always matches
+    // what was actually priced, never a stale client-side guess.
+    var vehicleCount = (state.liveQuote && state.liveQuote.vehicleCount) || 1;
+    var vehicleText = escapeHtml(vehicleLabel) + (vehicleCount > 1 ? " × " + vehicleCount : "");
+    var passengerCountForFare = state.adults + state.children;
     rows.push(
       [t("booking.reviewBookingType"), escapeHtml(bookingLabel)],
-      [t("booking.reviewPassengers"), state.adults + " adult" + (state.adults === 1 ? "" : "s") + (state.children > 0 ? ", " + state.children + " child" + (state.children === 1 ? "" : "ren") : "")],
+      [t("booking.reviewPassengers"), passengersText],
       [t("booking.reviewFlight"), escapeHtml(state.flightNumber) || "N/A"],
-      [t("booking.reviewVehicle"), escapeHtml(vehicleLabel)],
+      [t("booking.reviewVehicle"), vehicleText],
       [t("booking.reviewPickup"), escapeHtml([state.pickup].concat(state.stops).join(" → "))]
     );
+    if (vehicleCount > 1) {
+      rows.push([
+        t("booking.reviewMultiVehicleNote"),
+        tFormat("booking.reviewMultiVehicleDetail", { count: vehicleCount, vehicle: escapeHtml(vehicleLabel), passengers: passengerCountForFare }),
+      ]);
+    }
     // Only Airport Drop-off collects an explicit scheduled time — Airport
     // Pickup is flight-landing-driven instead, and charter bookings don't
     // show a review row for it at all here.
@@ -1620,9 +1701,15 @@
         return;
       }
 
-      if (typeof PaystackPop === "undefined") {
+      // This is the primary revenue path — card payment for a real booking —
+      // so it gets the same guard account.html/track.html already have for
+      // their card flows: checks PAYSTACK_PUBLIC_KEY is actually defined
+      // (not just PaystackPop) and isn't still the "replace_me" placeholder,
+      // rather than letting `key: PAYSTACK_PUBLIC_KEY` below throw an
+      // uncaught ReferenceError or silently open Paystack with a bad key.
+      if (typeof PaystackPop === "undefined" || typeof PAYSTACK_PUBLIC_KEY === "undefined" || PAYSTACK_PUBLIC_KEY.indexOf("replace_me") !== -1) {
         payError.hidden = false;
-        payError.textContent = "Payment isn't configured yet. Set PAYSTACK_PUBLIC_KEY in booking.js.";
+        payError.textContent = "Payment isn't configured right now. Please try again shortly or contact RideArrivo support.";
         return;
       }
       var handler = PaystackPop.setup({

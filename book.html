@@ -259,28 +259,39 @@
           <span class="v-name" data-i18n="booking.vehicleSedan">Standard Sedan</span>
           <span class="v-price">NGN 8,500</span>
           <span class="v-capacity">Fits up to 3 passengers</span>
+          <span class="v-multi-note" hidden></span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
         <button type="button" class="vehicle-card" data-vehicle="suv" data-price="12500" data-max-passengers="5">
           <span class="v-name" data-i18n="booking.vehicleSuv">Premium SUV</span>
           <span class="v-price">NGN 12,500</span>
           <span class="v-capacity">Fits up to 5 passengers</span>
+          <span class="v-multi-note" hidden></span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
         <button type="button" class="vehicle-card" data-vehicle="truck" data-price="16000" data-max-passengers="5">
           <span class="v-name" data-i18n="booking.vehicleTruck">Executive Vehicle</span>
           <span class="v-price">NGN 16,000</span>
           <span class="v-capacity">Fits up to 5 passengers</span>
+          <span class="v-multi-note" hidden></span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
         <button type="button" class="vehicle-card" data-vehicle="pickup" data-price="11000" data-max-passengers="3">
           <span class="v-name" data-i18n="booking.vehiclePickup">Pickup Truck</span>
           <span class="v-price">NGN 11,000</span>
           <span class="v-capacity" data-i18n="booking.pickupCapacity">Fits up to 3 passengers · best for heavy or bulky luggage</span>
+          <span class="v-multi-note" hidden></span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
       </div>
-      <p class="error-text" id="vehicleCapacityError" hidden>This vehicle doesn't fit your group size. Choose a larger vehicle, or go back to the Pickup step to add fleet accompaniment for bigger groups.</p>
+      <!-- Only shown when even MAX_AUTO_VEHICLE_COUNT (6) of the selected
+           vehicle can't fit the group — previously said "add fleet
+           accompaniment", which is wrong: that's a flat escort/convoy
+           add-on, not a way to carry more passengers. The real fix (booking
+           multiple of the same vehicle) now happens automatically and
+           doesn't need this error at all for groups within the auto-match
+           range. -->
+      <p class="error-text" id="vehicleCapacityError" hidden data-i18n="booking.vehicleCapacityError">This group is too large for us to automatically match to vehicles. Please contact RideArrivo directly to arrange a larger group booking.</p>
 
       <div class="step-actions">
         <button class="btn btn-ghost" id="backTo2" data-i18n="booking.back">Back</button>
