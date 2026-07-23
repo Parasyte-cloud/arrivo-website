@@ -513,7 +513,13 @@
   }
 
   // ───────────────────────── Wallet ─────────────────────────
-  var WALLET_PUBLIC_KEY = "pk_test_replace_me"; // same placeholder as booking.js — swap for the real Paystack public key to go live
+  // Was its own hardcoded "pk_test_replace_me" placeholder — a THIRD,
+  // independently-drifting copy of the same key booking.js and track.html
+  // each had (see paystack-config.js, loaded in <head> below). Worse than
+  // the other two: this one had no guard against the placeholder actually
+  // being used, so card top-up would have silently opened a broken
+  // Paystack popup instead of failing with a clear message like track.html
+  // does. Now reads the one shared value and gets that same guard.
 
   function formatWalletDate(iso) {
     var d = new Date(iso);
@@ -575,15 +581,15 @@
         topUpError.textContent = "Please enter an amount of at least NGN 100.";
         return;
       }
-      if (typeof PaystackPop === "undefined") {
+      if (typeof PaystackPop === "undefined" || typeof PAYSTACK_PUBLIC_KEY === "undefined" || PAYSTACK_PUBLIC_KEY.indexOf("replace_me") !== -1) {
         topUpError.hidden = false;
-        topUpError.textContent = "Payment isn't configured yet. Set PAYSTACK_PUBLIC_KEY in account.html.";
+        topUpError.textContent = "Card top-up isn't configured yet. Please contact support or try again later.";
         return;
       }
 
       var email = document.getElementById("accountEmail") ? document.getElementById("accountEmail").textContent : "";
       var handler = PaystackPop.setup({
-        key: WALLET_PUBLIC_KEY,
+        key: PAYSTACK_PUBLIC_KEY,
         email: email || "rider@ridearrivo.com",
         amount: amount * 100,
         currency: "NGN",
@@ -943,9 +949,18 @@
         listeningBtn.classList.remove("is-error");
         listeningBtn.classList.add("is-active");
       }
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ audio: true }).catch(function () {});
-      }
+      // Deliberately no getUserMedia() call here (there used to be one).
+      // "Listening device" is a server-side flag/timestamp on the ride
+      // (see routes/rides.js) — nothing in this product actually captures
+      // or streams live audio from the browser or the apps. The old call
+      // requested mic permission and immediately discarded the resulting
+      // MediaStream without ever storing, using, or stopping it — so it
+      // did nothing useful even when it succeeded, and on iOS/Safari and
+      // any non-secure context it's rejected outright (no user gesture on
+      // these page-load restore paths), silently swallowed by its .catch,
+      // while the "on" indicator kept showing regardless — a false safety
+      // signal. Removing it fixes both problems at once; the indicator
+      // above already only ever fires once the server confirms activation.
     }
 
     function setListeningUiError() {
@@ -997,6 +1012,7 @@
   }
 </script>
 <script src="https://js.paystack.co/v1/inline.js"></script>
+<script src="paystack-config.js?v=30"></script>
 <script src="glass-effects.js?v=30"></script>
 </body>
 </html>

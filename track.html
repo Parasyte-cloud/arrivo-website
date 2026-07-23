@@ -122,6 +122,7 @@
   </div>
 </main>
 
+<script src="paystack-config.js?v=30"></script>
 <script>
   var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
   var TOKEN_KEY = "arrivo_rider_token";
@@ -129,7 +130,11 @@
 
   var rideId = new URLSearchParams(window.location.search).get("ride");
   var token = localStorage.getItem(TOKEN_KEY);
-  var PAYSTACK_PUBLIC_KEY = "pk_test_replace_me"; // from dashboard.paystack.com/#/settings/developer
+  // PAYSTACK_PUBLIC_KEY now comes from paystack-config.js (loaded below,
+  // before this script runs) — this used to be its own hardcoded
+  // "pk_test_replace_me" placeholder that nobody remembered to update,
+  // which silently disabled card tipping here while book.html had the
+  // real live key. One shared value now, can't drift again.
   var currentRide = null;
   var riderEmail = null;
   var walletBalanceNaira = null;

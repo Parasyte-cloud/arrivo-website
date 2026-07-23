@@ -355,6 +355,7 @@
 
       <p id="quoteLoadingText">Calculating your exact fare…</p>
       <p class="error-text" id="quoteErrorText" hidden></p>
+      <button type="button" class="btn btn-primary" id="quoteRetryBtn" style="display:none;">Retry</button>
 
       <div id="reviewContent" hidden>
         <dl class="review-list" id="reviewList"></dl>
@@ -570,6 +571,7 @@
 
 <!-- Paystack's official inline checkout library -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
+<script src="paystack-config.js?v=30"></script>
 <script src="i18n.js?v=30"></script>
 <script src="phone-input.js?v=30"></script>
 <script src="booking.js?v=30"></script>

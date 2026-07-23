@@ -3,7 +3,9 @@
 
   // ── Configuration — replace before going live ──────────────────────────
   var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com"; // same as script.js — point at your deployed backend
-  var PAYSTACK_PUBLIC_KEY = "pk_live_138a2b3fc8f4518974a3b404858e62ac5255f893"; // live key, from dashboard.paystack.com/#/settings/developer
+  // PAYSTACK_PUBLIC_KEY now lives in paystack-config.js (loaded before this
+  // file in book.html) — shared with track.html's tip flow so the two
+  // can't drift out of sync again (see that file for why).
 
   var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt"];
   var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT" };
@@ -137,6 +139,16 @@
       return res.json().catch(function () { return {}; }).then(function (data) {
         return { ok: res.ok, status: res.status, data: data };
       });
+    }).catch(function () {
+      // fetch() itself rejected — offline, server unreachable, CORS, etc.
+      // Previously uncaught here, so every caller's .then(...) simply never
+      // ran on a network failure: renderReview() left loadingText visible
+      // and payBtn disabled forever with no error shown, since its only
+      // handling was inside the .then. Resolving the same {ok:false} shape
+      // every other failure already uses means every existing caller's
+      // "if (!result.ok)" branch now handles this case too, with zero
+      // changes needed at each call site.
+      return { ok: false, status: 0, data: { error: "Couldn't reach the server. Please check your connection and try again." } };
     });
   }
 
@@ -338,6 +350,13 @@
     var scheduledErrorBox = document.getElementById("scheduledPickupError");
     var dateInput = document.getElementById("fScheduledDate");
     var timeInput = document.getElementById("fScheduledTime");
+    // Can't be a static HTML attribute since "today" changes — set it once
+    // here instead, so the date picker itself refuses a past date (immediate
+    // feedback) rather than only learning it's invalid after hitting Continue.
+    if (dateInput) {
+      var todayStr = new Date().toISOString().slice(0, 10);
+      dateInput.min = todayStr;
+    }
     var bookingChips = Array.prototype.slice.call(document.querySelectorAll("#bookingTypeOptions .booking-type-chip"));
     var fullDayCountSection = document.getElementById("fullDayCountSection");
     var fullDayCountInput = document.getElementById("fFullDayCountInput");
@@ -1166,12 +1185,14 @@
   function renderReview() {
     var loadingText = document.getElementById("quoteLoadingText");
     var errorText = document.getElementById("quoteErrorText");
+    var retryBtn = document.getElementById("quoteRetryBtn");
     var content = document.getElementById("reviewContent");
     var payBtn = document.getElementById("payBtn");
 
     state.liveQuote = null;
     loadingText.hidden = false;
     errorText.hidden = true;
+    retryBtn.style.display = "none";
     content.hidden = true;
     payBtn.disabled = true;
 
@@ -1179,7 +1200,13 @@
       loadingText.hidden = true;
       if (!result.ok) {
         errorText.hidden = false;
-        errorText.textContent = result.data.error || "Couldn't calculate your fare right now. Please go back and try again.";
+        errorText.textContent = result.data.error || "Couldn't calculate your fare right now. Please try again.";
+        // api() now always resolves {ok:false} instead of rejecting on a
+        // real network failure (see the fetch().catch in api() above), so
+        // this path is reachable on a plain connectivity blip, not just a
+        // real validation error — offer a retry right here instead of
+        // forcing a trip back through earlier steps.
+        retryBtn.style.display = "inline-block";
         return;
       }
       state.liveQuote = result.data; // { fareNaira, distanceKm, durationMin }
@@ -1189,6 +1216,11 @@
       checkWalletMinimum();
     });
   }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var retryBtn = document.getElementById("quoteRetryBtn");
+    if (retryBtn) retryBtn.addEventListener("click", renderReview);
+  });
 
   function renderReviewContent() {
     var list = document.getElementById("reviewList");
@@ -1226,8 +1258,10 @@
     // backend only returns one final total, not a line-item split, and
     // showing a made-up number for "how much of the total was the escort"
     // would just be a guess. "Included" says what's true without faking precision.
-    if (state.securityEscort) rows.push(["Security escort", "Included"]);
-    if (state.fleetSize) rows.push(["Fleet accompaniment", "Fleet of " + state.fleetSize + " · Included"]);
+    if (state.securityEscort) rows.push([t("booking.reviewSecurityEscort"), t("booking.reviewIncluded")]);
+    if (state.fleetSize) {
+      rows.push([t("booking.reviewFleetAccompaniment"), t("booking.reviewFleetOf") + " " + state.fleetSize + " · " + t("booking.reviewIncluded")]);
+    }
 
     list.innerHTML = rows.map(function (r) {
       return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>";
