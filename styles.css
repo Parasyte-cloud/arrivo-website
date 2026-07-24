@@ -314,7 +314,15 @@ a { color: inherit; text-decoration: none; }
   padding: 8px 0;
   box-sizing: border-box;
 }
-.brand-mark { border-radius: 6px; position: relative; z-index: 2; }
+.brand-mark {
+  border-radius: 8px;
+  position: relative;
+  z-index: 2;
+  /* Soft amber halo behind the pin mark so it doesn't float bare against
+     whatever's behind the nav (cream hero, dark footer, or a photo
+     background) — a subtle rounded glow rather than a hard box. */
+  box-shadow: 0 0 0 8px rgba(244, 163, 0, 0.10), 0 2px 14px rgba(244, 163, 0, 0.30);
+}
 .brand-ride { color: var(--ink); }
 .brand-arrivo { color: var(--amber); }
 .site-footer .brand-ride { color: var(--cream); } /* footer background is dark navy throughout — any "Ride" text needs a light color here instead, not just the logo */
@@ -521,12 +529,16 @@ a { color: inherit; text-decoration: none; }
   display: block;
 }
 .footer-wordmark {
-  height: 24px;
+  height: 20px;
   width: auto;
-  opacity: 0.55;
-  margin-top: 10px;
   display: block;
 }
+.brand-wordmark {
+  height: 20px;
+  width: auto;
+  display: block;
+}
+.mobile-nav-menu-header .brand-wordmark { height: 18px; }
 .lang-dropdown { position: relative; }
 .lang-trigger {
   all: unset;

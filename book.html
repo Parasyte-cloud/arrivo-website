@@ -36,7 +36,7 @@
   <div class="wrap header-inner">
     <a href="index.html" class="brand">
       <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
-      <span data-i18n="brand"><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span></span>
+      <img src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark">
     </a>
     <nav class="main-nav" aria-label="Primary">
       <a href="index.html#how" data-i18n="nav.how">How it works</a>
@@ -137,17 +137,79 @@
       <button class="btn btn-primary" id="contactContinue" data-i18n="booking.continue">Continue</button>
     </section>
 
-    <!-- STEP 2: Flight -->
+    <!-- STEP 2: Trip type + Flight -->
     <section class="step" data-step="2" hidden>
-      <h2 data-i18n="booking.flightTitle">Got a flight number?</h2>
-      <p class="step-sub" data-i18n="booking.flightSub">Optional, but it means your pickup time adjusts automatically if you're early or delayed.</p>
+      <h2 data-i18n="booking.tripDetailsTitle">Trip details</h2>
 
-      <div class="flight-row">
-        <input type="text" id="fFlight" class="field" data-i18n-placeholder="booking.flightPlaceholder" placeholder="e.g. BA075" style="text-transform:uppercase;">
-        <button class="btn btn-ghost" id="trackFlightBtn" data-i18n="booking.track" type="button">Track</button>
+      <label class="field-label" data-i18n="booking.bookingTypeLabel">Booking type</label>
+      <div class="booking-type-options" id="bookingTypeOptions">
+        <button type="button" class="booking-type-chip selected" data-type="one_way" data-days="1" data-multiplier="1">
+          <span data-i18n="booking.typeOneWay">Airport Pickup</span>
+        </button>
+        <button type="button" class="booking-type-chip" data-type="dropoff" data-days="1" data-multiplier="1">
+          <span data-i18n="booking.typeDropoff">Airport Drop-off</span>
+        </button>
+        <button type="button" class="booking-type-chip" data-type="full_day" data-days="1" data-multiplier="6">
+          <span data-i18n="booking.typeFullDay">Full day</span>
+        </button>
+        <button type="button" class="booking-type-chip" data-type="full_week" data-days="7" data-multiplier="30">
+          <span data-i18n="booking.typeFullWeek">Full week</span>
+        </button>
+        <button type="button" class="booking-type-chip" data-type="full_month" data-days="30" data-multiplier="100">
+          <span data-i18n="booking.typeFullMonth">Full month</span>
+        </button>
       </div>
-      <div id="flightResult" class="flight-result" hidden></div>
-      <p class="error-text" id="flightError" hidden data-i18n="booking.flightNotFound"></p>
+
+      <!-- "Full Day" can be booked for any number of consecutive days —
+           just type a number, the fare is calculated on checkout. No preset
+           ceiling here; arrivo-backend/services/fare.js still enforces a
+           generous sanity-check upper bound server-side (MAX_FULL_DAY_COUNT
+           there), purely to reject garbage input. Only shown for full_day;
+           defaults to 1 ("leave it as it is"). -->
+      <div id="fullDayCountSection" hidden style="margin-top:16px;">
+        <label class="field-label" data-i18n="booking.fullDayCountLabel">Number of days</label>
+        <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+          <input type="number" id="fFullDayCountInput" class="field" min="1" value="1" style="width:90px;">
+        </div>
+      </div>
+
+      <!-- Airport Drop-off has no flight-landing event to anchor timing on
+           (unlike an arrival pickup), so it needs an explicit scheduled
+           date/time instead. Only shown/required for 'dropoff'. -->
+      <div id="scheduledPickupSection" hidden>
+        <label class="field-label" data-i18n="booking.scheduledPickupLabel" style="margin-top:16px; display:block;">When should we pick you up?</label>
+        <p class="step-sub" data-i18n="booking.scheduledPickupSub">There's no flight to track for a drop-off, so we go by the date and time you set.</p>
+        <div style="display:flex; gap:12px; margin-bottom:14px;">
+          <div style="flex:1;">
+            <label for="fScheduledDate" style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;" data-i18n="booking.scheduledDateLabel">Date</label>
+            <input type="date" id="fScheduledDate" class="field">
+          </div>
+          <div style="flex:1;">
+            <label for="fScheduledTime" style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;" data-i18n="booking.scheduledTimeLabel">Time</label>
+            <input type="time" id="fScheduledTime" class="field">
+          </div>
+        </div>
+        <p class="error-text" id="scheduledPickupError" hidden data-i18n="booking.scheduledPickupError">Please choose a pickup date and time in the future.</p>
+      </div>
+
+      <!-- Shown for both Airport Pickup and Airport Drop-off — required
+           only for Pickup (it's the only way to track an arriving rider's
+           flight); optional for Drop-off (useful for delay-awareness, not
+           required since timing already comes from the scheduled time
+           above); hidden entirely for multi-day charter bookings, which
+           have no single flight to track. -->
+      <div id="flightNumberSection">
+        <label class="field-label" id="flightSectionLabel" data-i18n="booking.flightTitle" style="margin-top:16px; display:block;">Got a flight number?</label>
+        <p class="step-sub" id="flightSectionSub" data-i18n="booking.flightSub">Required — it's how we track your flight and know exactly when to have your driver waiting.</p>
+
+        <div class="flight-row">
+          <input type="text" id="fFlight" class="field" data-i18n-placeholder="booking.flightPlaceholder" placeholder="e.g. BA075" style="text-transform:uppercase;">
+          <button class="btn btn-ghost" id="trackFlightBtn" data-i18n="booking.track" type="button">Track</button>
+        </div>
+        <div id="flightResult" class="flight-result" hidden></div>
+        <p class="error-text" id="flightError" hidden data-i18n="booking.flightNotFound"></p>
+        <p class="error-text" id="flightRequiredError" hidden data-i18n="booking.flightRequired">Please enter your flight number to continue.</p>
+      </div>
 
       <div class="step-actions">
         <button class="btn btn-ghost" id="backTo1" data-i18n="booking.back">Back</button>
@@ -160,21 +222,7 @@
       <h2 data-i18n="booking.luggageTitle">Tell us your luggage</h2>
       <p class="step-sub" data-i18n="booking.luggageSub">So we send a vehicle that actually fits everything.</p>
 
-      <label class="field-label" data-i18n="booking.bookingTypeLabel">Booking type</label>
-      <div class="booking-type-options" id="bookingTypeOptions">
-        <button type="button" class="booking-type-chip selected" data-type="one_way" data-days="1" data-multiplier="1">
-          <span data-i18n="booking.typeOneWay">One-way pickup</span>
-        </button>
-        <button type="button" class="booking-type-chip" data-type="full_day" data-days="1" data-multiplier="6">
-          <span data-i18n="booking.typeFullDay">Full day</span>
-        </button>
-        <button type="button" class="booking-type-chip" data-type="full_week" data-days="7" data-multiplier="30">
-          <span data-i18n="booking.typeFullWeek">Full week</span>
-        </button>
-        <button type="button" class="booking-type-chip" data-type="full_month" data-days="30" data-multiplier="100">
-          <span data-i18n="booking.typeFullMonth">Full month</span>
-        </button>
-      </div>
+      <!-- Booking type now lives in Step 2, before the flight question. -->
 
       <label class="field-label" data-i18n="booking.passengersLabel">Number of passengers</label>
       <div style="display:flex; gap:12px; margin-bottom:14px;">
@@ -189,12 +237,21 @@
       </div>
       <p class="error-text" id="passengersError" hidden data-i18n="booking.passengersError">Please add at least one adult passenger.</p>
 
-      <label class="field-label" for="fBags" data-i18n="booking.bagsLabel">Number of bags</label>
-      <input type="number" id="fBags" class="field" min="0" max="12" value="1">
+      <label class="field-label" data-i18n="booking.luggageLabel">Luggage</label>
+      <div style="display:flex; gap:12px; margin-bottom:14px;">
+        <div style="flex:1;">
+          <label for="fCarryOn" style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;" data-i18n="booking.carryOnLabel">Carry-on bags</label>
+          <input type="number" id="fCarryOn" class="field" min="0" max="8" value="1">
+        </div>
+        <div style="flex:1;">
+          <label for="fChecked" style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;" data-i18n="booking.checkedLabel">Checked bags</label>
+          <input type="number" id="fChecked" class="field" min="0" max="12" value="1">
+        </div>
+      </div>
 
       <label class="checkbox-row">
         <input type="checkbox" id="fBulky">
-        <span data-i18n="booking.bulkyLabel">I have oversized or bulky items (surfboard, extra-large suitcase, equipment, etc.)</span>
+        <span data-i18n="booking.bulkyLabel">One or more checked bags is heavy or oversized (over 32kg, a large duffel, cooler, sports or musical equipment, etc.)</span>
       </label>
 
       <div class="vehicle-options" id="vehicleOptions">
@@ -202,22 +259,39 @@
           <span class="v-name" data-i18n="booking.vehicleSedan">Standard Sedan</span>
           <span class="v-price">NGN 8,500</span>
           <span class="v-capacity">Fits up to 3 passengers</span>
+          <span class="v-multi-note" hidden></span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
-        <button type="button" class="vehicle-card" data-vehicle="suv" data-price="12500" data-max-passengers="6">
+        <button type="button" class="vehicle-card" data-vehicle="suv" data-price="12500" data-max-passengers="5">
           <span class="v-name" data-i18n="booking.vehicleSuv">Premium SUV</span>
           <span class="v-price">NGN 12,500</span>
-          <span class="v-capacity">Fits up to 6 passengers</span>
+          <span class="v-capacity">Fits up to 5 passengers</span>
+          <span class="v-multi-note" hidden></span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
-        <button type="button" class="vehicle-card" data-vehicle="truck" data-price="16000" data-max-passengers="6">
+        <button type="button" class="vehicle-card" data-vehicle="truck" data-price="16000" data-max-passengers="5">
           <span class="v-name" data-i18n="booking.vehicleTruck">Executive Vehicle</span>
           <span class="v-price">NGN 16,000</span>
-          <span class="v-capacity">Fits up to 6 passengers</span>
+          <span class="v-capacity">Fits up to 5 passengers</span>
+          <span class="v-multi-note" hidden></span>
+          <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
+        </button>
+        <button type="button" class="vehicle-card" data-vehicle="pickup" data-price="11000" data-max-passengers="3">
+          <span class="v-name" data-i18n="booking.vehiclePickup">Pickup Truck</span>
+          <span class="v-price">NGN 11,000</span>
+          <span class="v-capacity" data-i18n="booking.pickupCapacity">Fits up to 3 passengers · best for heavy or bulky luggage</span>
+          <span class="v-multi-note" hidden></span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
       </div>
-      <p class="error-text" id="vehicleCapacityError" hidden>This vehicle doesn't fit your group size. Choose a larger vehicle, or go back to the Pickup step to add fleet accompaniment for bigger groups.</p>
+      <!-- Only shown when even MAX_AUTO_VEHICLE_COUNT (6) of the selected
+           vehicle can't fit the group — previously said "add fleet
+           accompaniment", which is wrong: that's a flat escort/convoy
+           add-on, not a way to carry more passengers. The real fix (booking
+           multiple of the same vehicle) now happens automatically and
+           doesn't need this error at all for groups within the auto-match
+           range. -->
+      <p class="error-text" id="vehicleCapacityError" hidden data-i18n="booking.vehicleCapacityError">This group is too large for us to automatically match to vehicles. Please contact RideArrivo directly to arrange a larger group booking.</p>
 
       <div class="step-actions">
         <button class="btn btn-ghost" id="backTo2" data-i18n="booking.back">Back</button>
@@ -230,7 +304,7 @@
       <h2 data-i18n="booking.pickupTitle">Where should we pick you up?</h2>
 
       <div class="location-permission-box" id="locationPermissionBox">
-        <p>Share your location to get better address suggestions and the right currency for where you are. We only use this for the search below, nothing is tracked in the background.</p>
+        <p>Share your location to get better address suggestions nearby. We only use this for the search below, nothing is tracked in the background.</p>
         <div style="display:flex; gap:8px;">
           <button type="button" class="btn btn-primary btn-sm" id="allowLocationBtn">Allow location</button>
           <button type="button" class="btn btn-ghost btn-sm" id="declineLocationBtn">Not now</button>
@@ -261,7 +335,7 @@
       <div class="addon-section">
         <label class="checkbox-row">
           <input type="checkbox" id="fSecurityEscort">
-          <span>Add a personal security escort <strong>(+NGN 100,000)</strong></span>
+          <span>Add a personal security escort <strong>(priced at checkout)</strong></span>
         </label>
         <label class="field-label" style="margin-top:6px;">Fleet accompaniment</label>
         <div class="chip-row" id="fleetChips">
@@ -274,7 +348,7 @@
       <div class="fare-estimate-box" id="fareEstimateBox" hidden>
         <div class="fare-estimate-row"><span data-i18n="booking.fareDistance">Estimated distance</span><span id="fareDistanceText"></span></div>
         <div class="fare-estimate-row"><span data-i18n="booking.fareBase">Base fare</span><span id="fareBaseText"></span></div>
-        <div class="fare-estimate-row" id="fareSecurityRow" hidden><span>Security escort</span><span>+NGN 100,000</span></div>
+        <div class="fare-estimate-row" id="fareSecurityRow" hidden><span>Security escort</span><span>Priced at checkout</span></div>
         <div class="fare-estimate-row" id="fareFleetRow" hidden><span id="fareFleetLabel">Fleet accompaniment</span><span id="fareFleetAmount"></span></div>
         <div class="fare-estimate-row fare-estimate-total"><span data-i18n="booking.fareTotal">Estimated total</span><span id="fareTotalText"></span></div>
       </div>
@@ -290,22 +364,30 @@
     <section class="step" data-step="5" hidden>
       <h2 data-i18n="booking.reviewTitle">Review &amp; pay</h2>
 
-      <dl class="review-list" id="reviewList"></dl>
+      <p id="quoteLoadingText">Calculating your exact fare…</p>
+      <p class="error-text" id="quoteErrorText" hidden></p>
+      <button type="button" class="btn btn-primary" id="quoteRetryBtn" style="display:none;">Retry</button>
 
-      <div class="review-total">
-        <span data-i18n="booking.reviewFare">Total fare</span>
-        <strong id="reviewFare">NGN 0</strong>
+      <div id="reviewContent" hidden>
+        <dl class="review-list" id="reviewList"></dl>
+
+        <div class="review-total">
+          <span data-i18n="booking.reviewFare">Total fare</span>
+          <strong id="reviewFare">NGN 0</strong>
+        </div>
+
+        <p class="pay-note" data-i18n="booking.payNote">Payment is handled securely by Paystack. <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> never sees your card details.</p>
+
+        <p class="error-text" id="walletMinimumNote" hidden></p>
+
+        <label class="field-label">How would you like to pay?</label>
+        <div class="for-who-toggle" id="paymentMethodToggle" style="margin-bottom:14px;">
+          <button type="button" class="for-who-opt is-active" data-method="card">Card</button>
+          <button type="button" class="for-who-opt" data-method="wallet" id="walletPaymentOpt">Wallet <span id="walletBalanceHint" style="font-weight:400;"></span></button>
+          <button type="button" class="for-who-opt" data-method="membership" id="membershipPaymentOpt" hidden>Membership</button>
+        </div>
+        <p class="error-text" id="walletInsufficientNote" hidden>Your wallet balance isn't enough for this ride. Top up in My Account, or pay by card instead.</p>
       </div>
-
-      <p class="pay-note" data-i18n="booking.payNote">Payment is handled securely by Paystack. <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> never sees your card details.</p>
-
-      <label class="field-label">How would you like to pay?</label>
-      <div class="for-who-toggle" id="paymentMethodToggle" style="margin-bottom:14px;">
-        <button type="button" class="for-who-opt is-active" data-method="card">Card</button>
-        <button type="button" class="for-who-opt" data-method="wallet" id="walletPaymentOpt">Wallet <span id="walletBalanceHint" style="font-weight:400;"></span></button>
-        <button type="button" class="for-who-opt" data-method="membership" id="membershipPaymentOpt" hidden>Membership</button>
-      </div>
-      <p class="error-text" id="walletInsufficientNote" hidden>Your wallet balance isn't enough for this ride. Top up in My Account, or pay by card instead.</p>
 
       <label class="checkbox-row">
         <input type="checkbox" id="fAgreeCancellation">
@@ -333,7 +415,19 @@
         <span data-i18n="booking.confirmBarcode">Booking barcode</span>
         <strong id="confirmBarcode"></strong>
       </div>
-      <a href="book.html" class="btn btn-primary" data-i18n="booking.bookAnother">Book another ride</a>
+
+      <!-- Only shown after an Airport Pickup ("one_way") booking — the
+           whole point of "if they know their expected time and day of
+           return, book it at once" rather than making them come find
+           Book a Ride again later. Never shown for a drop-off or charter
+           booking (see showReturnDropoffPrompt in booking.js). -->
+      <div id="returnDropoffPrompt" hidden style="margin-top:20px; padding-top:20px; border-top:1px solid rgba(0,0,0,0.08); text-align:left;">
+        <h3 data-i18n="booking.returnPromptTitle" style="font-size:16px; margin-bottom:6px;">Know when you're flying back?</h3>
+        <p class="step-sub" data-i18n="booking.returnPromptBody">Book your airport drop-off now and we'll have it all set — or come back and book it any time under Book a Ride once you know your return date and time.</p>
+        <a href="#" id="bookReturnDropoffLink" class="btn btn-primary" data-i18n="booking.returnPromptCta" style="width:100%; display:block; text-align:center; margin-bottom:8px; box-sizing:border-box;">Add my return drop-off</a>
+      </div>
+
+      <a href="book.html" class="btn btn-primary" data-i18n="booking.bookAnother" id="bookAnotherLink" style="width:100%; display:block; text-align:center; box-sizing:border-box;">Book another ride</a>
     </section>
 
   </div>
@@ -372,7 +466,7 @@
     <div class="footer-brand-col">
       <div class="footer-brand">
         <img src="assets/icon.png" alt="" width="22" height="22">
-        <span data-i18n="brand"><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span></span>
+        <img src="assets/ridearrivo-wordmark-light.png" alt="RideArrivo" class="footer-wordmark">
       </div>
       <p class="footer-tagline" data-i18n="footer.tagline">Lagos airport pickups, done right.</p>
       <div class="footer-social-row">
@@ -488,6 +582,7 @@
 
 <!-- Paystack's official inline checkout library -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
+<script src="paystack-config.js?v=30"></script>
 <script src="i18n.js?v=30"></script>
 <script src="phone-input.js?v=30"></script>
 <script src="booking.js?v=30"></script>

@@ -31,20 +31,37 @@
   <div class="wrap header-inner">
     <a href="index.html" class="brand">
       <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
-      <span>arrivo</span>
+      <img src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark">
     </a>
+    <div class="header-actions">
+      <div class="lang-dropdown" id="langDropdown">
+        <button type="button" class="lang-trigger" id="langTrigger" aria-haspopup="listbox" aria-expanded="false">
+          <span id="langTriggerLabel">EN</span>
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <ul class="lang-menu" id="langMenu" role="listbox" hidden>
+          <li><button type="button" class="lang-opt" data-lang="en">English</button></li>
+          <li><button type="button" class="lang-opt" data-lang="fr">Français</button></li>
+          <li><button type="button" class="lang-opt" data-lang="zh">中文</button></li>
+          <li><button type="button" class="lang-opt" data-lang="hi">हिन्दी</button></li>
+          <li><button type="button" class="lang-opt" data-lang="de">Deutsch</button></li>
+          <li><button type="button" class="lang-opt" data-lang="es">Español</button></li>
+          <li><button type="button" class="lang-opt" data-lang="pt">Português</button></li>
+        </ul>
+      </div>
+    </div>
   </div>
 </header>
 
 <main class="wrap booking-wrap" style="max-width: 460px;">
-  <h1>Your ride</h1>
+  <h1 data-i18n="track.pageTitle">Your ride</h1>
   <div class="booking-card" id="loadingCard">
-    <p style="color:var(--text-muted); text-align:center;">Loading your ride details…</p>
+    <p style="color:var(--text-muted); text-align:center;" data-i18n="track.loadingText">Loading your ride details…</p>
   </div>
 
   <div class="booking-card" id="rideCard" hidden>
     <span class="status-pill" id="statusPill"></span>
-    <p style="margin-top:10px; font-size:13.5px;"><strong>Pickup:</strong> <span id="pickupText"></span></p>
+    <p style="margin-top:10px; font-size:13.5px;"><strong data-i18n="track.pickupLabel">Pickup:</strong> <span id="pickupText"></span></p>
 
     <div class="driver-row" id="driverRow" hidden>
       <div class="driver-avatar" id="driverInitials"></div>
@@ -54,10 +71,67 @@
       </div>
     </div>
 
-    <a href="#" id="mapLink" class="map-link" target="_blank" style="display:none;">📍 View driver's last known location</a>
+    <a href="#" id="mapLink" class="map-link" target="_blank" style="display:none;" data-i18n="track.mapLink">📍 View driver's last known location</a>
 
-    <button class="panic-btn" id="panicBtn">🚨 I don't feel safe — alert support</button>
-    <div class="panic-active" id="panicActiveMsg" hidden>🚨 Support has been alerted about this ride.</div>
+    <button class="panic-btn" id="panicBtn" data-i18n="track.panicBtn">🚨 I don't feel safe — alert support</button>
+    <div class="panic-active" id="panicActiveMsg" hidden data-i18n="track.panicActiveMsg">🚨 Support has been alerted about this ride.</div>
+  </div>
+
+  <!-- Flight cancelled/rescheduled (services/scheduler.js on the backend
+       flags ride.flight_issue and refunds the original fare to the
+       rider's wallet) — prompts a top-up before the trip can start again,
+       with the fare re-charged at drop-off instead of upfront this time. -->
+  <div class="booking-card" id="flightIssueCard" hidden style="border:1.5px solid var(--amber, #F4A300);">
+    <h2 style="font-size:16px; margin-bottom:6px;" id="flightIssueTitle"></h2>
+    <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:10px;" id="flightIssueBody"></p>
+    <a href="account.html" class="btn btn-primary" style="width:100%; display:block; text-align:center; box-sizing:border-box;" data-i18n="track.topUpWallet">Top up wallet</a>
+  </div>
+
+  <!-- "Rate & Relax" — one rating per completed trip. When the rated trip
+       was an Airport Pickup, also offers "keep the same driver & vehicle
+       for my return trip" (keepSameDriver), carried over automatically to
+       whatever drop-off ride later gets linked back to this one. -->
+  <div class="booking-card" id="rateCard" hidden>
+    <h2 style="font-size:16px; margin-bottom:6px;" data-i18n="track.rateRelaxTitle">Rate &amp; Relax</h2>
+    <p id="rateDoneMsg" style="font-size:13px; color:var(--text-muted);" hidden></p>
+    <div id="rateForm">
+      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:10px;" id="rateFormPrompt" data-i18n="track.rateFormPrompt">How was your trip?</p>
+      <div id="rateStars" style="font-size:28px; letter-spacing:4px; margin-bottom:10px; cursor:pointer;"></div>
+      <input type="text" id="rateComment" class="field" placeholder="Add a comment (optional)" data-i18n-placeholder="track.rateCommentPlaceholder" style="margin-bottom:10px;">
+      <div id="keepSameDriverBlock" hidden style="margin-bottom:12px;">
+        <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:6px;" data-i18n="track.keepSameDriverPrompt">Keep the same driver &amp; vehicle for your return trip?</p>
+        <div class="for-who-toggle" id="keepSameDriverToggle">
+          <button type="button" class="for-who-opt is-active" data-keep="yes" data-i18n="track.keepSameDriverYes">Yes, same driver</button>
+          <button type="button" class="for-who-opt" data-keep="no" data-i18n="track.keepSameDriverNo">No, don't need to</button>
+        </div>
+      </div>
+      <p class="error-text" id="rateError" hidden></p>
+      <button class="btn btn-primary" id="rateSendBtn" style="width:100%;" data-i18n="track.submitRating">Submit rating</button>
+    </div>
+  </div>
+
+  <!-- Optional post-trip tip — only shown once the ride is completed and
+       hasn't already been tipped. Never cash: wallet debits immediately,
+       card goes through Paystack same as the fare itself. -->
+  <div class="booking-card" id="tipCard" hidden>
+    <h2 style="font-size:16px; margin-bottom:6px;" data-i18n="track.tipDriverTitle">Tip your driver</h2>
+    <p id="tipDoneMsg" style="font-size:13px; color:var(--text-muted);" hidden></p>
+    <div id="tipForm">
+      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:10px;" data-i18n="track.tipDisclaimer">Entirely optional — 100% goes to your driver. Never cash, same as your fare.</p>
+      <div class="for-who-toggle" id="tipPercentToggle" style="margin-bottom:10px;">
+        <button type="button" class="for-who-opt is-active" data-percent="15">15%</button>
+        <button type="button" class="for-who-opt" data-percent="20">20%</button>
+        <button type="button" class="for-who-opt" data-percent="25">25%</button>
+        <button type="button" class="for-who-opt" data-percent="custom" data-i18n="track.tipCustom">Custom</button>
+      </div>
+      <input type="number" id="tipCustomAmount" class="field" placeholder="Amount (NGN)" data-i18n-placeholder="track.tipCustomAmountPlaceholder" style="margin-bottom:10px;" hidden>
+      <div class="for-who-toggle" id="tipMethodToggle" style="margin-bottom:12px;">
+        <button type="button" class="for-who-opt is-active" data-method="wallet"><span data-i18n="track.tipMethodWallet">Wallet</span> <span id="tipWalletHint" style="font-weight:400;"></span></button>
+        <button type="button" class="for-who-opt" data-method="card" data-i18n="track.tipMethodCard">Card</button>
+      </div>
+      <p class="error-text" id="tipError" hidden></p>
+      <button class="btn btn-primary" id="tipSendBtn" style="width:100%;" data-i18n="track.sendTip">Send tip</button>
+    </div>
   </div>
 
   <div class="booking-card" id="errorCard" hidden style="text-align:center;">
@@ -65,13 +139,118 @@
   </div>
 </main>
 
+<script src="i18n.js?v=31"></script>
+<script src="paystack-config.js?v=30"></script>
 <script>
   var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
   var TOKEN_KEY = "arrivo_rider_token";
   var POLL_INTERVAL_MS = 8000;
 
+  // ───────────────────────── i18n (same pattern as script.js/booking.js) ─────────────────────────
+  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt"];
+  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT" };
+  var LANG_KEY = "arrivo_site_lang";
+
+  function getNested(obj, path) {
+    return path.split(".").reduce(function (acc, key) { return acc && acc[key]; }, obj);
+  }
+
+  function applyLanguage(lang) {
+    var dict = I18N[lang] || I18N.en;
+    document.documentElement.lang = lang;
+
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      var value = getNested(dict, el.getAttribute("data-i18n"));
+      if (value != null) el.innerHTML = value;
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
+      var value = getNested(dict, el.getAttribute("data-i18n-placeholder"));
+      if (value != null) el.setAttribute("placeholder", value);
+    });
+    document.querySelectorAll(".lang-opt").forEach(function (btn) {
+      btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
+    });
+
+    var label = document.getElementById("langTriggerLabel");
+    if (label) label.textContent = LANG_LABELS[lang] || lang.toUpperCase();
+
+    localStorage.setItem(LANG_KEY, lang);
+  }
+
+  function currentLang() {
+    return SUPPORTED_LANGS.indexOf(document.documentElement.lang) !== -1 ? document.documentElement.lang : "en";
+  }
+
+  function t(path) {
+    return getNested(I18N[currentLang()], path) || path;
+  }
+
+  function tFormat(path, replacements) {
+    var str = t(path);
+    Object.keys(replacements || {}).forEach(function (key) {
+      str = str.replace(new RegExp("\\{" + key + "\\}", "g"), replacements[key]);
+    });
+    return str;
+  }
+
+  function closeLangMenu() {
+    var dropdown = document.getElementById("langDropdown");
+    var menu = document.getElementById("langMenu");
+    var trigger = document.getElementById("langTrigger");
+    if (!dropdown || !menu) return;
+    dropdown.classList.remove("open");
+    menu.hidden = true;
+    if (trigger) trigger.setAttribute("aria-expanded", "false");
+  }
+
+  function initLanguage() {
+    var saved = localStorage.getItem(LANG_KEY);
+    var browserLang = (navigator.language || "en").slice(0, 2);
+    var detected = SUPPORTED_LANGS.indexOf(browserLang) !== -1 ? browserLang : "en";
+    applyLanguage(saved || detected);
+
+    document.querySelectorAll(".lang-opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        applyLanguage(btn.getAttribute("data-lang"));
+        closeLangMenu();
+      });
+    });
+
+    var dropdown = document.getElementById("langDropdown");
+    var trigger = document.getElementById("langTrigger");
+    var menu = document.getElementById("langMenu");
+    if (!dropdown || !trigger || !menu) return;
+
+    trigger.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var isOpen = dropdown.classList.toggle("open");
+      menu.hidden = !isOpen;
+      trigger.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    document.addEventListener("click", function (e) {
+      if (!dropdown.contains(e.target)) closeLangMenu();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeLangMenu();
+    });
+  }
+  initLanguage();
+
   var rideId = new URLSearchParams(window.location.search).get("ride");
   var token = localStorage.getItem(TOKEN_KEY);
+  // PAYSTACK_PUBLIC_KEY now comes from paystack-config.js (loaded below,
+  // before this script runs) — this used to be its own hardcoded
+  // "pk_test_replace_me" placeholder that nobody remembered to update,
+  // which silently disabled card tipping here while book.html had the
+  // real live key. One shared value now, can't drift again.
+  var currentRide = null;
+  var riderEmail = null;
+  var walletBalanceNaira = null;
+  var tipPercent = 15;
+  var tipMethod = "wallet";
+  var starsSelected = 0;
+  var keepSameDriverChoice = "yes";
 
   function showError(msg) {
     document.getElementById("loadingCard").hidden = true;
@@ -81,7 +260,7 @@
   }
 
   if (!rideId) {
-    showError("No ride specified.");
+    showError(t("track.noRideSpecified"));
   } else if (!token) {
     window.location.href = "login.html?next=" + encodeURIComponent(window.location.pathname + window.location.search);
   } else {
@@ -94,15 +273,21 @@
         .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
         .then(function (result) {
           if (!result.ok) {
-            showError(result.data.error || "Couldn't load this ride.");
+            showError(result.data.error || t("track.couldntLoadRide"));
             return;
           }
           var ride = result.data.ride;
+          currentRide = ride;
           document.getElementById("loadingCard").hidden = true;
           document.getElementById("rideCard").hidden = false;
 
           var pill = document.getElementById("statusPill");
-          pill.textContent = ride.ride_status.replace("_", " ");
+          var statusLabels = {
+            in_progress: t("track.statusInProgress"),
+            accepted: t("track.statusAccepted"),
+            completed: t("track.statusCompleted"),
+          };
+          pill.textContent = statusLabels[ride.ride_status] || ride.ride_status.replace("_", " ");
           pill.className = "status-pill status-" + ride.ride_status;
 
           document.getElementById("pickupText").textContent = [ride.pickup_address].concat(ride.stops || []).join(" → ");
@@ -124,15 +309,244 @@
             document.getElementById("panicBtn").hidden = true;
             document.getElementById("panicActiveMsg").hidden = false;
           }
+
+          refreshTipCard();
+          refreshRateCard();
+          refreshFlightIssueCard();
         })
         .catch(function () { /* transient — next poll will retry */ });
     }
+
+    // ───────────────────────── Rate & Relax (post-trip) ─────────────────────────
+    function renderStars() {
+      var el = document.getElementById("rateStars");
+      var html = "";
+      for (var i = 1; i <= 5; i++) {
+        html += "<span data-star=\"" + i + "\" style=\"color:" + (i <= starsSelected ? "var(--amber, #F4A300)" : "#ccc") + ";\">★</span>";
+      }
+      el.innerHTML = html;
+      Array.prototype.slice.call(el.querySelectorAll("[data-star]")).forEach(function (star) {
+        star.addEventListener("click", function () {
+          starsSelected = Number(star.getAttribute("data-star"));
+          renderStars();
+        });
+      });
+    }
+    renderStars();
+
+    document.querySelectorAll("#keepSameDriverToggle .for-who-opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll("#keepSameDriverToggle .for-who-opt").forEach(function (b) { b.classList.remove("is-active"); });
+        btn.classList.add("is-active");
+        keepSameDriverChoice = btn.getAttribute("data-keep");
+      });
+    });
+
+    function refreshRateCard() {
+      var card = document.getElementById("rateCard");
+      var canRate = currentRide && currentRide.ride_status === "completed" && currentRide.driver_id;
+      var alreadyRated = currentRide && currentRide.rider_rating != null;
+      if (!canRate) {
+        card.hidden = true;
+        return;
+      }
+      card.hidden = false;
+      document.getElementById("keepSameDriverBlock").hidden = currentRide.booking_type !== "one_way";
+      if (alreadyRated) {
+        document.getElementById("rateForm").hidden = true;
+        var doneMsg = document.getElementById("rateDoneMsg");
+        doneMsg.hidden = false;
+        doneMsg.textContent = t("track.youRatedTrip") + "★".repeat(currentRide.rider_rating) + "☆".repeat(5 - currentRide.rider_rating) +
+          (currentRide.rider_rating_comment ? " — \"" + currentRide.rider_rating_comment + "\"" : "");
+      }
+    }
+
+    document.getElementById("rateSendBtn").addEventListener("click", function () {
+      var errEl = document.getElementById("rateError");
+      errEl.hidden = true;
+      if (!starsSelected) {
+        errEl.hidden = false;
+        errEl.textContent = t("track.tapStarError");
+        return;
+      }
+      var comment = document.getElementById("rateComment").value.trim();
+      var body = { rating: starsSelected, comment: comment || undefined };
+      if (currentRide.booking_type === "one_way") {
+        body.keepSameDriver = keepSameDriverChoice === "yes";
+      }
+      fetch(API_BASE_URL + "/api/rides/" + rideId + "/rate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify(body),
+      })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok) {
+            errEl.hidden = false;
+            errEl.textContent = result.data.error || t("track.couldntSubmitRating");
+            return;
+          }
+          refresh();
+        })
+        .catch(function () {
+          errEl.hidden = false;
+          errEl.textContent = t("track.couldntSubmitRating");
+        });
+    });
+
+    // ───────────────────── Flight cancelled/rescheduled banner ─────────────────────
+    // Mirrors the rider app's TrackingScreen: services/scheduler.js flags
+    // ride.flight_issue and refunds the fare to the wallet; this shows the
+    // $100-equivalent top-up prompt (re-enforced server-side too, in
+    // PATCH /:id/status) before the trip can start again.
+    function refreshFlightIssueCard() {
+      var card = document.getElementById("flightIssueCard");
+      var hasIssue = currentRide && currentRide.flight_issue && currentRide.payment_status !== "paid";
+      if (!hasIssue) {
+        card.hidden = true;
+        return;
+      }
+      card.hidden = false;
+      var issueWord = currentRide.flight_issue === "cancelled" ? t("track.flightIssueWordCancelled") : t("track.flightIssueWordRescheduled");
+      document.getElementById("flightIssueTitle").textContent = tFormat("track.flightIssueTitle", { issueWord: issueWord });
+      var bodyEl = document.getElementById("flightIssueBody");
+      bodyEl.textContent = tFormat("track.flightIssueBody", { flightNumber: currentRide.flight_number || "", issueWord: issueWord });
+    }
+
+    // ───────────────────────── Tipping (optional, post-trip) ─────────────────────────
+    // Never cash — same rails as the fare: an immediate wallet debit, or a
+    // fresh Paystack card charge verified against Paystack directly (see
+    // POST /api/rides/:id/tip on the backend). Same feature as the apps.
+    function tipAmountNaira() {
+      if (tipPercent === "custom") {
+        return Math.max(0, Math.round(Number(document.getElementById("tipCustomAmount").value) || 0));
+      }
+      return Math.round((Number(currentRide.fare_naira) || 0) * (tipPercent / 100));
+    }
+
+    function refreshTipCard() {
+      var card = document.getElementById("tipCard");
+      var canTip = currentRide && currentRide.ride_status === "completed" && currentRide.driver_id && !(Number(currentRide.tip_naira) > 0);
+      var alreadyTipped = currentRide && Number(currentRide.tip_naira) > 0;
+      if (!canTip && !alreadyTipped) {
+        card.hidden = true;
+        return;
+      }
+      card.hidden = false;
+      if (alreadyTipped) {
+        document.getElementById("tipForm").hidden = true;
+        var doneMsg = document.getElementById("tipDoneMsg");
+        doneMsg.hidden = false;
+        doneMsg.textContent = tFormat("track.tippedThanks", { amount: Number(currentRide.tip_naira).toLocaleString() });
+        return;
+      }
+
+      // Fetch the rider's email (for the card charge) and wallet balance
+      // once, the first time the card becomes relevant — not on every poll.
+      if (riderEmail == null) {
+        fetch(API_BASE_URL + "/api/auth/me", { headers: { Authorization: "Bearer " + token } })
+          .then(function (res) { return res.json(); })
+          .then(function (data) { if (data.user) riderEmail = data.user.email; })
+          .catch(function () {});
+      }
+      if (walletBalanceNaira == null) {
+        fetch(API_BASE_URL + "/api/wallet", { headers: { Authorization: "Bearer " + token } })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (data.balanceNaira != null) {
+              walletBalanceNaira = data.balanceNaira;
+              document.getElementById("tipWalletHint").textContent = "(NGN " + Number(walletBalanceNaira).toLocaleString() + ")";
+            }
+          })
+          .catch(function () {});
+      }
+    }
+
+    document.querySelectorAll("#tipPercentToggle .for-who-opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll("#tipPercentToggle .for-who-opt").forEach(function (b) { b.classList.remove("is-active"); });
+        btn.classList.add("is-active");
+        tipPercent = btn.getAttribute("data-percent") === "custom" ? "custom" : Number(btn.getAttribute("data-percent"));
+        document.getElementById("tipCustomAmount").hidden = tipPercent !== "custom";
+      });
+    });
+
+    document.querySelectorAll("#tipMethodToggle .for-who-opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll("#tipMethodToggle .for-who-opt").forEach(function (b) { b.classList.remove("is-active"); });
+        btn.classList.add("is-active");
+        tipMethod = btn.getAttribute("data-method");
+      });
+    });
+
+    function applyTip(paymentMethod, paymentReference) {
+      var amountNaira = tipAmountNaira();
+      return fetch(API_BASE_URL + "/api/rides/" + rideId + "/tip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify({ amountNaira: amountNaira, paymentMethod: paymentMethod, paymentReference: paymentReference }),
+      }).then(function (res) {
+        return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+      });
+    }
+
+    document.getElementById("tipSendBtn").addEventListener("click", function () {
+      var errEl = document.getElementById("tipError");
+      errEl.hidden = true;
+      var amountNaira = tipAmountNaira();
+      if (!(amountNaira > 0)) {
+        errEl.hidden = false;
+        errEl.textContent = t("track.chooseTipAmount");
+        return;
+      }
+
+      if (tipMethod === "wallet") {
+        applyTip("wallet").then(function (result) {
+          if (!result.ok) {
+            errEl.hidden = false;
+            errEl.textContent = result.data.error || t("track.tipFailed");
+            return;
+          }
+          refresh();
+        });
+        return;
+      }
+
+      // typeof-undefined check on PAYSTACK_PUBLIC_KEY itself (not just
+      // PaystackPop) matters here: if paystack-config.js ever fails to load,
+      // referencing PAYSTACK_PUBLIC_KEY.indexOf(...) directly would throw
+      // an uncaught ReferenceError instead of showing the message below —
+      // same fix already applied to account.html's wallet top-up guard.
+      if (typeof PaystackPop === "undefined" || typeof PAYSTACK_PUBLIC_KEY === "undefined" || PAYSTACK_PUBLIC_KEY.indexOf("replace_me") !== -1) {
+        errEl.hidden = false;
+        errEl.textContent = t("track.cardTippingNotConfigured");
+        return;
+      }
+      var handler = PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: riderEmail || "",
+        amount: amountNaira * 100,
+        currency: "NGN",
+        callback: function (response) {
+          applyTip("card", response.reference).then(function (result) {
+            if (!result.ok) {
+              errEl.hidden = false;
+              errEl.textContent = result.data.error || tFormat("track.cardChargedTipNotConfirmed", { reference: response.reference });
+              return;
+            }
+            refresh();
+          });
+        },
+        onClose: function () {},
+      });
+      handler.openIframe();
+    });
 
     refresh();
     setInterval(refresh, POLL_INTERVAL_MS);
 
     document.getElementById("panicBtn").addEventListener("click", function () {
-      if (!confirm("This will immediately alert RideArrivo's support team with your ride details and location. Only use this if you feel unsafe right now. Continue?")) return;
+      if (!confirm(t("track.panicConfirm"))) return;
 
       fetch(API_BASE_URL + "/api/rides/" + rideId + "/panic", {
         method: "POST",
@@ -143,13 +557,15 @@
         .then(function () {
           document.getElementById("panicBtn").hidden = true;
           document.getElementById("panicActiveMsg").hidden = false;
-          alert("Support has been alerted. If you're in immediate danger, please also call local emergency services.");
+          alert(t("track.panicAlertSent"));
         })
         .catch(function () {
-          alert("Couldn't send the alert — please try again, or call support directly.");
+          alert(t("track.panicAlertFailed"));
         });
     });
   }
 </script>
+<!-- Paystack's official inline checkout library — used for card tips only. -->
+<script src="https://js.paystack.co/v1/inline.js"></script>
 </body>
 </html>
