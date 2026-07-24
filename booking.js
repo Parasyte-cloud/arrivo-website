@@ -1391,27 +1391,34 @@
     });
   }
 
-  // Standing wallet-balance floor (~$100-equivalent) every rider must clear
-  // before ANY ride can be booked, regardless of which payment method they
-  // use for the fare itself — see GET /api/rides/wallet-minimum. Checked
-  // here, proactively, before the rider can reach a Paystack charge, same
-  // as both apps do (rather than only finding out from a POST /api/rides
-  // rejection after already being charged).
+  // GET /api/rides/wallet-minimum reflects a narrow backend check (see
+  // rides.js: MIN_WALLET_BALANCE_USD) that only matters for one specific
+  // scenario — re-confirming a rider can still cover their trip after a
+  // flight-issue refund landed in their wallet before that ride restarts.
+  // It was never meant to gate booking in general, since wallet is only
+  // ever one optional way to pay (see the payment-method toggle above,
+  // and walletInsufficientNote for the real per-fare wallet check).
+  //
+  // This used to disable payBtn outright whenever the balance fell short
+  // of that ~$100-equivalent figure — blocking Card and Membership too,
+  // even though neither draws from the wallet at all. That's the same
+  // class of bug as the api() fix above (payBtn stuck disabled with no
+  // way forward): a rider with NGN 0 in their wallet paying by card for a
+  // normal fare would hit a dead Pay button with nothing telling them why.
+  // Now purely informational — it never blocks Card or Membership, and
+  // only ever nudges toward topping up if they'd want to pay by wallet.
   function checkWalletMinimum() {
     var note = document.getElementById("walletMinimumNote");
-    var payBtn = document.getElementById("payBtn");
     api("/api/rides/wallet-minimum", { headers: authHeader() }).then(function (result) {
-      if (!result.ok) return; // don't block checkout on this lookup failing — POST /api/rides still enforces it for real
-      if (!result.data.meetsMinimum) {
+      if (!result.ok) return;
+      if (!result.data.meetsMinimum && state.paymentMethod === "wallet") {
         note.hidden = false;
         note.innerHTML =
-          "RideArrivo requires a minimum wallet balance of NGN " + Math.round(result.data.minWalletBalanceNaira).toLocaleString() +
-          " before any ride can be booked. Your current balance is NGN " + Math.round(result.data.walletBalanceNaira).toLocaleString() +
-          ". <a href=\"account.html\" style=\"color:var(--primary);text-decoration:underline;\">Top up in My Account</a>.";
-        payBtn.disabled = true;
+          "Your wallet balance is below NGN " + Math.round(result.data.minWalletBalanceNaira).toLocaleString() +
+          ". Current balance: NGN " + Math.round(result.data.walletBalanceNaira).toLocaleString() +
+          ". <a href=\"account.html\" style=\"color:var(--primary);text-decoration:underline;\">Top up in My Account</a>, or pay by card instead.";
       } else {
         note.hidden = true;
-        payBtn.disabled = false;
       }
     });
   }
@@ -1677,6 +1684,7 @@
         state.paymentMethod = btn.getAttribute("data-method");
         document.querySelectorAll("#paymentMethodToggle .for-who-opt").forEach(function (b) { b.classList.toggle("is-active", b === btn); });
         document.getElementById("walletInsufficientNote").hidden = true;
+        checkWalletMinimum(); // re-evaluate the informational note for the newly-selected method
       });
     });
 
