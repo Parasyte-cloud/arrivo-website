@@ -1370,7 +1370,21 @@
           b.classList.toggle("is-active", b.getAttribute("data-method") === "card");
         });
         insufficientNote.hidden = false;
+      } else {
+        // Previously only ever set to hidden=false above, never re-hidden —
+        // once shown (e.g. a cheaper fare or a top-up made the balance
+        // sufficient again on a later renderReview()), it stayed on screen
+        // until the manual toggle-click handler happened to clear it.
+        insufficientNote.hidden = true;
       }
+      // This wallet-balance check and checkWalletMinimum() below both run
+      // as their own independent network requests and both read/act on
+      // state.paymentMethod — without this call, a checkWalletMinimum()
+      // that already resolved (showing its own top-up note) never learns
+      // paymentMethod just changed to "card" above, and its stale wallet
+      // top-up note can be left on screen at the same time as this one,
+      // contradicting the payment method actually selected.
+      checkWalletMinimum();
     });
 
     api("/api/memberships/mine", { headers: authHeader() }).then(function (result) {
