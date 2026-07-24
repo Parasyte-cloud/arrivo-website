@@ -74,6 +74,11 @@
 
     <a href="#" id="mapLink" class="map-link" target="_blank" style="display:none;" data-i18n="track.mapLink">📍 View driver's last known location</a>
 
+    <div id="fleetConvoyBlock" hidden style="margin-top:14px; border-top:1px solid #eee; padding-top:12px;">
+      <p style="font-size:12px; font-weight:700; margin-bottom:6px;">Your fleet convoy</p>
+      <div id="fleetConvoyList"></div>
+    </div>
+
     <button class="panic-btn" id="panicBtn" data-i18n="track.panicBtn">🚨 I don't feel safe — alert support</button>
     <div class="panic-active" id="panicActiveMsg" hidden data-i18n="track.panicActiveMsg">🚨 Support has been alerted about this ride.</div>
   </div>
@@ -374,8 +379,40 @@
           refreshTipCard();
           refreshRateCard();
           refreshFlightIssueCard();
+          refreshFleetConvoy();
         })
         .catch(function () { /* transient — next poll will retry */ });
+    }
+
+    // Fleet Accompaniment convoy — only ever populated for a ride that
+    // actually has escort vehicles dispatched (fleet_group_id set by
+    // createFleetCompanions on the backend). A no-op for the vast majority
+    // of rides that aren't fleet bookings. Not shown in the public
+    // share=<token> view (see the shareToken branch above) since GET
+    // /api/rides/:id/fleet requires the rider's own login.
+    function refreshFleetConvoy() {
+      if (!currentRide || !currentRide.fleet_group_id) return;
+      fetch(API_BASE_URL + "/api/rides/" + rideId + "/fleet", { headers: { Authorization: "Bearer " + token } })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok) return;
+          var companions = result.data.companions || [];
+          var block = document.getElementById("fleetConvoyBlock");
+          var list = document.getElementById("fleetConvoyList");
+          if (!companions.length) {
+            block.hidden = true;
+            return;
+          }
+          block.hidden = false;
+          list.innerHTML = companions.map(function (c) {
+            var driverPart = c.driver_name ? c.driver_name : "Escort vehicle";
+            var vehiclePart = c.make_model ? " · " + c.make_model : "";
+            var statusPart = c.ride_status === "requested" ? "Awaiting driver" : c.ride_status.replace("_", " ");
+            return "<div style=\"display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;\"><span>" +
+              driverPart + vehiclePart + "</span><span style=\"color:var(--text-muted);\">" + statusPart + "</span></div>";
+          }).join("");
+        })
+        .catch(function () { /* best-effort — leave whatever was last shown */ });
     }
 
     // ───────────────────────── Rate & Relax (post-trip) ─────────────────────────
