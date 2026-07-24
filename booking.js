@@ -36,7 +36,7 @@
     vehicleManuallyPicked: false,
     pickup: "", stops: [],
     pickupLatLng: null, dropoffLatLng: null,
-    securityEscort: false, fleetSize: 0,
+    securityEscort: false, fleetSize: 0, luxury: false,
     distanceKm: null, durationMin: null,
     paymentMethod: "card", walletBalanceNaira: 0,
     userLocation: null, locationPermission: null, excludedAreaMatch: null,
@@ -598,6 +598,24 @@
       state.vehicle = card.getAttribute("data-vehicle");
       state.vehicleBasePrice = Number(card.getAttribute("data-price"));
       if (manual) state.vehicleManuallyPicked = true;
+      updateLuxuryVisibility();
+    }
+
+    // Luxury only applies to sedan/suv (arrivo-backend/services/fare.js's
+    // LUXURY_SURCHARGE_USD has no entry for truck/pickup — Executive is
+    // already the premium tier, Pickup Truck is a cargo vehicle) — this was
+    // previously missing entirely from the website, so switching to a
+    // vehicle type without a luxury tier un-checks and hides it rather than
+    // silently sending a stale luxury:true the backend would just ignore.
+    function updateLuxuryVisibility() {
+      var row = document.getElementById("luxuryRow");
+      var checkbox = document.getElementById("fLuxury");
+      var hasLuxury = LUXURY_SURCHARGE_USD.hasOwnProperty(state.vehicle);
+      row.hidden = !hasLuxury;
+      if (!hasLuxury) {
+        checkbox.checked = false;
+        state.luxury = false;
+      }
     }
 
     var carryOnInput = document.getElementById("fCarryOn");
@@ -725,6 +743,13 @@
   // endpoint — there's no local naira constant for it anymore. The old
   // NGN 100,000 flat price this constant used to hold is gone; the UI shows
   // "priced at checkout" instead of a specific number for this reason.
+
+  // Luxury surcharge — previously missing entirely from the website (app-only
+  // feature). Matches arrivo-backend/services/fare.js's LUXURY_SURCHARGE_USD
+  // exactly: only sedan/suv have a tier, no truck/pickup entry. Same
+  // "priced at checkout" treatment as security escort above, rather than a
+  // local naira constant that could drift from the live FX rate.
+  var LUXURY_SURCHARGE_USD = { sedan: 60, suv: 100 };
 
   var AREA_PRICING = {
     // Green zone — operate freely (closer to airport, best roads)
@@ -959,6 +984,20 @@
     return "NGN " + nairaAmount.toLocaleString() + " (~$" + usd + ")";
   }
 
+  // Same idea as the rider app's useCurrency.js formatRideFare — once a ride
+  // is actually booked, show the USD figure the backend locked in at that
+  // exact moment (quoted_usd_amount/quoted_ngn_per_usd, snapshotted in
+  // routes/rides.js) instead of a live-recomputed estimate that could have
+  // drifted since. Falls back to the live estimate for older rides that
+  // predate this snapshot (quotedUsdAmount null).
+  function formatRideFare(fareNaira, quotedUsdAmount) {
+    if (state.isNigeria) return "NGN " + Number(fareNaira).toLocaleString();
+    if (quotedUsdAmount != null) {
+      return "NGN " + Number(fareNaira).toLocaleString() + " (~$" + Number(quotedUsdAmount).toFixed(2) + ")";
+    }
+    return formatNairaWithUsdEstimate(Number(fareNaira));
+  }
+
   function recalculateFareEstimate() {
     var box = document.getElementById("fareEstimateBox");
     var errEl = document.getElementById("fareError");
@@ -981,6 +1020,8 @@
     document.getElementById("fareDistanceText").textContent = "Base fare for this area";
     document.getElementById("fareBaseText").textContent = "Sedan NGN " + zoneVehiclePrice("sedan", state.zone).toLocaleString() + " · SUV NGN " + zoneVehiclePrice("suv", state.zone).toLocaleString();
     document.getElementById("fareSecurityRow").hidden = !state.securityEscort;
+    var luxuryRowEstimate = document.getElementById("fareLuxuryRow");
+    if (luxuryRowEstimate) luxuryRowEstimate.hidden = !(state.luxury && LUXURY_SURCHARGE_USD.hasOwnProperty(state.vehicle));
     var fleetRow = document.getElementById("fareFleetRow");
     fleetRow.hidden = !state.fleetSize;
     if (state.fleetSize) {
@@ -1013,6 +1054,13 @@
   if (securityEscortCheckbox) {
     securityEscortCheckbox.addEventListener("change", function () {
       state.securityEscort = securityEscortCheckbox.checked;
+      recalculateFareEstimate();
+    });
+  }
+  var luxuryCheckbox = document.getElementById("fLuxury");
+  if (luxuryCheckbox) {
+    luxuryCheckbox.addEventListener("change", function () {
+      state.luxury = luxuryCheckbox.checked;
       recalculateFareEstimate();
     });
   }
@@ -1199,6 +1247,7 @@
       vehicleType: state.vehicle,
       securityEscort: state.securityEscort,
       fleetSize: state.fleetSize,
+      luxury: state.luxury,
       // Only actually changes the charged fare for 'full_day' (see
       // arrivo-backend/services/fare.js computeCharterFare) — harmless to
       // always send it.
@@ -1340,6 +1389,7 @@
     // showing a made-up number for "how much of the total was the escort"
     // would just be a guess. "Included" says what's true without faking precision.
     if (state.securityEscort) rows.push([t("booking.reviewSecurityEscort"), t("booking.reviewIncluded")]);
+    if (state.luxury && LUXURY_SURCHARGE_USD.hasOwnProperty(state.vehicle)) rows.push(["Luxury upgrade", t("booking.reviewIncluded")]);
     if (state.fleetSize) {
       rows.push([t("booking.reviewFleetAccompaniment"), t("booking.reviewFleetOf") + " " + state.fleetSize + " · " + t("booking.reviewIncluded")]);
     }
@@ -1463,6 +1513,7 @@
       durationMin: state.liveQuote.durationMin != null ? state.liveQuote.durationMin : state.durationMin,
       securityEscort: state.securityEscort,
       fleetSize: state.fleetSize,
+      luxury: state.luxury,
       paymentMethod: state.paymentMethod,
       bookingType: state.bookingType,
       durationDays: state.durationDays,
@@ -1491,6 +1542,10 @@
       }
       var createdRide = rideResult.data.ride;
       document.getElementById("confirmRef").textContent = "Ride #" + createdRide.id;
+      if (createdRide.fare_naira != null) {
+        document.getElementById("confirmFare").textContent = formatRideFare(createdRide.fare_naira, createdRide.quoted_usd_amount);
+        document.getElementById("confirmFareBox").hidden = false;
+      }
       var barcodeEl = document.getElementById("confirmBarcode");
       var barcodeBox = document.getElementById("confirmBarcodeBox");
       if (barcodeEl && barcodeBox && createdRide.barcode) {
@@ -1598,6 +1653,7 @@
           durationMin: state.liveQuote.durationMin != null ? state.liveQuote.durationMin : state.durationMin,
           securityEscort: state.securityEscort,
           fleetSize: state.fleetSize,
+          luxury: state.luxury,
           paymentReference: reference,
           bookingType: state.bookingType,
           durationDays: state.durationDays,
@@ -1645,6 +1701,10 @@
           );
         }
         document.getElementById("confirmRef").textContent = reference;
+        if (createdRide && createdRide.fare_naira != null) {
+          document.getElementById("confirmFare").textContent = formatRideFare(createdRide.fare_naira, createdRide.quoted_usd_amount);
+          document.getElementById("confirmFareBox").hidden = false;
+        }
         var barcodeEl = document.getElementById("confirmBarcode");
         var barcodeBox = document.getElementById("confirmBarcodeBox");
         if (barcodeEl && barcodeBox && createdRide && createdRide.barcode) {

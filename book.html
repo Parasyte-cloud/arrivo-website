@@ -293,6 +293,17 @@
            range. -->
       <p class="error-text" id="vehicleCapacityError" hidden data-i18n="booking.vehicleCapacityError">This group is too large for us to automatically match to vehicles. Please contact RideArrivo directly to arrange a larger group booking.</p>
 
+      <!-- Luxury surcharge — matches arrivo-backend/services/fare.js's
+           LUXURY_SURCHARGE_USD ($60 sedan / $100 suv), same as both apps.
+           Only sedan/suv have a luxury tier (Executive/Pickup are already
+           the premium/cargo tiers) — hidden entirely for any other vehicle,
+           toggled by updateLuxuryVisibility() whenever the vehicle
+           selection changes. -->
+      <label class="checkbox-row" id="luxuryRow" hidden>
+        <input type="checkbox" id="fLuxury">
+        <span data-i18n="booking.luxuryLabel">Upgrade to a luxury vehicle <strong>(priced at checkout)</strong></span>
+      </label>
+
       <div class="step-actions">
         <button class="btn btn-ghost" id="backTo2" data-i18n="booking.back">Back</button>
         <button class="btn btn-primary" id="luggageContinue" data-i18n="booking.continue">Continue</button>
@@ -349,6 +360,7 @@
         <div class="fare-estimate-row"><span data-i18n="booking.fareDistance">Estimated distance</span><span id="fareDistanceText"></span></div>
         <div class="fare-estimate-row"><span data-i18n="booking.fareBase">Base fare</span><span id="fareBaseText"></span></div>
         <div class="fare-estimate-row" id="fareSecurityRow" hidden><span>Security escort</span><span>Priced at checkout</span></div>
+        <div class="fare-estimate-row" id="fareLuxuryRow" hidden><span>Luxury upgrade</span><span>Priced at checkout</span></div>
         <div class="fare-estimate-row" id="fareFleetRow" hidden><span id="fareFleetLabel">Fleet accompaniment</span><span id="fareFleetAmount"></span></div>
         <div class="fare-estimate-row fare-estimate-total"><span data-i18n="booking.fareTotal">Estimated total</span><span id="fareTotalText"></span></div>
       </div>
@@ -410,6 +422,14 @@
       <div class="reference-box">
         <span data-i18n="booking.confirmReference">Booking reference</span>
         <strong id="confirmRef"></strong>
+      </div>
+      <!-- Previously this confirmation screen showed no fare at all — the
+           backend snapshots quoted_usd_amount/quoted_ngn_per_usd at booking
+           time specifically so trip history shows what was actually quoted,
+           but nothing on the website ever displayed it. -->
+      <div class="reference-box" id="confirmFareBox" hidden>
+        <span data-i18n="booking.confirmFare">Total paid</span>
+        <strong id="confirmFare"></strong>
       </div>
       <div class="reference-box" id="confirmBarcodeBox" hidden>
         <span data-i18n="booking.confirmBarcode">Booking barcode</span>

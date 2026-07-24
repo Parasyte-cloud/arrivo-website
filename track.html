@@ -63,6 +63,11 @@
   <div class="booking-card" id="rideCard" hidden>
     <span class="status-pill" id="statusPill"></span>
     <p style="margin-top:10px; font-size:13.5px;"><strong data-i18n="track.pickupLabel">Pickup:</strong> <span id="pickupText"></span></p>
+    <!-- Only populated on the authenticated view (real GET /api/rides/:id) —
+         never in the public ?share= mode above, which deliberately omits
+         fare/payment fields from its response for anyone the rider shared
+         the link with. -->
+    <p style="margin-top:4px; font-size:13.5px;" id="fareRow" hidden><strong data-i18n="track.fareLabel">Fare:</strong> <span id="fareText"></span></p>
 
     <div class="driver-row" id="driverRow" hidden>
       <div class="driver-avatar" id="driverInitials"></div>
@@ -357,6 +362,19 @@
           pill.className = "status-pill status-" + ride.ride_status;
 
           document.getElementById("pickupText").textContent = [ride.pickup_address].concat(ride.stops || []).join(" → ");
+
+          // Fare shown here uses the locked quoted_usd_amount snapshotted at
+          // booking time (routes/rides.js), not a live-recomputed FX
+          // estimate — same reasoning as the rider app's ActivityScreen and
+          // the website's own post-booking confirmation screen. Only this
+          // authenticated block does this — the public ?share= view above
+          // deliberately never receives fare_naira at all.
+          if (ride.fare_naira != null) {
+            var fareText = "NGN " + Number(ride.fare_naira).toLocaleString();
+            if (ride.quoted_usd_amount != null) fareText += " (~$" + Number(ride.quoted_usd_amount).toFixed(2) + ")";
+            document.getElementById("fareText").textContent = fareText;
+            document.getElementById("fareRow").hidden = false;
+          }
 
           if (ride.driver_name) {
             document.getElementById("driverRow").hidden = false;
