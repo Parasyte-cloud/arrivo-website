@@ -179,11 +179,22 @@
       submitOAuth("/api/auth/google", { idToken: response.credential, role: "rider", agreedToTerms: true });
     }
 
+    // Google's renderButton takes a fixed pixel width, not a percentage —
+    // hardcoding 300 overflowed the .auth-wrap/.booking-card padding on
+    // narrow phones (as little as ~279px usable width at 375px viewport),
+    // pushing the button past its container's edge. Deriving it from the
+    // container's actual rendered width keeps it from ever being wider than
+    // what's really available, on any screen size.
+    function googleButtonWidth() {
+      var container = document.getElementById("googleSignInBtn");
+      return Math.max(200, Math.min(300, container.clientWidth || 300));
+    }
+
     function initGoogleSignIn(attemptsLeft) {
       if (window.google && window.google.accounts && window.google.accounts.id) {
         google.accounts.id.initialize({ client_id: GOOGLE_WEB_CLIENT_ID, callback: handleGoogleCredential });
         google.accounts.id.renderButton(document.getElementById("googleSignInBtn"), {
-          theme: "outline", size: "large", text: "continue_with", width: 300,
+          theme: "outline", size: "large", text: "continue_with", width: googleButtonWidth(),
         });
       } else if (attemptsLeft > 0) {
         setTimeout(function () { initGoogleSignIn(attemptsLeft - 1); }, 150);

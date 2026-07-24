@@ -221,10 +221,17 @@
       submitOAuth("/api/auth/google", { idToken: response.credential, role: "rider", agreedToTerms: true });
     }
 
+    // See login.html's identical comment — Google's renderButton takes a
+    // fixed pixel width, not a percentage, and the hardcoded 300 overflowed
+    // .auth-wrap/.booking-card's padding on narrow phones.
+    function googleButtonWidth() {
+      return Math.max(200, Math.min(300, googleBtnWrap.clientWidth || 300));
+    }
+
     function initGoogleSignIn(attemptsLeft) {
       if (window.google && window.google.accounts && window.google.accounts.id) {
         google.accounts.id.initialize({ client_id: GOOGLE_WEB_CLIENT_ID, callback: handleGoogleCredential });
-        google.accounts.id.renderButton(googleBtnWrap, { theme: "outline", size: "large", text: "signup_with", width: 300 });
+        google.accounts.id.renderButton(googleBtnWrap, { theme: "outline", size: "large", text: "signup_with", width: googleButtonWidth() });
       } else if (attemptsLeft > 0) {
         setTimeout(function () { initGoogleSignIn(attemptsLeft - 1); }, 150);
       }

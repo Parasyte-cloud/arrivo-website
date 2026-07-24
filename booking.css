@@ -174,6 +174,11 @@
 }
 .vehicle-card .v-name { font-weight: 700; font-size: 14px; }
 .vehicle-card .v-price { font-weight: 700; font-size: 14px; color: var(--ink); margin-left: auto; }
+/* Previously unstyled — on narrow screens this bare span (especially the
+   long Pickup Truck capacity string) could sit mid-row next to v-name/
+   v-price instead of cleanly starting its own line like v-badge/v-multi-note
+   already do. */
+.vehicle-card .v-capacity { width: 100%; font-size: 11.5px; color: var(--text-muted); }
 .vehicle-card .v-badge {
   display: none;
   font-size: 10.5px;

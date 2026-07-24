@@ -55,6 +55,7 @@
 
 <main class="wrap booking-wrap" style="max-width: 460px;">
   <h1 data-i18n="track.pageTitle">Your ride</h1>
+  <p id="sharedViewNote" hidden style="font-size:12.5px; color:var(--text-muted); margin-top:-8px; margin-bottom:16px;">You're viewing a live trip shared with you. Some rider-only actions (rating, tipping, alerting support) aren't available from this view.</p>
   <div class="booking-card" id="loadingCard">
     <p style="color:var(--text-muted); text-align:center;" data-i18n="track.loadingText">Loading your ride details…</p>
   </div>
@@ -62,6 +63,11 @@
   <div class="booking-card" id="rideCard" hidden>
     <span class="status-pill" id="statusPill"></span>
     <p style="margin-top:10px; font-size:13.5px;"><strong data-i18n="track.pickupLabel">Pickup:</strong> <span id="pickupText"></span></p>
+    <!-- Only populated on the authenticated view (real GET /api/rides/:id) —
+         never in the public ?share= mode above, which deliberately omits
+         fare/payment fields from its response for anyone the rider shared
+         the link with. -->
+    <p style="margin-top:4px; font-size:13.5px;" id="fareRow" hidden><strong data-i18n="track.fareLabel">Fare:</strong> <span id="fareText"></span></p>
 
     <div class="driver-row" id="driverRow" hidden>
       <div class="driver-avatar" id="driverInitials"></div>
@@ -72,6 +78,11 @@
     </div>
 
     <a href="#" id="mapLink" class="map-link" target="_blank" style="display:none;" data-i18n="track.mapLink">📍 View driver's last known location</a>
+
+    <div id="fleetConvoyBlock" hidden style="margin-top:14px; border-top:1px solid #eee; padding-top:12px;">
+      <p style="font-size:12px; font-weight:700; margin-bottom:6px;">Your fleet convoy</p>
+      <div id="fleetConvoyList"></div>
+    </div>
 
     <button class="panic-btn" id="panicBtn" data-i18n="track.panicBtn">🚨 I don't feel safe — alert support</button>
     <div class="panic-active" id="panicActiveMsg" hidden data-i18n="track.panicActiveMsg">🚨 Support has been alerted about this ride.</div>
@@ -237,7 +248,17 @@
   }
   initLanguage();
 
-  var rideId = new URLSearchParams(window.location.search).get("ride");
+  var urlParams = new URLSearchParams(window.location.search);
+  var rideId = urlParams.get("ride");
+  // A share=<token> link (see GET /api/rides/:id/share, and the rider
+  // app's TrackingScreen share button) needs no login at all — meant for
+  // someone RideArrivo has never heard of, like the emergency contact
+  // named on the ride. Kept entirely separate from the ride=/token flow
+  // below rather than reusing it, since the public endpoint intentionally
+  // returns far less than GET /api/rides/:id (see routes/rides.js) and this
+  // view can't offer any of the rider-only actions (rate, tip, panic,
+  // wallet top-up) that need the rider's own auth token to call.
+  var shareToken = urlParams.get("share");
   var token = localStorage.getItem(TOKEN_KEY);
   // PAYSTACK_PUBLIC_KEY now comes from paystack-config.js (loaded below,
   // before this script runs) — this used to be its own hardcoded
@@ -259,17 +280,20 @@
     document.getElementById("errorMsg").textContent = msg;
   }
 
-  if (!rideId) {
-    showError(t("track.noRideSpecified"));
-  } else if (!token) {
-    window.location.href = "login.html?next=" + encodeURIComponent(window.location.pathname + window.location.search);
-  } else {
-    function initials(name) {
-      return (name || "?").split(" ").map(function (p) { return p[0]; }).join("").slice(0, 2).toUpperCase();
-    }
+  function initials(name) {
+    return (name || "?").split(" ").map(function (p) { return p[0]; }).join("").slice(0, 2).toUpperCase();
+  }
 
-    function refresh() {
-      fetch(API_BASE_URL + "/api/rides/" + rideId, { headers: { Authorization: "Bearer " + token } })
+  if (shareToken) {
+    // Public, read-only mode. No auth header, no polling of anything that
+    // needs the rider's own token — just status, driver, and live location.
+    document.getElementById("sharedViewNote").hidden = false;
+    ["panicBtn", "panicActiveMsg", "rateCard", "tipCard", "flightIssueCard"].forEach(function (id) {
+      document.getElementById(id).hidden = true;
+    });
+
+    function refreshPublic() {
+      fetch(API_BASE_URL + "/api/rides/track/" + shareToken)
         .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
         .then(function (result) {
           if (!result.ok) {
@@ -277,7 +301,6 @@
             return;
           }
           var ride = result.data.ride;
-          currentRide = ride;
           document.getElementById("loadingCard").hidden = true;
           document.getElementById("rideCard").hidden = false;
 
@@ -304,6 +327,67 @@
             mapLink.style.display = "block";
             mapLink.setAttribute("href", "https://www.google.com/maps?q=" + ride.current_lat + "," + ride.current_lng);
           }
+        })
+        .catch(function () { /* transient — next poll will retry */ });
+    }
+
+    refreshPublic();
+    setInterval(refreshPublic, POLL_INTERVAL_MS);
+  } else if (!rideId) {
+    showError(t("track.noRideSpecified"));
+  } else if (!token) {
+    window.location.href = "login.html?next=" + encodeURIComponent(window.location.pathname + window.location.search);
+  } else {
+
+    function refresh() {
+      fetch(API_BASE_URL + "/api/rides/" + rideId, { headers: { Authorization: "Bearer " + token } })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok) {
+            showError(result.data.error || t("track.couldntLoadRide"));
+            return;
+          }
+          var ride = result.data.ride;
+          currentRide = ride;
+          document.getElementById("loadingCard").hidden = true;
+          document.getElementById("rideCard").hidden = false;
+
+          var pill = document.getElementById("statusPill");
+          var statusLabels = {
+            in_progress: t("track.statusInProgress"),
+            accepted: t("track.statusAccepted"),
+            completed: t("track.statusCompleted"),
+          };
+          pill.textContent = statusLabels[ride.ride_status] || ride.ride_status.replace("_", " ");
+          pill.className = "status-pill status-" + ride.ride_status;
+
+          document.getElementById("pickupText").textContent = [ride.pickup_address].concat(ride.stops || []).join(" → ");
+
+          // Fare shown here uses the locked quoted_usd_amount snapshotted at
+          // booking time (routes/rides.js), not a live-recomputed FX
+          // estimate — same reasoning as the rider app's ActivityScreen and
+          // the website's own post-booking confirmation screen. Only this
+          // authenticated block does this — the public ?share= view above
+          // deliberately never receives fare_naira at all.
+          if (ride.fare_naira != null) {
+            var fareText = "NGN " + Number(ride.fare_naira).toLocaleString();
+            if (ride.quoted_usd_amount != null) fareText += " (~$" + Number(ride.quoted_usd_amount).toFixed(2) + ")";
+            document.getElementById("fareText").textContent = fareText;
+            document.getElementById("fareRow").hidden = false;
+          }
+
+          if (ride.driver_name) {
+            document.getElementById("driverRow").hidden = false;
+            document.getElementById("driverInitials").textContent = initials(ride.driver_name);
+            document.getElementById("driverName").textContent = ride.driver_name;
+            document.getElementById("driverVehicle").textContent = ride.driver_phone || "";
+          }
+
+          var mapLink = document.getElementById("mapLink");
+          if (ride.current_lat && ride.current_lng) {
+            mapLink.style.display = "block";
+            mapLink.setAttribute("href", "https://www.google.com/maps?q=" + ride.current_lat + "," + ride.current_lng);
+          }
 
           if (ride.panic_triggered_at && !ride.panic_resolved_at) {
             document.getElementById("panicBtn").hidden = true;
@@ -313,8 +397,40 @@
           refreshTipCard();
           refreshRateCard();
           refreshFlightIssueCard();
+          refreshFleetConvoy();
         })
         .catch(function () { /* transient — next poll will retry */ });
+    }
+
+    // Fleet Accompaniment convoy — only ever populated for a ride that
+    // actually has escort vehicles dispatched (fleet_group_id set by
+    // createFleetCompanions on the backend). A no-op for the vast majority
+    // of rides that aren't fleet bookings. Not shown in the public
+    // share=<token> view (see the shareToken branch above) since GET
+    // /api/rides/:id/fleet requires the rider's own login.
+    function refreshFleetConvoy() {
+      if (!currentRide || !currentRide.fleet_group_id) return;
+      fetch(API_BASE_URL + "/api/rides/" + rideId + "/fleet", { headers: { Authorization: "Bearer " + token } })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok) return;
+          var companions = result.data.companions || [];
+          var block = document.getElementById("fleetConvoyBlock");
+          var list = document.getElementById("fleetConvoyList");
+          if (!companions.length) {
+            block.hidden = true;
+            return;
+          }
+          block.hidden = false;
+          list.innerHTML = companions.map(function (c) {
+            var driverPart = c.driver_name ? c.driver_name : "Escort vehicle";
+            var vehiclePart = c.make_model ? " · " + c.make_model : "";
+            var statusPart = c.ride_status === "requested" ? "Awaiting driver" : c.ride_status.replace("_", " ");
+            return "<div style=\"display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;\"><span>" +
+              driverPart + vehiclePart + "</span><span style=\"color:var(--text-muted);\">" + statusPart + "</span></div>";
+          }).join("");
+        })
+        .catch(function () { /* best-effort — leave whatever was last shown */ });
     }
 
     // ───────────────────────── Rate & Relax (post-trip) ─────────────────────────

@@ -36,7 +36,7 @@
     vehicleManuallyPicked: false,
     pickup: "", stops: [],
     pickupLatLng: null, dropoffLatLng: null,
-    securityEscort: false, fleetSize: 0,
+    securityEscort: false, fleetSize: 0, luxury: false,
     distanceKm: null, durationMin: null,
     paymentMethod: "card", walletBalanceNaira: 0,
     userLocation: null, locationPermission: null, excludedAreaMatch: null,
@@ -598,6 +598,24 @@
       state.vehicle = card.getAttribute("data-vehicle");
       state.vehicleBasePrice = Number(card.getAttribute("data-price"));
       if (manual) state.vehicleManuallyPicked = true;
+      updateLuxuryVisibility();
+    }
+
+    // Luxury only applies to sedan/suv (arrivo-backend/services/fare.js's
+    // LUXURY_SURCHARGE_USD has no entry for truck/pickup — Executive is
+    // already the premium tier, Pickup Truck is a cargo vehicle) — this was
+    // previously missing entirely from the website, so switching to a
+    // vehicle type without a luxury tier un-checks and hides it rather than
+    // silently sending a stale luxury:true the backend would just ignore.
+    function updateLuxuryVisibility() {
+      var row = document.getElementById("luxuryRow");
+      var checkbox = document.getElementById("fLuxury");
+      var hasLuxury = LUXURY_SURCHARGE_USD.hasOwnProperty(state.vehicle);
+      row.hidden = !hasLuxury;
+      if (!hasLuxury) {
+        checkbox.checked = false;
+        state.luxury = false;
+      }
     }
 
     var carryOnInput = document.getElementById("fCarryOn");
@@ -725,6 +743,13 @@
   // endpoint — there's no local naira constant for it anymore. The old
   // NGN 100,000 flat price this constant used to hold is gone; the UI shows
   // "priced at checkout" instead of a specific number for this reason.
+
+  // Luxury surcharge — previously missing entirely from the website (app-only
+  // feature). Matches arrivo-backend/services/fare.js's LUXURY_SURCHARGE_USD
+  // exactly: only sedan/suv have a tier, no truck/pickup entry. Same
+  // "priced at checkout" treatment as security escort above, rather than a
+  // local naira constant that could drift from the live FX rate.
+  var LUXURY_SURCHARGE_USD = { sedan: 60, suv: 100 };
 
   var AREA_PRICING = {
     // Green zone — operate freely (closer to airport, best roads)
@@ -959,6 +984,20 @@
     return "NGN " + nairaAmount.toLocaleString() + " (~$" + usd + ")";
   }
 
+  // Same idea as the rider app's useCurrency.js formatRideFare — once a ride
+  // is actually booked, show the USD figure the backend locked in at that
+  // exact moment (quoted_usd_amount/quoted_ngn_per_usd, snapshotted in
+  // routes/rides.js) instead of a live-recomputed estimate that could have
+  // drifted since. Falls back to the live estimate for older rides that
+  // predate this snapshot (quotedUsdAmount null).
+  function formatRideFare(fareNaira, quotedUsdAmount) {
+    if (state.isNigeria) return "NGN " + Number(fareNaira).toLocaleString();
+    if (quotedUsdAmount != null) {
+      return "NGN " + Number(fareNaira).toLocaleString() + " (~$" + Number(quotedUsdAmount).toFixed(2) + ")";
+    }
+    return formatNairaWithUsdEstimate(Number(fareNaira));
+  }
+
   function recalculateFareEstimate() {
     var box = document.getElementById("fareEstimateBox");
     var errEl = document.getElementById("fareError");
@@ -981,6 +1020,8 @@
     document.getElementById("fareDistanceText").textContent = "Base fare for this area";
     document.getElementById("fareBaseText").textContent = "Sedan NGN " + zoneVehiclePrice("sedan", state.zone).toLocaleString() + " · SUV NGN " + zoneVehiclePrice("suv", state.zone).toLocaleString();
     document.getElementById("fareSecurityRow").hidden = !state.securityEscort;
+    var luxuryRowEstimate = document.getElementById("fareLuxuryRow");
+    if (luxuryRowEstimate) luxuryRowEstimate.hidden = !(state.luxury && LUXURY_SURCHARGE_USD.hasOwnProperty(state.vehicle));
     var fleetRow = document.getElementById("fareFleetRow");
     fleetRow.hidden = !state.fleetSize;
     if (state.fleetSize) {
@@ -1013,6 +1054,13 @@
   if (securityEscortCheckbox) {
     securityEscortCheckbox.addEventListener("change", function () {
       state.securityEscort = securityEscortCheckbox.checked;
+      recalculateFareEstimate();
+    });
+  }
+  var luxuryCheckbox = document.getElementById("fLuxury");
+  if (luxuryCheckbox) {
+    luxuryCheckbox.addEventListener("change", function () {
+      state.luxury = luxuryCheckbox.checked;
       recalculateFareEstimate();
     });
   }
@@ -1199,6 +1247,7 @@
       vehicleType: state.vehicle,
       securityEscort: state.securityEscort,
       fleetSize: state.fleetSize,
+      luxury: state.luxury,
       // Only actually changes the charged fare for 'full_day' (see
       // arrivo-backend/services/fare.js computeCharterFare) — harmless to
       // always send it.
@@ -1340,6 +1389,7 @@
     // showing a made-up number for "how much of the total was the escort"
     // would just be a guess. "Included" says what's true without faking precision.
     if (state.securityEscort) rows.push([t("booking.reviewSecurityEscort"), t("booking.reviewIncluded")]);
+    if (state.luxury && LUXURY_SURCHARGE_USD.hasOwnProperty(state.vehicle)) rows.push(["Luxury upgrade", t("booking.reviewIncluded")]);
     if (state.fleetSize) {
       rows.push([t("booking.reviewFleetAccompaniment"), t("booking.reviewFleetOf") + " " + state.fleetSize + " · " + t("booking.reviewIncluded")]);
     }
@@ -1370,7 +1420,21 @@
           b.classList.toggle("is-active", b.getAttribute("data-method") === "card");
         });
         insufficientNote.hidden = false;
+      } else {
+        // Previously only ever set to hidden=false above, never re-hidden —
+        // once shown (e.g. a cheaper fare or a top-up made the balance
+        // sufficient again on a later renderReview()), it stayed on screen
+        // until the manual toggle-click handler happened to clear it.
+        insufficientNote.hidden = true;
       }
+      // This wallet-balance check and checkWalletMinimum() below both run
+      // as their own independent network requests and both read/act on
+      // state.paymentMethod — without this call, a checkWalletMinimum()
+      // that already resolved (showing its own top-up note) never learns
+      // paymentMethod just changed to "card" above, and its stale wallet
+      // top-up note can be left on screen at the same time as this one,
+      // contradicting the payment method actually selected.
+      checkWalletMinimum();
     });
 
     api("/api/memberships/mine", { headers: authHeader() }).then(function (result) {
@@ -1391,27 +1455,34 @@
     });
   }
 
-  // Standing wallet-balance floor (~$100-equivalent) every rider must clear
-  // before ANY ride can be booked, regardless of which payment method they
-  // use for the fare itself — see GET /api/rides/wallet-minimum. Checked
-  // here, proactively, before the rider can reach a Paystack charge, same
-  // as both apps do (rather than only finding out from a POST /api/rides
-  // rejection after already being charged).
+  // GET /api/rides/wallet-minimum reflects a narrow backend check (see
+  // rides.js: MIN_WALLET_BALANCE_USD) that only matters for one specific
+  // scenario — re-confirming a rider can still cover their trip after a
+  // flight-issue refund landed in their wallet before that ride restarts.
+  // It was never meant to gate booking in general, since wallet is only
+  // ever one optional way to pay (see the payment-method toggle above,
+  // and walletInsufficientNote for the real per-fare wallet check).
+  //
+  // This used to disable payBtn outright whenever the balance fell short
+  // of that ~$100-equivalent figure — blocking Card and Membership too,
+  // even though neither draws from the wallet at all. That's the same
+  // class of bug as the api() fix above (payBtn stuck disabled with no
+  // way forward): a rider with NGN 0 in their wallet paying by card for a
+  // normal fare would hit a dead Pay button with nothing telling them why.
+  // Now purely informational — it never blocks Card or Membership, and
+  // only ever nudges toward topping up if they'd want to pay by wallet.
   function checkWalletMinimum() {
     var note = document.getElementById("walletMinimumNote");
-    var payBtn = document.getElementById("payBtn");
     api("/api/rides/wallet-minimum", { headers: authHeader() }).then(function (result) {
-      if (!result.ok) return; // don't block checkout on this lookup failing — POST /api/rides still enforces it for real
-      if (!result.data.meetsMinimum) {
+      if (!result.ok) return;
+      if (!result.data.meetsMinimum && state.paymentMethod === "wallet") {
         note.hidden = false;
         note.innerHTML =
-          "RideArrivo requires a minimum wallet balance of NGN " + Math.round(result.data.minWalletBalanceNaira).toLocaleString() +
-          " before any ride can be booked. Your current balance is NGN " + Math.round(result.data.walletBalanceNaira).toLocaleString() +
-          ". <a href=\"account.html\" style=\"color:var(--primary);text-decoration:underline;\">Top up in My Account</a>.";
-        payBtn.disabled = true;
+          "Your wallet balance is below NGN " + Math.round(result.data.minWalletBalanceNaira).toLocaleString() +
+          ". Current balance: NGN " + Math.round(result.data.walletBalanceNaira).toLocaleString() +
+          ". <a href=\"account.html\" style=\"color:var(--primary);text-decoration:underline;\">Top up in My Account</a>, or pay by card instead.";
       } else {
         note.hidden = true;
-        payBtn.disabled = false;
       }
     });
   }
@@ -1442,6 +1513,7 @@
       durationMin: state.liveQuote.durationMin != null ? state.liveQuote.durationMin : state.durationMin,
       securityEscort: state.securityEscort,
       fleetSize: state.fleetSize,
+      luxury: state.luxury,
       paymentMethod: state.paymentMethod,
       bookingType: state.bookingType,
       durationDays: state.durationDays,
@@ -1470,6 +1542,10 @@
       }
       var createdRide = rideResult.data.ride;
       document.getElementById("confirmRef").textContent = "Ride #" + createdRide.id;
+      if (createdRide.fare_naira != null) {
+        document.getElementById("confirmFare").textContent = formatRideFare(createdRide.fare_naira, createdRide.quoted_usd_amount);
+        document.getElementById("confirmFareBox").hidden = false;
+      }
       var barcodeEl = document.getElementById("confirmBarcode");
       var barcodeBox = document.getElementById("confirmBarcodeBox");
       if (barcodeEl && barcodeBox && createdRide.barcode) {
@@ -1577,6 +1653,7 @@
           durationMin: state.liveQuote.durationMin != null ? state.liveQuote.durationMin : state.durationMin,
           securityEscort: state.securityEscort,
           fleetSize: state.fleetSize,
+          luxury: state.luxury,
           paymentReference: reference,
           bookingType: state.bookingType,
           durationDays: state.durationDays,
@@ -1624,6 +1701,10 @@
           );
         }
         document.getElementById("confirmRef").textContent = reference;
+        if (createdRide && createdRide.fare_naira != null) {
+          document.getElementById("confirmFare").textContent = formatRideFare(createdRide.fare_naira, createdRide.quoted_usd_amount);
+          document.getElementById("confirmFareBox").hidden = false;
+        }
         var barcodeEl = document.getElementById("confirmBarcode");
         var barcodeBox = document.getElementById("confirmBarcodeBox");
         if (barcodeEl && barcodeBox && createdRide && createdRide.barcode) {
@@ -1677,6 +1758,7 @@
         state.paymentMethod = btn.getAttribute("data-method");
         document.querySelectorAll("#paymentMethodToggle .for-who-opt").forEach(function (b) { b.classList.toggle("is-active", b === btn); });
         document.getElementById("walletInsufficientNote").hidden = true;
+        checkWalletMinimum(); // re-evaluate the informational note for the newly-selected method
       });
     });
 
