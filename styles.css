@@ -197,13 +197,10 @@ a { color: inherit; text-decoration: none; }
   .lang-trigger { padding: 9px 7px; font-size: 10px; }
   .btn-sm { padding: 10px 9px; font-size: 11px; }
   .nav-account-link { padding: 6px; }
-  /* The header logo switched from a text span (which the two rules below
-     were originally written for) to the ridearrivo-wordmark.png image —
-     fixed at 20px tall / ~126px wide with nothing shrinking it on narrow
-     screens, unlike its old text equivalent. That let it crowd the
-     hamburger button on smaller phones; sizing it down here like the rest
-     of this row fixes that without touching the logo on wider screens. */
-  .brand-wordmark { height: 16px; }
+  /* Wordmark is text again (.brand-text), so the two rules below that
+     target .brand span:last-child do the narrow-screen shrinking/hiding —
+     this just tightens the gap so the pin + text don't crowd the hamburger. */
+  .brand-text { font-size: 20px; }
   .brand { gap: 6px; }
 }
 @media (min-width: 401px) and (max-width: 440px) {
@@ -218,7 +215,6 @@ a { color: inherit; text-decoration: none; }
   .lang-trigger { padding: 8px 6px; }
   .btn-sm { padding: 9px 8px; }
   .nav-account-link { padding: 4px; }
-  .brand-wordmark { height: 14px; }
 }
 
 /* ── Header (Liquid Glass) ── */
@@ -319,7 +315,7 @@ a { color: inherit; text-decoration: none; }
   gap: 5px;
   font-family: 'Poppins', 'Space Grotesk', sans-serif;
   font-weight: 700;
-  font-size: 19px;
+  font-size: 24px;
   color: var(--ink);
   flex-shrink: 0;
   padding: 8px 0;
@@ -580,12 +576,13 @@ a { color: inherit; text-decoration: none; }
   width: auto;
   display: block;
 }
-.brand-wordmark {
-  height: 20px;
-  width: auto;
-  display: block;
-}
-.mobile-nav-menu-header .brand-wordmark { height: 18px; }
+/* Navbar wordmark is rendered as styled text (.brand-text/.brand-ride/
+   .brand-arrivo below), not an image — the old wordmark PNG had an opaque
+   background and a lot of dead canvas space around the actual glyphs,
+   which is why it showed up as a small logo sitting in a visible white box.
+   Text scales cleanly, stays crisp at any size, and needs no image asset. */
+.brand-text { display: inline-flex; }
+.mobile-nav-menu-header .brand-text { font-size: 18px; }
 .lang-dropdown { position: relative; }
 .lang-trigger {
   all: unset;
