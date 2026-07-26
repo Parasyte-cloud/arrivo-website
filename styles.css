@@ -3,6 +3,7 @@
   --ink-soft: #1E1E4D;
   --title: #0C0C10; /* near-black, used specifically for headings per design feedback — body text stays --ink */
   --amber: #F4A300;
+  --amber-text: #95590A; /* darker burnt-amber for text use — --amber itself is only 2.08:1 on white/cream, failing WCAG AA even for large bold text; this passes 4.5:1+ on both */
   --teal: #0E7C7B;
   --teal-tint: #E5F4F3;
   --primary: #2E4C8C;      /* lighter navy blue — new primary accent per design feedback, replaces teal for icons/links/accents */
@@ -342,8 +343,18 @@ a { color: inherit; text-decoration: none; }
   box-shadow: 0 0 0 8px rgba(244, 163, 0, 0.10), 0 2px 14px rgba(244, 163, 0, 0.30);
 }
 .brand-ride { color: var(--ink); }
-.brand-arrivo { color: var(--amber); }
+/* Default usage is body copy on light backgrounds (e.g. index.html's "Who
+   RideArrivo is for" on .section-tint) — full-strength --amber there is
+   only 2.08:1 against white/cream, failing WCAG AA even for large bold
+   text. --amber-text is the same hue darkened for legibility. The
+   dark-background contexts below (hero/safety glass panels, footer) keep
+   the original bright --amber, which already reads fine there — mirrors
+   the existing .brand-ride overrides just below, in reverse. */
+.brand-arrivo { color: var(--amber-text); }
 .site-footer .brand-ride { color: var(--cream); } /* footer background is dark navy throughout — any "Ride" text needs a light color here instead, not just the logo */
+.hero-glass-panel .brand-arrivo,
+.safety-hero .brand-arrivo,
+.site-footer .brand-arrivo { color: var(--amber); }
 
 /* ── Animated logo: drops in once on load, then a soft continuous "location ping" pulse ── */
 .logo-wrap {
