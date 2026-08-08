@@ -161,7 +161,7 @@ const I18N = {
       pickupTitle: "Where should we pick you up?",
       pickupAddress: "Pickup address",
       addStop: "Add another stop",
-      pickupPlaceholder: "e.g. Murtala Muhammed Airport, Terminal 1",
+      pickupPlaceholder: "e.g. Murtala Muhammed Airport",
       dropoffPlaceholder: "Drop-off location",
       stopPlaceholder: "Additional stop",
       reviewTitle: "Review & pay",
