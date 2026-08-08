@@ -145,6 +145,7 @@
     margin-bottom: 16px;
   }
   .listening-btn.is-active { border-color: var(--primary); background: var(--primary-tint); color: var(--primary); }
+  .listening-btn.is-error { border-color: var(--coral, #E1523D); color: var(--coral, #E1523D); }
 </style>
 </head>
 <body>
@@ -166,8 +167,25 @@
   <div class="wrap header-inner">
     <a href="index.html" class="brand">
       <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
-      <span data-i18n="brand"><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span></span>
+      <img src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark">
     </a>
+    <div class="header-actions">
+      <div class="lang-dropdown" id="langDropdown">
+        <button type="button" class="lang-trigger" id="langTrigger" aria-haspopup="listbox" aria-expanded="false">
+          <span id="langTriggerLabel">EN</span>
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <ul class="lang-menu" id="langMenu" role="listbox" hidden>
+          <li><button type="button" class="lang-opt" data-lang="en">English</button></li>
+          <li><button type="button" class="lang-opt" data-lang="fr">Français</button></li>
+          <li><button type="button" class="lang-opt" data-lang="zh">中文</button></li>
+          <li><button type="button" class="lang-opt" data-lang="hi">हिन्दी</button></li>
+          <li><button type="button" class="lang-opt" data-lang="de">Deutsch</button></li>
+          <li><button type="button" class="lang-opt" data-lang="es">Español</button></li>
+          <li><button type="button" class="lang-opt" data-lang="pt">Português</button></li>
+        </ul>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -187,60 +205,60 @@
   <p class="error-text" id="avatarError" hidden></p>
 
   <button type="button" id="panicBtn" class="panic-btn">
-    <span id="panicBtnLabel">🆘 Emergency SOS</span>
+    <span id="panicBtnLabel" data-i18n="account.panicBtnLabel">🆘 Emergency SOS</span>
   </button>
   <p id="panicCountdownRow" class="panic-countdown-row" hidden>
     <span id="panicCountdownText"></span>
-    <button type="button" id="panicCancelBtn" class="panic-cancel-btn">Cancel</button>
+    <button type="button" id="panicCancelBtn" class="panic-cancel-btn" data-i18n="account.cancel">Cancel</button>
   </p>
   <p id="panicStatusText" class="panic-status-text" hidden></p>
   <div id="panicActiveBanner" class="panic-active-banner" hidden>
-    <strong>🆘 Emergency alert active.</strong>
-    <p><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> has been notified. This can only be cleared by our team, not from this device.</p>
+    <strong data-i18n="account.emergencyAlertActiveTitle">🆘 Emergency alert active.</strong>
+    <p data-i18n="account.emergencyAlertActiveBody"><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> has been notified. This can only be cleared by our team, not from this device.</p>
   </div>
-  <button type="button" id="listeningDeviceBtn" class="listening-btn">🎙️ Listening device: off</button>
+  <button type="button" id="listeningDeviceBtn" class="listening-btn" data-i18n="account.listeningOff">🎙️ Listening device: off</button>
 
-  <h2 style="font-size:15px; margin-bottom:12px;">Wallet</h2>
+  <h2 style="font-size:15px; margin-bottom:12px;" data-i18n="account.walletTitle">Wallet</h2>
   <div class="booking-card" style="margin-bottom:24px;">
     <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px;">
       <div>
-        <div style="font-size:12px; color:var(--text-muted);">Balance</div>
+        <div style="font-size:12px; color:var(--text-muted);" data-i18n="account.balanceLabel">Balance</div>
         <div style="font-size:28px; font-weight:700; font-family:'Space Grotesk',sans-serif;" id="walletBalance">NGN 0</div>
       </div>
-      <button type="button" class="btn btn-primary" id="topUpBtn">Top up</button>
+      <button type="button" class="btn btn-primary" id="topUpBtn" data-i18n="account.topUp">Top up</button>
     </div>
     <div id="topUpForm" hidden style="margin-bottom:16px;">
-      <input type="number" id="topUpAmount" class="field" placeholder="Amount (NGN)" min="100" step="100">
-      <button type="button" class="btn btn-primary" id="topUpConfirmBtn" style="width:100%;">Continue to payment</button>
+      <input type="number" id="topUpAmount" class="field" placeholder="Amount (NGN)" data-i18n-placeholder="account.topUpAmountPlaceholder" min="100" step="100">
+      <button type="button" class="btn btn-primary" id="topUpConfirmBtn" style="width:100%;" data-i18n="account.continueToPayment">Continue to payment</button>
       <p class="error-text" id="topUpError" hidden></p>
     </div>
-    <p style="font-size:12px; color:var(--text-muted); margin:0 0 10px;">Pay for rides straight from your balance at checkout, no card needed each time.</p>
+    <p style="font-size:12px; color:var(--text-muted); margin:0 0 10px;" data-i18n="account.walletDescription">Pay for rides straight from your balance at checkout, no card needed each time.</p>
     <div id="walletHistory"></div>
   </div>
 
-  <h2 style="font-size:15px; margin-bottom:12px;">Membership</h2>
+  <h2 style="font-size:15px; margin-bottom:12px;" data-i18n="account.membershipTitle">Membership</h2>
   <div class="booking-card" style="margin-bottom:24px;" id="membershipCard">
-    <p style="font-size:13px; color:var(--text-muted);">Loading…</p>
+    <p style="font-size:13px; color:var(--text-muted);" data-i18n="account.loading">Loading…</p>
   </div>
 
   <div class="tile-grid">
-    <a href="book.html" class="tile">🚗 Book a ride</a>
-    <a href="terms.html#cancellation" class="tile">🛡️ Safety &amp; cancellation policy</a>
-    <a href="#support" class="tile">💬 Help &amp; support</a>
-    <a href="#" class="tile" id="logoutTile">🚪 Log out</a>
+    <a href="book.html" class="tile" data-i18n="account.tileBookRide">🚗 Book a ride</a>
+    <a href="terms.html#cancellation" class="tile" data-i18n="account.tileSafetyPolicy">🛡️ Safety &amp; cancellation policy</a>
+    <a href="#support" class="tile" data-i18n="account.tileHelpSupport">💬 Help &amp; support</a>
+    <a href="#" class="tile" id="logoutTile" data-i18n="account.tileLogout">🚪 Log out</a>
   </div>
 
-  <h2 style="font-size:15px; margin-bottom:12px;" id="support">Support</h2>
+  <h2 style="font-size:15px; margin-bottom:12px;" id="support" data-i18n="account.supportTitle">Support</h2>
   <div class="booking-card" style="margin-bottom:24px;">
-    <h3 style="font-size:17px; margin-bottom:4px;">How can <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> help?</h3>
-    <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px;">We usually reply within a few hours.</p>
+    <h3 style="font-size:17px; margin-bottom:4px;" data-i18n="account.supportHeading">How can <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> help?</h3>
+    <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px;" data-i18n="account.supportReplyTime">We usually reply within a few hours.</p>
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <a href="https://wa.me/2348162706078" target="_blank" rel="noopener" class="btn btn-primary" style="display:inline-flex;">💬 WhatsApp us</a>
-      <a href="mailto:info@ridearrivo.com" class="btn btn-ghost" style="display:inline-flex;">✉️ Send email</a>
+      <a href="https://wa.me/2348162706078" target="_blank" rel="noopener" class="btn btn-primary" style="display:inline-flex;" data-i18n="account.whatsappUs">💬 WhatsApp us</a>
+      <a href="mailto:info@ridearrivo.com" class="btn btn-ghost" style="display:inline-flex;" data-i18n="account.sendEmail">✉️ Send email</a>
     </div>
 
     <div class="social-list" style="margin-top:24px;">
-      <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted); margin-bottom:4px;">Follow us on social</p>
+      <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted); margin-bottom:4px;" data-i18n="account.followUsSocial">Follow us on social</p>
       <a class="social-row" href="https://www.instagram.com/ridearrivong?igsh=ZzRzYTRtZWRsMWV3&amp;utm_source=qr" target="_blank" rel="noopener">
         <div class="icon-badge">
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -274,9 +292,9 @@
     </div>
   </div>
 
-  <h2 style="font-size:15px; margin-bottom:12px;">Your trips</h2>
+  <h2 style="font-size:15px; margin-bottom:12px;" data-i18n="account.yourTripsTitle">Your trips</h2>
   <div id="tripsList">
-    <p style="color:var(--text-muted); font-size:13px;">Loading…</p>
+    <p style="color:var(--text-muted); font-size:13px;" data-i18n="account.loading">Loading…</p>
   </div>
 
 </main>
@@ -286,7 +304,7 @@
     <div class="footer-brand-col">
       <div class="footer-brand">
         <img src="assets/icon.png" alt="" width="22" height="22">
-        <span data-i18n="brand"><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span></span>
+        <img src="assets/ridearrivo-wordmark-light.png" alt="RideArrivo" class="footer-wordmark">
       </div>
       <p class="footer-tagline" data-i18n="footer.tagline">Lagos airport pickups, done right.</p>
       <div class="footer-social-row">
@@ -400,9 +418,101 @@
   </div>
 </footer>
 
+<script src="i18n.js?v=31"></script>
 <script>
   var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
   var TOKEN_KEY = "arrivo_rider_token";
+
+  // ───────────────────────── i18n (same pattern as script.js/booking.js) ─────────────────────────
+  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt"];
+  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT" };
+  var LANG_KEY = "arrivo_site_lang";
+
+  function getNested(obj, path) {
+    return path.split(".").reduce(function (acc, key) { return acc && acc[key]; }, obj);
+  }
+
+  function applyLanguage(lang) {
+    var dict = I18N[lang] || I18N.en;
+    document.documentElement.lang = lang;
+
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      var value = getNested(dict, el.getAttribute("data-i18n"));
+      if (value != null) el.innerHTML = value;
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
+      var value = getNested(dict, el.getAttribute("data-i18n-placeholder"));
+      if (value != null) el.setAttribute("placeholder", value);
+    });
+    document.querySelectorAll(".lang-opt").forEach(function (btn) {
+      btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
+    });
+
+    var label = document.getElementById("langTriggerLabel");
+    if (label) label.textContent = LANG_LABELS[lang] || lang.toUpperCase();
+
+    localStorage.setItem(LANG_KEY, lang);
+  }
+
+  function currentLang() {
+    return SUPPORTED_LANGS.indexOf(document.documentElement.lang) !== -1 ? document.documentElement.lang : "en";
+  }
+
+  function t(path) {
+    return getNested(I18N[currentLang()], path) || path;
+  }
+
+  function tFormat(path, replacements) {
+    var str = t(path);
+    Object.keys(replacements || {}).forEach(function (key) {
+      str = str.replace(new RegExp("\\{" + key + "\\}", "g"), replacements[key]);
+    });
+    return str;
+  }
+
+  function closeLangMenu() {
+    var dropdown = document.getElementById("langDropdown");
+    var menu = document.getElementById("langMenu");
+    var trigger = document.getElementById("langTrigger");
+    if (!dropdown || !menu) return;
+    dropdown.classList.remove("open");
+    menu.hidden = true;
+    if (trigger) trigger.setAttribute("aria-expanded", "false");
+  }
+
+  function initLanguage() {
+    var saved = localStorage.getItem(LANG_KEY);
+    var browserLang = (navigator.language || "en").slice(0, 2);
+    var detected = SUPPORTED_LANGS.indexOf(browserLang) !== -1 ? browserLang : "en";
+    applyLanguage(saved || detected);
+
+    document.querySelectorAll(".lang-opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        applyLanguage(btn.getAttribute("data-lang"));
+        closeLangMenu();
+      });
+    });
+
+    var dropdown = document.getElementById("langDropdown");
+    var trigger = document.getElementById("langTrigger");
+    var menu = document.getElementById("langMenu");
+    if (!dropdown || !trigger || !menu) return;
+
+    trigger.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var isOpen = dropdown.classList.toggle("open");
+      menu.hidden = !isOpen;
+      trigger.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    document.addEventListener("click", function (e) {
+      if (!dropdown.contains(e.target)) closeLangMenu();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeLangMenu();
+    });
+  }
+  initLanguage();
 
   function authHeader() {
     return { Authorization: "Bearer " + localStorage.getItem(TOKEN_KEY), "Content-Type": "application/json" };
@@ -459,12 +569,12 @@
 
       if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
         errEl.hidden = false;
-        errEl.textContent = "Please choose a PNG, JPEG, or WEBP image.";
+        errEl.textContent = t("account.avatarInvalidType");
         return;
       }
       if (file.size > 4 * 1024 * 1024) {
         errEl.hidden = false;
-        errEl.textContent = "Please choose an image smaller than 4MB.";
+        errEl.textContent = t("account.avatarTooLarge");
         return;
       }
 
@@ -484,7 +594,7 @@
         }).then(function (result) {
           if (!result.ok) {
             errEl.hidden = false;
-            errEl.textContent = result.data.error || "Couldn't save that photo.";
+            errEl.textContent = result.data.error || t("account.avatarSaveFailed");
           }
         });
       };
@@ -512,7 +622,13 @@
   }
 
   // ───────────────────────── Wallet ─────────────────────────
-  var WALLET_PUBLIC_KEY = "pk_test_replace_me"; // same placeholder as booking.js — swap for the real Paystack public key to go live
+  // Was its own hardcoded "pk_test_replace_me" placeholder — a THIRD,
+  // independently-drifting copy of the same key booking.js and track.html
+  // each had (see paystack-config.js, loaded in <head> below). Worse than
+  // the other two: this one had no guard against the placeholder actually
+  // being used, so card top-up would have silently opened a broken
+  // Paystack popup instead of failing with a clear message like track.html
+  // does. Now reads the one shared value and gets that same guard.
 
   function formatWalletDate(iso) {
     var d = new Date(iso);
@@ -522,15 +638,15 @@
   function renderWalletHistory(transactions) {
     var box = document.getElementById("walletHistory");
     if (!transactions.length) {
-      box.innerHTML = '<p style="font-size:12.5px;color:var(--text-muted);">No transactions yet.</p>';
+      box.innerHTML = '<p style="font-size:12.5px;color:var(--text-muted);">' + t("account.noTransactionsYet") + '</p>';
       return;
     }
     box.innerHTML = transactions.map(function (tx) {
       var amt = Number(tx.amount_naira);
       var isCredit = amt > 0;
-      var label = tx.type === "topup" ? "Wallet top-up"
-        : tx.type === "ride_charge" ? "Ride payment"
-        : tx.type === "membership_charge" ? "Membership"
+      var label = tx.type === "topup" ? t("account.txTopup")
+        : tx.type === "ride_charge" ? t("account.txRideCharge")
+        : tx.type === "membership_charge" ? t("account.txMembership")
         : escapeHtml(tx.description || tx.type);
       return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--card-border);font-size:12.5px;">' +
         '<div><div>' + escapeHtml(label) + '</div><div style="color:var(--text-muted);font-size:11px;">' + formatWalletDate(tx.created_at) + '</div></div>' +
@@ -541,7 +657,13 @@
 
   function loadWallet(token) {
     return api("/api/wallet", { headers: authHeader() }).then(function (result) {
-      if (!result.ok) return;
+      if (!result.ok) {
+        // Previously a silent return — the balance stayed frozen on its
+        // "NGN 0" placeholder with no indication that's not a real balance.
+        document.getElementById("walletHistory").innerHTML =
+          '<p style="font-size:12.5px;color:var(--coral, #E1523D);">' + t("account.walletLoadFailed") + '</p>';
+        return;
+      }
       document.getElementById("walletBalance").textContent = "NGN " + result.data.balanceNaira.toLocaleString();
       renderWalletHistory(result.data.transactions);
     });
@@ -565,34 +687,34 @@
 
       if (!amount || amount < 100) {
         topUpError.hidden = false;
-        topUpError.textContent = "Please enter an amount of at least NGN 100.";
+        topUpError.textContent = t("account.topUpMinAmount");
         return;
       }
-      if (typeof PaystackPop === "undefined") {
+      if (typeof PaystackPop === "undefined" || typeof PAYSTACK_PUBLIC_KEY === "undefined" || PAYSTACK_PUBLIC_KEY.indexOf("replace_me") !== -1) {
         topUpError.hidden = false;
-        topUpError.textContent = "Payment isn't configured yet. Set PAYSTACK_PUBLIC_KEY in account.html.";
+        topUpError.textContent = t("account.cardTopUpNotConfigured");
         return;
       }
 
       var email = document.getElementById("accountEmail") ? document.getElementById("accountEmail").textContent : "";
       var handler = PaystackPop.setup({
-        key: WALLET_PUBLIC_KEY,
+        key: PAYSTACK_PUBLIC_KEY,
         email: email || "rider@ridearrivo.com",
         amount: amount * 100,
         currency: "NGN",
         callback: function (response) {
           topUpConfirmBtn.disabled = true;
-          topUpConfirmBtn.textContent = "Confirming…";
+          topUpConfirmBtn.textContent = t("account.confirming");
           api("/api/wallet/topup/verify", {
             method: "POST",
             headers: authHeader(),
             body: JSON.stringify({ reference: response.reference }),
           }).then(function (result) {
             topUpConfirmBtn.disabled = false;
-            topUpConfirmBtn.textContent = "Continue to payment";
+            topUpConfirmBtn.textContent = t("account.continueToPayment");
             if (!result.ok) {
               topUpError.hidden = false;
-              topUpError.textContent = result.data.error || "Couldn't confirm the top-up. Please contact support with reference " + response.reference + ".";
+              topUpError.textContent = result.data.error || tFormat("account.topUpNotConfirmed", { reference: response.reference });
               return;
             }
             topUpForm.hidden = true;
@@ -611,32 +733,32 @@
     var card = document.getElementById("membershipCard");
     if (data.membership) {
       var expires = new Date(data.membership.expires_at).toLocaleDateString();
-      var planLabel = data.membership.plan_type === "corporate_delegate" ? "Corporate delegate" : "Individual annual";
+      var planLabel = data.membership.plan_type === "corporate_delegate" ? t("account.planCorporateDelegate") : t("account.planIndividualAnnual");
       card.innerHTML =
         '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-        '<div><strong>' + planLabel + ' plan</strong><div style="font-size:12px;color:var(--text-muted);">Active until ' + expires + '</div></div>' +
-        '<span style="background:var(--teal-tint, var(--primary-tint));color:var(--teal, var(--primary));font-weight:700;font-size:11.5px;padding:4px 10px;border-radius:999px;">ACTIVE</span>' +
+        '<div><strong>' + planLabel + '</strong><div style="font-size:12px;color:var(--text-muted);">' + tFormat("account.activeUntil", { date: expires }) + '</div></div>' +
+        '<span style="background:var(--teal-tint, var(--primary-tint));color:var(--teal, var(--primary));font-weight:700;font-size:11.5px;padding:4px 10px;border-radius:999px;">' + t("account.activeBadge") + '</span>' +
         '</div>' +
-        (data.delegateCount > 0 ? '<p style="font-size:12px;color:var(--text-muted);margin-top:10px;">' + data.delegateCount + ' delegate' + (data.delegateCount === 1 ? '' : 's') + ' linked to this account.</p>' : '') +
-        '<p style="font-size:12px;color:var(--text-muted);margin-top:10px;">Rides you book are covered by this plan, no per-trip payment needed.</p>';
+        (data.delegateCount > 0 ? '<p style="font-size:12px;color:var(--text-muted);margin-top:10px;">' + tFormat(data.delegateCount === 1 ? "account.delegateLinkedSingular" : "account.delegateLinkedPlural", { count: data.delegateCount }) + '</p>' : '') +
+        '<p style="font-size:12px;color:var(--text-muted);margin-top:10px;">' + t("account.ridesCoveredByPlan") + '</p>';
       return;
     }
     card.innerHTML =
-      '<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Ride <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> all year without paying per trip. NGN ' + INDIVIDUAL_ANNUAL_PRICE_DISPLAY + ' once, billed from your wallet.</p>' +
-      '<button type="button" class="btn btn-primary" id="subscribeBtn" style="width:100%;">Subscribe for NGN ' + INDIVIDUAL_ANNUAL_PRICE_DISPLAY + '</button>' +
+      '<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">' + tFormat("account.subscribePromo", { price: INDIVIDUAL_ANNUAL_PRICE_DISPLAY }) + '</p>' +
+      '<button type="button" class="btn btn-primary" id="subscribeBtn" style="width:100%;">' + tFormat("account.subscribeFor", { price: INDIVIDUAL_ANNUAL_PRICE_DISPLAY }) + '</button>' +
       '<p class="error-text" id="subscribeError" hidden style="margin-top:10px;"></p>';
     document.getElementById("subscribeBtn").addEventListener("click", function () {
       var btn = document.getElementById("subscribeBtn");
       var errEl = document.getElementById("subscribeError");
       errEl.hidden = true;
       btn.disabled = true;
-      btn.textContent = "Subscribing…";
+      btn.textContent = t("account.subscribing");
       api("/api/memberships/individual/subscribe", { method: "POST", headers: authHeader() }).then(function (result) {
         btn.disabled = false;
-        btn.textContent = "Subscribe for NGN " + INDIVIDUAL_ANNUAL_PRICE_DISPLAY;
+        btn.textContent = tFormat("account.subscribeFor", { price: INDIVIDUAL_ANNUAL_PRICE_DISPLAY });
         if (!result.ok) {
           errEl.hidden = false;
-          errEl.textContent = result.data.error || "Couldn't subscribe. Please try again.";
+          errEl.textContent = result.data.error || t("account.subscribeFailed");
           return;
         }
         initMembership(token);
@@ -649,7 +771,13 @@
 
   function initMembership(token) {
     api("/api/memberships/mine", { headers: authHeader() }).then(function (result) {
-      if (!result.ok) return;
+      if (!result.ok) {
+        // Previously a silent return — the card stayed stuck on "Loading…"
+        // forever instead of telling the rider anything went wrong.
+        document.getElementById("membershipCard").innerHTML =
+          '<p style="font-size:13px;color:var(--coral, #E1523D);">' + t("account.membershipLoadFailed") + '</p>';
+        return;
+      }
       renderMembershipCard(result.data, token);
     });
   }
@@ -664,27 +792,33 @@
     api("/api/rides/mine", { headers: authHeader() }).then(function (result) {
       var list = document.getElementById("tripsList");
       if (!result.ok) {
-        list.innerHTML = '<p style="color:var(--coral); font-size:13px;">Couldn\'t load your trips.</p>';
+        list.innerHTML = '<p style="color:var(--coral); font-size:13px;">' + t("account.couldntLoadTrips") + '</p>';
         return;
       }
       var rides = result.data.rides || [];
       if (rides.length === 0) {
-        list.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">No trips yet. <a href="book.html">book your first ride</a>.</p>';
+        list.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">' + t("account.noTripsYet") + '</p>';
         return;
       }
+      var tripStatusLabels = {
+        accepted: t("account.statusAccepted"),
+        in_progress: t("account.statusInProgress"),
+        completed: t("account.statusCompleted"),
+        cancelled: t("account.statusCancelled"),
+      };
       list.innerHTML = rides.map(function (r) {
         var stops = r.stops || [];
-        var dropoff = stops.length ? stops[stops.length - 1] : "Not set";
+        var dropoff = stops.length ? stops[stops.length - 1] : t("account.notSet");
         var date = new Date(r.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
         return '<div class="trip-card">' +
           '<div class="trip-route">' + routeStripSvg() +
           '<div class="trip-addr">' +
-          '<div class="label">Pickup</div>' + escapeHtml(r.pickup_address) +
-          '<div class="label" style="margin-top:6px;">Drop-off</div>' + escapeHtml(dropoff) +
+          '<div class="label">' + t("account.pickupLabel") + '</div>' + escapeHtml(r.pickup_address) +
+          '<div class="label" style="margin-top:6px;">' + t("account.dropoffLabel") + '</div>' + escapeHtml(dropoff) +
           "</div></div>" +
           '<div class="trip-meta">' +
           "<span>" + date + "</span>" +
-          '<span class="trip-status ' + statusClass(r.ride_status) + '">' + r.ride_status.replace("_", " ") + "</span>" +
+          '<span class="trip-status ' + statusClass(r.ride_status) + '">' + (tripStatusLabels[r.ride_status] || r.ride_status.replace("_", " ")) + "</span>" +
           "<span>NGN " + Number(r.fare_naira).toLocaleString() + "</span>" +
           "</div></div>";
       }).join("");
@@ -707,10 +841,8 @@
   //     admin-cleared flag exists to un-set it. (Dev note: to clear it while
   //     testing, run localStorage.removeItem("arrivo_panic_active") in the
   //     console — there is intentionally no UI path to do this.)
-  // POST /api/rides/:id/panic is confirmed real (checked against the actual
-  // arrivo-backend source and end-to-end tested against a live database).
-  // /api/listening-device is still a guess — no such route exists in the
-  // backend yet, so that call is best-effort and currently a no-op server-side.
+  // POST /api/rides/:id/panic and POST /api/rides/:id/listening-device are
+  // both confirmed real (checked against the actual arrivo-backend source).
   function initPanicButton(userType, tokenKey, apiBaseUrl) {
     var btn = document.getElementById("panicBtn");
     if (!btn) return;
@@ -722,6 +854,7 @@
     var listeningBtn = document.getElementById("listeningDeviceBtn");
     var ARRIVO_SUPPORT_WHATSAPP = "2348162706078"; // same number already live in the Support section
     var PANIC_STATE_KEY = "arrivo_panic_active"; // stores JSON: { rideId }
+    var LISTENING_STATE_KEY = "arrivo_listening_active"; // stores JSON: { rideId }
 
     var countdownTimer = null;
     var resolutionPollTimer = null;
@@ -777,6 +910,24 @@
       if (!saved || !saved.rideId) { localStorage.removeItem(PANIC_STATE_KEY); return; }
       showActiveBanner();
       pollForResolution(saved.rideId);
+      // Panic bundles listening-device activation server-side in the same
+      // write, so if panic is active, listening is guaranteed active too —
+      // reflect that immediately rather than showing "off" until some
+      // other action happens to correct it (the bug this replaces: a
+      // reload right after SOS made the indicator lie).
+      setListeningUiOn();
+    })();
+
+    // Same idea, for a listening-device activation that happened
+    // independently of panic (the standalone button, not bundled).
+    (function restoreListeningStateIfAny() {
+      if (listeningActive) return; // already restored via panic above
+      var raw = localStorage.getItem(LISTENING_STATE_KEY);
+      if (!raw) return;
+      var saved;
+      try { saved = JSON.parse(raw); } catch (e) { saved = null; }
+      if (!saved || !saved.rideId) { localStorage.removeItem(LISTENING_STATE_KEY); return; }
+      setListeningUiOn();
     })();
 
     // Cancelling here aborts an accidental tap BEFORE the alert fires —
@@ -796,7 +947,7 @@
       var secondsLeft = 3;
       btn.hidden = true;
       countdownRow.hidden = false;
-      countdownText.textContent = "Sending SOS in " + secondsLeft + "...";
+      countdownText.textContent = tFormat("account.sendingSosIn", { seconds: secondsLeft });
 
       countdownTimer = setInterval(function () {
         secondsLeft--;
@@ -804,7 +955,7 @@
           clearInterval(countdownTimer);
           triggerAlert();
         } else {
-          countdownText.textContent = "Sending SOS in " + secondsLeft + "...";
+          countdownText.textContent = tFormat("account.sendingSosIn", { seconds: secondsLeft });
         }
       }, 1000);
     });
@@ -814,16 +965,21 @@
     function triggerAlert() {
       countdownRow.hidden = true;
       statusText.hidden = false;
-      statusText.textContent = "Getting your location...";
+      statusText.textContent = t("account.gettingLocation");
 
       function finish(position, activeRideId) {
         var mapsLink = position
           ? "https://maps.google.com/?q=" + position.coords.latitude + "," + position.coords.longitude
           : null;
 
-        activateListeningDevice(true); // bundled: one trigger, full response
+        // Previously called here, unconditionally, before it was known
+        // whether the panic request (or even the ride lookup) would
+        // succeed — so the "Listening device: on" indicator could show
+        // even when nothing was ever recorded server-side. Now it's only
+        // shown once the panic POST below actually succeeds, since panic
+        // bundles the real activation into that same write.
 
-        var message = "SOS. I need help." + (mapsLink ? " My location: " + mapsLink : " Location unavailable.");
+        var message = t("account.sosMessage") + (mapsLink ? t("account.sosLocationKnown") + mapsLink : t("account.sosLocationUnavailable"));
         var waUrl = "https://wa.me/" + ARRIVO_SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(message);
         if (pendingWindow) {
           pendingWindow.location.href = waUrl;
@@ -840,7 +996,7 @@
         // button just becomes available again after a short confirmation.
         if (!activeRideId) {
           statusText.hidden = false;
-          statusText.textContent = "No active ride to attach this to. Alert sent to RideArrivo support on WhatsApp.";
+          statusText.textContent = t("account.noActiveRideAlertSent");
           setTimeout(function () {
             statusText.hidden = true;
             btn.hidden = false;
@@ -858,12 +1014,18 @@
           localStorage.setItem(PANIC_STATE_KEY, JSON.stringify({ rideId: activeRideId }));
           showActiveBanner(); // stays locked until pollForResolution finds it cleared
           pollForResolution(activeRideId);
+          // "One trigger, full response" — panic bundles listening-device
+          // activation into the same server-side write, confirmed by the
+          // same res.ok check above, so no separate request is needed here.
+          listeningActive = true;
+          localStorage.setItem(LISTENING_STATE_KEY, JSON.stringify({ rideId: activeRideId }));
+          setListeningUiOn();
         }).catch(function () {
           // The backend call itself failed (network error, ride no longer
           // valid, etc.) — same reasoning as no active ride: don't lock a
           // UI over an alert that was never actually recorded.
           statusText.hidden = false;
-          statusText.textContent = "Couldn't confirm the alert with RideArrivo's servers, but a WhatsApp message was sent to support.";
+          statusText.textContent = t("account.alertNotConfirmedWhatsappSent");
           setTimeout(function () {
             statusText.hidden = true;
             btn.hidden = false;
@@ -892,36 +1054,80 @@
       }
     }
 
-    // Listening device — shares this same activation logic, and can be
-    // switched on independently by either party, not only via the panic
-    // button. Actually streaming/recording audio to a backend is a separate,
-    // substantial piece of infrastructure that doesn't exist yet; this wires
-    // up the real permission prompt and state so that infrastructure has
-    // something to plug into.
-    function activateListeningDevice(viaPanic) {
-      if (listeningActive) return;
+    // Marks the UI "on" — called either once the panic POST above actually
+    // confirms success, or once the standalone activation below does.
+    // Never called speculatively/optimistically anymore.
+    function setListeningUiOn() {
       listeningActive = true;
       if (listeningBtn) {
-        listeningBtn.textContent = "🎙️ Listening device: on";
+        listeningBtn.textContent = t("account.listeningOn");
+        listeningBtn.classList.remove("is-error");
         listeningBtn.classList.add("is-active");
       }
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ audio: true }).catch(function () {});
+      // Deliberately no getUserMedia() call here (there used to be one).
+      // "Listening device" is a server-side flag/timestamp on the ride
+      // (see routes/rides.js) — nothing in this product actually captures
+      // or streams live audio from the browser or the apps. The old call
+      // requested mic permission and immediately discarded the resulting
+      // MediaStream without ever storing, using, or stopping it — so it
+      // did nothing useful even when it succeeded, and on iOS/Safari and
+      // any non-secure context it's rejected outright (no user gesture on
+      // these page-load restore paths), silently swallowed by its .catch,
+      // while the "on" indicator kept showing regardless — a false safety
+      // signal. Removing it fixes both problems at once; the indicator
+      // above already only ever fires once the server confirms activation.
+    }
+
+    function setListeningUiError() {
+      if (listeningBtn) {
+        listeningBtn.textContent = t("account.listeningRetry");
+        listeningBtn.classList.add("is-error");
       }
-      try {
-        fetch(apiBaseUrl + "/api/listening-device", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: "Bearer " + localStorage.getItem(tokenKey) },
-          body: JSON.stringify({ userType: userType, active: true, viaPanic: !!viaPanic, timestamp: new Date().toISOString() }),
-        }).catch(function () {});
-      } catch (e) {}
+    }
+
+    // Listening device, activated independently of panic (the standalone
+    // button below) — ride-scoped, so a rideId is required. Only marks the
+    // UI "on" once the server actually confirms it; a failed request now
+    // shows a distinct, clickable retry state instead of either silently
+    // claiming success (the previous bug) or leaving the button dead for
+    // the rest of the session.
+    function activateListeningDevice(rideId) {
+      if (listeningActive || !rideId) return;
+      fetch(apiBaseUrl + "/api/rides/" + rideId + "/listening-device", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + localStorage.getItem(tokenKey) },
+      }).then(function (res) {
+        if (!res.ok) throw new Error("listening-device call failed");
+        localStorage.setItem(LISTENING_STATE_KEY, JSON.stringify({ rideId: rideId }));
+        setListeningUiOn();
+      }).catch(function () {
+        setListeningUiError();
+      });
     }
     if (listeningBtn) {
-      listeningBtn.addEventListener("click", function () { activateListeningDevice(false); });
+      listeningBtn.addEventListener("click", function () {
+        if (listeningActive) return; // already on, or a retry is handled by re-running this same handler
+        // Same "find my active ride" lookup used by the panic button above —
+        // the endpoint is ride-scoped, so there's nothing to activate
+        // without one.
+        fetch(apiBaseUrl + "/api/rides/mine", {
+          headers: { Authorization: "Bearer " + localStorage.getItem(tokenKey) },
+        }).then(function (res) { return res.json(); }).then(function (data) {
+          var rides = (data && data.rides) || [];
+          var active = rides.find(function (r) { return r.ride_status === "accepted" || r.ride_status === "in_progress"; });
+          if (!active) {
+            listeningBtn.textContent = t("account.listeningNoActiveRide");
+            setTimeout(function () { listeningBtn.textContent = t("account.listeningOff"); }, 3000);
+            return;
+          }
+          activateListeningDevice(active.id);
+        }).catch(function () { setListeningUiError(); });
+      });
     }
   }
 </script>
 <script src="https://js.paystack.co/v1/inline.js"></script>
+<script src="paystack-config.js?v=30"></script>
 <script src="glass-effects.js?v=30"></script>
 </body>
 </html>

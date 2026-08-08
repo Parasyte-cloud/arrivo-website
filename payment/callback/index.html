@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment complete | RideArrivo</title>
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#12123B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RideArrivo">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/booking.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="/index.html" class="brand">
+      <span class="logo-wrap"><img src="/assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
+      <img src="/assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark">
+    </a>
+  </div>
+</header>
+
+<!--
+  Paystack redirects here after a rider completes payment through the
+  RIDER APP (opened via Linking.openURL in a system browser — see
+  arrivo-app/screens/CheckoutScreen.js). This page is only a landing spot;
+  the app itself already detects the completed payment on its own via an
+  AppState listener the moment the rider switches back to it, and verifies
+  the transaction server-side from there. This page never needs to call
+  the backend itself — its only job is to not be a broken 404 in the
+  moment between "payment done" and "rider taps back to the app."
+
+  The website's own checkout (book.html/booking.js) does NOT use this —
+  it uses Paystack's Inline JS popup with its own in-page success/close
+  callbacks, so it never navigates here.
+-->
+<main class="wrap booking-wrap" style="max-width: 440px; text-align: center;">
+  <h1>Payment received</h1>
+  <div class="booking-card">
+    <p style="color: var(--text-muted); font-size: 14px;">
+      Thanks — your payment went through. Head back to the RideArrivo app to see your ride.
+    </p>
+  </div>
+</main>
+
+<script src="/pwa-register.js"></script>
+</body>
+</html>
