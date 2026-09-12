@@ -138,3 +138,60 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
+
+/*
+ * RIDEARRIVO_LAUNCH_CACHE_REFRESH
+ * Launch Day - 12 September 2026
+ *
+ * Force the updated service worker to activate and remove
+ * stale cached HTML pages. Other cached assets remain intact.
+ */
+
+self.addEventListener("install", () => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", event => {
+  event.waitUntil((async () => {
+    const cacheNames =
+      await caches.keys();
+
+    for (
+      const cacheName of
+      cacheNames
+    ) {
+      const cache =
+        await caches.open(
+          cacheName
+        );
+
+      const requests =
+        await cache.keys();
+
+      for (
+        const request of
+        requests
+      ) {
+        const url =
+          new URL(
+            request.url
+          );
+
+        if (
+          url.origin ===
+          self.location.origin &&
+          (
+            url.pathname === "/" ||
+            url.pathname.endsWith(".html")
+          )
+        ) {
+          await cache.delete(
+            request
+          );
+        }
+      }
+    }
+
+    await self.clients.claim();
+  })());
+});

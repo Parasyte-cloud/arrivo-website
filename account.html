@@ -147,6 +147,13 @@
   .listening-btn.is-active { border-color: var(--primary); background: var(--primary-tint); color: var(--primary); }
   .listening-btn.is-error { border-color: var(--coral, #E1523D); color: var(--coral, #E1523D); }
 </style>
+  <script>
+    document.documentElement.classList.add("ra-launch-pending");
+    window.setTimeout(function () {
+      document.documentElement.classList.remove("ra-launch-pending");
+    }, 5000);
+  </script>
+  <link rel="stylesheet" href="/launch-countdown.css?v=20260912-01">
 </head>
 <body>
 
@@ -1129,5 +1136,6 @@
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script src="paystack-config.js?v=30"></script>
 <script src="glass-effects.js?v=30"></script>
+  <script src="/launch-countdown.js?v=20260912-01" defer></script>
 </body>
 </html>
