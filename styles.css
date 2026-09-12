@@ -193,7 +193,16 @@ a { color: inherit; text-decoration: none; }
    button, hamburger) gets tight enough that "Book a ride" was wrapping
    into 2-3 lines — tighten spacing here instead of letting that happen. */
 @media (max-width: 470px) {
+  /* .wrap's flat 24px side padding (used everywhere, not just the header)
+     was eating too much of the header's available width on real phones —
+     combined with the fixed-size 44px hamburger tap target and everything
+     else in .header-actions having no shrink/overflow safeguard, the
+     toggle button could get pushed past the pill's visible right edge
+     entirely (site-header deliberately has no overflow:hidden, since that
+     would also clip the language dropdown and mobile menu below it). */
+  .wrap { padding: 0 14px; }
   .header-inner { gap: 6px; }
+  .header-actions { gap: 6px; }
   .lang-trigger { padding: 9px 7px; font-size: 10px; }
   .btn-sm { padding: 10px 9px; font-size: 11px; }
   .nav-account-link { padding: 6px; }
@@ -209,6 +218,7 @@ a { color: inherit; text-decoration: none; }
   .brand-wordmark { display: none; } /* genuinely no room left at this width even at the smallest readable size */
 }
 @media (max-width: 330px) {
+  .wrap { padding: 0 8px; }
   .header-inner { gap: 4px; }
   .header-actions { gap: 6px; }
   .lang-trigger { padding: 8px 6px; }
@@ -1247,6 +1257,19 @@ a { color: inherit; text-decoration: none; }
 }
 .footer-legal { font-size: 12px; color: #8a8ab0; margin: 0; }
 .footer-legal-entity { font-size: 11px; color: #6f6f96; margin: 3px 0 0; }
+/* Small inline pin + wordmark lockup inside the "© 2026 RideArrivo..."
+   copyright line, replacing what used to be plain colored text — sized to
+   the surrounding .footer-legal text (12px) so it sits on the same line
+   without disrupting the paragraph's height or baseline. */
+.footer-legal-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  vertical-align: middle;
+  transform: translateY(-1px);
+}
+.footer-legal-mark { width: 12px; height: 12px; display: block; }
+.footer-legal-wordmark { height: 12px; width: auto; display: block; }
 
 /* Top: brand + social on the left, three link columns on the right —
    stacks to a single column on mobile so nothing feels cramped. */
