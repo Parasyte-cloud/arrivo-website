@@ -46,6 +46,13 @@
   .doc-upload-text span { font-size:12px; color:var(--text-muted); }
   .pending-icon { font-size:48px; text-align:center; margin-bottom:8px; }
 </style>
+  <script>
+    document.documentElement.classList.add("ra-launch-pending");
+    window.setTimeout(function () {
+      document.documentElement.classList.remove("ra-launch-pending");
+    }, 5000);
+  </script>
+  <link rel="stylesheet" href="/launch-countdown.css?v=20260912-01">
 </head>
 <body>
 
@@ -447,5 +454,6 @@
 <script src="driver.js?v=30"></script>
 <script src="pwa-register.js"></script>
 <script src="glass-effects.js?v=30"></script>
+  <script src="/launch-countdown.js?v=20260912-01" defer></script>
 </body>
 </html>

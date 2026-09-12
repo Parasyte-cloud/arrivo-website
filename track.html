@@ -24,6 +24,13 @@
   .panic-active { background:#FDECEA; border:1.5px solid var(--coral); border-radius:12px; padding:14px; text-align:center; color:var(--coral); font-weight:700; font-size:13px; margin-top:20px; }
   .map-link { display:block; margin-top:14px; text-align:center; background:#f5f5fa; border-radius:10px; padding:12px; font-weight:700; font-size:13px; color: var(--teal); text-decoration:none; }
 </style>
+  <script>
+    document.documentElement.classList.add("ra-launch-pending");
+    window.setTimeout(function () {
+      document.documentElement.classList.remove("ra-launch-pending");
+    }, 5000);
+  </script>
+  <link rel="stylesheet" href="/launch-countdown.css?v=20260912-01">
 </head>
 <body>
 
@@ -683,5 +690,6 @@
 </script>
 <!-- Paystack's official inline checkout library — used for card tips only. -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
+  <script src="/launch-countdown.js?v=20260912-01" defer></script>
 </body>
 </html>
