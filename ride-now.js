@@ -14,21 +14,42 @@
     return div.innerHTML;
   }
 
-  // ───────────────────────── i18n (identical pattern to booking.js) ─────
-  // Only the shared header/footer chrome (nav, footer links) is actually
-  // translated via data-i18n here -- this page's own ArrivoExpress copy is
-  // English-only for now (see PR notes: translate alongside the mobile
-  // app's ArrivoExpress strings in a follow-up localization pass).
+  // ───────────────────────── i18n (same pattern as booking.js) ──────────
+  // The shared header/footer chrome AND this page's own ArrivoExpress
+  // copy are both translated: static text via data-i18n /
+  // data-i18n-placeholder, and JS-rendered dynamic text (tier cards,
+  // quote summary, searching status, error messages) via the t() helper
+  // below, which reads from the same "rideNow" namespace in i18n.js.
+  var currentLang = "en";
+
   function getNested(obj, path) {
     return path.split(".").reduce(function (acc, key) { return acc && acc[key]; }, obj);
   }
 
+  function t(key, vars) {
+    var dict = (window.I18N || {})[currentLang] || (window.I18N || {}).en || {};
+    var str = getNested(dict, key);
+    if (str == null) str = getNested((window.I18N || {}).en || {}, key);
+    if (str == null) return key;
+    if (vars) {
+      Object.keys(vars).forEach(function (k) {
+        str = str.split("{{" + k + "}}").join(vars[k]);
+      });
+    }
+    return str;
+  }
+
   function applyLanguage(lang) {
+    currentLang = lang;
     var dict = (window.I18N || {})[lang] || (window.I18N || {}).en || {};
     document.documentElement.lang = lang;
     document.querySelectorAll("[data-i18n]").forEach(function (el) {
       var value = getNested(dict, el.getAttribute("data-i18n"));
       if (value != null) el.innerHTML = value;
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
+      var value = getNested(dict, el.getAttribute("data-i18n-placeholder"));
+      if (value != null) el.setAttribute("placeholder", value);
     });
     document.querySelectorAll(".lang-opt").forEach(function (btn) {
       btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
@@ -36,6 +57,7 @@
     var label = document.getElementById("langTriggerLabel");
     if (label) label.textContent = LANG_LABELS[lang] || lang.toUpperCase();
     localStorage.setItem(LANG_KEY, lang);
+    refreshDynamicText();
   }
 
   function closeLangMenu() {
@@ -91,7 +113,7 @@
         return { ok: res.ok, status: res.status, data: data };
       });
     }).catch(function () {
-      return { ok: false, status: 0, data: { error: "Couldn't reach the server. Please check your connection and try again." } };
+      return { ok: false, status: 0, data: { error: t("rideNow.serverUnreachable") } };
     });
   }
 
@@ -115,6 +137,8 @@
     quote: null,
     activeRequestId: null,
     pollTimer: null,
+    lastRequestStatus: null,
+    booking: false,
   };
 
   var CARD_IDS = ["authGate", "unavailableCard", "loadingCard", "pickerCard", "quoteCard", "searchingCard"];
@@ -201,19 +225,19 @@
     err.hidden = true;
 
     if (!state.selectedTier) {
-      err.textContent = "Choose a vehicle to continue.";
+      err.textContent = t("rideNow.chooseVehicleError");
       err.hidden = false;
       return;
     }
     var pickupVal = document.getElementById("rnPickup").value.trim();
     var destVal = document.getElementById("rnDestination").value.trim();
     if (!pickupVal || !state.pickupLatLng) {
-      err.textContent = "Select your pickup address from the suggestions.";
+      err.textContent = t("rideNow.selectPickupError");
       err.hidden = false;
       return;
     }
     if (!destVal || !state.destinationLatLng) {
-      err.textContent = "Select your destination from the suggestions.";
+      err.textContent = t("rideNow.selectDestinationError");
       err.hidden = false;
       return;
     }
@@ -222,7 +246,7 @@
 
     var btn = document.getElementById("seeFareBtn");
     btn.disabled = true;
-    btn.textContent = "Getting fare…";
+    btn.textContent = t("rideNow.gettingFare");
 
     api("/api/instant-rides/quote", {
       method: "POST",
@@ -230,9 +254,9 @@
       body: JSON.stringify(buildTrip()),
     }).then(function (result) {
       btn.disabled = false;
-      btn.textContent = "See fare";
+      btn.textContent = t("rideNow.seeFare");
       if (!result.ok) {
-        err.textContent = result.data.error || "Couldn't get a fare for that trip. Please try again.";
+        err.textContent = result.data.error || t("rideNow.fareError");
         err.hidden = false;
         return;
       }
@@ -246,6 +270,7 @@
     var tierConfig = state.tiers.filter(function (t) { return t.key === state.selectedTier; })[0];
 
     document.getElementById("quoteTierLabel").textContent = tierConfig ? tierConfig.label : state.selectedTier;
+    document.getElementById("quoteZoneTag").textContent = t("rideNow.highTrafficArea");
     document.getElementById("quoteZoneTag").style.display = q.zone === "yellow" ? "inline-block" : "none";
     document.getElementById("quoteRoute").textContent = state.pickup + " → " + state.destination;
     document.getElementById("quoteDistance").textContent = (q.distanceKm != null ? q.distanceKm.toFixed(1) : "—") + " km";
@@ -258,7 +283,7 @@
     var confirmBtn = document.getElementById("confirmRideBtn");
     var note = document.getElementById("walletBalanceNote");
     confirmBtn.disabled = true;
-    note.textContent = "Checking your wallet balance…";
+    note.textContent = t("rideNow.checkingWallet");
 
     api("/api/wallet", { headers: authHeader() }).then(function (result) {
       if (!result.ok) {
@@ -268,12 +293,13 @@
       }
       var balance = Number(result.data.balanceNaira || 0);
       if (balance >= q.fareNaira) {
-        note.innerHTML = "Wallet balance: " + formatNaira(balance) + " — charged on confirmation.";
+        note.innerHTML = t("rideNow.walletBalanceNote", { balance: formatNaira(balance) });
         confirmBtn.disabled = false;
       } else {
-        note.innerHTML =
-          "Wallet balance: " + formatNaira(balance) +
-          " — not enough for this fare. <a href=\"account.html\">Top up your wallet</a> first.";
+        note.innerHTML = t("rideNow.walletInsufficientNoteHtml", {
+          balance: formatNaira(balance),
+          linkText: t("rideNow.topUpWalletLink"),
+        });
         confirmBtn.disabled = true;
       }
     });
@@ -285,14 +311,16 @@
 
     var btn = document.getElementById("confirmRideBtn");
     btn.disabled = true;
-    btn.textContent = "Booking…";
+    state.booking = true;
+    btn.textContent = t("rideNow.booking");
 
     api("/api/instant-rides", {
       method: "POST",
       headers: authHeader(),
       body: JSON.stringify(buildTrip()),
     }).then(function (result) {
-      btn.textContent = "Confirm & find a driver";
+      state.booking = false;
+      btn.textContent = t("rideNow.confirmFindDriver");
 
       if (!result.ok) {
         if (result.data.code === "ACTIVE_INSTANT_REQUEST") {
@@ -304,9 +332,9 @@
         }
         btn.disabled = false;
         if (result.data.code === "INSUFFICIENT_WALLET") {
-          err.innerHTML = "Not enough wallet balance. <a href=\"account.html\">Top up your wallet</a> and try again.";
+          err.innerHTML = t("rideNow.insufficientWalletErrorHtml", { linkText: t("rideNow.topUpWalletLink") });
         } else {
-          err.textContent = result.data.error || "Couldn't book this ride. Please try again.";
+          err.textContent = result.data.error || t("rideNow.bookError");
         }
         err.hidden = false;
         return;
@@ -318,9 +346,16 @@
   }
 
   // ───────────────────────── Searching / polling ─────────────────────
+  function statusLabel(status) {
+    if (status === "offering") return t("rideNow.statusOffering");
+    if (status === "matched") return t("rideNow.statusMatched");
+    return t("rideNow.statusSearching");
+  }
+
   function startSearching(request) {
     showCard("searchingCard");
-    document.getElementById("searchingStatus").textContent = "Looking for a nearby driver…";
+    state.lastRequestStatus = request ? request.status : "searching";
+    document.getElementById("searchingStatus").textContent = statusLabel(state.lastRequestStatus);
     document.getElementById("searchingRoute").textContent = state.pickup + " → " + state.destination;
     document.getElementById("searchingFare").textContent = request ? formatNaira(request.estimated_fare_naira) : "";
     stopPolling();
@@ -346,15 +381,13 @@
         // see arrivo-backend services/instantWallet.js) or cancelled from
         // another tab/device.
         stopPolling();
-        window.alert("We couldn't match you with a driver in time. Any wallet charge has been refunded.");
+        window.alert(t("rideNow.expiredAlert"));
         resetToPicker();
         return;
       }
 
-      document.getElementById("searchingStatus").textContent =
-        request.status === "offering" ? "Confirming with a nearby driver…"
-        : request.status === "matched" ? "Driver found!"
-        : "Looking for a nearby driver…";
+      state.lastRequestStatus = request.status;
+      document.getElementById("searchingStatus").textContent = statusLabel(request.status);
 
       if (request.status === "matched" && request.ride_id) {
         stopPolling();
@@ -380,7 +413,28 @@
   function resetToPicker() {
     state.quote = null;
     state.activeRequestId = null;
+    state.lastRequestStatus = null;
     showCard("pickerCard");
+  }
+
+  // Re-renders JS-driven dynamic text (as opposed to the static
+  // data-i18n-swapped chrome) after a language switch, so a user who
+  // changes language mid-flow sees the new language immediately instead
+  // of only on their next action.
+  function refreshDynamicText() {
+    var seeFareBtn = document.getElementById("seeFareBtn");
+    if (seeFareBtn) seeFareBtn.textContent = seeFareBtn.disabled ? t("rideNow.gettingFare") : t("rideNow.seeFare");
+
+    var confirmBtn = document.getElementById("confirmRideBtn");
+    if (confirmBtn) confirmBtn.textContent = state.booking ? t("rideNow.booking") : t("rideNow.confirmFindDriver");
+
+    var zoneTag = document.getElementById("quoteZoneTag");
+    if (zoneTag) zoneTag.textContent = t("rideNow.highTrafficArea");
+
+    var searchingStatus = document.getElementById("searchingStatus");
+    if (searchingStatus && state.lastRequestStatus) {
+      searchingStatus.textContent = statusLabel(state.lastRequestStatus);
+    }
   }
 
   // ───────────────────────── Init ────────────────────────────────────
@@ -399,6 +453,11 @@
     // ArrivoExpress settles from the RideArrivo Wallet, so -- same rule
     // book.html already enforces for scheduled bookings -- a logged-in
     // account is required. No guest path here.
+    //
+    // Note: initLanguage() above already applied the detected/saved
+    // language and called refreshDynamicText() once, before any of
+    // this state exists yet -- harmless no-op at that point since
+    // there's nothing dynamic on screen until a card below is shown.
     var savedToken = localStorage.getItem("arrivo_rider_token");
     if (!savedToken) {
       showCard("authGate");

@@ -103,73 +103,73 @@
 </header>
 
 <main class="wrap booking-wrap">
-  <h1>ArrivoExpress — Ride Now</h1>
-  <p class="step-sub">On-demand rides, priced by distance and time. Pick a vehicle, see your fare, get matched with a nearby driver.</p>
+  <h1 data-i18n="rideNow.pageTitle">ArrivoExpress — Ride Now</h1>
+  <p class="step-sub" data-i18n="rideNow.pageSub">On-demand rides, priced by distance and time. Pick a vehicle, see your fare, get matched with a nearby driver.</p>
 
   <!-- AUTH GATE: ArrivoExpress settles from your RideArrivo Wallet, so a
        registered, logged-in account is required — same rule book.html
        already enforces for scheduled bookings (no guest checkout there
        either, see its own authGate). -->
   <div class="booking-card" id="authGate" hidden style="text-align:center;">
-    <h2 style="font-size:19px;">Log in to use ArrivoExpress</h2>
+    <h2 style="font-size:19px;" data-i18n="rideNow.authTitle">Log in to use ArrivoExpress</h2>
     <p style="color:var(--text-muted); font-size:13.5px; margin-bottom:20px;">
-      ArrivoExpress pays from your RideArrivo Wallet, so you'll need a registered profile first.
+      <span data-i18n="rideNow.authBody">ArrivoExpress pays from your RideArrivo Wallet, so you'll need a registered profile first.</span>
     </p>
-    <a href="signup.html?next=ride-now.html" class="btn btn-primary" style="width:100%; margin-bottom:10px;">Create a profile</a>
-    <a href="login.html?next=ride-now.html" class="btn btn-ghost" style="width:100%;">Already have a profile? Log in</a>
+    <a href="signup.html?next=ride-now.html" class="btn btn-primary" style="width:100%; margin-bottom:10px;" data-i18n="rideNow.createProfile">Create a profile</a>
+    <a href="login.html?next=ride-now.html" class="btn btn-ghost" style="width:100%;" data-i18n="rideNow.alreadyHaveProfile">Already have a profile? Log in</a>
   </div>
 
   <div class="booking-card" id="unavailableCard" hidden style="text-align:center;">
-    <h2 style="font-size:19px;">ArrivoExpress isn't live yet</h2>
-    <p style="color:var(--text-muted); font-size:13.5px;">We're finishing driver rollout for on-demand rides. Book a scheduled pickup instead, or check back soon.</p>
-    <a href="book.html" class="btn btn-primary" style="width:100%; margin-top:14px;">Book a scheduled ride</a>
+    <h2 style="font-size:19px;" data-i18n="rideNow.unavailableTitle">ArrivoExpress isn't live yet</h2>
+    <p style="color:var(--text-muted); font-size:13.5px;" data-i18n="rideNow.unavailableBody">We're finishing driver rollout for on-demand rides. Book a scheduled pickup instead, or check back soon.</p>
+    <a href="book.html" class="btn btn-primary" style="width:100%; margin-top:14px;" data-i18n="rideNow.bookScheduled">Book a scheduled ride</a>
   </div>
 
   <div class="booking-card" id="loadingCard" style="text-align:center;">
     <div class="rn-spinner" aria-hidden="true"></div>
-    <p style="color:var(--text-muted); font-size:13px; margin-top:10px;">Loading ArrivoExpress…</p>
+    <p style="color:var(--text-muted); font-size:13px; margin-top:10px;" data-i18n="rideNow.loading">Loading ArrivoExpress…</p>
   </div>
 
   <!-- PICKER -->
   <div class="booking-card" id="pickerCard" hidden>
-    <h2 style="font-size:19px; margin-bottom:6px;">Choose your ride</h2>
+    <h2 style="font-size:19px; margin-bottom:6px;" data-i18n="rideNow.chooseYourRide">Choose your ride</h2>
     <div class="vehicle-options" id="tierOptions"></div>
 
-    <h2 style="font-size:19px; margin-top:22px; margin-bottom:6px;">Where to?</h2>
-    <label class="field-label" for="rnPickup">Pickup address</label>
-    <input type="text" id="rnPickup" class="field" placeholder="Enter pickup address" autocomplete="off">
-    <label class="field-label" for="rnDestination">Destination</label>
-    <input type="text" id="rnDestination" class="field" placeholder="Enter destination" autocomplete="off">
+    <h2 style="font-size:19px; margin-top:22px; margin-bottom:6px;" data-i18n="rideNow.whereTo">Where to?</h2>
+    <label class="field-label" for="rnPickup" data-i18n="rideNow.pickupLabel">Pickup address</label>
+    <input type="text" id="rnPickup" class="field" placeholder="Enter pickup address" data-i18n-placeholder="rideNow.pickupPlaceholder" autocomplete="off">
+    <label class="field-label" for="rnDestination" data-i18n="rideNow.destinationLabel">Destination</label>
+    <input type="text" id="rnDestination" class="field" placeholder="Enter destination" data-i18n-placeholder="rideNow.destinationPlaceholder" autocomplete="off">
     <p class="error-text" id="pickerError" hidden></p>
-    <button type="button" class="btn btn-primary" id="seeFareBtn" style="width:100%; margin-top:10px;">See fare</button>
+    <button type="button" class="btn btn-primary" id="seeFareBtn" style="width:100%; margin-top:10px;" data-i18n="rideNow.seeFare">See fare</button>
   </div>
 
   <!-- QUOTE -->
   <div class="booking-card" id="quoteCard" hidden>
-    <h2 style="font-size:19px; margin-bottom:6px;">Confirm your ride</h2>
+    <h2 style="font-size:19px; margin-bottom:6px;" data-i18n="rideNow.confirmTitle">Confirm your ride</h2>
     <div class="rn-summary">
       <div class="rn-summary-row">
         <span id="quoteTierLabel" style="font-weight:700;"></span>
-        <span id="quoteZoneTag" class="v-badge" style="display:none;">High-traffic area</span>
+        <span id="quoteZoneTag" class="v-badge" style="display:none;" data-i18n="rideNow.highTrafficArea">High-traffic area</span>
       </div>
       <p class="rn-route" id="quoteRoute"></p>
-      <div class="rn-summary-row"><span>Estimated distance</span><span id="quoteDistance"></span></div>
-      <div class="rn-summary-row"><span>Estimated time</span><span id="quoteDuration"></span></div>
-      <div class="rn-summary-row rn-total"><span>Total fare</span><span id="quoteFare"></span></div>
+      <div class="rn-summary-row"><span data-i18n="rideNow.estimatedDistance">Estimated distance</span><span id="quoteDistance"></span></div>
+      <div class="rn-summary-row"><span data-i18n="rideNow.estimatedTime">Estimated time</span><span id="quoteDuration"></span></div>
+      <div class="rn-summary-row rn-total"><span data-i18n="rideNow.totalFare">Total fare</span><span id="quoteFare"></span></div>
       <p class="rn-fine-print" id="walletBalanceNote"></p>
     </div>
     <p class="error-text" id="quoteError" hidden></p>
-    <button type="button" class="btn btn-primary" id="confirmRideBtn" style="width:100%; margin-top:10px;">Confirm &amp; find a driver</button>
-    <button type="button" class="btn btn-ghost" id="backToPickerBtn" style="width:100%; margin-top:8px;">Back</button>
+    <button type="button" class="btn btn-primary" id="confirmRideBtn" style="width:100%; margin-top:10px;" data-i18n="rideNow.confirmFindDriver">Confirm &amp; find a driver</button>
+    <button type="button" class="btn btn-ghost" id="backToPickerBtn" style="width:100%; margin-top:8px;" data-i18n="rideNow.back">Back</button>
   </div>
 
   <!-- SEARCHING -->
   <div class="booking-card" id="searchingCard" hidden style="text-align:center;">
     <div class="rn-spinner" aria-hidden="true"></div>
-    <h2 id="searchingStatus" style="font-size:19px; margin-top:12px;">Looking for a nearby driver…</h2>
+    <h2 id="searchingStatus" style="font-size:19px; margin-top:12px;" data-i18n="rideNow.statusSearching">Looking for a nearby driver…</h2>
     <p class="rn-route" id="searchingRoute"></p>
     <p id="searchingFare" style="font-weight:700; font-size:20px; color:var(--amber);"></p>
-    <button type="button" class="btn btn-ghost" id="cancelSearchBtn" style="width:100%; margin-top:14px;">Cancel request</button>
+    <button type="button" class="btn btn-ghost" id="cancelSearchBtn" style="width:100%; margin-top:14px;" data-i18n="rideNow.cancelRequest">Cancel request</button>
   </div>
 </main>
 
@@ -227,7 +227,7 @@
 
     <div class="footer-col">
       <h4 data-i18n="footer.getStartedHeading">Get Started</h4>
-      <a href="ride-now.html">Ride Now (ArrivoExpress)</a>
+      <a href="ride-now.html" data-i18n="nav.rideNowFooter">Ride Now (ArrivoExpress)</a>
       <a href="book.html" data-i18n="nav.bookCta">Book a ride</a>
       <a href="driver.html" data-i18n="footer.driverPortal">Driver Portal</a>
       <a href="account.html" data-i18n="footer.myAccount">My Account</a>
