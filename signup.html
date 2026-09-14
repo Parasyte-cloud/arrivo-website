@@ -106,9 +106,29 @@
     });
   }
 
+  // "next" is attacker-controllable (anyone can link to
+  // login.html?next=<anything>) and gets assigned straight to
+  // window.location.href after a real, successful login/signup — an
+  // unvalidated value here is an open redirect: a phishing link that
+  // reads as trustworthy (it's really ridearrivo.com) which, right after
+  // the visitor authenticates for real, bounces them to an attacker's
+  // look-alike page primed to ask them to "log in again". Every legitimate
+  // caller only ever passes a same-site page name or pathname+search (see
+  // book.html, account.html, track.html, scan.html), so restrict to that
+  // shape: no scheme (blocks "javascript:", "https://…"), no leading "//"
+  // or backslash (both are browser-recognized ways to point at a
+  // different host from what looks like a relative path).
+  function isSafeNextPath(next) {
+    if (!next) return false;
+    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(next)) return false;
+    if (next.indexOf("//") === 0) return false;
+    if (next.indexOf("\\") !== -1) return false;
+    return true;
+  }
+
   function getNextUrl() {
-    var params = new URLSearchParams(window.location.search);
-    return params.get("next") || "account.html";
+    var next = new URLSearchParams(window.location.search).get("next");
+    return isSafeNextPath(next) ? next : "account.html";
   }
 
   document.addEventListener("DOMContentLoaded", function () {
