@@ -293,6 +293,20 @@
     return (name || "?").split(" ").map(function (p) { return p[0]; }).join("").slice(0, 2).toUpperCase();
   }
 
+  // Fleet Accompaniment convoy data (driver_name, make_model) below is
+  // free text a driver typed during vehicle/profile setup, not something
+  // this rider controls — must be escaped before going into innerHTML, or
+  // a malicious driver's name/vehicle string (e.g. an <img onerror>
+  // payload) would execute in every rider's browser who views a shared
+  // ride's convoy list, with full access to that rider's localStorage
+  // token, wallet, and PII on the page. Same pattern as booking.js/
+  // driver.js/ride-now.js's own escapeHtml().
+  function escapeHtml(str) {
+    var div = document.createElement("div");
+    div.textContent = str == null ? "" : String(str);
+    return div.innerHTML;
+  }
+
   if (shareToken) {
     // Public, read-only mode. No auth header, no polling of anything that
     // needs the rider's own token — just status, driver, and live location.
@@ -432,9 +446,9 @@
           }
           block.hidden = false;
           list.innerHTML = companions.map(function (c) {
-            var driverPart = c.driver_name ? c.driver_name : "Escort vehicle";
-            var vehiclePart = c.make_model ? " · " + c.make_model : "";
-            var statusPart = c.ride_status === "requested" ? "Awaiting driver" : c.ride_status.replace("_", " ");
+            var driverPart = c.driver_name ? escapeHtml(c.driver_name) : "Escort vehicle";
+            var vehiclePart = c.make_model ? " · " + escapeHtml(c.make_model) : "";
+            var statusPart = c.ride_status === "requested" ? "Awaiting driver" : escapeHtml(c.ride_status.replace("_", " "));
             return "<div style=\"display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;\"><span>" +
               driverPart + vehiclePart + "</span><span style=\"color:var(--text-muted);\">" + statusPart + "</span></div>";
           }).join("");
