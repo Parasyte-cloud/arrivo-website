@@ -2,11 +2,13 @@
 
 A static, mobile-responsive site for Arrivo. Plain HTML/CSS/JS — no build step, no framework, no dependencies. That's deliberate: it means Cloudflare Pages can deploy it with zero configuration.
 
-## NEW: riders can actually book a ride now (`book.html`)
+## Riders can actually book a ride now (`book.html`)
 
-This isn't just a marketing page anymore. `book.html` is a real 5-step guest checkout — no account/password required for a first booking:
+This isn't just a marketing page anymore. `book.html` is a real 5-step booking flow.
 
-1. **Contact** — name, email, phone. Creates a lightweight account behind the scenes (no password prompt) via a new `POST /api/auth/guest` backend endpoint. If that email already has a real account, it asks for a password instead of silently taking over someone else's account.
+**Correction (this pass):** registration is now required before booking — there is no guest checkout anymore (see `book.html`'s `#authGate`, shown to anyone without a saved `arrivo_rider_token`). The paragraph below describing a `POST /api/auth/guest` guest-checkout step is stale from an earlier version of this flow and has been corrected here rather than left to mislead the next person reading this file.
+
+1. **Contact** — shown once the rider is already logged in (the auth gate above sends them to `signup.html`/`login.html` first if not); pulls their saved name/email/phone.
 2. **Flight** — optional flight number lookup (reuses the existing AviationStack integration).
 3. **Booking type + Luggage → vehicle matching** — choose one-way pickup, full day, full week, or full month, then enter bag count and whether you have bulky items; the right vehicle class (sedan/SUV/truck) is recommended automatically with the price shown (adjusted for the booking type's duration), and can still be manually overridden.
 4. **Pickup** — address plus up to 3 additional stops.
@@ -25,6 +27,15 @@ Replace with your real key from `dashboard.paystack.com/#/settings/developer` (u
 **Point it at your deployed backend** — same as `script.js`, `API_BASE_URL` in `booking.js` needs your backend's real public URL, not `localhost`.
 
 ---
+
+## On-demand rides (`ride-now.html`, "ArrivoExpress")
+
+A second, separate booking page for RideArrivo's on-demand product, ArrivoExpress — pick a vehicle tier (Economy/Comfort/XL/Premium), get a live metered fare quote, and get matched with a nearby driver, instead of the scheduled one-way/day/week/month flow `book.html` handles. See `arrivo-backend/routes/instantRides.js` for the API contract and `arrivo-app/screens/ArrivoExpressScreen.js` for the same flow in the rider app.
+
+- Requires a logged-in account (same `arrivo_rider_token` auth gate as `book.html` — no guest path), because ArrivoExpress settles from the rider's RideArrivo Wallet.
+- Shows nothing (the `#unavailableCard` state) if `GET /api/instant-rides/status` reports the feature flag off — this page is safe to deploy and link to before ArrivoExpress is switched on.
+- Once matched, redirects straight to `track.html?ride=<id>` — an ArrivoExpress ride becomes a normal `rides` row server-side, so the existing tracking page needs no changes to handle it.
+- Its own tier-picker and fare-summary copy is English-only for now; translate it alongside the mobile app's ArrivoExpress strings in a follow-up localization pass (the shared header/footer chrome around it still uses the site's normal 7-language `i18n.js`).
 
 ## Test it locally
 
