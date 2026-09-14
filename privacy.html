@@ -21,6 +21,11 @@
   .legal p, .legal li { color: var(--ink); font-size: 14.5px; }
   .legal ul { padding-left: 20px; }
   .legal .updated { color: var(--text-muted); font-size: 13px; margin-bottom: 32px; }
+  .legal table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  .legal th, .legal td { text-align: left; vertical-align: top; padding: 9px 14px 9px 0; border-bottom: 1px solid rgba(18,18,59,.12); }
+  .legal th { color: var(--text-muted); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: .04em; }
+  .legal .table-scroll { overflow-x: auto; }
+  .legal .pending { background: #fff4c2; padding: 1px 5px; border-radius: 3px; }
 </style>
 </head>
 <body>
@@ -42,71 +47,159 @@
 
 <main class="wrap legal">
   <h1>Privacy Policy</h1>
-  <p class="updated">Last updated: July 9, 2026</p>
+  <p class="updated">Last updated: September 14, 2026</p>
 
-  <p>This Privacy Policy explains what information RideArrivo ("we," "us," "our") collects from riders, drivers, and vehicle owners who use our apps and website, and how we use, store, and protect it.</p>
+  <p>RideArrivo is operated by RICHATHAOIR LIMITED (CAC RC 1654710), which is the data controller for the personal data described here. This policy covers ridearrivo.com and the RideArrivo rider and driver apps. It sets out what we collect, why we collect it, the lawful basis we rely on, who else sees it, how long we keep it and what you can ask us to do about it, under the Nigeria Data Protection Act 2023 (NDPA) and the transport rules we operate under in Lagos State.</p>
 
-  <h2>1. Who we are</h2>
-  <p>RideArrivo is operated by RICHATHAOIR LIMITED, registered in Nigeria under CAC number RC 1654710. For any privacy question, contact us at <a href="mailto:info@ridearrivo.com">info@ridearrivo.com</a>.</p>
+  <h2>1. Who we are and how to reach us</h2>
+  <ul>
+    <li><strong>Data controller:</strong> RICHATHAOIR LIMITED, registered with the Corporate Affairs Commission under RC 1654710.</li>
+    <li><strong>Registered office:</strong> <span class="pending">[registered office address to be inserted before this page is published]</span></li>
+    <li><strong>Data Protection Officer:</strong> <a href="mailto:privacy@ridearrivo.com">privacy@ridearrivo.com</a></li>
+    <li><strong>General enquiries:</strong> <a href="mailto:info@ridearrivo.com">info@ridearrivo.com</a></li>
+  </ul>
 
   <h2>2. Information we collect</h2>
-  <h3>From riders</h3>
   <ul>
-    <li>Name, email address, phone number, and password (stored as a secure hash, never in plain text)</li>
-    <li>Preferred language</li>
-    <li>Pickup and drop-off locations, flight number, and luggage details for each ride</li>
-    <li>Payment information — handled entirely by our payment processor, Paystack; we never see or store your full card number</li>
-    <li>Live location during an active ride, for tracking and safety features</li>
+    <li><strong>Account information:</strong> name, email address, phone number, WhatsApp number, preferred language, country of residence, date of birth, and a hashed password. We never store plain-text passwords.</li>
+    <li><strong>Identity documents:</strong> a photograph of a government ID or a passport number where we need to confirm who you are. For drivers, this also covers driver's licence number, LASDRI number, insurance details, vehicle documents and photographs, and the vehicle owner's name and contact details.</li>
+    <li><strong>Trip and booking data:</strong> pickup and drop-off addresses and coordinates, additional stops, flight number if you give one, luggage details, vehicle preferences and accessibility choices, trip history, fares and payment references.</li>
+    <li><strong>Location data:</strong> precise GPS location from riders and drivers during an active trip, and from drivers whenever they are online and available for work. We do not collect a driver's location while they are offline.</li>
+    <li><strong>Safety data:</strong> the emergency contact name and number you choose to add, panic alerts you raise, route-deviation events generated during a trip, and in-trip audio recording only if you switch it on yourself.</li>
+    <li><strong>Communications:</strong> messages and calls between rider and driver placed through the app, support tickets you open, and the operational emails and WhatsApp messages we send you.</li>
+    <li><strong>Device and technical data:</strong> device type and operating system, app version, a push notification token, and the IP address your requests arrive from, which our servers process in order to deliver responses and to block abuse.</li>
+  </ul>
+  <p><strong>What we do not collect.</strong> We do not run advertising or analytics trackers in the apps or on this website, we do not build advertising or marketing profiles, and we do not sell personal data.</p>
+
+  <h2>3. How we use your information, and our lawful basis</h2>
+  <p>Section 27 of the NDPA requires us to give the purpose and the lawful basis for each activity, not just the purpose. This is the full list.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What we do</th><th>Lawful basis</th></tr></thead>
+    <tbody>
+      <tr><td>Create and run your account, take bookings, connect you with a driver, calculate the fare, take payment and send receipts and trip updates</td><td>Performance of a contract with you</td></tr>
+      <tr><td>Show live trip location to you, to your driver, and to anyone you send a tracking link to</td><td>Performance of a contract with you</td></tr>
+      <tr><td>Verify driver identity, driver's licence, LASDRI registration, insurance and vehicle documents before a driver can accept rides</td><td>Legal obligation under Lagos State transport rules, and performance of our contract with the driver</td></tr>
+      <tr><td>Keep transaction, invoicing and tax records</td><td>Legal obligation</td></tr>
+      <tr><td>Respond to a valid order from a court, the police or a regulator</td><td>Legal obligation</td></tr>
+      <tr><td>Safety monitoring during a trip: panic alerts, route-deviation checks, and contacting your emergency contact during an incident</td><td>Protection of your vital interests or those of another person, together with our legitimate interest in keeping trips safe</td></tr>
+      <tr><td>Record audio during a trip</td><td>Your consent, given by switching the setting on. It is off unless you turn it on, and you can turn it off at any time.</td></tr>
+      <tr><td>Prevent fraud, secure accounts, apply rate limits and investigate abuse of the service</td><td>Our legitimate interest in protecting the platform and the people using it</td></tr>
+      <tr><td>Diagnose faults and keep the service reliable using operational records</td><td>Our legitimate interest in running a working service</td></tr>
+      <tr><td>Send optional marketing, waitlist or product-update email</td><td>Your consent, which you can withdraw at any time</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>4. Automated processing and automated decisions</h2>
+  <p>Some parts of the service run automatically. We think it is clearer to say exactly which, and what each one does:</p>
+  <ul>
+    <li><strong>Rides are not allocated to you by an algorithm.</strong> A booking is offered to drivers who are online, and a human driver decides whether to accept it.</li>
+    <li><strong>Fares are calculated automatically</strong> from vehicle class, booking type, distance and duration. The price is shown to you before you confirm.</li>
+    <li><strong>Vehicle class is suggested automatically</strong> from the luggage you enter. You can override the suggestion.</li>
+    <li><strong>Route deviation is monitored automatically</strong> during a trip by comparing the vehicle's position and direction against the expected route. If something looks wrong it raises an alert for a person to review. The check does not by itself penalise a driver or a rider.</li>
+    <li><strong>Identity and driver verification is decided by a person</strong> on our team reviewing the documents. It is not automated, and we do not use an external background-check or credit-scoring provider.</li>
+  </ul>
+  <p>We do not make decisions that produce legal effects concerning you, or similarly significant effects, by solely automated means, and we do not carry out profiling for advertising. If that changes, we will update this section before it starts, and you will be able to ask for a human to review the decision, to put your point of view, and to contest it.</p>
+
+  <h2>5. Who we share your data with</h2>
+  <p>We do not sell your personal data and we do not share it with advertising networks. It is shared in these situations only.</p>
+  <h3>Other people using the service</h3>
+  <ul>
+    <li>A matched rider and driver see each other's name, a way to contact each other through the app, and the trip's pickup and drop-off locations, for that trip.</li>
+    <li>Anyone you choose to send a live tracking link to can see that trip's progress while it is running.</li>
+  </ul>
+  <h3>Service providers</h3>
+  <p>These companies process personal data on our instructions in order to provide a specific part of the service. Each is engaged under a contract that allows them to use the data only for that purpose. This is the complete list of providers that actually receive personal data.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Provider</th><th>What they do for us</th><th>Where they process it</th></tr></thead>
+    <tbody>
+      <tr><td>Neon</td><td>Hosts our main database</td><td>United States</td></tr>
+      <tr><td>Render</td><td>Runs our backend servers</td><td>United States</td></tr>
+      <tr><td>Cloudflare</td><td>Serves this website and protects it from attack</td><td>Global edge network</td></tr>
+      <tr><td>Paystack</td><td>Takes card and transfer payments. Your card details go to Paystack and are never held by us.</td><td>Nigeria</td></tr>
+      <tr><td>Google Maps Platform</td><td>Address search, geocoding, and distance and travel-time estimates</td><td>United States</td></tr>
+      <tr><td>Mapbox</td><td>Recalculating a driver's route during a trip</td><td>United States</td></tr>
+      <tr><td>Stream</td><td>In-app chat and voice or video calls between rider and driver</td><td>United States</td></tr>
+      <tr><td>Resend</td><td>Sends account and trip emails</td><td>United States</td></tr>
+      <tr><td>Twilio</td><td>Sends WhatsApp messages about your booking</td><td>United States</td></tr>
+      <tr><td>Expo, with Apple Push Notification service and Firebase Cloud Messaging</td><td>Delivers push notifications to your device</td><td>United States</td></tr>
+      <tr><td>AviationStack</td><td>Looks up flight status when you enter a flight number</td><td>European Union</td></tr>
+      <tr><td>Google and Apple</td><td>Confirm your identity to us if you choose Sign in with Google or Sign in with Apple</td><td>United States</td></tr>
+      <tr><td>Google Fonts</td><td>Serves the typefaces on this website, which means Google receives your IP address when a page loads</td><td>United States</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <h3>Law enforcement and legal requests</h3>
+  <p>We will disclose user or GPS location data to police, government bodies, or legal authorities <strong>only</strong> when presented with a valid court order, subpoena, or legally binding mandate under Nigerian law, or in emergency situations involving immediate physical safety threats.</p>
+  <h3>Business transfers</h3>
+  <p>If the business is sold or reorganised, personal data may transfer to the buyer. We will tell you before that happens, and the data stays subject to this policy until you are told otherwise.</p>
+
+  <h2>6. Storage, security and international transfers</h2>
+  <ul>
+    <li><strong>Security:</strong> data in transit is protected with HTTPS. Passwords are stored only as bcrypt hashes. Access to production data is limited to the people who need it for their work, sign-in tokens expire, and changes made through our internal tools are restricted to administrator accounts.</li>
+    <li><strong>Where your data is processed:</strong> we serve Nigeria, but the providers listed in section 5 operate mainly in the United States, with flight lookups handled in the European Union. Your data is therefore transferred outside Nigeria.</li>
+    <li><strong>The basis for those transfers:</strong> under sections 41 to 43 of the NDPA we rely on contractual instruments with each provider, being standard contractual clauses or equivalent data-processing terms that place them under obligations comparable to the NDPA. Where a transfer is needed to deliver the trip you actually booked, for example a map lookup or a payment, we also rely on the transfer being necessary for the performance of that contract. If neither applies to a new provider, we will ask for your consent before transferring.</li>
   </ul>
 
-  <h3>From drivers</h3>
+  <h2>7. Cookies and similar technologies</h2>
+  <p>This website sets no cookies, and it runs no analytics, advertising or tracking technologies. It stores three things in your browser's local storage, all of which are needed for the site to work:</p>
   <ul>
-    <li>Name, email, phone number</li>
-    <li>Driver's license number and LASDRI number, for verification</li>
-    <li>Vehicle details (make, model, plate number)</li>
-    <li>Location while online, to match you with nearby ride requests</li>
-    <li>Earnings and trip history</li>
+    <li>your sign-in token, so you stay signed in;</li>
+    <li>your language choice; and</li>
+    <li>the state of a safety feature while one is running, so that it survives a page reload.</li>
   </ul>
+  <p>Clearing your site data removes all three and signs you out. Because none of it is used for analytics, advertising or tracking, no consent banner is required for it.</p>
+  <p>The apps store a sign-in token on the device and hold a push notification token so we can send you trip updates. They contain no analytics, advertising or crash-reporting SDKs.</p>
+  <p>The one third party your browser contacts on these pages is Google Fonts, which receives your IP address in order to serve the typefaces.</p>
+  <p>If we ever add non-essential analytics or tracking, we will ask for your consent before it runs and give you a way to withdraw that consent.</p>
 
-  <h3>From vehicle owners</h3>
+  <h2>8. How long we keep things</h2>
+  <p>When you delete your account we remove or anonymise your personal data and keep only the minimum record we are legally required to hold. The account cannot be signed into again, and your email address is released so that it can be used for a new account.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What</th><th>How long</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Account profile: name, email, phone, preferences</td><td>While your account is open. Removed or anonymised when you delete it.</td><td>Needed to provide the service</td></tr>
+      <tr><td>Trip invoice record: fare, currency, dates, status, vehicle class, pickup and stop addresses</td><td>7 years from the trip</td><td>Statutory tax, accounting and dispute-resolution obligations</td></tr>
+      <tr><td>Precise GPS coordinates of a trip</td><td>Removed when you delete your account, and not part of the 7 year record</td><td>Finer than an invoice needs</td></tr>
+      <tr><td>Flight number</td><td>Removed when you delete your account</td><td>Says where you travelled, and is not needed to bill for a completed trip</td></tr>
+      <tr><td>Emergency contact name and number</td><td>Deleted with your account</td><td>Belongs to someone who never had an account with us</td></tr>
+      <tr><td>Support tickets</td><td>The type, status and dates are kept for the dispute trail. The text you wrote is removed when you delete your account.</td><td>Dispute resolution, without keeping your words longer than needed</td></tr>
+      <tr><td>Driver documents and photos: licence, LASDRI, insurance, vehicle and owner details</td><td>Removed when the account is deleted</td><td>Only needed while the driver is active</td></tr>
+      <tr><td>Rating comments you wrote</td><td>Removed when you delete your account</td><td>An opinion, with no tax or accounting purpose</td></tr>
+      <tr><td>Payment records held by Paystack</td><td>Per Paystack's own retention policy and Nigerian financial regulation</td><td>Held by Paystack for that purpose</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Deleting an account is blocked in two situations, so that nothing is lost by accident: while you have a trip that has not finished, and while there is money left in your wallet. The app tells you which one applies.</p>
+
+  <h2>9. Your rights</h2>
+  <p>Under the NDPA you can ask us to do any of the following.</p>
   <ul>
-    <li>Name, contact details, and bank details for payouts</li>
-    <li>Vehicle documents (insurance, roadworthiness certification)</li>
+    <li><strong>Access:</strong> confirm whether we hold data about you, and give you a copy of it.</li>
+    <li><strong>Correct:</strong> fix anything inaccurate or incomplete.</li>
+    <li><strong>Erase:</strong> delete your data. You can delete your account yourself in the app under Profile, or by emailing us. Erasure is subject to the records we are legally required to keep, listed in section 8, including tax, accounting, fraud-prevention and dispute-resolution obligations. Anything we are not required to retain is deleted or anonymised.</li>
+    <li><strong>Restrict:</strong> pause our processing while a dispute about the accuracy of your data, or about the grounds we rely on, is being resolved.</li>
+    <li><strong>Object:</strong> object to processing we carry out on the basis of legitimate interest.</li>
+    <li><strong>Port:</strong> receive the data you gave us in a structured, commonly used, machine-readable format, and have us send it to another provider where that is technically feasible.</li>
+    <li><strong>Withdraw consent:</strong> for anything we do on the basis of consent, such as in-trip audio recording or marketing email, withdraw it at any time. Withdrawing consent does not undo processing that already happened lawfully, and it does not affect anything we do on a different basis.</li>
+    <li><strong>Automated decisions:</strong> ask for a human to review any decision made about you by solely automated means, put your point of view, and contest the decision. As set out in section 4, we do not currently make decisions of that kind.</li>
   </ul>
+  <p>Email <a href="mailto:privacy@ridearrivo.com">privacy@ridearrivo.com</a> to use any of these. We will respond within 30 days, and there is no charge. We may need to confirm your identity first, so that we do not hand your data to somebody else.</p>
+  <p>If you are not satisfied with how we have handled it, you can lodge a complaint with the Nigeria Data Protection Commission (NDPC) at <a href="https://ndpc.gov.ng" target="_blank" rel="noopener">ndpc.gov.ng</a>.</p>
 
-  <h2>3. How we use this information</h2>
-  <ul>
-    <li>To provide and improve the core service — matching riders with drivers and vehicles, processing payments, and enabling live tracking</li>
-    <li>To verify driver and vehicle owner identity before allowing them to operate on the platform</li>
-    <li>To communicate with you about your account, a ride in progress, or important service updates</li>
-    <li>To meet legal and regulatory obligations, including those under Lagos State transport regulations</li>
-  </ul>
+  <h2>10. Minors</h2>
+  <p>RideArrivo services are strictly intended for users aged 18 and older. We do not knowingly collect personal data from children. If you believe a child has given us personal data, email <a href="mailto:privacy@ridearrivo.com">privacy@ridearrivo.com</a> and we will remove it.</p>
 
-  <h2>4. Who we share it with</h2>
-  <ul>
-    <li><strong>Paystack</strong> — to process payments. See Paystack's own privacy policy for how they handle payment data.</li>
-    <li><strong>AviationStack</strong> — we send your flight number to look up flight status; no other personal data is shared with them.</li>
-    <li><strong>Your matched driver or rider</strong> — limited details necessary to complete a ride (name, live location during the trip, contact number where relevant).</li>
-    <li>We do not sell your personal data to third parties.</li>
-  </ul>
+  <h2>11. Changes to this policy</h2>
+  <p>We may update this policy. The date at the top always shows the version currently in force, and it changes whenever the policy does.</p>
+  <p>If a change materially affects you, we will tell you directly by email or in the app, before or when it takes effect. Where a change involves processing that requires your consent, we will ask for that consent separately. We do not treat continued use of the app or website as agreement to a revised policy.</p>
 
-  <h2>5. Data retention</h2>
-  <p>We keep your account and ride history for as long as your account is active, and for a reasonable period afterward to meet legal, tax, and dispute-resolution obligations. You can request deletion of your account at any time (see Section 7).</p>
-
-  <h2>6. Security</h2>
-  <p>Passwords are hashed, not stored in plain text. Data in transit is encrypted (HTTPS). Access to rider and driver data is restricted to what our systems and support team need to operate the service.</p>
-
-  <h2>7. Your rights</h2>
-  <p>Under the NDPR, you have the right to access, correct, or request deletion of your personal data. To exercise any of these rights, email <a href="mailto:info@ridearrivo.com">info@ridearrivo.com</a>.</p>
-
-  <h2>8. Children</h2>
-  <p>RideArrivo is not intended for anyone under 18. We do not knowingly collect data from children.</p>
-
-  <h2>9. Changes to this policy</h2>
-  <p>We'll update the date at the top of this page whenever this policy changes. Continued use of RideArrivo after a change means you accept the updated policy.</p>
-
-  <h2>10. Contact</h2>
-  <p>Questions about this policy? Email <a href="mailto:info@ridearrivo.com">info@ridearrivo.com</a>.</p>
+  <h2>12. Contact</h2>
+  <p>For privacy questions, to use any of the rights in section 9, or to reach our Data Protection Officer, email <a href="mailto:privacy@ridearrivo.com">privacy@ridearrivo.com</a>. For anything else, email <a href="mailto:info@ridearrivo.com">info@ridearrivo.com</a>.</p>
+  <p>RICHATHAOIR LIMITED (CAC RC 1654710), <span class="pending">[registered office address to be inserted before this page is published]</span>.</p>
 </main>
 
 <footer class="site-footer">
