@@ -16,9 +16,9 @@
 
   // ───────────────────────── i18n (identical pattern to booking.js) ─────
   // Only the shared header/footer chrome (nav, footer links) is actually
-  // translated via data-i18n here -- this page's own ArrivoNow copy is
+  // translated via data-i18n here -- this page's own ArrivoExpress copy is
   // English-only for now (see PR notes: translate alongside the mobile
-  // app's ArrivoNow strings in a follow-up localization pass).
+  // app's ArrivoExpress strings in a follow-up localization pass).
   function getNested(obj, path) {
     return path.split(".").reduce(function (acc, key) { return acc && acc[key]; }, obj);
   }
@@ -396,7 +396,7 @@
     document.getElementById("backToPickerBtn").addEventListener("click", function () { showCard("pickerCard"); });
     document.getElementById("cancelSearchBtn").addEventListener("click", cancelSearch);
 
-    // ArrivoNow settles from the RideArrivo Wallet, so -- same rule
+    // ArrivoExpress settles from the RideArrivo Wallet, so -- same rule
     // book.html already enforces for scheduled bookings -- a logged-in
     // account is required. No guest path here.
     var savedToken = localStorage.getItem("arrivo_rider_token");

@@ -28,14 +28,14 @@ Replace with your real key from `dashboard.paystack.com/#/settings/developer` (u
 
 ---
 
-## On-demand rides (`ride-now.html`, "ArrivoNow")
+## On-demand rides (`ride-now.html`, "ArrivoExpress")
 
-A second, separate booking page for RideArrivo's on-demand product, ArrivoNow — pick a vehicle tier (Economy/Comfort/XL/Premium), get a live metered fare quote, and get matched with a nearby driver, instead of the scheduled one-way/day/week/month flow `book.html` handles. See `arrivo-backend/routes/instantRides.js` for the API contract and `arrivo-app/screens/ArrivoNowScreen.js` for the same flow in the rider app.
+A second, separate booking page for RideArrivo's on-demand product, ArrivoExpress — pick a vehicle tier (Economy/Comfort/XL/Premium), get a live metered fare quote, and get matched with a nearby driver, instead of the scheduled one-way/day/week/month flow `book.html` handles. See `arrivo-backend/routes/instantRides.js` for the API contract and `arrivo-app/screens/ArrivoExpressScreen.js` for the same flow in the rider app.
 
-- Requires a logged-in account (same `arrivo_rider_token` auth gate as `book.html` — no guest path), because ArrivoNow settles from the rider's RideArrivo Wallet.
-- Shows nothing (the `#unavailableCard` state) if `GET /api/instant-rides/status` reports the feature flag off — this page is safe to deploy and link to before ArrivoNow is switched on.
-- Once matched, redirects straight to `track.html?ride=<id>` — an ArrivoNow ride becomes a normal `rides` row server-side, so the existing tracking page needs no changes to handle it.
-- Its own tier-picker and fare-summary copy is English-only for now; translate it alongside the mobile app's ArrivoNow strings in a follow-up localization pass (the shared header/footer chrome around it still uses the site's normal 7-language `i18n.js`).
+- Requires a logged-in account (same `arrivo_rider_token` auth gate as `book.html` — no guest path), because ArrivoExpress settles from the rider's RideArrivo Wallet.
+- Shows nothing (the `#unavailableCard` state) if `GET /api/instant-rides/status` reports the feature flag off — this page is safe to deploy and link to before ArrivoExpress is switched on.
+- Once matched, redirects straight to `track.html?ride=<id>` — an ArrivoExpress ride becomes a normal `rides` row server-side, so the existing tracking page needs no changes to handle it.
+- Its own tier-picker and fare-summary copy is English-only for now; translate it alongside the mobile app's ArrivoExpress strings in a follow-up localization pass (the shared header/footer chrome around it still uses the site's normal 7-language `i18n.js`).
 
 ## Test it locally
 
