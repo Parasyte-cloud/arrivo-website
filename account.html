@@ -827,7 +827,7 @@
           "</div></div>" +
           '<div class="trip-meta">' +
           "<span>" + date + "</span>" +
-          '<span class="trip-status ' + statusClass(r.ride_status) + '">' + (tripStatusLabels[r.ride_status] || r.ride_status.replace("_", " ")) + "</span>" +
+          '<span class="trip-status ' + statusClass(r.ride_status) + '">' + (tripStatusLabels[r.ride_status] || escapeHtml(r.ride_status.replace("_", " "))) + "</span>" +
           "<span>NGN " + Number(r.fare_naira).toLocaleString() + "</span>" +
           "</div></div>";
       }).join("");
