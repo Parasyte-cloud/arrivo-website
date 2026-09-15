@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ride Now | RideArrivo</title>
+<link rel="canonical" href="https://ridearrivo.com/ride-now.html">
+<meta name="description" content="RideArrivo ArrivoExpress — on-demand rides in Lagos. Choose Economy, Comfort, XL or Premium and get matched with a nearby verified driver in minutes.">
+<meta property="og:title" content="ArrivoExpress | RideArrivo">
+<meta property="og:description" content="On-demand rides in Lagos, priced by distance and time. Choose your vehicle and get matched with a nearby driver.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ridearrivo.com/ride-now.html">
+<meta property="og:image" content="https://ridearrivo.com/assets/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ArrivoExpress | RideArrivo">
+<meta name="twitter:description" content="On-demand rides in Lagos, priced by distance and time.">
+<meta name="twitter:image" content="https://ridearrivo.com/assets/og-image.png">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12123B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RideArrivo">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=30">
+<link rel="stylesheet" href="booking.css?v=30">
+<link rel="stylesheet" href="ride-now.css?v=1">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "serviceType": "On-demand ride-hailing",
+  "provider": {
+    "@type": "TaxiService",
+    "name": "RideArrivo",
+    "url": "https://ridearrivo.com",
+    "telephone": "+2348162706078",
+    "email": "info@ridearrivo.com"
+  },
+  "areaServed": {
+    "@type": "City",
+    "name": "Lagos"
+  },
+  "url": "https://ridearrivo.com/ride-now.html"
+}
+</script>
+  <script>
+    document.documentElement.classList.add("ra-launch-pending");
+    window.setTimeout(function () {
+      document.documentElement.classList.remove("ra-launch-pending");
+    }, 5000);
+  </script>
+  <link rel="stylesheet" href="/launch-countdown.css?v=20260912-02">
+</head>
+<body>
+
+<!-- Real Liquid Glass needs actual refraction of what's behind it, not just
+     blur — this is the difference between "frosted panel" and "glass".
+     feTurbulence generates an organic noise field, feDisplacementMap uses it
+     to warp the content underneath, the way light bends through curved
+     glass. Applied via backdrop-filter: url(#liquid-glass-refraction). -->
+<svg style="position:absolute; width:0; height:0; overflow:hidden;" aria-hidden="true">
+  <filter id="liquid-glass-refraction" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.010 0.018" numOctaves="2" seed="7" result="noise"/>
+    <feGaussianBlur in="noise" stdDeviation="2" result="softNoise"/>
+    <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="brand">
+      <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
+      <img src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark">
+    </a>
+    <nav class="main-nav" aria-label="Primary">
+      <a href="index.html#how" data-i18n="nav.how">How it works</a>
+      <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
+      <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
+      <a href="book.html">Scheduled booking</a>
+    </nav>
+    <div class="header-actions">
+      <span class="live-clock" id="liveClock" aria-hidden="true"></span>
+      <div class="lang-dropdown" id="langDropdown">
+        <button type="button" class="lang-trigger" id="langTrigger" aria-haspopup="listbox" aria-expanded="false">
+          <span id="langTriggerLabel">EN</span>
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <ul class="lang-menu" id="langMenu" role="listbox" hidden>
+          <li><button type="button" class="lang-opt" data-lang="en">English</button></li>
+          <li><button type="button" class="lang-opt" data-lang="fr">Français</button></li>
+          <li><button type="button" class="lang-opt" data-lang="zh">中文</button></li>
+          <li><button type="button" class="lang-opt" data-lang="hi">हिन्दी</button></li>
+          <li><button type="button" class="lang-opt" data-lang="de">Deutsch</button></li>
+          <li><button type="button" class="lang-opt" data-lang="es">Español</button></li>
+          <li><button type="button" class="lang-opt" data-lang="pt">Português</button></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap booking-wrap">
+  <h1 data-i18n="rideNow.pageTitle">ArrivoExpress — Ride Now</h1>
+  <p class="step-sub" data-i18n="rideNow.pageSub">On-demand rides, priced by distance and time. Pick a vehicle, see your fare, get matched with a nearby driver.</p>
+
+  <!-- AUTH GATE: ArrivoExpress settles from your RideArrivo Wallet, so a
+       registered, logged-in account is required — same rule book.html
+       already enforces for scheduled bookings (no guest checkout there
+       either, see its own authGate). -->
+  <div class="booking-card" id="authGate" hidden style="text-align:center;">
+    <h2 style="font-size:19px;" data-i18n="rideNow.authTitle">Log in to use ArrivoExpress</h2>
+    <p style="color:var(--text-muted); font-size:13.5px; margin-bottom:20px;">
+      <span data-i18n="rideNow.authBody">ArrivoExpress pays from your RideArrivo Wallet, so you'll need a registered profile first.</span>
+    </p>
+    <a href="signup.html?next=ride-now.html" class="btn btn-primary" style="width:100%; margin-bottom:10px;" data-i18n="rideNow.createProfile">Create a profile</a>
+    <a href="login.html?next=ride-now.html" class="btn btn-ghost" style="width:100%;" data-i18n="rideNow.alreadyHaveProfile">Already have a profile? Log in</a>
+  </div>
+
+  <div class="booking-card" id="unavailableCard" hidden style="text-align:center;">
+    <h2 style="font-size:19px;" data-i18n="rideNow.unavailableTitle">ArrivoExpress isn't live yet</h2>
+    <p style="color:var(--text-muted); font-size:13.5px;" data-i18n="rideNow.unavailableBody">We're finishing driver rollout for on-demand rides. Book a scheduled pickup instead, or check back soon.</p>
+    <a href="book.html" class="btn btn-primary" style="width:100%; margin-top:14px;" data-i18n="rideNow.bookScheduled">Book a scheduled ride</a>
+  </div>
+
+  <div class="booking-card" id="loadingCard" style="text-align:center;">
+    <div class="rn-spinner" aria-hidden="true"></div>
+    <p style="color:var(--text-muted); font-size:13px; margin-top:10px;" data-i18n="rideNow.loading">Loading ArrivoExpress…</p>
+  </div>
+
+  <!-- PICKER -->
+  <div class="booking-card" id="pickerCard" hidden>
+    <h2 style="font-size:19px; margin-bottom:6px;" data-i18n="rideNow.chooseYourRide">Choose your ride</h2>
+    <div class="vehicle-options" id="tierOptions"></div>
+
+    <h2 style="font-size:19px; margin-top:22px; margin-bottom:6px;" data-i18n="rideNow.whereTo">Where to?</h2>
+    <label class="field-label" for="rnPickup" data-i18n="rideNow.pickupLabel">Pickup address</label>
+    <input type="text" id="rnPickup" class="field" placeholder="Enter pickup address" data-i18n-placeholder="rideNow.pickupPlaceholder" autocomplete="off">
+    <label class="field-label" for="rnDestination" data-i18n="rideNow.destinationLabel">Destination</label>
+    <input type="text" id="rnDestination" class="field" placeholder="Enter destination" data-i18n-placeholder="rideNow.destinationPlaceholder" autocomplete="off">
+    <p class="error-text" id="pickerError" hidden></p>
+    <button type="button" class="btn btn-primary" id="seeFareBtn" style="width:100%; margin-top:10px;" data-i18n="rideNow.seeFare">See fare</button>
+  </div>
+
+  <!-- QUOTE -->
+  <div class="booking-card" id="quoteCard" hidden>
+    <h2 style="font-size:19px; margin-bottom:6px;" data-i18n="rideNow.confirmTitle">Confirm your ride</h2>
+    <div class="rn-summary">
+      <div class="rn-summary-row">
+        <span id="quoteTierLabel" style="font-weight:700;"></span>
+        <span id="quoteZoneTag" class="v-badge" style="display:none;" data-i18n="rideNow.highTrafficArea">High-traffic area</span>
+      </div>
+      <p class="rn-route" id="quoteRoute"></p>
+      <div class="rn-summary-row"><span data-i18n="rideNow.estimatedDistance">Estimated distance</span><span id="quoteDistance"></span></div>
+      <div class="rn-summary-row"><span data-i18n="rideNow.estimatedTime">Estimated time</span><span id="quoteDuration"></span></div>
+      <div class="rn-summary-row rn-total"><span data-i18n="rideNow.totalFare">Total fare</span><span id="quoteFare"></span></div>
+      <p class="rn-fine-print" id="walletBalanceNote"></p>
+    </div>
+    <p class="error-text" id="quoteError" hidden></p>
+    <button type="button" class="btn btn-primary" id="confirmRideBtn" style="width:100%; margin-top:10px;" data-i18n="rideNow.confirmFindDriver">Confirm &amp; find a driver</button>
+    <button type="button" class="btn btn-ghost" id="backToPickerBtn" style="width:100%; margin-top:8px;" data-i18n="rideNow.back">Back</button>
+  </div>
+
+  <!-- SEARCHING -->
+  <div class="booking-card" id="searchingCard" hidden style="text-align:center;">
+    <div class="rn-spinner" aria-hidden="true"></div>
+    <h2 id="searchingStatus" style="font-size:19px; margin-top:12px;" data-i18n="rideNow.statusSearching">Looking for a nearby driver…</h2>
+    <p class="rn-route" id="searchingRoute"></p>
+    <p id="searchingFare" style="font-weight:700; font-size:20px; color:var(--amber);"></p>
+    <button type="button" class="btn btn-ghost" id="cancelSearchBtn" style="width:100%; margin-top:14px;" data-i18n="rideNow.cancelRequest">Cancel request</button>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-top">
+    <div class="footer-brand-col">
+      <div class="footer-brand">
+        <img src="assets/icon.png" alt="" width="22" height="22">
+        <img src="assets/ridearrivo-wordmark-light.png" alt="RideArrivo" class="footer-wordmark">
+      </div>
+      <p class="footer-tagline" data-i18n="footer.tagline">Lagos airport pickups, done right.</p>
+      <div class="footer-social-row">
+        <a href="https://www.instagram.com/ridearrivong?igsh=ZzRzYTRtZWRsMWV3&amp;utm_source=qr" target="_blank" rel="noopener" class="footer-social-icon" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" stroke-width="1.7"/>
+            <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.7"/>
+            <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor"/>
+          </svg>
+        </a>
+        <a href="https://www.tiktok.com/@ridearrivong?_r=1&amp;_t=ZS-97tSwV8mvEj" target="_blank" rel="noopener" class="footer-social-icon" aria-label="TikTok">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 3v10.6a2.8 2.8 0 1 1-2-2.68" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13 3c.4 2.2 2 3.8 4 4.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a href="https://x.com/ridearrivong?s=11" target="_blank" rel="noopener" class="footer-social-icon" aria-label="X (Twitter)">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5.5 5.5l13 13M18.5 5.5l-13 13" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+          </svg>
+        </a>
+        <a href="https://www.linkedin.com/company/ridearrivo/" target="_blank" rel="noopener" class="footer-social-icon" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3.5" y="3.5" width="17" height="17" rx="3" stroke="currentColor" stroke-width="1.7"/>
+            <circle cx="8.3" cy="8.3" r="1.15" fill="currentColor"/>
+            <path d="M8.3 11v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M12.3 17v-3.5c0-1.4 1-2.5 2.3-2.5s2.1 1 2.1 2.5V17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M12.3 11v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </a>
+        <a href="https://wa.me/2348162706078" target="_blank" rel="noopener" class="footer-social-icon" aria-label="WhatsApp">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4.5 19.5l1.2-3.8A7.7 7.7 0 1 1 8.9 18l-4.4 1.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+            <path d="M9 9.2c0 3 2.6 5.6 5.6 5.6.5 0 .9-.4.9-1v-.9l-2-1-1 1c-.9-.4-1.8-1.3-2.2-2.2l1-1-1-2h-.9c-.6 0-1 .4-1 .9v.6z" fill="currentColor"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer-col">
+      <h4 data-i18n="footer.companyHeading">Company</h4>
+      <a href="index.html#how" data-i18n="nav.how">How it works</a>
+      <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
+      <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
+    </div>
+
+    <div class="footer-col">
+      <h4 data-i18n="footer.getStartedHeading">Get Started</h4>
+      <a href="ride-now.html" data-i18n="nav.rideNowFooter">Ride Now (ArrivoExpress)</a>
+      <a href="book.html" data-i18n="nav.bookCta">Book a ride</a>
+      <a href="driver.html" data-i18n="footer.driverPortal">Driver Portal</a>
+      <a href="account.html" data-i18n="footer.myAccount">My Account</a>
+    </div>
+
+    <div class="footer-col">
+      <h4 data-i18n="footer.legalHeading">Legal</h4>
+      <a href="privacy.html" data-i18n="footer.privacy">Privacy Policy</a>
+      <a href="terms.html" data-i18n="footer.terms">Terms of Service</a>
+    </div>
+
+    <div class="footer-col">
+      <h4 data-i18n="footer.contactHeading">Contact</h4>
+      <a href="#" class="footer-contact-link" id="footerEmailLink" data-user="info" data-domain="ridearrivo.com">
+        <svg class="footer-contact-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span id="footerEmailText">Email us</span>
+      </a>
+      <a href="#" class="footer-contact-link" id="footerPhoneLink" data-cc="234" data-num="8162706078" data-display="081 6270 6078">
+        <svg class="footer-contact-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M7.5 3.5c.6 0 1.2.4 1.4 1l1 2.6c.2.5 0 1.1-.4 1.5L8.3 9.8c1 2.2 2.7 3.9 4.9 4.9l1.2-1.2c.4-.4 1-.5 1.5-.4l2.6 1c.6.2 1 .8 1 1.4v2.2c0 1-.9 1.8-1.9 1.6C11.8 18.4 5.6 12.2 4.7 6.4 4.5 5.4 5.3 4.5 6.3 4.5h1.2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+        <span id="footerPhoneText">Call us</span>
+      </a>
+      <script>
+        (function () {
+          var link = document.getElementById("footerEmailLink");
+          if (!link) return;
+          var address = link.getAttribute("data-user") + "@" + link.getAttribute("data-domain");
+          link.href = "mailto:" + address;
+          document.getElementById("footerEmailText").textContent = address;
+          var phoneLink = document.getElementById("footerPhoneLink");
+          if (phoneLink) {
+            phoneLink.href = "tel:+" + phoneLink.getAttribute("data-cc") + phoneLink.getAttribute("data-num");
+            document.getElementById("footerPhoneText").textContent = phoneLink.getAttribute("data-display");
+          }
+        })();
+      </script>
+    </div>
+  </div>
+
+  <div class="wrap footer-bottom">
+    <div>
+      <p class="footer-legal" data-i18n="footer.legal">© 2026 <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>. Made in Lagos.</p>
+      <p class="footer-legal-entity">RICHATHAOIR LIMITED (RC 1654710)</p>
+    </div>
+    <div class="footer-credit-row">
+      <span class="footer-credit-label">Powered by</span>
+      <a href="https://parasyte.cloud" target="_blank" rel="noopener" class="footer-parasyte-link">
+        <img src="assets/parasyte-logo.png" alt="Parasyte.cloud" class="footer-parasyte-logo">
+      </a>
+    </div>
+    <img src="assets/ride-arrivo-wordmark.png" alt="RideArrivo" class="footer-wordmark">
+  </div>
+</footer>
+
+<script src="i18n.js?v=30"></script>
+<script src="ride-now.js?v=1"></script>
+<script src="clock.js"></script>
+<!-- Google Maps Places Autocomplete for the pickup/destination fields —
+     same key already in use on book.html; confirm HTTP referrer
+     restrictions in Google Cloud Console include ridearrivo.com. -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLWAbQmxIAoGPP0LLDp6oTosaHZBa0Y5s&libraries=places&callback=initGoogleMaps"></script>
+<script src="pwa-register.js"></script>
+<script src="glass-effects.js?v=30"></script>
+  <script src="/launch-countdown.js?v=20260912-02" defer></script>
+</body>
+</html>
