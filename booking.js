@@ -472,9 +472,19 @@
               ? new Date(result.data.arrival.estimated).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
               : "");
         } else {
+          // Show the server's actual message (it already distinguishes
+          // "not found yet" from a real lookup failure — see
+          // arrivo-backend/routes/flights.js) instead of one hardcoded
+          // string for every failure. Previously this always showed the
+          // static "double-check the number" copy even when the real
+          // cause was a server-side error, which was misleading.
           errorBox.hidden = false;
+          errorBox.textContent = (result.data && result.data.error) || t("booking.flightNotFound");
         }
-      }).catch(function () { errorBox.hidden = false; });
+      }).catch(function () {
+        errorBox.hidden = false;
+        errorBox.textContent = t("booking.flightNotFound");
+      });
     });
 
     document.getElementById("flightContinue").addEventListener("click", function () {
