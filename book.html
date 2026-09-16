@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Book a pickup | RideArrivo</title>
+<link rel="canonical" href="https://ridearrivo.com/book.html">
 <meta name="description" content="Book your Lagos airport pickup online. Choose your vehicle, pay securely, and track your ride live. No app required.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -22,7 +23,41 @@
       document.documentElement.classList.remove("ra-launch-pending");
     }, 5000);
   </script>
-  <link rel="stylesheet" href="/launch-countdown.css?v=20260912-01">
+  <link rel="stylesheet" href="/launch-countdown.css?v=20260912-02">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "serviceType": "Airport pickup and ride-hailing",
+  "provider": {
+    "@type": "TaxiService",
+    "name": "RideArrivo",
+    "url": "https://ridearrivo.com",
+    "telephone": "+2348162706078",
+    "email": "info@ridearrivo.com"
+  },
+  "areaServed": {
+    "@type": "City",
+    "name": "Lagos"
+  },
+  "url": "https://ridearrivo.com/book.html",
+  "potentialAction": {
+    "@type": "ReserveAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://ridearrivo.com/book.html",
+      "actionPlatform": [
+        "http://schema.org/DesktopWebPlatform",
+        "http://schema.org/MobileWebPlatform"
+      ]
+    },
+    "result": {
+      "@type": "Reservation",
+      "name": "Book a RideArrivo pickup"
+    }
+  }
+}
+</script>
 </head>
 <body>
 
@@ -49,6 +84,7 @@
       <a href="index.html#how" data-i18n="nav.how">How it works</a>
       <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
+      <a href="express.html" data-i18n="nav.express">ArrivoExpress</a>
     </nav>
     <div class="header-actions">
       <span class="live-clock" id="liveClock" aria-hidden="true"></span>
@@ -207,14 +243,14 @@
            have no single flight to track. -->
       <div id="flightNumberSection">
         <label class="field-label" id="flightSectionLabel" data-i18n="booking.flightTitle" style="margin-top:16px; display:block;">Got a flight number?</label>
-        <p class="step-sub" id="flightSectionSub" data-i18n="booking.flightSub">Required — it's how we track your flight and know exactly when to have your driver waiting.</p>
+        <p class="step-sub" id="flightSectionSub" data-i18n="booking.flightSub">Required: it's how we track your flight and know exactly when to have your driver waiting.</p>
 
         <div class="flight-row">
           <input type="text" id="fFlight" class="field" data-i18n-placeholder="booking.flightPlaceholder" placeholder="e.g. BA075" style="text-transform:uppercase;">
           <button class="btn btn-ghost" id="trackFlightBtn" data-i18n="booking.track" type="button">Track</button>
         </div>
         <div id="flightResult" class="flight-result" hidden></div>
-        <p class="error-text" id="flightError" hidden data-i18n="booking.flightNotFound"></p>
+        <p class="error-text" id="flightError" hidden></p>
         <p class="error-text" id="flightRequiredError" hidden data-i18n="booking.flightRequired">Please enter your flight number to continue.</p>
       </div>
 
@@ -450,7 +486,7 @@
            booking (see showReturnDropoffPrompt in booking.js). -->
       <div id="returnDropoffPrompt" hidden style="margin-top:20px; padding-top:20px; border-top:1px solid rgba(0,0,0,0.08); text-align:left;">
         <h3 data-i18n="booking.returnPromptTitle" style="font-size:16px; margin-bottom:6px;">Know when you're flying back?</h3>
-        <p class="step-sub" data-i18n="booking.returnPromptBody">Book your airport drop-off now and we'll have it all set — or come back and book it any time under Book a Ride once you know your return date and time.</p>
+        <p class="step-sub" data-i18n="booking.returnPromptBody">Book your airport drop-off now and we'll have it all set, or come back and book it any time under Book a Ride once you know your return date and time.</p>
         <a href="#" id="bookReturnDropoffLink" class="btn btn-primary" data-i18n="booking.returnPromptCta" style="width:100%; display:block; text-align:center; margin-bottom:8px; box-sizing:border-box;">Add my return drop-off</a>
       </div>
 
@@ -542,6 +578,7 @@
 
     <div class="footer-col">
       <h4 data-i18n="footer.getStartedHeading">Get Started</h4>
+      <a href="express.html" data-i18n="nav.express">ArrivoExpress</a>
       <a href="book.html" data-i18n="nav.bookCta">Book a ride</a>
       <a href="driver.html" data-i18n="footer.driverPortal">Driver Portal</a>
       <a href="account.html" data-i18n="footer.myAccount">My Account</a>
@@ -622,6 +659,6 @@
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLWAbQmxIAoGPP0LLDp6oTosaHZBa0Y5s&libraries=places&callback=initGoogleMaps"></script>
 <script src="pwa-register.js"></script>
 <script src="glass-effects.js?v=30"></script>
-  <script src="/launch-countdown.js?v=20260912-01" defer></script>
+  <script src="/launch-countdown.js?v=20260912-02" defer></script>
 </body>
 </html>

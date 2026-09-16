@@ -189,33 +189,6 @@ a { color: inherit; text-decoration: none; }
 }
 .btn-sm { padding: 11px 20px; font-size: 12.5px; min-height: 40px; box-sizing: border-box; display: inline-flex; align-items: center; white-space: nowrap; }
 
-/* On the narrowest phones, the header-actions row (clock, language, book
-   button, hamburger) gets tight enough that "Book a ride" was wrapping
-   into 2-3 lines — tighten spacing here instead of letting that happen. */
-@media (max-width: 470px) {
-  .header-inner { gap: 6px; }
-  .lang-trigger { padding: 9px 7px; font-size: 10px; }
-  .btn-sm { padding: 10px 9px; font-size: 11px; }
-  .nav-account-link { padding: 6px; }
-  /* Wordmark is an image again (properly cropped/transparent this time),
-     so it shrinks by height instead of the old text-based font-size rules. */
-  .brand-wordmark { height: 16px; }
-  .brand { gap: 6px; }
-}
-@media (min-width: 401px) and (max-width: 440px) {
-  .brand-wordmark { height: 15px; } /* shrink instead of hiding — still legible, just doesn't crowd the header */
-}
-@media (max-width: 400px) {
-  .brand-wordmark { display: none; } /* genuinely no room left at this width even at the smallest readable size */
-}
-@media (max-width: 330px) {
-  .header-inner { gap: 4px; }
-  .header-actions { gap: 6px; }
-  .lang-trigger { padding: 8px 6px; }
-  .btn-sm { padding: 9px 8px; }
-  .nav-account-link { padding: 4px; }
-}
-
 /* ── Header (Liquid Glass) ── */
 .site-header {
   position: sticky;
@@ -606,6 +579,50 @@ a { color: inherit; text-decoration: none; }
   min-height: 40px;
   box-sizing: border-box;
 }
+
+/* Relocated below every base rule it overrides (.header-inner,
+   .brand/.brand-wordmark, .header-actions, .lang-trigger, .btn-sm,
+   .nav-account-link) — CSS resolves same-specificity ties by source
+   order, so when this narrow-phone tightening block sat ABOVE those
+   base rules (as it originally did, right under the unrelated .btn-sm
+   rule near the top of the file), every property it shares with a base
+   rule declared further down got silently clobbered back to the base,
+   full-width value: .brand-wordmark's `display: none` in particular
+   never actually applied at ≤400px because the unconditional
+   `.brand-wordmark { display: block }` further down in the file always
+   won the tie. The wordmark (and the untightened gaps/padding) staying
+   at full size ate exactly the ~80-90px that "Book a ride" + the
+   hamburger needed, pushing the hamburger past the header's right edge
+   entirely — the reported "hamburger floating outside the pill" bug.
+   Same rules, same breakpoints, just positioned so they're actually the
+   last word for every property they touch. */
+/* On the narrowest phones, the header-actions row (clock, language, book
+   button, hamburger) gets tight enough that "Book a ride" was wrapping
+   into 2-3 lines — tighten spacing here instead of letting that happen. */
+@media (max-width: 470px) {
+  .header-inner { gap: 6px; }
+  .lang-trigger { padding: 9px 7px; font-size: 10px; }
+  .btn-sm { padding: 10px 9px; font-size: 11px; }
+  .nav-account-link { padding: 6px; }
+  /* Wordmark is an image again (properly cropped/transparent this time),
+     so it shrinks by height instead of the old text-based font-size rules. */
+  .brand-wordmark { height: 16px; }
+  .brand { gap: 6px; }
+}
+@media (min-width: 401px) and (max-width: 440px) {
+  .brand-wordmark { height: 15px; } /* shrink instead of hiding — still legible, just doesn't crowd the header */
+}
+@media (max-width: 400px) {
+  .brand-wordmark { display: none; } /* genuinely no room left at this width even at the smallest readable size */
+}
+@media (max-width: 330px) {
+  .header-inner { gap: 4px; }
+  .header-actions { gap: 6px; }
+  .lang-trigger { padding: 8px 6px; }
+  .btn-sm { padding: 9px 8px; }
+  .nav-account-link { padding: 4px; }
+}
+
 .lang-trigger:hover { background: rgba(18,18,59,0.06); }
 .lang-trigger svg { transition: transform 0.15s ease; flex-shrink: 0; }
 .lang-dropdown.open .lang-trigger svg { transform: rotate(180deg); }

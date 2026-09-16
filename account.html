@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Your account | RideArrivo</title>
+<link rel="canonical" href="https://ridearrivo.com/account.html">
 <meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Manage your RideArrivo account, bookings, and wallet.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
@@ -153,7 +155,7 @@
       document.documentElement.classList.remove("ra-launch-pending");
     }, 5000);
   </script>
-  <link rel="stylesheet" href="/launch-countdown.css?v=20260912-01">
+  <link rel="stylesheet" href="/launch-countdown.css?v=20260912-02">
 </head>
 <body>
 
@@ -360,6 +362,7 @@
 
     <div class="footer-col">
       <h4 data-i18n="footer.getStartedHeading">Get Started</h4>
+      <a href="express.html" data-i18n="nav.express">ArrivoExpress</a>
       <a href="book.html" data-i18n="nav.bookCta">Book a ride</a>
       <a href="driver.html" data-i18n="footer.driverPortal">Driver Portal</a>
       <a href="account.html" data-i18n="footer.myAccount">My Account</a>
@@ -825,7 +828,7 @@
           "</div></div>" +
           '<div class="trip-meta">' +
           "<span>" + date + "</span>" +
-          '<span class="trip-status ' + statusClass(r.ride_status) + '">' + (tripStatusLabels[r.ride_status] || r.ride_status.replace("_", " ")) + "</span>" +
+          '<span class="trip-status ' + statusClass(r.ride_status) + '">' + (tripStatusLabels[r.ride_status] || escapeHtml(r.ride_status.replace("_", " "))) + "</span>" +
           "<span>NGN " + Number(r.fare_naira).toLocaleString() + "</span>" +
           "</div></div>";
       }).join("");
@@ -1136,6 +1139,6 @@
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script src="paystack-config.js?v=30"></script>
 <script src="glass-effects.js?v=30"></script>
-  <script src="/launch-countdown.js?v=20260912-01" defer></script>
+  <script src="/launch-countdown.js?v=20260912-02" defer></script>
 </body>
 </html>
