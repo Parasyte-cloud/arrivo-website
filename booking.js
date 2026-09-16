@@ -1707,7 +1707,7 @@
         if (!paymentSyncResult.ok) {
           throw new Error(
             "Your payment went through and your ride was created, but we couldn't finish confirming it automatically. " +
-            "Please contact support with reference " + reference + " (Ride #" + (createdRide ? createdRide.id : "—") + ")."
+            "Please contact support with reference " + reference + " (Ride #" + (createdRide ? createdRide.id : "N/A") + ")."
           );
         }
         document.getElementById("confirmRef").textContent = reference;

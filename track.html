@@ -93,7 +93,7 @@
       <div id="fleetConvoyList"></div>
     </div>
 
-    <button class="panic-btn" id="panicBtn" data-i18n="track.panicBtn">🚨 I don't feel safe — alert support</button>
+    <button class="panic-btn" id="panicBtn" data-i18n="track.panicBtn">🚨 I don't feel safe, alert support</button>
     <div class="panic-active" id="panicActiveMsg" hidden data-i18n="track.panicActiveMsg">🚨 Support has been alerted about this ride.</div>
   </div>
 
@@ -137,7 +137,7 @@
     <h2 style="font-size:16px; margin-bottom:6px;" data-i18n="track.tipDriverTitle">Tip your driver</h2>
     <p id="tipDoneMsg" style="font-size:13px; color:var(--text-muted);" hidden></p>
     <div id="tipForm">
-      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:10px;" data-i18n="track.tipDisclaimer">Entirely optional — 100% goes to your driver. Never cash, same as your fare.</p>
+      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:10px;" data-i18n="track.tipDisclaimer">Entirely optional: 100% goes to your driver. Never cash, same as your fare.</p>
       <div class="for-who-toggle" id="tipPercentToggle" style="margin-bottom:10px;">
         <button type="button" class="for-who-opt is-active" data-percent="15">15%</button>
         <button type="button" class="for-who-opt" data-percent="20">20%</button>
@@ -496,7 +496,7 @@
         var doneMsg = document.getElementById("rateDoneMsg");
         doneMsg.hidden = false;
         doneMsg.textContent = t("track.youRatedTrip") + "★".repeat(currentRide.rider_rating) + "☆".repeat(5 - currentRide.rider_rating) +
-          (currentRide.rider_rating_comment ? " — \"" + currentRide.rider_rating_comment + "\"" : "");
+          (currentRide.rider_rating_comment ? ": \"" + currentRide.rider_rating_comment + "\"" : "");
       }
     }
 

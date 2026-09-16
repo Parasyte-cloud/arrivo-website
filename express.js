@@ -302,7 +302,7 @@
     document.getElementById("quoteTierLabel").textContent = tierConfig ? tierConfig.label : state.selectedTier;
     document.getElementById("quoteZoneTag").style.display = q.zone === "yellow" ? "inline-block" : "none";
     document.getElementById("quoteRoute").textContent = state.pickup + " → " + state.destination;
-    document.getElementById("quoteDistance").textContent = tFormat("arrivoExpress.distanceKm", { distance: q.distanceKm != null ? q.distanceKm.toFixed(1) : "—" });
+    document.getElementById("quoteDistance").textContent = tFormat("arrivoExpress.distanceKm", { distance: q.distanceKm != null ? q.distanceKm.toFixed(1) : "N/A" });
     document.getElementById("quoteDuration").textContent = tFormat("arrivoExpress.durationMin", { duration: Math.round(q.durationMin) });
     document.getElementById("quoteFare").textContent = formatNaira(q.fareNaira);
     document.getElementById("quoteError").hidden = true;

@@ -98,7 +98,7 @@
         }
         statusIcon.textContent = "✅";
         statusMsg.style.color = "var(--teal)";
-        statusMsg.textContent = "Ride confirmed with " + result.data.driverName + ". Tracking has started — have a safe trip!";
+        statusMsg.textContent = "Ride confirmed with " + result.data.driverName + ". Tracking has started, have a safe trip!";
         trackLink.style.display = "block";
         trackLink.setAttribute("href", "track.html?ride=" + result.data.ride.id);
       })
@@ -106,13 +106,13 @@
         // fetch() itself threw — this is a connectivity failure, not a
         // definitive server answer, so offer Retry rather than a dead end.
         // The driver-preview card above still shows who to look for either way.
-        showError("No internet connection right now. Your driver's details are shown above — connect to WiFi (airport WiFi works fine, no SIM needed) and tap Retry to confirm your ride and start live tracking.", true);
+        showError("No internet connection right now. Your driver's details are shown above. Connect to WiFi (airport WiFi works fine, no SIM needed) and tap Retry to confirm your ride and start live tracking.", true);
       });
   }
 
   var scanToken = getScanToken();
   if (!scanToken) {
-    showError("This link is missing its code — please scan the QR code on your driver's placard directly.", false);
+    showError("This link is missing its code. Please scan the QR code on your driver's placard directly.", false);
   } else if (!getToken()) {
     // Not logged in — send them to log in, then bounce right back to this
     // exact scan link (with the token still in the URL) to finish the job.
