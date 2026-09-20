@@ -1,16 +1,25 @@
-// Arrivo service worker.
+// RideArrivo service worker.
 //
-// What this DOES cache: the static site shell — HTML pages, CSS, JS, images.
-// This is what makes the site installable as a PWA and lets it load
-// instantly (and even work offline for browsing) on repeat visits.
+// Goal: fast repeat visits and basic offline browsing, WITHOUT ever showing a
+// returning visitor an old version of the site.
 //
-// What this NEVER caches: anything going to the backend API, Paystack, or
-// Google Maps. Ride bookings, payments, and login must always hit the
-// network fresh — caching any of that would risk showing stale or
-// incorrect data for something people are paying real money through.
+// Strategy
+//   HTML, JS, CSS, JSON, other files ... network-first. The server is asked
+//                                        every time; the cache is only the
+//                                        fallback when the visitor is offline.
+//   images and fonts .................. stale-while-revalidate: shown instantly
+//                                        from cache, refreshed in the background.
+//   backend API, Paystack, Google, Apple, /payment/ ... never touched.
+//
+// When to change VERSION: only when this file's own logic changes, or when you
+// want to wipe every visitor's cache. Normal content deploys do NOT need a bump,
+// because pages, scripts and styles are re-checked on every load.
 
-const CACHE_NAME = "arrivo-shell-v1";
+const VERSION = "2026-09-20";
+const CACHE_NAME = "arrivo-shell-" + VERSION;
 
+// Precached on install so a first-time offline visit has something to show.
+// Only used as an offline fallback: online, everything is fetched fresh.
 const SHELL_FILES = [
   "/",
   "/index.html",
@@ -35,163 +44,126 @@ const SHELL_FILES = [
   "/assets/ride-arrivo-wordmark.png",
 ];
 
-// Requests to these hosts are never intercepted — always go straight to
-// the network, no caching, no offline fallback. This list intentionally
-// stays narrow and explicit rather than trying to guess.
-const NEVER_CACHE_HOSTS = [
-  "onrender.com",       // arrivo-backend
-  "paystack.co",         // Paystack checkout
-  "googleapis.com",      // Google Maps / Places / Fonts
-  "gstatic.com",
-];
+// Same-origin paths that must always hit the network untouched. Payment
+// callbacks carry one-time references and must never be cached or replayed.
+const BYPASS_PATHS = ["/payment/", "/api/"];
+
+const IMAGE_OR_FONT = /\.(png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|otf)$/i;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      // Cache what we can; don't let one missing file (e.g. a page that
-      // doesn't exist yet in an older deploy) fail the whole install.
-      return Promise.all(
-        SHELL_FILES.map((url) => cache.add(url).catch(() => {}))
-      );
-    })
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(
+        SHELL_FILES.map((url) =>
+          // cache: "reload" skips the browser's HTTP cache, so the precache
+          // can never capture an already-stale copy. One missing file must
+          // not fail the whole install, hence the catch.
+          fetch(new Request(url, { cache: "reload" }))
+            .then((response) => (response.ok ? cache.put(url, response) : undefined))
+            .catch(() => {})
+        )
+      )
+    )
   );
+  // Take over as soon as installed instead of waiting for every tab to close.
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((names) =>
-      Promise.all(
-        names.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name))
+    caches
+      .keys()
+      // Delete EVERY cache except the current one. This is what removes the old
+      // "arrivo-shell-v1" copies of JS and CSS from returning visitors' phones.
+      .then((names) =>
+        Promise.all(names.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name)))
       )
-    )
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
-  const url = new URL(event.request.url);
+  const request = event.request;
+  const url = new URL(request.url);
 
-  // Never intercept non-GET requests (POST/PATCH/etc. — bookings, payments,
-  // login), anything to the hosts listed above, or anything that isn't a
-  // plain http(s) request. Browser extensions can trigger fetch events
-  // with schemes like chrome-extension:// — the Cache API only supports
-  // http(s), so trying to cache.put() one of those throws.
-  if (
-    event.request.method !== "GET" ||
-    !url.protocol.startsWith("http") ||
-    NEVER_CACHE_HOSTS.some((host) => url.hostname.includes(host))
-  ) {
-    return; // let the browser handle it normally, untouched
+  // Leave alone (browser handles it normally): anything that isn't a plain GET
+  // (bookings, payments, login are POST/PATCH), anything from another origin
+  // (backend on onrender.com, Paystack, Google Maps/Sign-In, Apple Sign-In,
+  // browser extensions), and the paths listed above.
+  if (request.method !== "GET") return;
+  if (url.origin !== self.location.origin) return;
+  if (BYPASS_PATHS.some((prefix) => url.pathname.startsWith(prefix))) return;
+  if (url.pathname === "/sw.js") return;
+
+  if (request.mode === "navigate") {
+    event.respondWith(networkFirst(event, request, true));
+  } else if (IMAGE_OR_FONT.test(url.pathname)) {
+    event.respondWith(staleWhileRevalidate(event, request));
+  } else {
+    event.respondWith(networkFirst(event, request, false));
   }
-
-  // Full-page navigations (e.g. someone typing ridearrivo.com/book directly,
-  // or refreshing) get network-first treatment — always try the real network
-  // first, and only fall back to a cached copy if that genuinely fails.
-  // This avoids ever serving a stale shell for a page the visitor expects
-  // to be current.
-  if (event.request.mode === "navigate") {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return response;
-        })
-        .catch(() =>
-          caches.match(event.request).then((cached) => {
-            if (cached) return cached;
-            return caches.match("/index.html").then((homepage) => {
-              if (homepage) return homepage;
-              // Absolute last resort — nothing cached at all (e.g. someone's
-              // very first visit, already offline). A real Response here,
-              // not undefined, is what keeps this from ever becoming the
-              // confusing ERR_FAILED error.
-              return new Response(
-                "<h1>You're offline</h1><p>This page hasn't been loaded before, so it isn't available offline yet. Please reconnect and try again.</p>",
-                { headers: { "Content-Type": "text/html" } }
-              );
-            });
-          })
-        )
-    );
-    return;
-  }
-
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached; // instant load from cache — don't even wait on the network
-
-      // Not cached — go to the network. If that fails and there's nothing
-      // cached either, let the browser's native error handling take over
-      // (a real network error) rather than silently resolving to
-      // `undefined`, which Chrome reports as the confusing ERR_FAILED.
-      return fetch(event.request).then((response) => {
-        if (response.ok) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        }
-        return response;
-      });
-    })
-  );
 });
 
-/*
- * RIDEARRIVO_LAUNCH_CACHE_REFRESH
- * Launch Day - 12 September 2026
- *
- * Force the updated service worker to activate and remove
- * stale cached HTML pages. Other cached assets remain intact.
- */
+function cacheable(response) {
+  return response && response.ok && response.type === "basic";
+}
 
-self.addEventListener("install", () => {
-  self.skipWaiting();
-});
-
-self.addEventListener("activate", event => {
-  event.waitUntil((async () => {
-    const cacheNames =
-      await caches.keys();
-
-    for (
-      const cacheName of
-      cacheNames
-    ) {
-      const cache =
-        await caches.open(
-          cacheName
-        );
-
-      const requests =
-        await cache.keys();
-
-      for (
-        const request of
-        requests
-      ) {
-        const url =
-          new URL(
-            request.url
-          );
-
-        if (
-          url.origin ===
-          self.location.origin &&
-          (
-            url.pathname === "/" ||
-            url.pathname.endsWith(".html")
-          )
-        ) {
-          await cache.delete(
-            request
-          );
-        }
-      }
+async function networkFirst(event, request, isNavigation) {
+  try {
+    // no-cache = revalidate with the server even if the browser thinks its own
+    // copy is still fresh (usually a tiny 304 reply, not a full download).
+    const response = await fetch(request, isNavigation ? undefined : { cache: "no-cache" });
+    if (cacheable(response)) {
+      const copy = response.clone();
+      event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)).catch(() => {})
+      );
     }
+    return response;
+  } catch (err) {
+    return offlineFallback(request, isNavigation);
+  }
+}
 
-    await self.clients.claim();
-  })());
-});
+async function offlineFallback(request, isNavigation) {
+  const cache = await caches.open(CACHE_NAME);
+  let cached = await cache.match(request);
+  // Scripts and styles: an older cached copy is better than nothing when offline.
+  if (!cached && !isNavigation) {
+    cached = await cache.match(request, { ignoreSearch: true });
+  }
+  if (cached) return cached;
+
+  if (isNavigation) {
+    const homepage = await cache.match("/index.html");
+    if (homepage) return homepage;
+    // Nothing cached at all (first visit while offline). Return a real
+    // Response, never undefined, which Chrome reports as ERR_FAILED.
+    return new Response(
+      "<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>" +
+        "<title>Offline</title><h1>You're offline</h1>" +
+        "<p>This page hasn't been loaded before, so it isn't available offline yet. " +
+        "Please reconnect and try again.</p>",
+      { status: 503, headers: { "Content-Type": "text/html; charset=utf-8" } }
+    );
+  }
+  return Response.error();
+}
+
+async function staleWhileRevalidate(event, request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(request);
+
+  const refresh = fetch(request).then((response) => {
+    if (cacheable(response)) {
+      cache.put(request, response.clone()).catch(() => {});
+    }
+    return response;
+  });
+
+  if (cached) {
+    event.waitUntil(refresh.catch(() => {}));
+    return cached;
+  }
+  return refresh;
+}
