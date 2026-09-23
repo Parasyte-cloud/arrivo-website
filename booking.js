@@ -850,13 +850,26 @@
   // counts below only drive which vehicle gets auto-recommended, same as
   // before — they were never sent to the backend or billed directly.
 
+  // Roads named after a red-zone town that run through areas we DO serve:
+  // Google puts "Lekki - Epe Expy" in most Ajah/Sangotedo/Ikota/VGC
+  // addresses and "Lagos - Badagry Expy" along Festac / Trade Fair / Ojo.
+  // Removed before matching so a road name alone never refuses a trip.
+  // Same rule as arrivo-backend/services/fare.js findExcludedArea.
+  var THROUGH_ROADS = /\b(?:lekki|ikorodu|ijebu)\s*-?\s*epe\b|\b(?:lagos\s*-?\s*)?badagry\s*(?:express\s*way|expy|exp|road|rd)\b/g;
+
+  // Whole-word match, so "epe" doesn't match inside "Deeper" or "Independence".
+  function containsWord(text, word) {
+    var escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp("(^|[^a-z0-9])" + escaped + "($|[^a-z0-9])").test(text);
+  }
+
   function findExcludedArea(address, latLng) {
-    var a = (" " + (address || "").toLowerCase() + " ");
+    var a = (address || "").toLowerCase().replace(THROUGH_ROADS, " ");
     for (var i = 0; i < EXCLUDED_AREAS.length; i++) {
       var area = EXCLUDED_AREAS[i];
       if (area.keywords) {
         for (var k = 0; k < area.keywords.length; k++) {
-          if (a.indexOf(area.keywords[k].toLowerCase()) !== -1) return area;
+          if (containsWord(a, area.keywords[k].toLowerCase())) return area;
         }
       }
       if (area.box && latLng) {
