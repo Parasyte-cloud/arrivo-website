@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact Us | RideArrivo</title>
+<link rel="canonical" href="https://ridearrivo.com/contact-us.html">
+<meta name="description" content="Get in touch with the RideArrivo team — questions, feedback, or anything else we can help with.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=31">
+<link rel="stylesheet" href="booking.css?v=31">
+<style>
+  .auth-wrap { max-width: 520px; margin: 0 auto; padding: 48px 20px 60px; }
+  .auth-wrap h1 { margin-bottom: 12px; }
+  .auth-wrap p.lead { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+  textarea.field { min-height: 120px; resize: vertical; font-family: 'Inter', sans-serif; }
+  .hp-field { position: absolute !important; left: -9999px !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
+</style>
+</head>
+<body>
+
+<svg style="position:absolute; width:0; height:0; overflow:hidden;" aria-hidden="true">
+  <filter id="liquid-glass-refraction" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.010 0.018" numOctaves="2" seed="7" result="noise"/>
+    <feGaussianBlur in="noise" stdDeviation="2" result="softNoise"/>
+    <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="brand">
+      <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
+      <img src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark">
+    </a>
+  </div>
+</header>
+
+<main class="auth-wrap">
+  <h1>Contact us</h1>
+  <p class="lead">Questions, feedback, or anything else — send it over and our team will get back to you.</p>
+
+  <div class="booking-card" id="contactForm">
+    <label class="field-label" for="cName">Your name</label>
+    <input type="text" id="cName" class="field" maxlength="160" autocomplete="name" placeholder="Your name">
+
+    <label class="field-label" for="cEmail">Email</label>
+    <input type="email" id="cEmail" class="field" maxlength="200" autocomplete="email" placeholder="you@example.com">
+
+    <label class="field-label" for="cPhone">Contact number</label>
+    <input type="tel" id="cPhone" class="field" maxlength="40" autocomplete="tel" placeholder="e.g. 0801 234 5678">
+
+    <label class="field-label" for="cMessage">Message</label>
+    <textarea id="cMessage" class="field" maxlength="3000" placeholder="How can we help?"></textarea>
+
+    <label class="hp-field" for="cWebsite" aria-hidden="true">
+      Website
+      <input type="text" id="cWebsite" tabindex="-1" autocomplete="off">
+    </label>
+
+    <p class="error-text" id="contactError" hidden></p>
+    <button type="button" class="btn btn-primary" id="contactBtn" style="width:100%;">Send message</button>
+  </div>
+
+  <div class="booking-card" id="contactSuccess" hidden>
+    <p style="margin:0;">Thank you — your message has been received. A member of the RideArrivo team will follow up using the details you provided.</p>
+  </div>
+</main>
+
+<script src="supabase-config.js?v=1"></script>
+<script>
+  // Talks directly to the `intake` Supabase edge function (reusable intake
+  // platform — see RA-workspace supabase/functions/intake). This form's
+  // fields are hardcoded here rather than fetched dynamically because that
+  // is how every other form on this site works (see forgot-password.html);
+  // if the "contact-us" form's fields ever change in Supabase
+  // (intake_form_versions), this file needs to be updated to match — it is
+  // not automatically kept in sync.
+  var INTAKE_SLUG = "contact-us";
+
+  function submitIntake(slug, payload, website) {
+    return fetch(SUPABASE_URL + "/functions/v1/intake", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ slug: slug, payload: payload, website: website || "" }),
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        return { ok: res.ok, status: res.status, data: data };
+      });
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var errEl = document.getElementById("contactError");
+    var btn = document.getElementById("contactBtn");
+
+    btn.addEventListener("click", function () {
+      var fullName = document.getElementById("cName").value.trim();
+      var email = document.getElementById("cEmail").value.trim();
+      var phone = document.getElementById("cPhone").value.trim();
+      var message = document.getElementById("cMessage").value.trim();
+      var website = document.getElementById("cWebsite").value;
+
+      errEl.hidden = true;
+
+      if (!fullName || !email || !phone || !message) {
+        errEl.hidden = false;
+        errEl.textContent = "Please fill in your name, email, contact number and message.";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Sending…";
+
+      submitIntake(INTAKE_SLUG, {
+        full_name: fullName,
+        email: email,
+        phone: phone,
+        message: message,
+      }, website).then(function (result) {
+        btn.disabled = false;
+        btn.textContent = "Send message";
+
+        if (!result.ok) {
+          errEl.hidden = false;
+          errEl.textContent = Array.isArray(result.data.fields)
+            ? result.data.fields.join(" ")
+            : (result.data.error || "Something went wrong. Please try again.");
+          return;
+        }
+
+        document.getElementById("contactForm").hidden = true;
+        document.getElementById("contactSuccess").hidden = false;
+      }).catch(function () {
+        btn.disabled = false;
+        btn.textContent = "Send message";
+        errEl.hidden = false;
+        errEl.textContent = "Couldn't reach the server. Please try again.";
+      });
+    });
+  });
+</script>
+<script src="glass-effects.js?v=31"></script>
+</body>
+</html>
