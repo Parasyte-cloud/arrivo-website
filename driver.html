@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Driver Portal | RideArrivo</title>
+<link rel="canonical" href="https://ridearrivo.com/driver.html">
 <meta name="description" content="RideArrivo driver portal. Go online, accept rides, and track your earnings right from your browser.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="assets/favicon.png">
@@ -46,6 +47,13 @@
   .doc-upload-text span { font-size:12px; color:var(--text-muted); }
   .pending-icon { font-size:48px; text-align:center; margin-bottom:8px; }
 </style>
+  <script>
+    document.documentElement.classList.add("ra-launch-pending");
+    window.setTimeout(function () {
+      document.documentElement.classList.remove("ra-launch-pending");
+    }, 5000);
+  </script>
+  <link rel="stylesheet" href="/launch-countdown.css?v=20260912-02">
 </head>
 <body>
 
@@ -111,7 +119,7 @@
       <input type="password" id="sPasswordConfirm" class="field" placeholder="Confirm password">
       <label class="checkbox-row">
         <input type="checkbox" id="sAccountTerms">
-        <span>I agree to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>'s <a href="terms.html" target="_blank" style="color:var(--primary);text-decoration:underline;">terms of service</a> and privacy policy.</span>
+        <span>I agree to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>'s <a href="terms.html" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:underline;">terms of service</a> and privacy policy.</span>
       </label>
       <p class="error-text" id="signupAccountError" hidden></p>
       <button class="btn btn-primary" id="signupAccountContinue" style="width:100%;margin-top:6px;">Continue</button>
@@ -216,7 +224,7 @@
       </label>
       <label class="checkbox-row">
         <input type="checkbox" id="sTermsConsent">
-        <span>I agree to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>'s <a href="terms.html" target="_blank" style="color:var(--primary);text-decoration:underline;">terms of service</a> and independent contractor agreement.</span>
+        <span>I agree to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>'s <a href="terms.html" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:underline;">terms of service</a> and independent contractor agreement.</span>
       </label>
 
       <p class="error-text" id="safetyError" hidden></p>
@@ -378,6 +386,7 @@
 
     <div class="footer-col">
       <h4 data-i18n="footer.getStartedHeading">Get Started</h4>
+      <a href="express.html" data-i18n="nav.express">ArrivoExpress</a>
       <a href="book.html" data-i18n="nav.bookCta">Book a ride</a>
       <a href="driver.html" data-i18n="footer.driverPortal">Driver Portal</a>
       <a href="account.html" data-i18n="footer.myAccount">My Account</a>
@@ -447,5 +456,6 @@
 <script src="driver.js?v=30"></script>
 <script src="pwa-register.js"></script>
 <script src="glass-effects.js?v=30"></script>
+  <script src="/launch-countdown.js?v=20260912-02" defer></script>
 </body>
 </html>

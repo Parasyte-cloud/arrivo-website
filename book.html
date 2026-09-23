@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Book a pickup | RideArrivo</title>
+<link rel="canonical" href="https://ridearrivo.com/book.html">
 <meta name="description" content="Book your Lagos airport pickup online. Choose your vehicle, pay securely, and track your ride live. No app required.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -16,6 +17,47 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=30">
 <link rel="stylesheet" href="booking.css?v=30">
+  <script>
+    document.documentElement.classList.add("ra-launch-pending");
+    window.setTimeout(function () {
+      document.documentElement.classList.remove("ra-launch-pending");
+    }, 5000);
+  </script>
+  <link rel="stylesheet" href="/launch-countdown.css?v=20260912-02">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "serviceType": "Airport pickup and ride-hailing",
+  "provider": {
+    "@type": "TaxiService",
+    "name": "RideArrivo",
+    "url": "https://ridearrivo.com",
+    "telephone": "+2348162706078",
+    "email": "info@ridearrivo.com"
+  },
+  "areaServed": {
+    "@type": "City",
+    "name": "Lagos"
+  },
+  "url": "https://ridearrivo.com/book.html",
+  "potentialAction": {
+    "@type": "ReserveAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://ridearrivo.com/book.html",
+      "actionPlatform": [
+        "http://schema.org/DesktopWebPlatform",
+        "http://schema.org/MobileWebPlatform"
+      ]
+    },
+    "result": {
+      "@type": "Reservation",
+      "name": "Book a RideArrivo pickup"
+    }
+  }
+}
+</script>
 </head>
 <body>
 
@@ -42,6 +84,7 @@
       <a href="index.html#how" data-i18n="nav.how">How it works</a>
       <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
+      <a href="express.html" data-i18n="nav.express">ArrivoExpress</a>
     </nav>
     <div class="header-actions">
       <span class="live-clock" id="liveClock" aria-hidden="true"></span>
@@ -130,7 +173,7 @@
 
       <label class="checkbox-row">
         <input type="checkbox" id="fAgree">
-        <span data-i18n="booking.agree">I agree to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>'s <a href="#" id="openPrivacyModalBooking" style="color:var(--primary);text-decoration:underline;">privacy policy</a> and <a href="terms.html" target="_blank">terms of service</a>.</span>
+        <span data-i18n="booking.agree">I agree to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>'s <a href="#" id="openPrivacyModalBooking" style="color:var(--primary);text-decoration:underline;">privacy policy</a> and <a href="terms.html" target="_blank" rel="noopener">terms of service</a>.</span>
       </label>
 
       <p class="error-text" id="contactError" hidden></p>
@@ -207,7 +250,7 @@
           <button class="btn btn-ghost" id="trackFlightBtn" data-i18n="booking.track" type="button">Track</button>
         </div>
         <div id="flightResult" class="flight-result" hidden></div>
-        <p class="error-text" id="flightError" hidden data-i18n="booking.flightNotFound"></p>
+        <p class="error-text" id="flightError" hidden></p>
         <p class="error-text" id="flightRequiredError" hidden data-i18n="booking.flightRequired">Please enter your flight number to continue.</p>
       </div>
 
@@ -535,6 +578,7 @@
 
     <div class="footer-col">
       <h4 data-i18n="footer.getStartedHeading">Get Started</h4>
+      <a href="express.html" data-i18n="nav.express">ArrivoExpress</a>
       <a href="book.html" data-i18n="nav.bookCta">Book a ride</a>
       <a href="driver.html" data-i18n="footer.driverPortal">Driver Portal</a>
       <a href="account.html" data-i18n="footer.myAccount">My Account</a>
@@ -615,5 +659,6 @@
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLWAbQmxIAoGPP0LLDp6oTosaHZBa0Y5s&libraries=places&callback=initGoogleMaps"></script>
 <script src="pwa-register.js"></script>
 <script src="glass-effects.js?v=30"></script>
+  <script src="/launch-countdown.js?v=20260912-02" defer></script>
 </body>
 </html>

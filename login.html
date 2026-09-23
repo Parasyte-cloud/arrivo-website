@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Log in | RideArrivo</title>
+<link rel="canonical" href="https://ridearrivo.com/login.html">
+<meta name="robots" content="noindex, nofollow">
 <meta name="description" content="Log in to your RideArrivo account.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,6 +33,13 @@
   .oauth-notice { font-size: 11.5px; color: var(--text-muted); text-align: center; margin-top: 12px; line-height: 1.5; }
   .oauth-error { color: var(--coral, #e1523d); font-size: 12.5px; text-align: center; margin: 4px 0 0; }
 </style>
+  <script>
+    document.documentElement.classList.add("ra-launch-pending");
+    window.setTimeout(function () {
+      document.documentElement.classList.remove("ra-launch-pending");
+    }, 5000);
+  </script>
+  <link rel="stylesheet" href="/launch-countdown.css?v=20260912-02">
 </head>
 <body>
 
@@ -86,9 +95,29 @@
     });
   }
 
+  // "next" is attacker-controllable (anyone can link to
+  // login.html?next=<anything>) and gets assigned straight to
+  // window.location.href after a real, successful login/signup — an
+  // unvalidated value here is an open redirect: a phishing link that
+  // reads as trustworthy (it's really ridearrivo.com) which, right after
+  // the visitor authenticates for real, bounces them to an attacker's
+  // look-alike page primed to ask them to "log in again". Every legitimate
+  // caller only ever passes a same-site page name or pathname+search (see
+  // book.html, account.html, track.html, scan.html), so restrict to that
+  // shape: no scheme (blocks "javascript:", "https://…"), no leading "//"
+  // or backslash (both are browser-recognized ways to point at a
+  // different host from what looks like a relative path).
+  function isSafeNextPath(next) {
+    if (!next) return false;
+    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(next)) return false;
+    if (next.indexOf("//") === 0) return false;
+    if (next.indexOf("\\") !== -1) return false;
+    return true;
+  }
+
   function getNextUrl() {
-    var params = new URLSearchParams(window.location.search);
-    return params.get("next") || "account.html";
+    var next = new URLSearchParams(window.location.search).get("next");
+    return isSafeNextPath(next) ? next : "account.html";
   }
 
   document.addEventListener("DOMContentLoaded", function () {
@@ -241,5 +270,6 @@
   });
 </script>
 <script src="glass-effects.js?v=30"></script>
+  <script src="/launch-countdown.js?v=20260912-02" defer></script>
 </body>
 </html>

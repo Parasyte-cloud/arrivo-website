@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RideArrivo | Land in Lagos, Arrive. Relax.</title>
+<link rel="canonical" href="https://ridearrivo.com/">
 <meta name="description" content="Verified drivers, live-tracked rides, and airport pickups you can share with someone who cares you arrived safely. Lagos-born, built for everyone landing here.">
 <meta property="og:title" content="RideArrivo | Land in Lagos, Arrive. Relax.">
 <meta property="og:description" content="Verified drivers, live-tracked rides, and airport pickups you can share with someone who cares you arrived safely.">
@@ -24,6 +25,58 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=30">
+  <script>
+    document.documentElement.classList.add("ra-launch-pending");
+    window.setTimeout(function () {
+      document.documentElement.classList.remove("ra-launch-pending");
+    }, 5000);
+  </script>
+  <link rel="stylesheet" href="/launch-countdown.css?v=20260912-02">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TaxiService",
+  "name": "RideArrivo",
+  "alternateName": "Arrivo",
+  "url": "https://ridearrivo.com",
+  "logo": "https://ridearrivo.com/assets/icon-512.png",
+  "image": "https://ridearrivo.com/assets/og-image.png",
+  "description": "Verified drivers, live-tracked rides, and airport pickups in Lagos, Nigeria. Book a ride online or through the RideArrivo app.",
+  "telephone": "+2348162706078",
+  "email": "info@ridearrivo.com",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Lagos",
+    "addressCountry": "NG"
+  },
+  "areaServed": {
+    "@type": "City",
+    "name": "Lagos"
+  },
+  "priceRange": "₦₦",
+  "sameAs": [
+    "https://www.instagram.com/ridearrivong",
+    "https://www.linkedin.com/company/ridearrivo/",
+    "https://www.tiktok.com/@ridearrivong",
+    "https://x.com/ridearrivong"
+  ],
+  "potentialAction": {
+    "@type": "ReserveAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://ridearrivo.com/book.html",
+      "actionPlatform": [
+        "http://schema.org/DesktopWebPlatform",
+        "http://schema.org/MobileWebPlatform"
+      ]
+    },
+    "result": {
+      "@type": "Reservation",
+      "name": "Book a RideArrivo pickup"
+    }
+  }
+}
+</script>
 </head>
 <body>
 
@@ -53,6 +106,7 @@
       <a href="#how" data-i18n="nav.how">How it works</a>
       <a href="#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="#safety" data-i18n="nav.safety">Safety</a>
+      <a href="express.html" data-i18n="nav.express">ArrivoExpress</a>
     </nav>
 
     <nav class="mobile-nav-menu" id="mobileNavMenu" aria-label="Primary" hidden>
@@ -62,6 +116,7 @@
       <a href="#how" data-i18n="nav.how">How it works</a>
       <a href="#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="#safety" data-i18n="nav.safety">Safety</a>
+      <a href="express.html" data-i18n="nav.express">ArrivoExpress</a>
       <a href="login.html" id="accountNavLinkMobile"><span id="accountNavLabelMobile">Register or Login</span></a>
     </nav>
 
@@ -459,6 +514,7 @@
 
     <div class="footer-col">
       <h4 data-i18n="footer.getStartedHeading">Get Started</h4>
+      <a href="express.html" data-i18n="nav.express">ArrivoExpress</a>
       <a href="book.html" data-i18n="nav.bookCta">Book a ride</a>
       <a href="driver.html" data-i18n="footer.driverPortal">Driver Portal</a>
       <a href="account.html" data-i18n="footer.myAccount">My Account</a>
@@ -529,5 +585,6 @@
 <script src="clock.js"></script>
 <script src="pwa-register.js"></script>
 <script src="glass-effects.js?v=30"></script>
+  <script src="/launch-countdown.js?v=20260912-02" defer></script>
 </body>
 </html>

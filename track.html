@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Track your ride | RideArrivo</title>
+<link rel="canonical" href="https://ridearrivo.com/track.html">
 <meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Track your RideArrivo ride live and share your real-time location with someone who cares.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
@@ -24,6 +26,13 @@
   .panic-active { background:#FDECEA; border:1.5px solid var(--coral); border-radius:12px; padding:14px; text-align:center; color:var(--coral); font-weight:700; font-size:13px; margin-top:20px; }
   .map-link { display:block; margin-top:14px; text-align:center; background:#f5f5fa; border-radius:10px; padding:12px; font-weight:700; font-size:13px; color: var(--teal); text-decoration:none; }
 </style>
+  <script>
+    document.documentElement.classList.add("ra-launch-pending");
+    window.setTimeout(function () {
+      document.documentElement.classList.remove("ra-launch-pending");
+    }, 5000);
+  </script>
+  <link rel="stylesheet" href="/launch-countdown.css?v=20260912-02">
 </head>
 <body>
 
@@ -77,7 +86,7 @@
       </div>
     </div>
 
-    <a href="#" id="mapLink" class="map-link" target="_blank" style="display:none;" data-i18n="track.mapLink">📍 View driver's last known location</a>
+    <a href="#" id="mapLink" class="map-link" target="_blank" rel="noopener noreferrer" style="display:none;" data-i18n="track.mapLink">📍 View driver's last known location</a>
 
     <div id="fleetConvoyBlock" hidden style="margin-top:14px; border-top:1px solid #eee; padding-top:12px;">
       <p style="font-size:12px; font-weight:700; margin-bottom:6px;">Your fleet convoy</p>
@@ -284,6 +293,20 @@
     return (name || "?").split(" ").map(function (p) { return p[0]; }).join("").slice(0, 2).toUpperCase();
   }
 
+  // Fleet Accompaniment convoy data (driver_name, make_model) below is
+  // free text a driver typed during vehicle/profile setup, not something
+  // this rider controls — must be escaped before going into innerHTML, or
+  // a malicious driver's name/vehicle string (e.g. an <img onerror>
+  // payload) would execute in every rider's browser who views a shared
+  // ride's convoy list, with full access to that rider's localStorage
+  // token, wallet, and PII on the page. Same pattern as booking.js/
+  // driver.js/ride-now.js's own escapeHtml().
+  function escapeHtml(str) {
+    var div = document.createElement("div");
+    div.textContent = str == null ? "" : String(str);
+    return div.innerHTML;
+  }
+
   if (shareToken) {
     // Public, read-only mode. No auth header, no polling of anything that
     // needs the rider's own token — just status, driver, and live location.
@@ -423,9 +446,9 @@
           }
           block.hidden = false;
           list.innerHTML = companions.map(function (c) {
-            var driverPart = c.driver_name ? c.driver_name : "Escort vehicle";
-            var vehiclePart = c.make_model ? " · " + c.make_model : "";
-            var statusPart = c.ride_status === "requested" ? "Awaiting driver" : c.ride_status.replace("_", " ");
+            var driverPart = c.driver_name ? escapeHtml(c.driver_name) : "Escort vehicle";
+            var vehiclePart = c.make_model ? " · " + escapeHtml(c.make_model) : "";
+            var statusPart = c.ride_status === "requested" ? "Awaiting driver" : escapeHtml(c.ride_status.replace("_", " "));
             return "<div style=\"display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;\"><span>" +
               driverPart + vehiclePart + "</span><span style=\"color:var(--text-muted);\">" + statusPart + "</span></div>";
           }).join("");
@@ -683,5 +706,6 @@
 </script>
 <!-- Paystack's official inline checkout library — used for card tips only. -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
+  <script src="/launch-countdown.js?v=20260912-02" defer></script>
 </body>
 </html>
