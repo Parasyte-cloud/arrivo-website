@@ -351,6 +351,8 @@
   // track ETA), but multi-day charter bookings (full_day/week/month) have
   // no single flight to track, so they skip this question entirely rather
   // than being blocked by a required field that doesn't apply to them.
+  var MIN_STANDARD_BOOKING_HOURS = 12;
+
   function initStep2() {
     var resultBox = document.getElementById("flightResult");
     var errorBox = document.getElementById("flightError");
@@ -397,12 +399,14 @@
       });
     }
 
-    // Default the date picker to tomorrow — a sensible starting point for a
-    // next-day departure — rather than leaving it blank.
+    // Default the date picker to two days out at 09:00. It used to default
+    // to tomorrow 09:00, which is inside the backend's 12-hour booking
+    // window for anyone booking after 9pm, so the default itself was
+    // unbookable.
     if (dateInput && !dateInput.value) {
-      var tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      dateInput.value = tomorrow.toISOString().slice(0, 10);
+      var defaultDay = new Date();
+      defaultDay.setDate(defaultDay.getDate() + 2);
+      dateInput.value = defaultDay.getFullYear() + "-" + String(defaultDay.getMonth() + 1).padStart(2, "0") + "-" + String(defaultDay.getDate()).padStart(2, "0");
     }
     if (timeInput && !timeInput.value) timeInput.value = "09:00";
 
@@ -500,8 +504,19 @@
         var dateVal = dateInput.value;
         var timeVal = timeInput.value || "09:00";
         var scheduled = dateVal ? new Date(dateVal + "T" + timeVal + ":00") : null;
+        if (scheduledErrorBox.dataset.defaultText == null) scheduledErrorBox.dataset.defaultText = scheduledErrorBox.textContent;
+        scheduledErrorBox.textContent = scheduledErrorBox.dataset.defaultText;
         if (!scheduled || isNaN(scheduled.getTime()) || scheduled.getTime() <= Date.now()) {
           scheduledErrorBox.hidden = false;
+          return;
+        }
+        // Mirrors arrivo-backend/services/bookingWindow.js ON_THE_GO_ONLY_HOURS.
+        // Caught here so the rider fixes the time now, not after filling in
+        // three more steps.
+        if (scheduled.getTime() - Date.now() < MIN_STANDARD_BOOKING_HOURS * 60 * 60 * 1000) {
+          scheduledErrorBox.hidden = false;
+          scheduledErrorBox.textContent = "Drop-offs need to be booked at least " + MIN_STANDARD_BOOKING_HOURS +
+            " hours ahead. Please pick a later time, or message us on WhatsApp at +2348162706078 for a pickup sooner than that.";
           return;
         }
         scheduledErrorBox.hidden = true;
@@ -835,13 +850,26 @@
   // counts below only drive which vehicle gets auto-recommended, same as
   // before — they were never sent to the backend or billed directly.
 
+  // Roads named after a red-zone town that run through areas we DO serve:
+  // Google puts "Lekki - Epe Expy" in most Ajah/Sangotedo/Ikota/VGC
+  // addresses and "Lagos - Badagry Expy" along Festac / Trade Fair / Ojo.
+  // Removed before matching so a road name alone never refuses a trip.
+  // Same rule as arrivo-backend/services/fare.js findExcludedArea.
+  var THROUGH_ROADS = /\b(?:lekki|ikorodu|ijebu)\s*-?\s*epe\b|\b(?:lagos\s*-?\s*)?badagry\s*(?:express\s*way|expy|exp|road|rd)\b/g;
+
+  // Whole-word match, so "epe" doesn't match inside "Deeper" or "Independence".
+  function containsWord(text, word) {
+    var escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp("(^|[^a-z0-9])" + escaped + "($|[^a-z0-9])").test(text);
+  }
+
   function findExcludedArea(address, latLng) {
-    var a = (" " + (address || "").toLowerCase() + " ");
+    var a = (address || "").toLowerCase().replace(THROUGH_ROADS, " ");
     for (var i = 0; i < EXCLUDED_AREAS.length; i++) {
       var area = EXCLUDED_AREAS[i];
       if (area.keywords) {
         for (var k = 0; k < area.keywords.length; k++) {
-          if (a.indexOf(area.keywords[k].toLowerCase()) !== -1) return area;
+          if (containsWord(a, area.keywords[k].toLowerCase())) return area;
         }
       }
       if (area.box && latLng) {
@@ -1269,6 +1297,10 @@
       // makes the review-step preview match what's actually charged.
       adults: state.adults,
       children: state.children,
+      // Lets the backend apply the same 12-hour booking-window rule and the
+      // same scheduled-time promo pricing POST /api/rides uses, so the fare
+      // shown here is the fare that gets charged.
+      scheduledPickupAt: state.scheduledPickupAt || null,
     };
     if (isOneWayStyle(state.bookingType)) {
       if (!state.pickupLatLng || !state.dropoffLatLng) {
@@ -1305,6 +1337,38 @@
     };
   }
 
+  // One place that builds the POST /api/rides body. Used by the wallet /
+  // membership path, the pre-charge validation, and the post-payment
+  // booking, so all three always send exactly the same thing.
+  function buildRidePayload(extra) {
+    return Object.assign({
+      pickupAddress: state.pickup,
+      stops: state.stops,
+      flightNumber: state.flightNumber || null,
+      vehicleType: state.vehicle,
+      fareNaira: state.liveQuote ? state.liveQuote.fareNaira : null,
+      distanceKm: state.liveQuote && state.liveQuote.distanceKm != null ? state.liveQuote.distanceKm : state.distanceKm,
+      durationMin: state.liveQuote && state.liveQuote.durationMin != null ? state.liveQuote.durationMin : state.durationMin,
+      securityEscort: state.securityEscort,
+      fleetSize: state.fleetSize,
+      luxury: state.luxury,
+      paymentMethod: state.paymentMethod,
+      bookingType: state.bookingType,
+      durationDays: state.durationDays,
+      agreedCancellationPolicy: true,
+      agreedDashcamConsent: state.dashcamConsent,
+      bookingFor: state.bookingFor,
+      passengerName: state.bookingFor === "other" ? state.passengerName : null,
+      passengerWhatsapp: state.passengerWhatsapp,
+      adults: state.adults,
+      children: state.children,
+      emergencyContactName: state.emergencyContactName,
+      emergencyContactPhone: state.emergencyContactPhone,
+      scheduledPickupAt: state.scheduledPickupAt || null,
+      linkedRideId: state.linkedRideId || null,
+    }, getCoordsPayload(), extra || {});
+  }
+
   function renderReview() {
     var loadingText = document.getElementById("quoteLoadingText");
     var errorText = document.getElementById("quoteErrorText");
@@ -1323,7 +1387,7 @@
       loadingText.hidden = true;
       if (!result.ok) {
         errorText.hidden = false;
-        errorText.textContent = result.data.error || "Couldn't calculate your fare right now. Please try again.";
+        errorText.textContent = bookingErrorText(result.data) || "Couldn't calculate your fare right now. Please try again.";
         // api() now always resolves {ok:false} instead of rejecting on a
         // real network failure (see the fetch().catch in api() above), so
         // this path is reachable on a plain connectivity blip, not just a
@@ -1497,6 +1561,17 @@
     });
   }
 
+  // Turns a backend error body into what the rider should read. The
+  // 12-hour booking-window refusal also carries the On the Go / WhatsApp
+  // route, so point them at it instead of leaving a dead end.
+  function bookingErrorText(data) {
+    if (!data) return "";
+    if (data.blockedByBookingWindow) {
+      return data.error + (data.whatsappNumber ? " For a pickup sooner than that, message us on WhatsApp at " + data.whatsappNumber + " or pick a later time." : "");
+    }
+    return data.error || "";
+  }
+
   function toPascalCase(snake) {
     return snake.split("_").map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join("");
   }
@@ -1513,32 +1588,7 @@
       return Promise.resolve();
     }
 
-    var payload = Object.assign({
-      pickupAddress: state.pickup,
-      stops: state.stops,
-      flightNumber: state.flightNumber || null,
-      vehicleType: state.vehicle,
-      fareNaira: state.liveQuote.fareNaira,
-      distanceKm: state.liveQuote.distanceKm != null ? state.liveQuote.distanceKm : state.distanceKm,
-      durationMin: state.liveQuote.durationMin != null ? state.liveQuote.durationMin : state.durationMin,
-      securityEscort: state.securityEscort,
-      fleetSize: state.fleetSize,
-      luxury: state.luxury,
-      paymentMethod: state.paymentMethod,
-      bookingType: state.bookingType,
-      durationDays: state.durationDays,
-      agreedCancellationPolicy: true,
-      agreedDashcamConsent: state.dashcamConsent,
-      bookingFor: state.bookingFor,
-      passengerName: state.bookingFor === "other" ? state.passengerName : null,
-      passengerWhatsapp: state.passengerWhatsapp,
-      adults: state.adults,
-      children: state.children,
-      emergencyContactName: state.emergencyContactName,
-      emergencyContactPhone: state.emergencyContactPhone,
-      scheduledPickupAt: state.scheduledPickupAt || null,
-      linkedRideId: state.linkedRideId || null,
-    }, getCoordsPayload());
+    var payload = buildRidePayload();
 
     return api("/api/rides", {
       method: "POST",
@@ -1547,7 +1597,7 @@
     }).then(function (rideResult) {
       if (!rideResult.ok) {
         payError.hidden = false;
-        payError.textContent = rideResult.data.error || t("booking.paymentFailed");
+        payError.textContent = bookingErrorText(rideResult.data) || t("booking.paymentFailed");
         return;
       }
       var createdRide = rideResult.data.ride;
@@ -1653,32 +1703,7 @@
         if (!verifyResult.ok || !verifyResult.data.success) {
           throw new Error(t("booking.paymentFailed"));
         }
-        var payload = Object.assign({
-          pickupAddress: state.pickup,
-          stops: state.stops,
-          flightNumber: state.flightNumber || null,
-          vehicleType: state.vehicle,
-          fareNaira: state.liveQuote.fareNaira,
-          distanceKm: state.liveQuote.distanceKm != null ? state.liveQuote.distanceKm : state.distanceKm,
-          durationMin: state.liveQuote.durationMin != null ? state.liveQuote.durationMin : state.durationMin,
-          securityEscort: state.securityEscort,
-          fleetSize: state.fleetSize,
-          luxury: state.luxury,
-          paymentReference: reference,
-          bookingType: state.bookingType,
-          durationDays: state.durationDays,
-          agreedCancellationPolicy: true,
-          agreedDashcamConsent: state.dashcamConsent,
-          bookingFor: state.bookingFor,
-          passengerName: state.bookingFor === "other" ? state.passengerName : null,
-          passengerWhatsapp: state.passengerWhatsapp,
-          adults: state.adults,
-          children: state.children,
-          emergencyContactName: state.emergencyContactName,
-          emergencyContactPhone: state.emergencyContactPhone,
-          scheduledPickupAt: state.scheduledPickupAt || null,
-          linkedRideId: state.linkedRideId || null,
-        }, getCoordsPayload());
+        var payload = buildRidePayload({ paymentMethod: "card", paymentReference: reference });
 
         return api("/api/rides", {
           method: "POST",
@@ -1804,16 +1829,47 @@
         payError.textContent = "Payment isn't configured right now. Please try again shortly or contact RideArrivo support.";
         return;
       }
-      var handler = PaystackPop.setup({
-        key: PAYSTACK_PUBLIC_KEY,
-        email: state.email,
-        amount: state.liveQuote.fareNaira * 100,
-        currency: "NGN",
-        metadata: { name: state.name, phone: state.phone },
-        callback: function (response) { handlePaymentSuccess(response.reference); },
-        onClose: function () {},
+      // Never charge a card for a booking the backend would then refuse.
+      // POST /api/rides with validateOnly runs every real booking rule and
+      // the real fare formula without saving anything; only if it passes do
+      // we open Paystack, and we charge exactly the fare it returned. This
+      // used to charge first and validate after, which took riders' money
+      // for drop-offs inside the 12-hour window and then created no ride.
+      var payBtn = document.getElementById("payBtn");
+      payBtn.disabled = true;
+      api("/api/rides", {
+        method: "POST",
+        headers: authHeader(),
+        body: JSON.stringify(buildRidePayload({ paymentMethod: "card", validateOnly: true })),
+      }).then(function (check) {
+        payBtn.disabled = false;
+        if (!check.ok || !check.data || !check.data.ok || !(check.data.fareNaira > 0)) {
+          payError.hidden = false;
+          payError.textContent = bookingErrorText(check.data) || t("booking.paymentFailed");
+          return;
+        }
+        state.chargedFareNaira = check.data.fareNaira;
+        if (check.data.fareNaira !== state.liveQuote.fareNaira) {
+          // Price moved since the review screen loaded (e.g. the 8pm night
+          // rate started). Show the new number and let them press Pay again
+          // rather than silently charging something different.
+          state.liveQuote.fareNaira = check.data.fareNaira;
+          renderReviewContent();
+          payError.hidden = false;
+          payError.textContent = "Your fare has been updated to NGN " + check.data.fareNaira.toLocaleString() + ". Please review and press Pay again.";
+          return;
+        }
+        var handler = PaystackPop.setup({
+          key: PAYSTACK_PUBLIC_KEY,
+          email: state.email,
+          amount: Math.round(check.data.fareNaira * 100),
+          currency: "NGN",
+          metadata: { name: state.name, phone: state.phone },
+          callback: function (response) { handlePaymentSuccess(response.reference); },
+          onClose: function () {},
+        });
+        handler.openIframe();
       });
-      handler.openIframe();
     });
   }
 

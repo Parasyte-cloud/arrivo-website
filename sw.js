@@ -9,7 +9,12 @@
 // network fresh — caching any of that would risk showing stale or
 // incorrect data for something people are paying real money through.
 
-const CACHE_NAME = "arrivo-shell-v1";
+// Bumped v1 -> v2 (2026-09-23). The activate handler below deletes every
+// cache not named this, so this wipes the stale JS/CSS that v1 served
+// cache-first to returning visitors. booking.js changed 21 times under the
+// same booking.js?v=30 URL, and anyone who had visited before kept running
+// whichever copy they first downloaded, indefinitely.
+const CACHE_NAME = "arrivo-shell-v2";
 
 const SHELL_FILES = [
   "/",
@@ -116,6 +121,27 @@ self.addEventListener("fetch", (event) => {
             });
           })
         )
+    );
+    return;
+  }
+
+  // Our own scripts, styles and data (JS/CSS/JSON) are network-first, same as
+  // pages above. Cache-first here is what pinned returning riders to old
+  // booking code: a cached booking.js?v=30 was served forever, never
+  // re-checked, even after the file behind that URL had changed. Cached copies
+  // are now only an offline fallback. Images and fonts stay cache-first
+  // below, since serving an old one is harmless.
+  if (url.origin === self.location.origin && /\.(js|css|json)$/.test(url.pathname)) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request).then((cached) => cached || Response.error()))
     );
     return;
   }
