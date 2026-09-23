@@ -597,9 +597,8 @@
   // POST /api/rides/:id/panic is confirmed real (checked against the actual
   // arrivo-backend source) — a driver-triggered alert now shows up in the
   // admin dashboard's Panic Alerts page exactly like a rider-triggered one.
-  // /api/listening-device is still a guess — no such route exists in the
-  // backend yet, so that call is purely best-effort and currently a no-op
-  // server-side.
+  // The manual listening-device button posts to POST /api/rides/:id/
+  // listening-device for the driver's active ride.
   function initPanicButton(userType, tokenKey, apiBaseUrl) {
     var btn = document.getElementById("panicBtn");
     if (!btn) return;
@@ -763,13 +762,27 @@
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia({ audio: true }).catch(function () {});
       }
-      try {
-        fetch(apiBaseUrl + "/api/listening-device", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: "Bearer " + localStorage.getItem(tokenKey) },
-          body: JSON.stringify({ userType: userType, active: true, viaPanic: !!viaPanic, timestamp: new Date().toISOString() }),
-        }).catch(function () {});
-      } catch (e) {}
+      // Record it against the driver's current ride, the same endpoint the
+      // rider's account page uses. This used to POST to /api/listening-device,
+      // which has never existed: the button said "on" while the backend and
+      // the ops dashboard never heard about it. A panic already records the
+      // listening device server-side in the same write (POST /:id/panic), so
+      // this call only matters for the manual button.
+      var activeRideId = state.activeRide && state.activeRide.id;
+      if (!activeRideId) {
+        if (statusText) { statusText.hidden = false; } if (statusText) statusText.textContent = "No active trip, so this couldn't be logged with RideArrivo. If you're in danger, call 112 or message support on WhatsApp.";
+        return;
+      }
+      if (viaPanic) return;
+      fetch(apiBaseUrl + "/api/rides/" + activeRideId + "/listening-device", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + localStorage.getItem(tokenKey) },
+        body: "{}",
+      }).then(function (res) {
+        if (!res.ok) throw new Error("listening-device " + res.status);
+      }).catch(function () {
+        if (statusText) { statusText.hidden = false; } if (statusText) statusText.textContent = "Couldn't reach RideArrivo to log the listening device. Message support on WhatsApp if you need help.";
+      });
     }
     if (listeningBtn) {
       listeningBtn.addEventListener("click", function () { activateListeningDevice(false); });
