@@ -467,7 +467,13 @@
       errorBox.hidden = true;
       if (!flightNumber) return;
 
-      api("/api/flights/status?flightNumber=" + encodeURIComponent(flightNumber) + "&arrIata=LOS").then(function (result) {
+      // requireAuth on the backend route means this call needs the rider's
+      // Bearer token like every other authenticated call on this page --
+      // omitting headers: authHeader() here made every click on this
+      // button fail with "Missing or malformed Authorization header",
+      // which is exactly the confusing, booking-looking error riders were
+      // screenshotting and reporting as "can't book a ride".
+      api("/api/flights/status?flightNumber=" + encodeURIComponent(flightNumber) + "&arrIata=LOS", { headers: authHeader() }).then(function (result) {
         if (result.ok) {
           resultBox.hidden = false;
           resultBox.innerHTML =
