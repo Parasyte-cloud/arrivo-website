@@ -1330,12 +1330,48 @@
     };
   }
 
+  // One place a booking attempt's idempotency key lives. Persisted in
+  // sessionStorage (not plain state) so it survives a page reload mid
+  // attempt, but reused across retries of the SAME attempt rather than a
+  // fresh key per request -- the backend can then recognize a retried
+  // POST /api/rides as the same attempt instead of double-booking.
+  var BOOKING_IDEMPOTENCY_KEY_STORAGE = "arrivo_booking_idempotency_key";
+
+  function makeIdempotencyKey() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+    // Fallback for older browsers without crypto.randomUUID -- still
+    // unique enough for this purpose, just not RFC4122-shaped.
+    return "idem-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+  }
+
+  function getBookingIdempotencyKey() {
+    try {
+      var existing = sessionStorage.getItem(BOOKING_IDEMPOTENCY_KEY_STORAGE);
+      if (existing) return existing;
+      var key = makeIdempotencyKey();
+      sessionStorage.setItem(BOOKING_IDEMPOTENCY_KEY_STORAGE, key);
+      return key;
+    } catch (err) {
+      // sessionStorage unavailable (private mode, etc.) -- fall back to a
+      // key that's at least stable for this call.
+      return makeIdempotencyKey();
+    }
+  }
+
+  // Call once a booking attempt actually succeeds (or the rider starts a
+  // genuinely new one), so the NEXT attempt gets its own fresh key instead
+  // of reusing a completed attempt's key.
+  function clearBookingIdempotencyKey() {
+    try { sessionStorage.removeItem(BOOKING_IDEMPOTENCY_KEY_STORAGE); } catch (err) {}
+  }
+
   // One place that builds the POST /api/rides body. Used by the wallet /
   // membership path, the pre-charge validation, and the post-payment
   // booking, so all three always send exactly the same thing.
   function buildRidePayload(extra) {
     return Object.assign({
       pickupAddress: state.pickup,
+      idempotencyKey: getBookingIdempotencyKey(),
       stops: state.stops,
       flightNumber: state.flightNumber || null,
       vehicleType: state.vehicle,
@@ -1573,9 +1609,16 @@
   // Paystack popup (which needs a real key + real browser + a real card).
   function handleDirectPayment() {
     var payError = document.getElementById("payError");
+    var payBtn = document.getElementById("payBtn");
     payError.hidden = true;
+    // Same guard the card path uses (see the click handler below): disable
+    // immediately so a fast double-click can't fire this twice, and only
+    // re-enable it on a failure/error branch -- a successful booking moves
+    // the rider off this step entirely, so it doesn't need re-enabling.
+    payBtn.disabled = true;
 
     if (!state.liveQuote) {
+      payBtn.disabled = false;
       payError.hidden = false;
       payError.textContent = "We couldn't confirm your fare. Please go back to the review step and try again.";
       return Promise.resolve();
@@ -1589,10 +1632,15 @@
       body: JSON.stringify(payload),
     }).then(function (rideResult) {
       if (!rideResult.ok) {
+        payBtn.disabled = false;
         payError.hidden = false;
         payError.textContent = bookingErrorText(rideResult.data) || t("booking.paymentFailed");
         return;
       }
+      // Booking succeeded -- this attempt is done, so the next one (if any)
+      // should get its own fresh idempotency key rather than reusing this
+      // completed attempt's key.
+      clearBookingIdempotencyKey();
       var createdRide = rideResult.data.ride;
       document.getElementById("confirmRef").textContent = "Ride #" + createdRide.id;
       if (createdRide.fare_naira != null) {
@@ -1608,6 +1656,7 @@
       if (state.bookingType === "one_way") showReturnDropoffPrompt(createdRide.id);
       goToStep(6);
     }).catch(function () {
+      payBtn.disabled = false;
       payError.hidden = false;
       payError.textContent = t("booking.paymentFailed");
     });
@@ -1728,6 +1777,7 @@
             "Please contact support with reference " + reference + " (Ride #" + (createdRide ? createdRide.id : "—") + ")."
           );
         }
+        clearBookingIdempotencyKey();
         document.getElementById("confirmRef").textContent = reference;
         if (createdRide && createdRide.fare_naira != null) {
           document.getElementById("confirmFare").textContent = formatRideFare(createdRide.fare_naira, createdRide.quoted_usd_amount);
@@ -1835,8 +1885,13 @@
         headers: authHeader(),
         body: JSON.stringify(buildRidePayload({ paymentMethod: "card", validateOnly: true })),
       }).then(function (check) {
-        payBtn.disabled = false;
+        // Stay disabled past this point -- only re-enable on an error
+        // branch below, or in Paystack's onClose once the iframe has
+        // actually opened. Re-enabling right here (as soon as this
+        // response lands) left a window for a fast second click to open a
+        // second Paystack popup before openIframe() below ever ran.
         if (!check.ok || !check.data || !check.data.ok || !(check.data.fareNaira > 0)) {
+          payBtn.disabled = false;
           payError.hidden = false;
           payError.textContent = bookingErrorText(check.data) || t("booking.paymentFailed");
           return;
@@ -1846,6 +1901,7 @@
           // Price moved since the review screen loaded (e.g. the 8pm night
           // rate started). Show the new number and let them press Pay again
           // rather than silently charging something different.
+          payBtn.disabled = false;
           state.liveQuote.fareNaira = check.data.fareNaira;
           renderReviewContent();
           payError.hidden = false;
@@ -1859,7 +1915,9 @@
           currency: "NGN",
           metadata: { name: state.name, phone: state.phone },
           callback: function (response) { handlePaymentSuccess(response.reference); },
-          onClose: function () {},
+          // The rider closed the popup without paying -- let them press Pay
+          // again rather than leaving payBtn stuck disabled forever.
+          onClose: function () { payBtn.disabled = false; },
         });
         handler.openIframe();
       });
