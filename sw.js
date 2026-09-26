@@ -15,7 +15,12 @@
 // want to wipe every visitor's cache. Normal content deploys do NOT need a bump,
 // because pages, scripts and styles are re-checked on every load.
 
-const VERSION = "2026-09-20";
+// Supersedes the arrivo-shell-v2 bump that landed on main on 2026-09-23.
+// That change fixed the same bug more narrowly (network-first for JS, CSS
+// and JSON only); this file does it for every page and script, so the two
+// should not both exist. The dated name below is newer than v2, and the
+// activate handler deletes every cache that is not it, including v2.
+const VERSION = "2026-09-26";
 const CACHE_NAME = "arrivo-shell-" + VERSION;
 
 // Precached on install so a first-time offline visit has something to show.
