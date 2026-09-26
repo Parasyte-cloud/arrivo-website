@@ -36,19 +36,25 @@
 
   // ───────────────────────── Login ─────────────────────────
   document.getElementById("loginBtn").addEventListener("click", function () {
+    var loginBtn = document.getElementById("loginBtn");
     var email = document.getElementById("loginEmail").value.trim();
     var password = document.getElementById("loginPassword").value;
     var errEl = document.getElementById("loginError");
     errEl.hidden = true;
+    // Same disable-during-request / restore-on-failure pattern login.html
+    // and signup.html already use for their submit buttons.
+    loginBtn.disabled = true;
 
     api("/api/auth/login", { method: "POST", body: JSON.stringify({ email: email, password: password }) })
       .then(function (result) {
         if (!result.ok) {
+          loginBtn.disabled = false;
           errEl.hidden = false;
           errEl.textContent = result.data.error || "Login failed.";
           return;
         }
         if (result.data.user.role !== "driver") {
+          loginBtn.disabled = false;
           errEl.hidden = false;
           errEl.textContent = "This account isn't registered as a driver.";
           return;
@@ -58,6 +64,7 @@
         checkProfile();
       })
       .catch(function () {
+        loginBtn.disabled = false;
         errEl.hidden = false;
         errEl.textContent = "Couldn't reach the server. Please try again.";
       });
@@ -116,6 +123,11 @@
   });
 
   document.getElementById("signupAccountContinue").addEventListener("click", function () {
+    // Honeypot: real visitors never fill this hidden field in; bots often
+    // do. Bail out silently, same as index.html's waitlist form.
+    var signupHoneypot = document.getElementById("signupHoneypot");
+    if (signupHoneypot && signupHoneypot.value) return;
+
     var firstName = document.getElementById("sFirstName").value.trim();
     var lastName = document.getElementById("sLastName").value.trim();
     var email = document.getElementById("sEmail").value.trim();
@@ -156,6 +168,8 @@
     // end-to-end against a live database — this previously called a
     // guessed /api/auth/register endpoint with a single "name" field,
     // which the real backend has never had.
+    var signupAccountContinue = document.getElementById("signupAccountContinue");
+    signupAccountContinue.disabled = true;
     api("/api/auth/signup", {
       method: "POST",
       body: JSON.stringify({
@@ -164,6 +178,7 @@
       }),
     }).then(function (result) {
       if (!result.ok) {
+        signupAccountContinue.disabled = false;
         errEl.hidden = false;
         errEl.textContent = result.data.error || "Couldn't create your account.";
         return;
@@ -173,6 +188,7 @@
       document.getElementById("profileStepProgress").hidden = false;
       showSection("profileSection");
     }).catch(function () {
+      signupAccountContinue.disabled = false;
       errEl.hidden = false;
       errEl.textContent = "Couldn't reach the server. Please try again.";
     });
@@ -230,6 +246,8 @@
       ownerPhone = ownerPhoneResult.full;
     }
 
+    var saveProfileBtn = document.getElementById("saveProfileBtn");
+    saveProfileBtn.disabled = true;
     api("/api/drivers/profile", {
       method: "POST",
       body: JSON.stringify({
@@ -239,6 +257,7 @@
       }),
     }).then(function (result) {
       if (!result.ok) {
+        saveProfileBtn.disabled = false;
         errEl.hidden = false;
         errEl.textContent = result.data.error || "Couldn't save your vehicle details.";
         return;
@@ -300,6 +319,8 @@
       errEl.textContent = "Your profile photo and driver's license photo are both required.";
       return;
     }
+    var photosContinue = document.getElementById("photosContinue");
+    photosContinue.disabled = true;
     api("/api/drivers/me", {
       method: "PATCH",
       body: JSON.stringify({
@@ -309,6 +330,7 @@
       }),
     }).then(function (result) {
       if (!result.ok) {
+        photosContinue.disabled = false;
         errEl.hidden = false;
         errEl.textContent = result.data.error || "Couldn't upload your photos. Please try again.";
         return;
@@ -333,6 +355,8 @@
       errEl.hidden = false; errEl.textContent = "Please agree to both checkboxes to submit your application."; return;
     }
 
+    var submitApplicationBtn = document.getElementById("submitApplicationBtn");
+    submitApplicationBtn.disabled = true;
     api("/api/drivers/me", {
       method: "PATCH",
       body: JSON.stringify({
@@ -343,6 +367,7 @@
       }),
     }).then(function (result) {
       if (!result.ok) {
+        submitApplicationBtn.disabled = false;
         errEl.hidden = false;
         errEl.textContent = result.data.error || "Couldn't submit your application. Please try again.";
         return;
@@ -366,12 +391,15 @@
     checkActiveRide();
 
     document.getElementById("onlineToggle").onclick = function () {
-      var goingOnline = !document.getElementById("onlineToggle").classList.contains("on");
+      var onlineToggle = document.getElementById("onlineToggle");
+      var goingOnline = !onlineToggle.classList.contains("on");
       var errEl = document.getElementById("onlineError");
       errEl.hidden = true;
+      onlineToggle.disabled = true;
 
       api("/api/drivers/status", { method: "PATCH", body: JSON.stringify({ isOnline: goingOnline }) })
         .then(function (result) {
+          onlineToggle.disabled = false;
           if (!result.ok) {
             errEl.hidden = false;
             errEl.textContent = result.data.error || "Couldn't update status.";
@@ -425,15 +453,17 @@
           '<div style="display:flex;justify-content:space-between;"><strong>' + escapeHtml(r.pickup_address) + '</strong><span class="fare">NGN ' + Number(r.fare_naira).toLocaleString() + '</span></div>' +
           (r.flight_number ? '<div style="font-size:12px;color:var(--text-muted);">Flight ' + escapeHtml(r.flight_number) + '</div>' : '') +
           '<div style="font-size:12px;color:var(--text-muted);">Rider: ' + escapeHtml(r.rider_name) + '</div>' +
-          '<button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="window.__acceptRide(' + Number(r.id) + ')">Accept Ride</button>' +
+          '<button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="window.__acceptRide(' + Number(r.id) + ', this)">Accept Ride</button>' +
           '</div>';
       }).join("");
     });
   }
 
-  window.__acceptRide = function (rideId) {
+  window.__acceptRide = function (rideId, btnEl) {
+    if (btnEl) btnEl.disabled = true;
     api("/api/rides/" + rideId + "/accept", { method: "POST" }).then(function (result) {
       if (!result.ok) {
+        if (btnEl) btnEl.disabled = false;
         alert(result.data.error || "This ride was just taken by another driver.");
         refreshAvailable();
         return;
@@ -456,10 +486,16 @@
       '<button class="btn btn-primary" style="width:100%;margin-top:10px;" id="advanceBtn">' + (isAccepted ? "Start Trip" : "Complete Trip") + '</button>' +
       '</div>';
     document.getElementById("advanceBtn").onclick = function () {
+      var advanceBtn = document.getElementById("advanceBtn");
+      advanceBtn.disabled = true;
       var nextStatus = isAccepted ? "in_progress" : "completed";
       api("/api/rides/" + r.id + "/status", { method: "PATCH", body: JSON.stringify({ status: nextStatus }) })
         .then(function (result) {
-          if (!result.ok) { alert(result.data.error || "Couldn't update trip."); return; }
+          if (!result.ok) {
+            advanceBtn.disabled = false;
+            alert(result.data.error || "Couldn't update trip.");
+            return;
+          }
           if (nextStatus === "completed") {
             state.activeRide = null;
             checkActiveRide();
@@ -543,8 +579,13 @@
       var img = document.createElement("img");
       img.src = reader.result;
       circle.prepend(img);
+      // circle is a plain <div> (not a form control), so disable the real
+      // input instead -- that's what circle's click handler calls .click()
+      // on, so this still blocks a second upload firing mid-request.
+      e.target.disabled = true;
       api("/api/drivers/me", { method: "PATCH", body: JSON.stringify({ profilePhotoDataUrl: reader.result }) })
         .then(function (result) {
+          e.target.disabled = false;
           if (result.ok) state.driver = result.data.driver;
           else { errEl.hidden = false; errEl.textContent = result.data.error || "Couldn't save that photo."; }
         });
@@ -553,10 +594,13 @@
   });
 
   document.getElementById("saveDriverContactBtn").addEventListener("click", function () {
+    var saveDriverContactBtn = document.getElementById("saveDriverContactBtn");
     var phoneResult = driverProfilePhoneField.getValue();
     if (!phoneResult.valid) return;
+    saveDriverContactBtn.disabled = true;
     api("/api/drivers/me", { method: "PATCH", body: JSON.stringify({ whatsappNumber: phoneResult.full }) })
       .then(function (result) {
+        saveDriverContactBtn.disabled = false;
         if (!result.ok) return;
         state.driver = result.data.driver;
         var note = document.getElementById("driverContactSaveNote");
@@ -567,7 +611,10 @@
 
   // ───────────────────────── Earnings ─────────────────────────
   document.getElementById("viewEarningsBtn").addEventListener("click", function () {
+    var viewEarningsBtn = document.getElementById("viewEarningsBtn");
+    viewEarningsBtn.disabled = true;
     api("/api/drivers/earnings").then(function (result) {
+      viewEarningsBtn.disabled = false;
       if (!result.ok) return;
       document.getElementById("earnMonth").textContent = "NGN " + Number(result.data.thisMonthNaira).toLocaleString();
       document.getElementById("earnTotal").textContent = "NGN " + Number(result.data.totalNaira).toLocaleString();

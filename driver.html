@@ -117,6 +117,9 @@
       <div id="signupPhoneContainer" style="margin-bottom:14px;"></div>
       <input type="password" id="sPassword" class="field" placeholder="Password">
       <input type="password" id="sPasswordConfirm" class="field" placeholder="Confirm password">
+      <!-- Honeypot -- same pattern as index.html's waitlist form: real
+           visitors never see or fill this in, bots often do. -->
+      <input type="text" name="company" id="signupHoneypot" class="sr-only" tabindex="-1" autocomplete="off">
       <label class="checkbox-row">
         <input type="checkbox" id="sAccountTerms">
         <span>I agree to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>'s <a href="terms.html" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:underline;">terms of service</a> and privacy policy.</span>
