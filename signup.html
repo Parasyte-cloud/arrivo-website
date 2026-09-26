@@ -72,6 +72,9 @@
     <input type="text" id="fCountry" class="field" placeholder="Country of residence" autocomplete="country-name">
     <input type="password" id="fPassword" class="field" placeholder="Password" autocomplete="new-password">
     <input type="password" id="fPasswordConfirm" class="field" placeholder="Confirm password" autocomplete="new-password">
+    <!-- Honeypot -- same pattern as index.html's waitlist form: real
+         visitors never see or fill this in, bots often do. -->
+    <input type="text" name="company" id="signupHoneypot" class="sr-only" tabindex="-1" autocomplete="off">
 
     <label class="checkbox-row">
       <input type="checkbox" id="fAgree">
@@ -141,7 +144,13 @@
     var errEl = document.getElementById("signupError");
     var btn = document.getElementById("signupBtn");
 
+    var signupHoneypot = document.getElementById("signupHoneypot");
+
     btn.addEventListener("click", function () {
+      // Honeypot: real visitors never fill this hidden field in; bots
+      // often do. Bail out silently, same as the waitlist form.
+      if (signupHoneypot && signupHoneypot.value) return;
+
       var firstName = document.getElementById("fFirstName").value.trim();
       var lastName = document.getElementById("fLastName").value.trim();
       var email = document.getElementById("fEmail").value.trim();
