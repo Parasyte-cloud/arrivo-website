@@ -1509,6 +1509,12 @@
     return "idem-" + Date.now() + "-" + Math.random().toString(36).slice(2);
   }
 
+  // Used only when sessionStorage itself is unavailable (private browsing
+  // mode, a locked-down browser setting, etc.) -- see getBookingIdempotencyKey
+  // below. Module-scoped rather than function-scoped so it actually survives
+  // across the several calls one booking attempt makes.
+  var fallbackIdempotencyKey = null;
+
   function getBookingIdempotencyKey() {
     try {
       var existing = sessionStorage.getItem(BOOKING_IDEMPOTENCY_KEY_STORAGE);
@@ -1517,9 +1523,16 @@
       sessionStorage.setItem(BOOKING_IDEMPOTENCY_KEY_STORAGE, key);
       return key;
     } catch (err) {
-      // sessionStorage unavailable (private mode, etc.) -- fall back to a
-      // key that's at least stable for this call.
-      return makeIdempotencyKey();
+      // sessionStorage unavailable -- fall back to one key held in memory
+      // for the whole attempt, not a fresh one per call. buildRidePayload
+      // calls this more than once for a single card booking (pre-charge
+      // validation, then again after Paystack succeeds), and without a
+      // stable fallback each of those calls generated its own key -- which
+      // meant a lost response and a retry never actually matched the
+      // original attempt's key, silently defeating the backend's
+      // idempotency check for exactly the riders this fallback exists for.
+      if (!fallbackIdempotencyKey) fallbackIdempotencyKey = makeIdempotencyKey();
+      return fallbackIdempotencyKey;
     }
   }
 
@@ -1527,6 +1540,7 @@
   // genuinely new one), so the NEXT attempt gets its own fresh key instead
   // of reusing a completed attempt's key.
   function clearBookingIdempotencyKey() {
+    fallbackIdempotencyKey = null;
     try { sessionStorage.removeItem(BOOKING_IDEMPOTENCY_KEY_STORAGE); } catch (err) {}
   }
 
