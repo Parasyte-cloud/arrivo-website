@@ -58,7 +58,7 @@
 <body>
 
 <!-- Real Liquid Glass needs actual refraction of what's behind it, not just
-     blur — this is the difference between "frosted panel" and "glass".
+     blur -- this is the difference between "frosted panel" and "glass".
      feTurbulence generates an organic noise field, feDisplacementMap uses it
      to warp the content underneath, the way light bends through curved
      glass. Applied via backdrop-filter: url(#liquid-glass-refraction). -->
@@ -99,7 +99,7 @@
     </p>
   </section>
 
-  <!-- SIGN UP — Step 1: Account -->
+  <!-- SIGN UP -- Step 1: Account -->
   <section id="signupAccountSection">
     <h1>Become an <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> driver</h1>
     <ol class="progress" style="margin-bottom:24px;">
@@ -117,6 +117,9 @@
       <div id="signupPhoneContainer" style="margin-bottom:14px;"></div>
       <input type="password" id="sPassword" class="field" placeholder="Password">
       <input type="password" id="sPasswordConfirm" class="field" placeholder="Confirm password">
+      <!-- Honeypot -- same pattern as index.html's waitlist form: real
+           visitors never see or fill this in, bots often do. -->
+      <input type="text" name="company" id="signupHoneypot" class="sr-only" tabindex="-1" autocomplete="off">
       <label class="checkbox-row">
         <input type="checkbox" id="sAccountTerms">
         <span>I agree to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>'s <a href="terms.html" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:underline;">terms of service</a> and privacy policy.</span>
@@ -127,7 +130,7 @@
     <a href="#" id="backToLoginLink" style="display:block;margin-top:16px;font-size:12.5px;color:var(--primary);">← Back to login</a>
   </section>
 
-  <!-- PROFILE SETUP — Step 2: Vehicle & License (also reused for accounts created via mobile app with an incomplete profile) -->
+  <!-- PROFILE SETUP -- Step 2: Vehicle & License (also reused for accounts created via mobile app with an incomplete profile) -->
   <section id="profileSection">
     <h1>Vehicle &amp; license details</h1>
     <ol class="progress" style="margin-bottom:24px;" id="profileStepProgress" hidden>
@@ -168,7 +171,7 @@
     </div>
   </section>
 
-  <!-- SIGN UP — Step 3: Photos & documents -->
+  <!-- SIGN UP -- Step 3: Photos & documents -->
   <section id="signupPhotosSection">
     <h1>Photos &amp; documents</h1>
     <ol class="progress" style="margin-bottom:24px;">
@@ -203,7 +206,7 @@
     </div>
   </section>
 
-  <!-- SIGN UP — Step 4: Safety & consent -->
+  <!-- SIGN UP -- Step 4: Safety & consent -->
   <section id="signupSafetySection">
     <h1>Safety &amp; consent</h1>
     <ol class="progress" style="margin-bottom:24px;">
@@ -425,7 +428,7 @@
           link.href = "mailto:" + address;
           document.getElementById("footerEmailText").textContent = address;
 
-          // Same idea for the phone number — split apart in the HTML,
+          // Same idea for the phone number -- split apart in the HTML,
           // reassembled only once a real browser runs this script.
           var phoneLink = document.getElementById("footerPhoneLink");
           if (phoneLink) {

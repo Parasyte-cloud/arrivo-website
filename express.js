@@ -24,13 +24,13 @@
   }
 
   // Looks up "arrivoExpress.foo"-style keys from I18N, same convention as
-  // booking.js's t() — every dynamically-set string on this page (button
+  // booking.js's t() -- every dynamically-set string on this page (button
   // labels, status text, error messages) goes through this rather than
   // being hardcoded in English, so the page is fully translated like the
   // rest of the site instead of only the shared header/footer chrome.
   function t(path) {
     // NOTE: reference the bare `I18N` identifier, not `window.I18N`. i18n.js
-    // declares it as a top-level `const`, which — unlike `var` — never
+    // declares it as a top-level `const`, which -- unlike `var` -- never
     // becomes a `window` property, even though it's still visible by name
     // to every other classic (non-module) script on the page. booking.js
     // relies on this same bare-identifier lookup; `window.I18N` is always
@@ -65,7 +65,7 @@
     if (label) label.textContent = LANG_LABELS[lang] || lang.toUpperCase();
     localStorage.setItem(LANG_KEY, lang);
 
-    // Re-render anything that mixes translated copy with live values —
+    // Re-render anything that mixes translated copy with live values --
     // static data-i18n swaps above don't cover these.
     if (!document.getElementById("pickerCard").hidden) renderTiers();
     if (!document.getElementById("quoteCard").hidden && state.quote) renderQuote(true);
@@ -102,6 +102,7 @@
 
     trigger.addEventListener("click", function (e) {
       e.stopPropagation();
+      closeServicesMenu();
       var isOpen = dropdown.classList.toggle("open");
       menu.hidden = !isOpen;
       trigger.setAttribute("aria-expanded", String(isOpen));
@@ -111,6 +112,42 @@
     });
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") closeLangMenu();
+    });
+  }
+
+  // ───────────────────────── Services nav dropdown ─────────────────────
+  // Same pattern as the language dropdown above, listing the four Arrivo
+  // products. ArrivoBoat/ArrivoAir show as non-interactive "Coming soon"
+  // rows (no href) until their subdomains are actually live.
+  function closeServicesMenu() {
+    var dropdown = document.getElementById("servicesDropdown");
+    var menu = document.getElementById("servicesMenu");
+    var trigger = document.getElementById("servicesTrigger");
+    if (!dropdown || !menu) return;
+    dropdown.classList.remove("open");
+    menu.hidden = true;
+    if (trigger) trigger.setAttribute("aria-expanded", "false");
+  }
+
+  function initServicesDropdown() {
+    var dropdown = document.getElementById("servicesDropdown");
+    var trigger = document.getElementById("servicesTrigger");
+    var menu = document.getElementById("servicesMenu");
+    if (!dropdown || !trigger || !menu) return;
+
+    trigger.addEventListener("click", function (e) {
+      e.stopPropagation();
+      closeLangMenu();
+      var isOpen = dropdown.classList.toggle("open");
+      menu.hidden = !isOpen;
+      trigger.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    document.addEventListener("click", function (e) {
+      if (!dropdown.contains(e.target)) closeServicesMenu();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeServicesMenu();
     });
   }
 
@@ -159,9 +196,32 @@
       var el = document.getElementById(cid);
       if (el) el.hidden = cid !== id;
     });
+    // Bring the shared map along to whichever card is now visible -- see
+    // initRouteMap's comment on why this is one reparented div rather than
+    // a map instance per card.
+    if (id === "pickerCard") {
+      mountMapInto("rnMapPickerSlot");
+      initRouteMap();
+    } else if (id === "quoteCard") {
+      mountMapInto("rnMapQuoteSlot");
+      if (googleMapInstance) google.maps.event.trigger(googleMapInstance, "resize");
+    }
   }
 
   // ───────────────────────── Tier picker ─────────────────────────────
+  // tier.label / tier.description in the API response come from the
+  // backend's tier catalogue (services/instantTiers.js) and are
+  // English-only -- arrivoExpress.tiers in i18n.js carries the translated
+  // label/description for each known tier.key, looked up here instead.
+  // Falls back to the backend's own English text for any tier.key that
+  // isn't in that dictionary (a tier the backend added before i18n.js was
+  // updated for it), so a new tier still renders instead of breaking.
+  function tierText(tier, field) {
+    var dict = (typeof I18N !== "undefined" && (I18N[currentLang()] || I18N.en)) || {};
+    var entry = getNested(dict, "arrivoExpress.tiers." + tier.key);
+    return (entry && entry[field]) || tier[field];
+  }
+
   function renderTiers() {
     var container = document.getElementById("tierOptions");
     if (!container) return;
@@ -170,12 +230,9 @@
       var btn = document.createElement("button");
       btn.type = "button";
       btn.className = "vehicle-card" + (tier.key === state.selectedTier ? " selected" : "");
-      // tier.label / tier.description come from the backend's tier catalogue
-      // (services/instantTiers.js) and are English-only today, same as the
-      // mobile app's ArrivoExpressScreen — not run through t().
       btn.innerHTML =
-        '<span class="v-name">' + escapeHtml(tier.label) + "</span>" +
-        '<span class="v-description">' + escapeHtml(tier.description) + "</span>";
+        '<span class="v-name">' + escapeHtml(tierText(tier, "label")) + "</span>" +
+        '<span class="v-description">' + escapeHtml(tierText(tier, "description")) + "</span>";
       btn.addEventListener("click", function () {
         state.selectedTier = tier.key;
         renderTiers();
@@ -216,13 +273,134 @@
       state.pickup = r.address;
       state.pickupLatLng = { lat: r.lat, lng: r.lng };
       if (pickupEl) pickupEl.value = r.address;
+      updateMapMarkers();
     });
     attachPlacesAutocomplete(destEl, function (r) {
       state.destination = r.address;
       state.destinationLatLng = { lat: r.lat, lng: r.lng };
       if (destEl) destEl.value = r.address;
+      updateMapMarkers();
     });
+    initRouteMap();
   };
+
+  // ───────────────────────── Route map (pickup/destination preview) ─────
+  // One Google Map instance shared between the picker card (while choosing
+  // addresses) and the quote card (to preview the confirmed route) -- the
+  // #rnMap div itself gets physically reparented between the two cards'
+  // slots rather than standing up a second map instance, same
+  // single-map-instance idea booking.js uses for book.html's #routeMap.
+  var LAGOS_CENTER = { lat: 6.5244, lng: 3.3792 };
+  var googleMapInstance = null;
+  var pickupMarker = null;
+  var destinationMarker = null;
+  var directionsService = null;
+  var directionsRenderer = null;
+
+  function initRouteMap() {
+    var mapEl = document.getElementById("rnMap");
+    var errEl = document.getElementById("mapsError");
+    if (!mapEl) return;
+
+    if (!window.google || !window.google.maps) {
+      if (errEl) errEl.hidden = false;
+      return;
+    }
+
+    if (!googleMapInstance) {
+      googleMapInstance = new google.maps.Map(mapEl, {
+        center: LAGOS_CENTER,
+        zoom: 11,
+        disableDefaultUI: true,
+        zoomControl: true,
+      });
+      directionsService = new google.maps.DirectionsService();
+      directionsRenderer = new google.maps.DirectionsRenderer({
+        map: googleMapInstance,
+        suppressMarkers: true, // pickupMarker/destinationMarker below give us control of their look
+        polylineOptions: { strokeColor: "#12123B", strokeWeight: 4, strokeOpacity: 0.85 },
+      });
+    } else {
+      // The map div may just have been reparented, or its card may have
+      // been hidden (display:none) and just become visible again -- either
+      // way Google Maps needs an explicit nudge to redraw at the right
+      // size, otherwise it can render blank or mis-sized.
+      google.maps.event.trigger(googleMapInstance, "resize");
+      if (!state.pickupLatLng && !state.destinationLatLng) googleMapInstance.setCenter(LAGOS_CENTER);
+    }
+  }
+
+  // Moves the single #rnMap div into whichever card's slot should show it
+  // right now, then nudges Maps to redraw -- see initRouteMap's comment.
+  function mountMapInto(slotId) {
+    var mapEl = document.getElementById("rnMap");
+    var slot = document.getElementById(slotId);
+    if (!mapEl || !slot || mapEl.parentNode === slot) return;
+    slot.appendChild(mapEl);
+    if (googleMapInstance) google.maps.event.trigger(googleMapInstance, "resize");
+  }
+
+  function updateMapMarkers() {
+    if (!googleMapInstance) return;
+
+    if (state.pickupLatLng) {
+      if (!pickupMarker) {
+        pickupMarker = new google.maps.Marker({
+          map: googleMapInstance,
+          position: state.pickupLatLng,
+          label: { text: "A", color: "#fff", fontSize: "11px", fontWeight: "700" },
+          title: state.pickup,
+        });
+      } else {
+        pickupMarker.setPosition(state.pickupLatLng);
+        pickupMarker.setTitle(state.pickup);
+      }
+    }
+
+    if (state.destinationLatLng) {
+      if (!destinationMarker) {
+        destinationMarker = new google.maps.Marker({
+          map: googleMapInstance,
+          position: state.destinationLatLng,
+          label: { text: "B", color: "#fff", fontSize: "11px", fontWeight: "700" },
+          title: state.destination,
+        });
+      } else {
+        destinationMarker.setPosition(state.destinationLatLng);
+        destinationMarker.setTitle(state.destination);
+      }
+    }
+
+    if (state.pickupLatLng && state.destinationLatLng) {
+      drawRoute();
+    } else if (state.pickupLatLng) {
+      googleMapInstance.panTo(state.pickupLatLng);
+      googleMapInstance.setZoom(15);
+    } else if (state.destinationLatLng) {
+      googleMapInstance.panTo(state.destinationLatLng);
+      googleMapInstance.setZoom(15);
+    }
+  }
+
+  function drawRoute() {
+    if (!directionsService || !directionsRenderer || !googleMapInstance) return;
+    directionsService.route({
+      origin: state.pickupLatLng,
+      destination: state.destinationLatLng,
+      travelMode: google.maps.TravelMode.DRIVING,
+    }, function (result, status) {
+      if (status === "OK") {
+        directionsRenderer.setDirections(result);
+        return;
+      }
+      // No drivable route found, or a transient API error -- still show
+      // both pins so the map isn't left blank, just without a drawn line.
+      var bounds = new google.maps.LatLngBounds();
+      bounds.extend(state.pickupLatLng);
+      bounds.extend(state.destinationLatLng);
+      googleMapInstance.fitBounds(bounds, 40);
+    });
+  }
 
   // If the Maps script is slow, blocked, or fails to load, don't leave the
   // picker silently broken -- tell the visitor plain typing still works.
@@ -299,14 +477,15 @@
     var q = state.quote;
     var tierConfig = state.tiers.filter(function (tr) { return tr.key === state.selectedTier; })[0];
 
-    document.getElementById("quoteTierLabel").textContent = tierConfig ? tierConfig.label : state.selectedTier;
+    document.getElementById("quoteTierLabel").textContent = tierConfig ? tierText(tierConfig, "label") : state.selectedTier;
     document.getElementById("quoteZoneTag").style.display = q.zone === "yellow" ? "inline-block" : "none";
     document.getElementById("quoteRoute").textContent = state.pickup + " → " + state.destination;
-    document.getElementById("quoteDistance").textContent = tFormat("arrivoExpress.distanceKm", { distance: q.distanceKm != null ? q.distanceKm.toFixed(1) : "—" });
+    document.getElementById("quoteDistance").textContent = tFormat("arrivoExpress.distanceKm", { distance: q.distanceKm != null ? q.distanceKm.toFixed(1) : "--" });
     document.getElementById("quoteDuration").textContent = tFormat("arrivoExpress.durationMin", { duration: Math.round(q.durationMin) });
     document.getElementById("quoteFare").textContent = formatNaira(q.fareNaira);
     document.getElementById("quoteError").hidden = true;
 
+    updateMapMarkers();
     showCard("quoteCard");
 
     // On a language switch we're just re-rendering already-fetched numbers,
@@ -478,6 +657,7 @@
     }
 
     safeRun(initLanguage, "initLanguage");
+    safeRun(initServicesDropdown, "initServicesDropdown");
     checkMapsLoaded();
 
     document.getElementById("seeFareBtn").addEventListener("click", getFare);

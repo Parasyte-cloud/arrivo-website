@@ -43,7 +43,7 @@
   border-radius: 10px;
   border: 1.5px solid var(--card-border);
   font-family: 'Inter', sans-serif;
-  font-size: 16px; /* iOS Safari auto-zooms on focus for any input under 16px — this was making the whole page jump/resize the moment someone tapped a field */
+  font-size: 16px; /* iOS Safari auto-zooms on focus for any input under 16px -- this was making the whole page jump/resize the moment someone tapped a field */
   margin-bottom: 12px;
   background: #fff;
   color: var(--ink);
@@ -174,7 +174,7 @@
 }
 .vehicle-card .v-name { font-weight: 700; font-size: 14px; }
 .vehicle-card .v-price { font-weight: 700; font-size: 14px; color: var(--ink); margin-left: auto; }
-/* Previously unstyled — on narrow screens this bare span (especially the
+/* Previously unstyled -- on narrow screens this bare span (especially the
    long Pickup Truck capacity string) could sit mid-row next to v-name/
    v-price instead of cleanly starting its own line like v-badge/v-multi-note
    already do. */
@@ -189,7 +189,7 @@
 .vehicle-card.selected { border-color: var(--amber); background: #FFFBF0; }
 .vehicle-card.recommended .v-badge { display: block; }
 /* Shown when a card would need more than one of itself to fit the group
-   (e.g. "× 2") — visible any time the group needs multiple vehicles, not
+   (e.g. "× 2") -- visible any time the group needs multiple vehicles, not
    just when a card is disabled. */
 .vehicle-card .v-multi-note {
   font-size: 11.5px;
@@ -198,7 +198,7 @@
   width: 100%;
 }
 /* Only reached when even MAX_AUTO_VEHICLE_COUNT of this vehicle can't fit
-   the group (see booking.js computeVehicleCount) — previously this class
+   the group (see booking.js computeVehicleCount) -- previously this class
    was toggled but never actually styled, so an "over capacity" card looked
    identical to a bookable one until clicked. */
 .vehicle-card.over-capacity { opacity: 0.45; cursor: not-allowed; }
@@ -264,7 +264,7 @@
   overflow: hidden;
 }
 /* Placeholder look before Google Maps finishes loading, or if it never
-   loads (no key set, or the request failed) — keeps the layout from
+   loads (no key set, or the request failed) -- keeps the layout from
    collapsing to nothing. */
 .route-map:empty {
   background: repeating-linear-gradient(45deg, #f0f0f5, #f0f0f5 10px, #e8e8f0 10px, #e8e8f0 20px);
@@ -282,7 +282,7 @@
 .pay-note { font-size: 12px; color: var(--text-muted); margin: 12px 0 4px; }
 
 /* ── Confirmation ── */
-.step[data-step="6"] { text-align: center; }
+.step[data-step="4"] { text-align: center; }
 .confirm-icon {
   width: 56px; height: 56px; border-radius: 50%;
   background: var(--primary); color: #fff;
