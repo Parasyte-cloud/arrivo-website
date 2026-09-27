@@ -110,12 +110,15 @@
 <main class="wrap booking-wrap">
   <h1 data-i18n="booking.pageTitle">Book your pickup</h1>
 
+  <!-- Uber-style rebuild: the old 5-tab wizard (Contact / Flight / Pickup /
+       Luggage / Review) is now 3 steps -- Trip (where & when), You & Ride
+       (who's riding + vehicle, with a live fare estimate), Review & Pay.
+       Every field from the old 5 steps is still here, just regrouped --
+       nothing was made optional or removed. -->
   <ol class="progress" id="progress">
-    <li data-step="1" class="active"><span data-i18n="booking.stepContact">Contact</span></li>
-    <li data-step="2"><span data-i18n="booking.stepFlight">Flight</span></li>
-    <li data-step="3"><span data-i18n="booking.stepPickup">Pickup</span></li>
-    <li data-step="4"><span data-i18n="booking.stepLuggage">Luggage</span></li>
-    <li data-step="5"><span data-i18n="booking.stepReview">Review &amp; Pay</span></li>
+    <li data-step="1" class="active"><span data-i18n="booking.stepTrip">Trip</span></li>
+    <li data-step="2"><span data-i18n="booking.stepYouAndRide">You &amp; Ride</span></li>
+    <li data-step="3"><span data-i18n="booking.stepReview">Review &amp; Pay</span></li>
   </ol>
 
   <!-- AUTH GATE: shown only if the visitor isn't logged in yet.
@@ -131,57 +134,11 @@
 
   <div class="booking-card" id="bookingCard" hidden>
 
-    <!-- STEP 1: Contact -->
+    <!-- STEP 1: Trip (where & when) -- was Step 2 "Flight" + Step 3/4 "Pickup"
+         merged into one screen, Uber's "where to" moment. Nothing here was
+         made optional; the route builder, addons and live fare box just
+         moved up from what used to be later steps. -->
     <section class="step" data-step="1">
-      <h2 data-i18n="booking.contactTitle">Let's start with you</h2>
-      <div id="profileSummary" style="background:#FBF9F3; border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
-        <div><strong id="profileName"></strong><br>
-        <span id="profileEmail" style="color:var(--text-muted);"></span></div>
-        <a href="account.html" style="font-size:12px; color:var(--primary); font-weight:700;">My account</a>
-      </div>
-      <label class="field-label" id="whatsappLabel" data-i18n="booking.whatsapp">WhatsApp number</label>
-      <div id="whatsappInputContainer" style="margin-bottom:14px;"></div>
-      <input type="text" id="fCountry" class="field" data-i18n-placeholder="booking.country" placeholder="Country of residence" style="margin-bottom:14px;">
-
-      <label class="field-label" data-i18n="booking.forWhoLabel">Who is this ride for?</label>
-      <div class="for-who-toggle" id="forWhoToggle">
-        <button type="button" class="for-who-opt is-active" data-for="self" data-i18n="booking.forSelf">Myself</button>
-        <button type="button" class="for-who-opt" data-for="other" data-i18n="booking.forOther">Someone else</button>
-      </div>
-
-      <div id="passengerFields" hidden>
-        <label class="field-label" data-i18n="booking.passengerName">Passenger's full name</label>
-        <input type="text" id="fPassengerName" class="field" data-i18n-placeholder="booking.passengerNamePlaceholder" placeholder="e.g. Amaka Obi" style="margin-bottom:14px;">
-        <label class="field-label" data-i18n="booking.passengerWhatsapp">Passenger's WhatsApp number</label>
-        <div id="passengerPhoneContainer" style="margin-bottom:14px;"></div>
-      </div>
-
-      <label class="field-label" data-i18n="booking.emergencyContactLabel">Emergency contact</label>
-      <p class="step-sub" style="margin-top:-8px; margin-bottom:12px;" data-i18n="booking.emergencyContactSub">Someone we can reach if we can't reach you during this ride.</p>
-      <input type="text" id="fEmergencyName" class="field" data-i18n-placeholder="booking.emergencyContactNamePlaceholder" placeholder="e.g. Tunde Okafor" style="margin-bottom:14px;">
-      <div id="emergencyPhoneContainer" style="margin-bottom:14px;"></div>
-
-      <div class="tracking-notice">
-        <span aria-hidden="true">📍</span>
-        <span data-i18n="booking.etaTrackingNotice"><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> tracks your ETA in real time from pickup to drop-off, so your driver's location and arrival estimate stay accurate throughout the ride.</span>
-      </div>
-
-      <label class="checkbox-row">
-        <input type="checkbox" id="fDashcamConsent">
-        <span data-i18n="booking.dashcamConsent">I agree that this ride may be recorded by an in-vehicle dash cam for safety, and that footage is stored for 30 days and then automatically deleted.</span>
-      </label>
-
-      <label class="checkbox-row">
-        <input type="checkbox" id="fAgree">
-        <span data-i18n="booking.agree">I agree to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>'s <a href="#" id="openPrivacyModalBooking" style="color:var(--primary);text-decoration:underline;">privacy policy</a> and <a href="terms.html" target="_blank" rel="noopener">terms of service</a>.</span>
-      </label>
-
-      <p class="error-text" id="contactError" hidden></p>
-      <button class="btn btn-primary" id="contactContinue" data-i18n="booking.continue">Continue</button>
-    </section>
-
-    <!-- STEP 2: Trip type + Flight -->
-    <section class="step" data-step="2" hidden>
       <h2 data-i18n="booking.tripDetailsTitle">Trip details</h2>
 
       <label class="field-label" data-i18n="booking.bookingTypeLabel">Booking type</label>
@@ -254,18 +211,106 @@
         <p class="error-text" id="flightRequiredError" hidden data-i18n="booking.flightRequired">Please enter your flight number to continue.</p>
       </div>
 
+      <h2 style="margin-top:28px;" data-i18n="booking.pickupTitle">Where should we pick you up?</h2>
+
+      <div class="location-permission-box" id="locationPermissionBox">
+        <p>Share your location to get better address suggestions nearby. We only use this for the search below, nothing is tracked in the background.</p>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn btn-primary btn-sm" id="allowLocationBtn">Allow location</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="declineLocationBtn">Not now</button>
+        </div>
+      </div>
+      <p class="location-declined-note" id="locationDeclinedNote" hidden>You can still type any address below, search just won't be narrowed to where you are right now.</p>
+
+      <div class="route-builder">
+        <div class="route-row">
+          <span class="route-dot route-dot-start"></span>
+          <input type="text" id="fPickup" class="field route-input" data-i18n-placeholder="booking.pickupPlaceholder" placeholder="e.g. Murtala Muhammed Airport, Terminal 1">
+        </div>
+
+        <div id="stopsList"></div>
+
+        <div class="route-row">
+          <span class="route-dot route-dot-end"></span>
+          <input type="text" id="fDropoff" class="field route-input" data-i18n-placeholder="booking.dropoffPlaceholder" placeholder="Drop-off location">
+        </div>
+      </div>
+
+      <button type="button" class="link-btn" id="addStopBtn" data-i18n="booking.addStop">+ Add another stop</button>
+
+      <div id="routeMap" class="route-map"></div>
+      <p class="error-text" id="mapsError" hidden>Map search isn't available right now. You can still type an address directly.</p>
+      <p class="error-text" id="excludedAreaError" hidden></p>
+
+      <div class="addon-section">
+        <label class="checkbox-row">
+          <input type="checkbox" id="fSecurityEscort">
+          <span>Add a personal security escort <strong>(priced at checkout)</strong></span>
+        </label>
+        <label class="field-label" style="margin-top:6px;">Fleet accompaniment</label>
+        <div class="chip-row" id="fleetChips">
+          <div class="chip selected" data-fleet="0">None</div>
+          <div class="chip" data-fleet="2">2 vehicles <strong>(+NGN 70,000)</strong></div>
+          <div class="chip" data-fleet="3">3 vehicles <strong>(+NGN 100,000)</strong></div>
+        </div>
+      </div>
+
       <div class="step-actions">
-        <button class="btn btn-ghost" id="backTo1" data-i18n="booking.back">Back</button>
-        <button class="btn btn-primary" id="flightContinue" data-i18n="booking.continue">Continue</button>
+        <button class="btn btn-primary" id="tripContinue" data-i18n="booking.continue">Continue</button>
       </div>
     </section>
 
-    <!-- STEP 3: Luggage & Vehicle -->
-    <section class="step" data-step="4" hidden>
-      <h2 data-i18n="booking.luggageTitle">Tell us your luggage</h2>
-      <p class="step-sub" data-i18n="booking.luggageSub">So we send a vehicle that actually fits everything.</p>
+    <!-- STEP 2: You & Ride -- was Step 1 "Contact" + Step 3 "Luggage &
+         Vehicle" merged into one screen. The live fare estimate now lives
+         here, updating as the vehicle, passengers or add-ons change. -->
+    <section class="step" data-step="2" hidden>
+      <h2 data-i18n="booking.contactTitle">Let's start with you</h2>
+      <div id="profileSummary" style="background:#FBF9F3; border-radius:10px; padding:12px 14px; margin-bottom:14px; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
+        <div><strong id="profileName"></strong><br>
+        <span id="profileEmail" style="color:var(--text-muted);"></span></div>
+        <a href="account.html" style="font-size:12px; color:var(--primary); font-weight:700;">My account</a>
+      </div>
+      <label class="field-label" id="whatsappLabel" data-i18n="booking.whatsapp">WhatsApp number</label>
+      <div id="whatsappInputContainer" style="margin-bottom:14px;"></div>
+      <input type="text" id="fCountry" class="field" data-i18n-placeholder="booking.country" placeholder="Country of residence" style="margin-bottom:14px;">
 
-      <!-- Booking type now lives in Step 2, before the flight question. -->
+      <label class="field-label" data-i18n="booking.forWhoLabel">Who is this ride for?</label>
+      <div class="for-who-toggle" id="forWhoToggle">
+        <button type="button" class="for-who-opt is-active" data-for="self" data-i18n="booking.forSelf">Myself</button>
+        <button type="button" class="for-who-opt" data-for="other" data-i18n="booking.forOther">Someone else</button>
+      </div>
+
+      <div id="passengerFields" hidden>
+        <label class="field-label" data-i18n="booking.passengerName">Passenger's full name</label>
+        <input type="text" id="fPassengerName" class="field" data-i18n-placeholder="booking.passengerNamePlaceholder" placeholder="e.g. Amaka Obi" style="margin-bottom:14px;">
+        <label class="field-label" data-i18n="booking.passengerWhatsapp">Passenger's WhatsApp number</label>
+        <div id="passengerPhoneContainer" style="margin-bottom:14px;"></div>
+      </div>
+
+      <label class="field-label" data-i18n="booking.emergencyContactLabel">Emergency contact</label>
+      <p class="step-sub" style="margin-top:-8px; margin-bottom:12px;" data-i18n="booking.emergencyContactSub">Someone we can reach if we can't reach you during this ride.</p>
+      <input type="text" id="fEmergencyName" class="field" data-i18n-placeholder="booking.emergencyContactNamePlaceholder" placeholder="e.g. Tunde Okafor" style="margin-bottom:14px;">
+      <div id="emergencyPhoneContainer" style="margin-bottom:14px;"></div>
+
+      <div class="tracking-notice">
+        <span aria-hidden="true">📍</span>
+        <span data-i18n="booking.etaTrackingNotice"><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> tracks your ETA in real time from pickup to drop-off, so your driver's location and arrival estimate stay accurate throughout the ride.</span>
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="fDashcamConsent">
+        <span data-i18n="booking.dashcamConsent">I agree that this ride may be recorded by an in-vehicle dash cam for safety, and that footage is stored for 30 days and then automatically deleted.</span>
+      </label>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="fAgree">
+        <span data-i18n="booking.agree">I agree to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>'s <a href="#" id="openPrivacyModalBooking" style="color:var(--primary);text-decoration:underline;">privacy policy</a> and <a href="terms.html" target="_blank" rel="noopener">terms of service</a>.</span>
+      </label>
+
+      <p class="error-text" id="contactError" hidden></p>
+
+      <h2 style="margin-top:28px;" data-i18n="booking.luggageTitle">Tell us your luggage</h2>
+      <p class="step-sub" data-i18n="booking.luggageSub">So we send a vehicle that actually fits everything.</p>
 
       <label class="field-label" data-i18n="booking.passengersLabel">Number of passengers</label>
       <div style="display:flex; gap:12px; margin-bottom:14px;">
@@ -347,58 +392,11 @@
         <span data-i18n="booking.luxuryLabel">Upgrade to a luxury vehicle <strong>(priced at checkout)</strong></span>
       </label>
 
-      <div class="step-actions">
-        <button class="btn btn-ghost" id="backTo2" data-i18n="booking.back">Back</button>
-        <button class="btn btn-primary" id="luggageContinue" data-i18n="booking.continue">Continue</button>
-      </div>
-    </section>
-
-    <!-- STEP 4: Pickup & Drop-off -->
-    <section class="step" data-step="3" hidden>
-      <h2 data-i18n="booking.pickupTitle">Where should we pick you up?</h2>
-
-      <div class="location-permission-box" id="locationPermissionBox">
-        <p>Share your location to get better address suggestions nearby. We only use this for the search below, nothing is tracked in the background.</p>
-        <div style="display:flex; gap:8px;">
-          <button type="button" class="btn btn-primary btn-sm" id="allowLocationBtn">Allow location</button>
-          <button type="button" class="btn btn-ghost btn-sm" id="declineLocationBtn">Not now</button>
-        </div>
-      </div>
-      <p class="location-declined-note" id="locationDeclinedNote" hidden>You can still type any address below, search just won't be narrowed to where you are right now.</p>
-
-      <div class="route-builder">
-        <div class="route-row">
-          <span class="route-dot route-dot-start"></span>
-          <input type="text" id="fPickup" class="field route-input" data-i18n-placeholder="booking.pickupPlaceholder" placeholder="e.g. Murtala Muhammed Airport, Terminal 1">
-        </div>
-
-        <div id="stopsList"></div>
-
-        <div class="route-row">
-          <span class="route-dot route-dot-end"></span>
-          <input type="text" id="fDropoff" class="field route-input" data-i18n-placeholder="booking.dropoffPlaceholder" placeholder="Drop-off location">
-        </div>
-      </div>
-
-      <button type="button" class="link-btn" id="addStopBtn" data-i18n="booking.addStop">+ Add another stop</button>
-
-      <div id="routeMap" class="route-map"></div>
-      <p class="error-text" id="mapsError" hidden>Map search isn't available right now. You can still type an address directly.</p>
-      <p class="error-text" id="excludedAreaError" hidden></p>
-
-      <div class="addon-section">
-        <label class="checkbox-row">
-          <input type="checkbox" id="fSecurityEscort">
-          <span>Add a personal security escort <strong>(priced at checkout)</strong></span>
-        </label>
-        <label class="field-label" style="margin-top:6px;">Fleet accompaniment</label>
-        <div class="chip-row" id="fleetChips">
-          <div class="chip selected" data-fleet="0">None</div>
-          <div class="chip" data-fleet="2">2 vehicles <strong>(+NGN 70,000)</strong></div>
-          <div class="chip" data-fleet="3">3 vehicles <strong>(+NGN 100,000)</strong></div>
-        </div>
-      </div>
-
+      <!-- Live fare estimate -- moved here from the old Pickup step so it
+           updates as the vehicle, passenger count and add-ons are actually
+           chosen, instead of a generic "estimate distance" number that
+           didn't know the vehicle yet. Covers every booking type now
+           (previously hidden entirely for full_day/week/month charters). -->
       <div class="fare-estimate-box" id="fareEstimateBox" hidden>
         <div class="fare-estimate-row"><span data-i18n="booking.fareDistance">Estimated distance</span><span id="fareDistanceText"></span></div>
         <div class="fare-estimate-row"><span data-i18n="booking.fareBase">Base fare</span><span id="fareBaseText"></span></div>
@@ -410,13 +408,13 @@
       <p class="error-text" id="fareError" hidden>Couldn't calculate a distance-based fare for this route. You can still continue. We'll confirm the exact fare before you pay.</p>
 
       <div class="step-actions">
-        <button class="btn btn-ghost" id="backTo3" data-i18n="booking.back">Back</button>
-        <button class="btn btn-primary" id="pickupContinue" data-i18n="booking.continue">Continue</button>
+        <button class="btn btn-ghost" id="backToTrip" data-i18n="booking.back">Back</button>
+        <button class="btn btn-primary" id="rideContinue" data-i18n="booking.continue">Continue</button>
       </div>
     </section>
 
-    <!-- STEP 5: Review & Pay -->
-    <section class="step" data-step="5" hidden>
+    <!-- STEP 3: Review & Pay -->
+    <section class="step" data-step="3" hidden>
       <h2 data-i18n="booking.reviewTitle">Review &amp; pay</h2>
 
       <p id="quoteLoadingText">Calculating your exact fare…</p>
@@ -452,13 +450,13 @@
       <p class="error-text" id="payError" hidden></p>
 
       <div class="step-actions">
-        <button class="btn btn-ghost" id="backTo4" data-i18n="booking.back">Back</button>
+        <button class="btn btn-ghost" id="backToRide" data-i18n="booking.back">Back</button>
         <button class="btn btn-primary" id="payBtn"><span data-i18n="booking.payNow">Pay</span> <span id="payAmount"></span></button>
       </div>
     </section>
 
-    <!-- STEP 6: Confirmation -->
-    <section class="step" data-step="6" hidden>
+    <!-- STEP 4: Confirmation -->
+    <section class="step" data-step="4" hidden>
       <div class="confirm-icon">✓</div>
       <h2 data-i18n="booking.confirmTitle">You're booked!</h2>
       <p data-i18n="booking.confirmBody">Payment confirmed. Your reference number is below. Our team will confirm your driver's details closer to pickup time.</p>

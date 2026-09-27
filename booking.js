@@ -42,6 +42,19 @@
     userLocation: null, locationPermission: null, excludedAreaMatch: null,
   };
 
+  // ── Uber-style rebuild: cross-step validator hooks ──────────────────────
+  // The old 5-tab wizard is now 3 screens (Trip / You & Ride / Review & Pay)
+  // -- each screen's single Continue button now has to run validation that
+  // used to live on two separate steps. Rather than duplicating that logic,
+  // each contributing init function (initStep1, initStep2) assigns its
+  // validator function here once, and the screen's actual Continue handler
+  // (in initStep4 for Trip, initStep3 for You & Ride) calls it first. All of
+  // these init functions share this one closure, so this is just a plain
+  // variable, not global state.
+  var flightValidator = null; // set by initStep2 -- validates flight/schedule fields
+  var contactFieldsValidator = null; // set by initStep1 -- validates contact fields
+  var saveContactProfileFn = null; // set by initStep1 -- persists contact fields to the rider's profile
+
   // ───────────────────────── i18n (same pattern as script.js) ─────────────────────────
   function getNested(obj, path) {
     return path.split(".").reduce(function (acc, key) { return acc && acc[key]; }, obj);
@@ -255,13 +268,20 @@
       }
     });
 
-    document.getElementById("contactContinue").addEventListener("click", function () {
+    // Was the "contactContinue" click handler, back when Contact was its own
+    // step with its own Continue button. Contact is now the top half of the
+    // "You & Ride" screen (Step 2), whose single Continue button also has to
+    // validate the luggage/vehicle fields below it -- so this only validates
+    // and stores the contact fields; the actual navigation and the luggage/
+    // vehicle checks live in initStep3's "rideContinue" handler, which calls
+    // this first via the contactFieldsValidator hook above.
+    function validateContactFields() {
       hideError(contactError);
 
       var phoneResult = whatsappField.getValue();
       if (!phoneResult.valid) {
         showError(contactError, phoneResult.message);
-        return;
+        return false;
       }
       state.whatsapp = phoneResult.full;
       state.country = document.getElementById("fCountry").value.trim();
@@ -273,16 +293,16 @@
         state.passengerName = passengerNameInput ? passengerNameInput.value.trim() : "";
         if (!state.passengerName) {
           showError(contactError, t("booking.passengerNameRequired"));
-          return;
+          return false;
         }
         var passengerPhoneResult = passengerPhoneField.getValue();
         if (!passengerPhoneResult.valid) {
           showError(contactError, t("booking.passengerWhatsappRequired"));
-          return;
+          return false;
         }
         if (passengerPhoneResult.full === state.whatsapp) {
           showError(contactError, t("booking.samePassengerNumber"));
-          return;
+          return false;
         }
         state.passengerWhatsapp = passengerPhoneResult.full;
       } else {
@@ -294,54 +314,53 @@
       state.emergencyContactName = emergencyNameInput ? emergencyNameInput.value.trim() : "";
       if (!state.emergencyContactName) {
         showError(contactError, t("booking.emergencyContactNameRequired"));
-        return;
+        return false;
       }
       var emergencyPhoneResult = emergencyPhoneField.getValue();
       if (!emergencyPhoneResult.valid) {
         showError(contactError, t("booking.emergencyContactPhoneRequired"));
-        return;
+        return false;
       }
       if (emergencyPhoneResult.full === state.whatsapp || emergencyPhoneResult.full === state.passengerWhatsapp) {
         showError(contactError, t("booking.emergencyContactSameAsRider"));
-        return;
+        return false;
       }
       state.emergencyContactPhone = emergencyPhoneResult.full;
 
       if (!state.country) {
         showError(contactError, "Please enter your country of residence.");
-        return;
+        return false;
       }
       if (!state.dashcamConsent) {
         showError(contactError, t("booking.dashcamConsentRequired"));
-        return;
+        return false;
       }
       if (!state.agreedToTerms) {
         showError(contactError, "Please agree to the privacy policy and terms of service to continue.");
-        return;
+        return false;
       }
+      return true;
+    }
 
-
-      // Save WhatsApp/Country to the rider's profile for next time, then continue.
-      // Only when booking for self — if this is a passenger's number, it
-      // belongs to the ride, not to the account holder's saved profile.
+    // Save WhatsApp/Country to the rider's profile for next time. Only
+    // called once every field on the combined "You & Ride" screen has
+    // validated -- see initStep3's rideContinue handler.
+    function saveContactProfile() {
       var profilePatch = {
         countryOfResidence: state.country,
         whatsappNumber: state.whatsapp,
         emergencyContactName: state.emergencyContactName,
         emergencyContactPhone: state.emergencyContactPhone,
       };
-
-      api("/api/auth/me", {
+      return api("/api/auth/me", {
         method: "PATCH",
         headers: authHeader(),
         body: JSON.stringify(profilePatch),
-      }).then(function () {
-        goToStep(2);
-      }).catch(function () {
-        // Non-critical if this save fails — don't block the booking over it.
-        goToStep(2);
       });
-    });
+    }
+
+    contactFieldsValidator = validateContactFields;
+    saveContactProfileFn = saveContactProfile;
   }
 
   // ───────────────────────── Step 2: Trip type + Flight ─────────────────────────
@@ -391,6 +410,7 @@
       state.multiplier = FULL_DAY_BASE_MULTIPLIER * normalized;
       if (fullDayCountInput) fullDayCountInput.value = normalized;
       updatePriceLabels();
+      recalculateFareEstimate();
     }
 
     if (fullDayCountInput) {
@@ -445,6 +465,7 @@
         if (state.bookingType === "full_day") setFullDayCount(1);
         updateFlightSectionVisibility();
         updatePriceLabels();
+        recalculateFareEstimate(); // the live fare box (Step 2) is priced differently per booking type
       });
     });
     updateFlightSectionVisibility(); // set initial state on first load (defaults to one-way)
@@ -497,13 +518,18 @@
       });
     });
 
-    document.getElementById("flightContinue").addEventListener("click", function () {
+    // Was the "flightContinue" click handler, back when Flight/schedule was
+    // its own step. Flight/schedule fields are now the top half of the
+    // "Trip" screen (Step 1), whose single Continue button also has to
+    // validate the pickup/drop-off route below it -- so this only validates
+    // and stores the flight/schedule fields; navigation and the route
+    // validation live in initStep4's "tripContinue" handler, which calls
+    // this first via the flightValidator hook above.
+    function validateFlightAndSchedule() {
       if (!isOneWayStyle(state.bookingType)) {
         // Charter bookings don't have a flight to track.
         state.flightNumber = "";
-        goToStep(3);
-        setupPlacesForStep4(); // Pickup is now step 3 — the map container only has real dimensions once this step is visible. Function name predates the reorder.
-        return;
+        return true;
       }
 
       if (state.bookingType === "dropoff") {
@@ -514,16 +540,16 @@
         scheduledErrorBox.textContent = scheduledErrorBox.dataset.defaultText;
         if (!scheduled || isNaN(scheduled.getTime()) || scheduled.getTime() <= Date.now()) {
           scheduledErrorBox.hidden = false;
-          return;
+          return false;
         }
         // Mirrors arrivo-backend/services/bookingWindow.js ON_THE_GO_ONLY_HOURS.
         // Caught here so the rider fixes the time now, not after filling in
-        // three more steps.
+        // the rest of the form.
         if (scheduled.getTime() - Date.now() < MIN_STANDARD_BOOKING_HOURS * 60 * 60 * 1000) {
           scheduledErrorBox.hidden = false;
           scheduledErrorBox.textContent = "Drop-offs need to be booked at least " + MIN_STANDARD_BOOKING_HOURS +
             " hours ahead. Please pick a later time, or message us on WhatsApp at +2348162706078 for a pickup sooner than that.";
-          return;
+          return false;
         }
         scheduledErrorBox.hidden = true;
         state.scheduledPickupAt = scheduled.toISOString();
@@ -537,14 +563,14 @@
       if (state.bookingType === "one_way" && !flightNumber) {
         requiredErrorBox.hidden = false;
         flightInput.focus();
-        return;
+        return false;
       }
       requiredErrorBox.hidden = true;
       state.flightNumber = flightNumber;
-      goToStep(3);
-      setupPlacesForStep4(); // Pickup is now step 3 — the map container only has real dimensions once this step is visible. Function name predates the reorder.
-    });
-    document.getElementById("backTo1").addEventListener("click", function () { goToStep(1); });
+      return true;
+    }
+
+    flightValidator = validateFlightAndSchedule;
   }
 
   // ───────────────────────── Step 3: Luggage & Vehicle ─────────────────────────
@@ -630,6 +656,11 @@
       state.vehicleBasePrice = Number(card.getAttribute("data-price"));
       if (manual) state.vehicleManuallyPicked = true;
       updateLuxuryVisibility();
+      // The vehicle is what the live fare estimate below is actually
+      // priced on now (see recalculateFareEstimate) -- re-run it any time
+      // the selection changes, not just on the route/add-on changes it
+      // already listened for.
+      recalculateFareEstimate();
     }
 
     // Luxury only applies to sedan/suv (arrivo-backend/services/fare.js's
@@ -650,10 +681,13 @@
     }
 
     var carryOnInput = document.getElementById("fCarryOn");
-    checkedInput.addEventListener("input", updateRecommendation);
-    bulkyInput.addEventListener("change", updateRecommendation);
-    adultsInput.addEventListener("input", updateRecommendation);
-    childrenInput.addEventListener("input", updateRecommendation);
+    // Passenger count doesn't change the fare itself for one-way/dropoff
+    // (that's area/vehicle-based), but it does for full_day/week/month
+    // vehicleCount scaling shown in the estimate, so keep it live here too.
+    checkedInput.addEventListener("input", function () { updateRecommendation(); recalculateFareEstimate(); });
+    bulkyInput.addEventListener("change", function () { updateRecommendation(); recalculateFareEstimate(); });
+    adultsInput.addEventListener("input", function () { updateRecommendation(); recalculateFareEstimate(); });
+    childrenInput.addEventListener("input", function () { updateRecommendation(); recalculateFareEstimate(); });
     vehicleCards.forEach(function (card) {
       card.addEventListener("click", function () {
         var capacityError = document.getElementById("vehicleCapacityError");
@@ -671,8 +705,15 @@
 
     updatePriceLabels();
     updateRecommendation(); // set initial state on first load
+    recalculateFareEstimate();
 
-    document.getElementById("luggageContinue").addEventListener("click", function () {
+    // Combined Continue button for the "You & Ride" screen (Step 2) --
+    // was "luggageContinue" back when this was its own step; now also
+    // validates the contact fields above it (see contactFieldsValidator,
+    // set by initStep1) before checking passengers/vehicle capacity.
+    document.getElementById("rideContinue").addEventListener("click", function () {
+      if (!contactFieldsValidator()) return;
+
       var adults = Number(adultsInput.value) || 0;
       var children = Number(childrenInput.value) || 0;
       passengersError.hidden = true;
@@ -696,10 +737,17 @@
       state.carryOnBags = Number(carryOnInput.value) || 0;
       state.checkedBags = Number(checkedInput.value) || 0;
       state.bulky = bulkyInput.checked;
-      renderReview();
-      goToStep(5);
+
+      saveContactProfileFn().then(function () {
+        renderReview();
+        goToStep(3);
+      }).catch(function () {
+        // Non-critical if this save fails — don't block the booking over it.
+        renderReview();
+        goToStep(3);
+      });
     });
-    document.getElementById("backTo2").addEventListener("click", function () { goToStep(3); }); // Pickup is now the previous step — id predates the reorder
+    document.getElementById("backToTrip").addEventListener("click", function () { goToStep(1); });
   }
 
   // ───────────────────────── Google Places autocomplete + map preview ─────────────────────────
@@ -1029,16 +1077,47 @@
     return formatNairaWithUsdEstimate(Number(fareNaira));
   }
 
+  // Now lives on the "You & Ride" screen (Step 2) instead of the old Pickup
+  // step, so it can actually price the vehicle the rider has selected as
+  // they select it, rather than a generic "choose your vehicle on the next
+  // step" placeholder. Also now covers full_day/week/month charter bookings
+  // (previously hidden for those entirely) — same flat-rate math the
+  // vehicle cards' own price labels already use (updatePriceLabels), just
+  // surfaced here as a running total alongside the add-ons. This is still
+  // only ever an estimate: the real, final fare always comes from the
+  // backend's live quote at Review & Pay (see getLiveQuote below).
   function recalculateFareEstimate() {
     var box = document.getElementById("fareEstimateBox");
     var errEl = document.getElementById("fareError");
     if (!box) return;
 
+    var vehicleLabel = state.vehicle.charAt(0).toUpperCase() + state.vehicle.slice(1);
+    var luxuryApplies = state.luxury && LUXURY_SURCHARGE_USD.hasOwnProperty(state.vehicle);
+
+    document.getElementById("fareSecurityRow").hidden = !state.securityEscort;
+    var luxuryRowEstimate = document.getElementById("fareLuxuryRow");
+    if (luxuryRowEstimate) luxuryRowEstimate.hidden = !luxuryApplies;
+    var fleetRow = document.getElementById("fareFleetRow");
+    fleetRow.hidden = !state.fleetSize;
+    if (state.fleetSize) {
+      document.getElementById("fareFleetLabel").textContent = "Fleet of " + state.fleetSize;
+      document.getElementById("fareFleetAmount").textContent = "+NGN " + (FLEET_PRICE.sedan[state.fleetSize] || 0).toLocaleString();
+    }
+
     if (!isOneWayStyle(state.bookingType)) {
-      box.hidden = true;
+      // Charter (full_day / full_week / full_month) — flat rate: the
+      // selected vehicle's base price × the booking type's multiplier
+      // (× the rider's day count for full_day — see setFullDayCount).
       errEl.hidden = true;
+      var charterTotal = state.vehicleBasePrice * state.multiplier;
+      document.getElementById("fareDistanceText").textContent = state.durationDays > 1 ? state.durationDays + " days" : "Flat rate";
+      document.getElementById("fareBaseText").textContent = vehicleLabel + " NGN " + charterTotal.toLocaleString();
+      document.getElementById("fareTotalText").textContent = "~" + formatNairaWithUsdEstimate(charterTotal) +
+        (luxuryApplies || state.securityEscort ? " + add-ons priced at checkout" : "");
+      box.hidden = false;
       return;
     }
+
     if (!state.stops.length && !state.dropoffLatLng) {
       box.hidden = true;
       return;
@@ -1048,18 +1127,11 @@
     state.zone = { areaPrice: findAreaPrice(dropoffAddress) };
     errEl.hidden = true;
 
+    var vehicleTotal = zoneVehiclePrice(state.vehicle, state.zone);
     document.getElementById("fareDistanceText").textContent = "Base fare for this area";
-    document.getElementById("fareBaseText").textContent = "Sedan NGN " + zoneVehiclePrice("sedan", state.zone).toLocaleString() + " · SUV NGN " + zoneVehiclePrice("suv", state.zone).toLocaleString();
-    document.getElementById("fareSecurityRow").hidden = !state.securityEscort;
-    var luxuryRowEstimate = document.getElementById("fareLuxuryRow");
-    if (luxuryRowEstimate) luxuryRowEstimate.hidden = !(state.luxury && LUXURY_SURCHARGE_USD.hasOwnProperty(state.vehicle));
-    var fleetRow = document.getElementById("fareFleetRow");
-    fleetRow.hidden = !state.fleetSize;
-    if (state.fleetSize) {
-      document.getElementById("fareFleetLabel").textContent = "Fleet of " + state.fleetSize;
-      document.getElementById("fareFleetAmount").textContent = "+NGN " + (FLEET_PRICE.sedan[state.fleetSize] || 0).toLocaleString();
-    }
-    document.getElementById("fareTotalText").textContent = "Choose your vehicle on the next step to see the exact price.";
+    document.getElementById("fareBaseText").textContent = vehicleLabel + " NGN " + vehicleTotal.toLocaleString();
+    document.getElementById("fareTotalText").textContent = "~" + formatNairaWithUsdEstimate(vehicleTotal) +
+      (luxuryApplies || state.securityEscort ? " + add-ons priced at checkout" : "");
     box.hidden = false;
 
     // Optional nice-to-have: real distance/duration for display only, never
@@ -1227,7 +1299,15 @@
     document.getElementById("fPickup").addEventListener("input", function () { this.style.borderColor = ""; });
     document.getElementById("fDropoff").addEventListener("input", function () { this.style.borderColor = ""; });
 
-    document.getElementById("pickupContinue").addEventListener("click", function () {
+    // Combined Continue button for the "Trip" screen (Step 1) -- was
+    // "pickupContinue" back when Pickup was its own step after Flight; now
+    // also validates the flight/schedule fields above it (see
+    // flightValidator, set by initStep2) before checking the route itself.
+    // This is the first screen in the flow now, so there's no Back button
+    // to wire up here anymore.
+    document.getElementById("tripContinue").addEventListener("click", function () {
+      if (!flightValidator()) return;
+
       var pickup = document.getElementById("fPickup").value.trim();
       var dropoff = document.getElementById("fDropoff").value.trim();
 
@@ -1247,9 +1327,8 @@
       state.pickup = pickup;
       state.stops = waypoints.concat([dropoff]); // waypoints first, drop-off always last
       updatePriceLabels(); // zone is known now — refresh vehicle card prices before showing them
-      goToStep(4);
+      goToStep(2);
     });
-    document.getElementById("backTo3").addEventListener("click", function () { goToStep(2); }); // Flight is now the previous step — id predates the reorder
   }
 
   // ───────────────────────── Step 5: Review & Pay ─────────────────────────
@@ -1654,7 +1733,7 @@
         barcodeBox.hidden = false;
       }
       if (state.bookingType === "one_way") showReturnDropoffPrompt(createdRide.id);
-      goToStep(6);
+      goToStep(4);
     }).catch(function () {
       payBtn.disabled = false;
       payError.hidden = false;
@@ -1790,7 +1869,7 @@
           barcodeBox.hidden = false;
         }
         if (state.bookingType === "one_way" && createdRide) showReturnDropoffPrompt(createdRide.id);
-        goToStep(6);
+        goToStep(4);
       })
       .catch(function (err) {
         payError.hidden = false;
@@ -1799,7 +1878,7 @@
   }
 
   function initStep5() {
-    document.getElementById("backTo4").addEventListener("click", function () { goToStep(4); });
+    document.getElementById("backToRide").addEventListener("click", function () { goToStep(2); });
 
     // Privacy policy popup (step 1's link)
     var privacyLink = document.getElementById("openPrivacyModalBooking");
@@ -1950,6 +2029,12 @@
     safeRun(initStep2, "initStep2");
     safeRun(initStep3, "initStep3");
     safeRun(initStep4, "initStep4");
+    // The Pickup/route section used to only become visible after a step
+    // transition, which is when this used to run (from inside the removed
+    // flightContinue handler). "Trip" (Step 1) is now the first thing the
+    // rider sees, so the map needs its real dimensions from page load
+    // instead. Function name predates the reorder.
+    safeRun(setupPlacesForStep4, "setupPlacesForStep4");
     safeRun(initLocationPermission, "initLocationPermission");
     safeRun(initStep5, "initStep5");
     // Must run after initStep2 (it simulates a click on the "dropoff" chip,
