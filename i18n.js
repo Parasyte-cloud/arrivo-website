@@ -339,6 +339,19 @@ const I18N = {
       unavailableBody: "ArrivoExpress isn't switched on for riders yet. We'll let you know the moment it's ready.",
       authPrompt: "Log in to book an ArrivoExpress ride.",
       chooseYourRide: "Choose your ride",
+      // Localized labels/descriptions for the fixed tier catalogue the
+      // backend returns (services/instantTiers.js: economy/comfort/xl/
+      // premium -- a small, stable set, not something riders add to).
+      // express.js looks these up by tier.key and falls back to the
+      // backend's own English label/description for any key it doesn't
+      // recognize, so a future tier the backend adds still renders instead
+      // of breaking.
+      tiers: {
+        economy: { label: "Economy", description: "Everyday sedan rides: the most affordable ArrivoExpress tier." },
+        comfort: { label: "Comfort", description: "Newer SUVs with more legroom and boot space." },
+        xl: { label: "XL", description: "6+ seat SUVs for groups and extra luggage." },
+        premium: { label: "Premium", description: "RideArrivo's Executive fleet, chauffeur-grade comfort on demand." },
+      },
       whereTo: "Where to?",
       pickupPlaceholder: "Pickup location",
       destinationPlaceholder: "Destination",
@@ -696,6 +709,12 @@ const I18N = {
       unavailableBody: "ArrivoExpress n'est pas encore activé pour les passagers. Nous vous préviendrons dès qu'il sera prêt.",
       authPrompt: "Connectez-vous pour réserver un trajet ArrivoExpress.",
       chooseYourRide: "Choisissez votre véhicule",
+      tiers: {
+        economy: { label: "Économique", description: "Trajets en berline au quotidien : le niveau ArrivoExpress le plus abordable." },
+        comfort: { label: "Confort", description: "Des SUV plus récents, avec plus de place pour les jambes et le coffre." },
+        xl: { label: "XL", description: "SUV 6 places et plus, pour les groupes et les bagages en plus." },
+        premium: { label: "Premium", description: "La flotte Executive de RideArrivo, un confort chauffeur à la demande." },
+      },
       whereTo: "Où allez-vous ?",
       pickupPlaceholder: "Lieu de prise en charge",
       destinationPlaceholder: "Destination",
@@ -1054,6 +1073,12 @@ I18N.zh = {
     unavailableBody: "ArrivoExpress 尚未对乘客开放，我们会在准备就绪后通知您。",
     authPrompt: "请登录以预订 ArrivoExpress 行程。",
     chooseYourRide: "选择车型",
+    tiers: {
+      economy: { label: "经济型", description: "经济实惠的日常轿车出行，ArrivoExpress入门之选。" },
+      comfort: { label: "舒适型", description: "更新的SUV，拥有更宽敞的腿部空间和后备箱。" },
+      xl: { label: "XL加大型", description: "6座及以上SUV，适合多人出行和更多行李。" },
+      premium: { label: "尊享型", description: "RideArrivo行政车队，尊享司机接送体验。" },
+    },
     whereTo: "要去哪里？",
     pickupPlaceholder: "上车地点",
     destinationPlaceholder: "目的地",
@@ -1413,6 +1438,12 @@ I18N.de = {
     unavailableBody: "ArrivoExpress ist für Fahrgäste noch nicht freigeschaltet. Wir informieren Sie, sobald es verfügbar ist.",
     authPrompt: "Melden Sie sich an, um eine ArrivoExpress-Fahrt zu buchen.",
     chooseYourRide: "Fahrzeug wählen",
+    tiers: {
+      economy: { label: "Economy", description: "Alltägliche Limousinenfahrten: die günstigste ArrivoExpress-Stufe." },
+      comfort: { label: "Comfort", description: "Neuere SUVs mit mehr Beinfreiheit und Kofferraum." },
+      xl: { label: "XL", description: "SUVs mit 6+ Sitzen für Gruppen und mehr Gepäck." },
+      premium: { label: "Premium", description: "RideArrivos Executive-Flotte, Chauffeurkomfort auf Abruf." },
+    },
     whereTo: "Wohin geht's?",
     pickupPlaceholder: "Abholort",
     destinationPlaceholder: "Ziel",
@@ -1770,6 +1801,12 @@ I18N.hi = {
     unavailableBody: "ArrivoExpress अभी राइडर्स के लिए चालू नहीं हुआ है। तैयार होते ही हम आपको बता देंगे।",
     authPrompt: "ArrivoExpress राइड बुक करने के लिए लॉग इन करें।",
     chooseYourRide: "अपनी राइड चुनें",
+    tiers: {
+      economy: { label: "इकॉनमी", description: "रोज़मर्रा की सेडान सवारी: सबसे किफ़ायती ArrivoExpress विकल्प।" },
+      comfort: { label: "कम्फर्ट", description: "ज़्यादा लेगरूम और डिक्की स्पेस वाली नई SUV।" },
+      xl: { label: "XL", description: "समूहों और अतिरिक्त सामान के लिए 6+ सीट वाली SUV।" },
+      premium: { label: "प्रीमियम", description: "RideArrivo का एग्ज़िक्यूटिव फ़्लीट, माँग पर शोफ़र जैसा आराम।" },
+    },
     whereTo: "कहाँ जाना है?",
     pickupPlaceholder: "पिकअप लोकेशन",
     destinationPlaceholder: "गंतव्य",
@@ -2127,6 +2164,12 @@ I18N.es = {
     unavailableBody: "ArrivoExpress aún no está activado para los pasajeros. Te avisaremos en cuanto esté listo.",
     authPrompt: "Inicia sesión para reservar un viaje de ArrivoExpress.",
     chooseYourRide: "Elige tu vehículo",
+    tiers: {
+      economy: { label: "Económico", description: "Viajes en sedán para el día a día: el nivel más económico de ArrivoExpress." },
+      comfort: { label: "Confort", description: "SUV más nuevas, con más espacio para las piernas y el maletero." },
+      xl: { label: "XL", description: "SUV de 6 o más plazas para grupos y equipaje extra." },
+      premium: { label: "Premium", description: "La flota Executive de RideArrivo, comodidad de chófer bajo demanda." },
+    },
     whereTo: "¿A dónde vas?",
     pickupPlaceholder: "Lugar de recogida",
     destinationPlaceholder: "Destino",
@@ -2484,6 +2527,12 @@ I18N.pt = {
     unavailableBody: "O ArrivoExpress ainda não está disponível para passageiros. Avisaremos assim que estiver pronto.",
     authPrompt: "Faça login para reservar uma viagem ArrivoExpress.",
     chooseYourRide: "Escolha seu veículo",
+    tiers: {
+      economy: { label: "Econômico", description: "Corridas de sedã do dia a dia: o nível mais acessível do ArrivoExpress." },
+      comfort: { label: "Conforto", description: "SUVs mais novos, com mais espaço para as pernas e porta-malas." },
+      xl: { label: "XL", description: "SUVs com 6+ lugares para grupos e mais bagagem." },
+      premium: { label: "Premium", description: "A frota Executive da RideArrivo, conforto de motorista particular sob demanda." },
+    },
     whereTo: "Para onde vamos?",
     pickupPlaceholder: "Local de embarque",
     destinationPlaceholder: "Destino",

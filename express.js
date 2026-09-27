@@ -209,6 +209,19 @@
   }
 
   // ───────────────────────── Tier picker ─────────────────────────────
+  // tier.label / tier.description in the API response come from the
+  // backend's tier catalogue (services/instantTiers.js) and are
+  // English-only -- arrivoExpress.tiers in i18n.js carries the translated
+  // label/description for each known tier.key, looked up here instead.
+  // Falls back to the backend's own English text for any tier.key that
+  // isn't in that dictionary (a tier the backend added before i18n.js was
+  // updated for it), so a new tier still renders instead of breaking.
+  function tierText(tier, field) {
+    var dict = (typeof I18N !== "undefined" && (I18N[currentLang()] || I18N.en)) || {};
+    var entry = getNested(dict, "arrivoExpress.tiers." + tier.key);
+    return (entry && entry[field]) || tier[field];
+  }
+
   function renderTiers() {
     var container = document.getElementById("tierOptions");
     if (!container) return;
@@ -217,12 +230,9 @@
       var btn = document.createElement("button");
       btn.type = "button";
       btn.className = "vehicle-card" + (tier.key === state.selectedTier ? " selected" : "");
-      // tier.label / tier.description come from the backend's tier catalogue
-      // (services/instantTiers.js) and are English-only today, same as the
-      // mobile app's ArrivoExpressScreen -- not run through t().
       btn.innerHTML =
-        '<span class="v-name">' + escapeHtml(tier.label) + "</span>" +
-        '<span class="v-description">' + escapeHtml(tier.description) + "</span>";
+        '<span class="v-name">' + escapeHtml(tierText(tier, "label")) + "</span>" +
+        '<span class="v-description">' + escapeHtml(tierText(tier, "description")) + "</span>";
       btn.addEventListener("click", function () {
         state.selectedTier = tier.key;
         renderTiers();
@@ -467,7 +477,7 @@
     var q = state.quote;
     var tierConfig = state.tiers.filter(function (tr) { return tr.key === state.selectedTier; })[0];
 
-    document.getElementById("quoteTierLabel").textContent = tierConfig ? tierConfig.label : state.selectedTier;
+    document.getElementById("quoteTierLabel").textContent = tierConfig ? tierText(tierConfig, "label") : state.selectedTier;
     document.getElementById("quoteZoneTag").style.display = q.zone === "yellow" ? "inline-block" : "none";
     document.getElementById("quoteRoute").textContent = state.pickup + " → " + state.destination;
     document.getElementById("quoteDistance").textContent = tFormat("arrivoExpress.distanceKm", { distance: q.distanceKm != null ? q.distanceKm.toFixed(1) : "--" });
