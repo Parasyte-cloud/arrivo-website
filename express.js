@@ -196,6 +196,16 @@
       var el = document.getElementById(cid);
       if (el) el.hidden = cid !== id;
     });
+    // Bring the shared map along to whichever card is now visible -- see
+    // initRouteMap's comment on why this is one reparented div rather than
+    // a map instance per card.
+    if (id === "pickerCard") {
+      mountMapInto("rnMapPickerSlot");
+      initRouteMap();
+    } else if (id === "quoteCard") {
+      mountMapInto("rnMapQuoteSlot");
+      if (googleMapInstance) google.maps.event.trigger(googleMapInstance, "resize");
+    }
   }
 
   // ───────────────────────── Tier picker ─────────────────────────────
@@ -253,13 +263,134 @@
       state.pickup = r.address;
       state.pickupLatLng = { lat: r.lat, lng: r.lng };
       if (pickupEl) pickupEl.value = r.address;
+      updateMapMarkers();
     });
     attachPlacesAutocomplete(destEl, function (r) {
       state.destination = r.address;
       state.destinationLatLng = { lat: r.lat, lng: r.lng };
       if (destEl) destEl.value = r.address;
+      updateMapMarkers();
     });
+    initRouteMap();
   };
+
+  // ───────────────────────── Route map (pickup/destination preview) ─────
+  // One Google Map instance shared between the picker card (while choosing
+  // addresses) and the quote card (to preview the confirmed route) -- the
+  // #rnMap div itself gets physically reparented between the two cards'
+  // slots rather than standing up a second map instance, same
+  // single-map-instance idea booking.js uses for book.html's #routeMap.
+  var LAGOS_CENTER = { lat: 6.5244, lng: 3.3792 };
+  var googleMapInstance = null;
+  var pickupMarker = null;
+  var destinationMarker = null;
+  var directionsService = null;
+  var directionsRenderer = null;
+
+  function initRouteMap() {
+    var mapEl = document.getElementById("rnMap");
+    var errEl = document.getElementById("mapsError");
+    if (!mapEl) return;
+
+    if (!window.google || !window.google.maps) {
+      if (errEl) errEl.hidden = false;
+      return;
+    }
+
+    if (!googleMapInstance) {
+      googleMapInstance = new google.maps.Map(mapEl, {
+        center: LAGOS_CENTER,
+        zoom: 11,
+        disableDefaultUI: true,
+        zoomControl: true,
+      });
+      directionsService = new google.maps.DirectionsService();
+      directionsRenderer = new google.maps.DirectionsRenderer({
+        map: googleMapInstance,
+        suppressMarkers: true, // pickupMarker/destinationMarker below give us control of their look
+        polylineOptions: { strokeColor: "#12123B", strokeWeight: 4, strokeOpacity: 0.85 },
+      });
+    } else {
+      // The map div may just have been reparented, or its card may have
+      // been hidden (display:none) and just become visible again -- either
+      // way Google Maps needs an explicit nudge to redraw at the right
+      // size, otherwise it can render blank or mis-sized.
+      google.maps.event.trigger(googleMapInstance, "resize");
+      if (!state.pickupLatLng && !state.destinationLatLng) googleMapInstance.setCenter(LAGOS_CENTER);
+    }
+  }
+
+  // Moves the single #rnMap div into whichever card's slot should show it
+  // right now, then nudges Maps to redraw -- see initRouteMap's comment.
+  function mountMapInto(slotId) {
+    var mapEl = document.getElementById("rnMap");
+    var slot = document.getElementById(slotId);
+    if (!mapEl || !slot || mapEl.parentNode === slot) return;
+    slot.appendChild(mapEl);
+    if (googleMapInstance) google.maps.event.trigger(googleMapInstance, "resize");
+  }
+
+  function updateMapMarkers() {
+    if (!googleMapInstance) return;
+
+    if (state.pickupLatLng) {
+      if (!pickupMarker) {
+        pickupMarker = new google.maps.Marker({
+          map: googleMapInstance,
+          position: state.pickupLatLng,
+          label: { text: "A", color: "#fff", fontSize: "11px", fontWeight: "700" },
+          title: state.pickup,
+        });
+      } else {
+        pickupMarker.setPosition(state.pickupLatLng);
+        pickupMarker.setTitle(state.pickup);
+      }
+    }
+
+    if (state.destinationLatLng) {
+      if (!destinationMarker) {
+        destinationMarker = new google.maps.Marker({
+          map: googleMapInstance,
+          position: state.destinationLatLng,
+          label: { text: "B", color: "#fff", fontSize: "11px", fontWeight: "700" },
+          title: state.destination,
+        });
+      } else {
+        destinationMarker.setPosition(state.destinationLatLng);
+        destinationMarker.setTitle(state.destination);
+      }
+    }
+
+    if (state.pickupLatLng && state.destinationLatLng) {
+      drawRoute();
+    } else if (state.pickupLatLng) {
+      googleMapInstance.panTo(state.pickupLatLng);
+      googleMapInstance.setZoom(15);
+    } else if (state.destinationLatLng) {
+      googleMapInstance.panTo(state.destinationLatLng);
+      googleMapInstance.setZoom(15);
+    }
+  }
+
+  function drawRoute() {
+    if (!directionsService || !directionsRenderer || !googleMapInstance) return;
+    directionsService.route({
+      origin: state.pickupLatLng,
+      destination: state.destinationLatLng,
+      travelMode: google.maps.TravelMode.DRIVING,
+    }, function (result, status) {
+      if (status === "OK") {
+        directionsRenderer.setDirections(result);
+        return;
+      }
+      // No drivable route found, or a transient API error -- still show
+      // both pins so the map isn't left blank, just without a drawn line.
+      var bounds = new google.maps.LatLngBounds();
+      bounds.extend(state.pickupLatLng);
+      bounds.extend(state.destinationLatLng);
+      googleMapInstance.fitBounds(bounds, 40);
+    });
+  }
 
   // If the Maps script is slow, blocked, or fails to load, don't leave the
   // picker silently broken -- tell the visitor plain typing still works.
@@ -344,6 +475,7 @@
     document.getElementById("quoteFare").textContent = formatNaira(q.fareNaira);
     document.getElementById("quoteError").hidden = true;
 
+    updateMapMarkers();
     showCard("quoteCard");
 
     // On a language switch we're just re-rendering already-fetched numbers,

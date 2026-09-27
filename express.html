@@ -158,6 +158,12 @@
     <input type="text" id="rnPickup" class="field" data-i18n-placeholder="arrivoExpress.pickupPlaceholder" placeholder="Pickup location" autocomplete="off">
     <label class="field-label" for="rnDestination" data-i18n="arrivoExpress.destinationPlaceholder">Destination</label>
     <input type="text" id="rnDestination" class="field" data-i18n-placeholder="arrivoExpress.destinationPlaceholder" placeholder="Destination" autocomplete="off">
+
+    <!-- Single persistent map -- express.js physically reparents #rnMap
+         between this slot and #rnMapQuoteSlot below rather than creating a
+         second Google Map instance per card, same one-map-instance idea as
+         book.html's #routeMap. -->
+    <div id="rnMapPickerSlot"><div id="rnMap" class="route-map"></div></div>
     <p class="error-text" id="mapsError" hidden data-i18n="booking.mapsUnavailable">Location search is unavailable right now — you can still type an address, but auto-complete won't work.</p>
     <p class="error-text" id="pickerError" hidden></p>
     <button type="button" class="btn btn-primary" id="seeFareBtn" style="width:100%; margin-top:10px;" data-i18n="arrivoExpress.seeFare">See fare</button>
@@ -172,6 +178,7 @@
         <span id="quoteZoneTag" class="v-badge" style="display:none;" data-i18n="arrivoExpress.highTrafficArea">High-traffic area</span>
       </div>
       <p class="rn-route" id="quoteRoute"></p>
+      <div id="rnMapQuoteSlot"></div>
       <div class="rn-summary-row"><span data-i18n="arrivoExpress.estimatedDistance">Estimated distance</span><span id="quoteDistance"></span></div>
       <div class="rn-summary-row"><span data-i18n="arrivoExpress.estimatedTime">Estimated time</span><span id="quoteDuration"></span></div>
       <div class="rn-summary-row rn-total"><span data-i18n="arrivoExpress.totalFare">Total fare</span><span id="quoteFare"></span></div>
