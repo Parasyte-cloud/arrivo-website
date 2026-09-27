@@ -111,7 +111,7 @@
 
   // "next" is attacker-controllable (anyone can link to
   // login.html?next=<anything>) and gets assigned straight to
-  // window.location.href after a real, successful login/signup — an
+  // window.location.href after a real, successful login/signup -- an
   // unvalidated value here is an open redirect: a phishing link that
   // reads as trustworthy (it's really ridearrivo.com) which, right after
   // the visitor authenticates for real, bounces them to an attacker's
@@ -208,7 +208,7 @@
 
     // ── Google / Apple sign-in ──
     // Unlike Login, Signup keeps the explicit "I agree" checkbox as the
-    // consent gate — the OAuth buttons stay visually disabled (and are
+    // consent gate -- the OAuth buttons stay visually disabled (and are
     // re-checked again in the callback below, not just at the CSS layer)
     // until it's ticked, so a brand-new account via Google/Apple can't be
     // created without agreeing to the privacy policy/terms, same as the
@@ -259,7 +259,7 @@
       submitOAuth("/api/auth/google", { idToken: response.credential, role: "rider", agreedToTerms: true });
     }
 
-    // See login.html's identical comment — Google's renderButton takes a
+    // See login.html's identical comment -- Google's renderButton takes a
     // fixed pixel width, not a percentage, and the hardcoded 300 overflowed
     // .auth-wrap/.booking-card's padding on narrow phones.
     function googleButtonWidth() {
@@ -278,7 +278,7 @@
 
     // See login.html for the same note: Sign in with Apple on web needs a
     // Services ID from Apple Developer before this can go live. Left blank
-    // on purpose — button stays hidden until it's configured.
+    // on purpose -- button stays hidden until it's configured.
     var APPLE_WEB_SERVICES_ID = "";
 
     function handleAppleCredential(idToken) {
@@ -308,7 +308,7 @@
           }
           AppleID.auth.signIn().then(function (res) {
             handleAppleCredential(res.authorization.id_token);
-          }).catch(function () { /* user cancelled — no error needed */ });
+          }).catch(function () { /* user cancelled -- no error needed */ });
         });
       } else if (attemptsLeft > 0) {
         setTimeout(function () { initAppleSignIn(attemptsLeft - 1); }, 150);

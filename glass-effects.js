@@ -1,10 +1,10 @@
-// Dynamic Liquid Glass highlight — makes the specular highlight on buttons
+// Dynamic Liquid Glass highlight -- makes the specular highlight on buttons
 // and cards track the cursor, the way light actually catches a curved
 // glass surface as you move around it, rather than sitting in one fixed
 // spot. Shared across every page since no single JS file was already
 // loaded everywhere (index.html uses script.js, book.html uses
 // booking.js, driver.html uses driver.js, account/login/signup only had
-// inline scripts) — this avoids duplicating the same logic six times.
+// inline scripts) -- this avoids duplicating the same logic six times.
 (function () {
   function attach(el) {
     if (el.__glassHighlightAttached) return;
@@ -20,7 +20,7 @@
 
     el.addEventListener("pointerleave", function () {
       // Drift back to the default resting highlight position rather than
-      // snapping — CSS transition on --mx/--my isn't animatable directly,
+      // snapping -- CSS transition on --mx/--my isn't animatable directly,
       // so this relies on the element's own background-position transition
       // picking up the change smoothly.
       el.style.removeProperty("--mx");
@@ -39,7 +39,7 @@
   }
 
   // Booking flow and other dynamic pages reveal new buttons/cards after
-  // the initial load (new steps, re-rendered lists) — a light-touch
+  // the initial load (new steps, re-rendered lists) -- a light-touch
   // MutationObserver keeps new elements wired up without needing every
   // page to remember to call attachAll() again itself.
   var observer = new MutationObserver(function () { attachAll(); });
@@ -52,7 +52,7 @@
   }
 
   // Header starts flush against the top (no gap, no pill) so nothing
-  // shows through behind it on page load — it becomes the floating pill
+  // shows through behind it on page load -- it becomes the floating pill
   // only once scrolled, at which point there's always real page content
   // behind that gap rather than a stray strip of plain background.
   function updateHeaderScrollState() {

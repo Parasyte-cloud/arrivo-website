@@ -1,7 +1,7 @@
 // Shared country calling-code data and phone validation, used anywhere a
 // phone/WhatsApp number is collected (booking, registration).
 //
-// Deliberately a plain object, not a huge npm library — this covers the
+// Deliberately a plain object, not a huge npm library -- this covers the
 // countries actually relevant to RideArrivo's visitor mix (Nigeria + its
 // neighbours, plus the other markets RideArrivo already supports content for)
 // with a real min/max national-number-length check per country, which
