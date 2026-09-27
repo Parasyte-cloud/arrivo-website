@@ -81,6 +81,18 @@
       <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
       <a href="book.html" data-i18n="nav.bookCta">Book a ride</a>
+      <div class="nav-dropdown" id="servicesDropdown">
+        <button type="button" class="nav-dropdown-trigger" id="servicesTrigger" aria-haspopup="true" aria-expanded="false">
+          Services
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <ul class="nav-dropdown-menu" id="servicesMenu" role="menu" hidden>
+          <li><a href="express.html" role="menuitem" data-i18n="nav.express">ArrivoExpress</a></li>
+          <li><a href="https://move.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoMove</a></li>
+          <li><span class="nav-dropdown-soon">ArrivoBoat <span class="nav-dropdown-tag">Coming soon</span></span></li>
+          <li><span class="nav-dropdown-soon">ArrivoAir <span class="nav-dropdown-tag">Coming soon</span></span></li>
+        </ul>
+      </div>
     </nav>
     <div class="header-actions">
       <span class="live-clock" id="liveClock" aria-hidden="true"></span>
@@ -235,6 +247,9 @@
     <div class="footer-col">
       <h4 data-i18n="footer.getStartedHeading">Get Started</h4>
       <a href="express.html" data-i18n="nav.express">ArrivoExpress</a>
+      <a href="https://move.ridearrivo.com" target="_blank" rel="noopener">ArrivoMove</a>
+      <span class="nav-row-soon">ArrivoBoat <span class="nav-dropdown-tag">Coming soon</span></span>
+      <span class="nav-row-soon">ArrivoAir <span class="nav-dropdown-tag">Coming soon</span></span>
       <a href="book.html" data-i18n="nav.bookCta">Book a ride</a>
       <a href="driver.html" data-i18n="footer.driverPortal">Driver Portal</a>
       <a href="account.html" data-i18n="footer.myAccount">My Account</a>
