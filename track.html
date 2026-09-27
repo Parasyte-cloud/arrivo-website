@@ -86,7 +86,15 @@
       </div>
     </div>
 
-    <a href="#" id="mapLink" class="map-link" target="_blank" rel="noopener noreferrer" style="display:none;" data-i18n="track.mapLink">📍 View driver's last known location</a>
+    <!-- Live driver-position map. #rideMapWrap stays hidden until a poll
+         actually returns current_lat/current_lng (same gating condition
+         #mapLink alone used before) -- the inline map is the primary view,
+         #mapLink underneath it is a fallback that needs no Maps JS at all
+         and opens the same point in the rider's own Google Maps app. -->
+    <div id="rideMapWrap" hidden>
+      <div id="rideMap" class="route-map"></div>
+      <a href="#" id="mapLink" class="map-link" target="_blank" rel="noopener noreferrer" data-i18n="track.mapLink">📍 View driver's last known location</a>
+    </div>
 
     <div id="fleetConvoyBlock" hidden style="margin-top:14px; border-top:1px solid #eee; padding-top:12px;">
       <p style="font-size:12px; font-weight:700; margin-bottom:6px;">Your fleet convoy</p>
@@ -307,6 +315,71 @@
     return div.innerHTML;
   }
 
+  // ───────────────────────── Live driver-position map ─────────────────────────
+  // Single Google Map, created lazily the first time we have a real driver
+  // position and the Maps script has actually finished loading -- both the
+  // authenticated refresh() and the public refreshPublic() below call this
+  // with whatever current_lat/current_lng the poll just returned, same
+  // fields #mapLink already relied on. No Places library needed here (no
+  // address search on this page), so the script tag near the end of body
+  // only loads core Maps.
+  var googleMapInstance = null;
+  var driverMarker = null;
+  var lastKnownPosition = null;
+
+  function updateRideMap(lat, lng) {
+    lastKnownPosition = { lat: lat, lng: lng };
+    var wrap = document.getElementById("rideMapWrap");
+    if (wrap) wrap.hidden = false;
+
+    // Maps script may still be loading -- #mapLink above already works
+    // without it, and initGoogleMaps (below) replays the last known
+    // position through here again the moment Maps is actually ready.
+    if (!window.google || !window.google.maps) return;
+
+    var mapEl = document.getElementById("rideMap");
+    if (!mapEl) return;
+
+    if (!googleMapInstance) {
+      googleMapInstance = new google.maps.Map(mapEl, {
+        center: lastKnownPosition,
+        zoom: 15,
+        disableDefaultUI: true,
+        zoomControl: true,
+      });
+    } else {
+      // The map may have just become visible (rideMapWrap was hidden) --
+      // Google Maps needs an explicit nudge to redraw at the right size.
+      google.maps.event.trigger(googleMapInstance, "resize");
+    }
+
+    if (!driverMarker) {
+      driverMarker = new google.maps.Marker({
+        map: googleMapInstance,
+        position: lastKnownPosition,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 9,
+          fillColor: "#0E7C7B",
+          fillOpacity: 1,
+          strokeColor: "#fff",
+          strokeWeight: 2,
+        },
+      });
+    } else {
+      driverMarker.setPosition(lastKnownPosition);
+    }
+    googleMapInstance.panTo(lastKnownPosition);
+  }
+
+  // Google's script tag below calls this once the Maps JS API has loaded.
+  // If a poll already came back with a position before that happened,
+  // replay it now instead of waiting up to POLL_INTERVAL_MS for the next
+  // poll to draw the map for the first time.
+  window.initGoogleMaps = function () {
+    if (lastKnownPosition) updateRideMap(lastKnownPosition.lat, lastKnownPosition.lng);
+  };
+
   if (shareToken) {
     // Public, read-only mode. No auth header, no polling of anything that
     // needs the rider's own token -- just status, driver, and live location.
@@ -347,8 +420,8 @@
 
           var mapLink = document.getElementById("mapLink");
           if (ride.current_lat && ride.current_lng) {
-            mapLink.style.display = "block";
             mapLink.setAttribute("href", "https://www.google.com/maps?q=" + ride.current_lat + "," + ride.current_lng);
+            updateRideMap(Number(ride.current_lat), Number(ride.current_lng));
           }
         })
         .catch(function () { /* transient -- next poll will retry */ });
@@ -408,8 +481,8 @@
 
           var mapLink = document.getElementById("mapLink");
           if (ride.current_lat && ride.current_lng) {
-            mapLink.style.display = "block";
             mapLink.setAttribute("href", "https://www.google.com/maps?q=" + ride.current_lat + "," + ride.current_lng);
+            updateRideMap(Number(ride.current_lat), Number(ride.current_lng));
           }
 
           if (ride.panic_triggered_at && !ride.panic_resolved_at) {
@@ -718,6 +791,11 @@
     });
   }
 </script>
+<!-- Google Maps JS for the live driver-position map above -- core Maps only,
+     no Places library needed (no address search on this page). Same key
+     already in use on book.html/express.html; confirm HTTP referrer
+     restrictions in Google Cloud Console include ridearrivo.com. -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLWAbQmxIAoGPP0LLDp6oTosaHZBa0Y5s&callback=initGoogleMaps"></script>
 <!-- Paystack's official inline checkout library -- used for card tips only. -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
