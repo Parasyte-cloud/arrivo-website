@@ -24,13 +24,13 @@
   }
 
   // Looks up "arrivoExpress.foo"-style keys from I18N, same convention as
-  // booking.js's t() — every dynamically-set string on this page (button
+  // booking.js's t() -- every dynamically-set string on this page (button
   // labels, status text, error messages) goes through this rather than
   // being hardcoded in English, so the page is fully translated like the
   // rest of the site instead of only the shared header/footer chrome.
   function t(path) {
     // NOTE: reference the bare `I18N` identifier, not `window.I18N`. i18n.js
-    // declares it as a top-level `const`, which — unlike `var` — never
+    // declares it as a top-level `const`, which -- unlike `var` -- never
     // becomes a `window` property, even though it's still visible by name
     // to every other classic (non-module) script on the page. booking.js
     // relies on this same bare-identifier lookup; `window.I18N` is always
@@ -65,7 +65,7 @@
     if (label) label.textContent = LANG_LABELS[lang] || lang.toUpperCase();
     localStorage.setItem(LANG_KEY, lang);
 
-    // Re-render anything that mixes translated copy with live values —
+    // Re-render anything that mixes translated copy with live values --
     // static data-i18n swaps above don't cover these.
     if (!document.getElementById("pickerCard").hidden) renderTiers();
     if (!document.getElementById("quoteCard").hidden && state.quote) renderQuote(true);
@@ -219,7 +219,7 @@
       btn.className = "vehicle-card" + (tier.key === state.selectedTier ? " selected" : "");
       // tier.label / tier.description come from the backend's tier catalogue
       // (services/instantTiers.js) and are English-only today, same as the
-      // mobile app's ArrivoExpressScreen — not run through t().
+      // mobile app's ArrivoExpressScreen -- not run through t().
       btn.innerHTML =
         '<span class="v-name">' + escapeHtml(tier.label) + "</span>" +
         '<span class="v-description">' + escapeHtml(tier.description) + "</span>";
@@ -470,7 +470,7 @@
     document.getElementById("quoteTierLabel").textContent = tierConfig ? tierConfig.label : state.selectedTier;
     document.getElementById("quoteZoneTag").style.display = q.zone === "yellow" ? "inline-block" : "none";
     document.getElementById("quoteRoute").textContent = state.pickup + " → " + state.destination;
-    document.getElementById("quoteDistance").textContent = tFormat("arrivoExpress.distanceKm", { distance: q.distanceKm != null ? q.distanceKm.toFixed(1) : "—" });
+    document.getElementById("quoteDistance").textContent = tFormat("arrivoExpress.distanceKm", { distance: q.distanceKm != null ? q.distanceKm.toFixed(1) : "--" });
     document.getElementById("quoteDuration").textContent = tFormat("arrivoExpress.durationMin", { duration: Math.round(q.durationMin) });
     document.getElementById("quoteFare").textContent = formatNaira(q.fareNaira);
     document.getElementById("quoteError").hidden = true;

@@ -1,12 +1,12 @@
 // Arrivo service worker.
 //
-// What this DOES cache: the static site shell — HTML pages, CSS, JS, images.
+// What this DOES cache: the static site shell -- HTML pages, CSS, JS, images.
 // This is what makes the site installable as a PWA and lets it load
 // instantly (and even work offline for browsing) on repeat visits.
 //
 // What this NEVER caches: anything going to the backend API, Paystack, or
 // Google Maps. Ride bookings, payments, and login must always hit the
-// network fresh — caching any of that would risk showing stale or
+// network fresh -- caching any of that would risk showing stale or
 // incorrect data for something people are paying real money through.
 
 // Bumped v1 -> v2 (2026-09-23). The activate handler below deletes every
@@ -42,7 +42,7 @@ const SHELL_FILES = [
   "/assets/ridearrivo-wordmark-light.png",
 ];
 
-// Requests to these hosts are never intercepted — always go straight to
+// Requests to these hosts are never intercepted -- always go straight to
 // the network, no caching, no offline fallback. This list intentionally
 // stays narrow and explicit rather than trying to guess.
 const NEVER_CACHE_HOSTS = [
@@ -79,10 +79,10 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // Never intercept non-GET requests (POST/PATCH/etc. — bookings, payments,
+  // Never intercept non-GET requests (POST/PATCH/etc. -- bookings, payments,
   // login), anything to the hosts listed above, or anything that isn't a
   // plain http(s) request. Browser extensions can trigger fetch events
-  // with schemes like chrome-extension:// — the Cache API only supports
+  // with schemes like chrome-extension:// -- the Cache API only supports
   // http(s), so trying to cache.put() one of those throws.
   if (
     event.request.method !== "GET" ||
@@ -93,7 +93,7 @@ self.addEventListener("fetch", (event) => {
   }
 
   // Full-page navigations (e.g. someone typing ridearrivo.com/book directly,
-  // or refreshing) get network-first treatment — always try the real network
+  // or refreshing) get network-first treatment -- always try the real network
   // first, and only fall back to a cached copy if that genuinely fails.
   // This avoids ever serving a stale shell for a page the visitor expects
   // to be current.
@@ -112,7 +112,7 @@ self.addEventListener("fetch", (event) => {
             if (cached) return cached;
             return caches.match("/index.html").then((homepage) => {
               if (homepage) return homepage;
-              // Absolute last resort — nothing cached at all (e.g. someone's
+              // Absolute last resort -- nothing cached at all (e.g. someone's
               // very first visit, already offline). A real Response here,
               // not undefined, is what keeps this from ever becoming the
               // confusing ERR_FAILED error.
@@ -150,9 +150,9 @@ self.addEventListener("fetch", (event) => {
 
   event.respondWith(
     caches.match(event.request).then((cached) => {
-      if (cached) return cached; // instant load from cache — don't even wait on the network
+      if (cached) return cached; // instant load from cache -- don't even wait on the network
 
-      // Not cached — go to the network. If that fails and there's nothing
+      // Not cached -- go to the network. If that fails and there's nothing
       // cached either, let the browser's native error handling take over
       // (a real network error) rather than silently resolving to
       // `undefined`, which Chrome reports as the confusing ERR_FAILED.

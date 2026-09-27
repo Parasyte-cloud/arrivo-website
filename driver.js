@@ -8,7 +8,7 @@
   var state = { token: null, driver: null, activeRide: null, pollTimer: null };
 
   // Ride data here (pickup address, rider name, flight number) was typed
-  // by the rider, not the driver viewing this screen — it must be escaped
+  // by the rider, not the driver viewing this screen -- it must be escaped
   // before going into innerHTML, or a malicious rider could run script in
   // every driver's browser via something as simple as their own name field.
   function escapeHtml(str) {
@@ -89,7 +89,7 @@
   }
 
   // Once an application is fully submitted, there's nothing left for the
-  // driver to do but wait — so this checks in the background and moves them
+  // driver to do but wait -- so this checks in the background and moves them
   // straight to the dashboard the moment an admin verifies them, without
   // needing to manually refresh or re-log-in.
   var pendingPollTimer = null;
@@ -165,7 +165,7 @@
 
     // Endpoint, field names, and required agreedToTerms all confirmed
     // against the real backend source (routes/auth.js) and tested
-    // end-to-end against a live database — this previously called a
+    // end-to-end against a live database -- this previously called a
     // guessed /api/auth/register endpoint with a single "name" field,
     // which the real backend has never had.
     var signupAccountContinue = document.getElementById("signupAccountContinue");
@@ -265,7 +265,7 @@
       state.driver = result.data.driver;
       if (document.getElementById("profileStepProgress").hidden) {
         // Reached this screen directly (mobile-app account, incomplete
-        // profile) rather than through the new web signup wizard — skip
+        // profile) rather than through the new web signup wizard -- skip
         // straight to checking overall status instead of forcing them
         // through the web-only Photos/Safety steps too.
         checkProfile();
@@ -526,7 +526,7 @@
     if (d.profile_photo_url) {
       circle.innerHTML = '<div class="avatar-edit-badge">✎</div>';
       var img = document.createElement("img");
-      img.src = d.profile_photo_url; // property assignment, not string-built HTML — can't break out of an attribute this way
+      img.src = d.profile_photo_url; // property assignment, not string-built HTML -- can't break out of an attribute this way
       circle.prepend(img);
     }
 
@@ -639,12 +639,12 @@
   //   - No manual reset: once active, neither party can turn it off from
   //     this device. State persists in localStorage until a real backend/
   //     admin-cleared flag exists. (Dev note: to clear it while testing, run
-  //     localStorage.removeItem("arrivo_panic_active") in the console —
+  //     localStorage.removeItem("arrivo_panic_active") in the console --
   //     there is intentionally no UI path to do this.)
   // POST /api/rides/:id/panic is confirmed real (checked against the actual
-  // arrivo-backend source) — a driver-triggered alert now shows up in the
+  // arrivo-backend source) -- a driver-triggered alert now shows up in the
   // admin dashboard's Panic Alerts page exactly like a rider-triggered one.
-  // /api/listening-device is still a guess — no such route exists in the
+  // /api/listening-device is still a guess -- no such route exists in the
   // backend yet, so that call is purely best-effort and currently a no-op
   // server-side.
   function initPanicButton(userType, tokenKey, apiBaseUrl) {
@@ -706,7 +706,7 @@
       pollForResolution(saved.rideId);
     })();
 
-    // Aborts an accidental tap before the alert fires — not a reset of an
+    // Aborts an accidental tap before the alert fires -- not a reset of an
     // already-active alert, which deliberately has no control here.
     function cancelCountdown() {
       if (countdownTimer) clearInterval(countdownTimer);
@@ -759,7 +759,7 @@
 
         // The locked "admin must clear this" state is only for a REAL,
         // recorded alert. Without an active ride, or if the backend call
-        // fails, there's nothing for an admin to resolve — locking the UI
+        // fails, there's nothing for an admin to resolve -- locking the UI
         // forever in that case would be a false alarm with no way out.
         // WhatsApp still went out above either way.
         if (!state.activeRide) {
