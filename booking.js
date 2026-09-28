@@ -1250,6 +1250,20 @@
     var pickupText = document.getElementById("fPickup") ? document.getElementById("fPickup").value : "";
     var dropoffText = document.getElementById("fDropoff") ? document.getElementById("fDropoff").value : "";
     var matched = findExcludedArea(pickupText, state.pickupLatLng) || findExcludedArea(dropoffText, state.dropoffLatLng);
+
+    // Intermediate stops/waypoints can land in an excluded area just as
+    // easily as the pickup or drop-off -- check those too instead of only
+    // ever validating the two endpoints. Stop inputs don't carry their own
+    // tracked lat/lng (only pickup/dropoff do), so this matches on address
+    // text/keywords the same way the pickup/dropoff check falls back to
+    // when it has no coordinates either.
+    if (!matched) {
+      var stopInputs = document.querySelectorAll(".stop-input");
+      for (var i = 0; i < stopInputs.length && !matched; i++) {
+        matched = findExcludedArea(stopInputs[i].value, null);
+      }
+    }
+
     state.excludedAreaMatch = matched;
     if (matched) {
       errEl.hidden = false;
@@ -1330,11 +1344,33 @@
         '<span class="route-dot route-dot-stop"></span>' +
         '<input type="text" class="field route-input stop-input" placeholder="' + t("booking.stopPlaceholder") + '">';
       stopsList.appendChild(row);
-      attachPlacesAutocomplete(row.querySelector(".stop-input"));
+      var stopInput = row.querySelector(".stop-input");
+      attachPlacesAutocomplete(stopInput);
+      stopInput.addEventListener("input", function () {
+        checkExcludedAreas();
+        recalculateFareEstimate();
+      });
     });
 
-    document.getElementById("fPickup").addEventListener("input", function () { this.style.borderColor = ""; });
-    document.getElementById("fDropoff").addEventListener("input", function () { this.style.borderColor = ""; });
+    document.getElementById("fPickup").addEventListener("input", function () {
+      this.style.borderColor = "";
+      // The visitor is typing free text again after (maybe) picking a
+      // suggestion earlier -- that suggestion's coordinates no longer
+      // necessarily match what's in the box, and place_changed won't fire
+      // again unless they pick a new suggestion. Drop the stale
+      // coordinates rather than silently keep routing/dispatch against an
+      // address the field no longer shows; a fresh place_changed selection
+      // (or the plain address text at submit time) replaces this normally.
+      state.pickupLatLng = null;
+      checkExcludedAreas();
+      recalculateFareEstimate();
+    });
+    document.getElementById("fDropoff").addEventListener("input", function () {
+      this.style.borderColor = "";
+      state.dropoffLatLng = null;
+      checkExcludedAreas();
+      recalculateFareEstimate();
+    });
 
     // Combined Continue button for the "Trip" screen (Step 1) -- was
     // "pickupContinue" back when Pickup was its own step after Flight; now

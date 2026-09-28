@@ -187,6 +187,7 @@
     activeRequestId: null,
     pollTimer: null,
     lastKnownStatus: null,
+    pollFailures: 0,
   };
 
   var CARD_IDS = ["authGate", "unavailableCard", "loadingCard", "loadErrorCard", "pickerCard", "quoteCard", "searchingCard"];
@@ -600,9 +601,24 @@
     }
   }
 
+  var MAX_POLL_FAILURES = 15; // ~1 minute at the 4s poll interval
+
   function pollActive() {
     api("/api/instant-rides/rider/active", { headers: authHeader() }).then(function (result) {
-      if (!result.ok) return; // transient hiccup -- try again next tick
+      if (!result.ok) {
+        // Transient hiccup -- try again next tick, but not forever: after
+        // MAX_POLL_FAILURES in a row (backend down, token expired, etc.)
+        // leaving the rider on an endless spinner with no feedback is
+        // worse than stopping and telling them something went wrong.
+        state.pollFailures += 1;
+        if (state.pollFailures >= MAX_POLL_FAILURES) {
+          stopPolling();
+          window.alert(t("arrivoExpress.searchTimedOutTitle") + "\n\n" + t("arrivoExpress.searchTimedOutBody"));
+          resetToPicker();
+        }
+        return;
+      }
+      state.pollFailures = 0;
 
       var request = result.data.request;
 
@@ -637,8 +653,16 @@
     api("/api/instant-rides/rider/requests/" + state.activeRequestId + "/cancel", {
       method: "POST",
       headers: authHeader(),
-    }).then(function () {
+    }).then(function (result) {
       btn.disabled = false;
+      if (!result.ok) {
+        // The cancel call actually failed server-side -- the request is
+        // still live there. Keep polling and tell the rider, instead of
+        // silently resetting to the picker while a driver could still be
+        // matched underneath them.
+        window.alert(t("arrivoExpress.cantCancelTitle") + "\n\n" + t("arrivoExpress.cantCancelBody"));
+        return;
+      }
       stopPolling();
       resetToPicker();
     });
