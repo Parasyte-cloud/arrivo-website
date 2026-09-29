@@ -501,6 +501,7 @@
     }
 
     document.getElementById("rateSendBtn").addEventListener("click", function () {
+      var rateSendBtn = document.getElementById("rateSendBtn");
       var errEl = document.getElementById("rateError");
       errEl.hidden = true;
       if (!starsSelected) {
@@ -508,6 +509,7 @@
         errEl.textContent = t("track.tapStarError");
         return;
       }
+      rateSendBtn.disabled = true;
       var comment = document.getElementById("rateComment").value.trim();
       var body = { rating: starsSelected, comment: comment || undefined };
       if (currentRide.booking_type === "one_way") {
@@ -521,6 +523,7 @@
         .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
         .then(function (result) {
           if (!result.ok) {
+            rateSendBtn.disabled = false;
             errEl.hidden = false;
             errEl.textContent = result.data.error || t("track.couldntSubmitRating");
             return;
@@ -528,6 +531,7 @@
           refresh();
         })
         .catch(function () {
+          rateSendBtn.disabled = false;
           errEl.hidden = false;
           errEl.textContent = t("track.couldntSubmitRating");
         });
@@ -630,6 +634,7 @@
     }
 
     document.getElementById("tipSendBtn").addEventListener("click", function () {
+      var tipSendBtn = document.getElementById("tipSendBtn");
       var errEl = document.getElementById("tipError");
       errEl.hidden = true;
       var amountNaira = tipAmountNaira();
@@ -639,9 +644,15 @@
         return;
       }
 
+      // Disable immediately on click for both payment paths below, and
+      // only re-enable on a failure/error branch -- a fast double-click
+      // here could otherwise double-tip or open two Paystack popups.
+      tipSendBtn.disabled = true;
+
       if (tipMethod === "wallet") {
         applyTip("wallet").then(function (result) {
           if (!result.ok) {
+            tipSendBtn.disabled = false;
             errEl.hidden = false;
             errEl.textContent = result.data.error || t("track.tipFailed");
             return;
@@ -657,6 +668,7 @@
       // an uncaught ReferenceError instead of showing the message below —
       // same fix already applied to account.html's wallet top-up guard.
       if (typeof PaystackPop === "undefined" || typeof PAYSTACK_PUBLIC_KEY === "undefined" || PAYSTACK_PUBLIC_KEY.indexOf("replace_me") !== -1) {
+        tipSendBtn.disabled = false;
         errEl.hidden = false;
         errEl.textContent = t("track.cardTippingNotConfigured");
         return;
@@ -669,6 +681,7 @@
         callback: function (response) {
           applyTip("card", response.reference).then(function (result) {
             if (!result.ok) {
+              tipSendBtn.disabled = false;
               errEl.hidden = false;
               errEl.textContent = result.data.error || tFormat("track.cardChargedTipNotConfirmed", { reference: response.reference });
               return;
@@ -676,7 +689,8 @@
             refresh();
           });
         },
-        onClose: function () {},
+        // Rider closed the popup without tipping -- let them try again.
+        onClose: function () { tipSendBtn.disabled = false; },
       });
       handler.openIframe();
     });
