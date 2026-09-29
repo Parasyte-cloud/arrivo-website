@@ -389,8 +389,27 @@
       if (
         Number.isFinite(server)
       ) {
-        serverOffset =
+        /*
+         * Never trust a cached HTTP Date that is
+         * significantly different from the visitor's clock.
+         *
+         * An existing service worker can return an older
+         * cached response, which would otherwise incorrectly
+         * hold the site on the pre-launch screen.
+         */
+        const candidateOffset =
           server - Date.now();
+
+        const maximumTrustedSkew =
+          5 * 60 * 1000;
+
+        if (
+          Math.abs(candidateOffset) <=
+          maximumTrustedSkew
+        ) {
+          serverOffset =
+            candidateOffset;
+        }
       }
 
     } catch (_) {
@@ -896,6 +915,22 @@
       createCelebration();
 
     await syncClock();
+
+    /*
+     * Launch-day clock guard.
+     *
+     * If the browser's absolute time is already inside the
+     * official 1 PM-2 PM WAT launch window but a stale cached
+     * server Date pushed clock() backwards, discard that offset.
+     */
+    if (
+      !TEST &&
+      Date.now() >= PROD_START &&
+      Date.now() < PROD_LAUNCH &&
+      clock() < PROD_START
+    ) {
+      serverOffset = 0;
+    }
 
     /*
      * Anyone arriving after
