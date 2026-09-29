@@ -300,10 +300,22 @@
 <script src="i18n.js?v=31"></script>
 <script src="express.js?v=1"></script>
 <script src="clock.js"></script>
-<!-- Google Maps Places Autocomplete for the pickup/destination fields —
-     same key already in use on book.html; confirm HTTP referrer
-     restrictions in Google Cloud Console include ridearrivo.com. -->
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLWAbQmxIAoGPP0LLDp6oTosaHZBa0Y5s&libraries=places&callback=initGoogleMaps"></script>
+<!-- Google Maps Places Autocomplete for the pickup/destination fields.
+     Same key as book.html, now loaded from maps-config.js instead of
+     duplicated here -- see that file's comment for the restrictions it
+     needs and why it isn't cached. -->
+<script src="maps-config.js"></script>
+<script>
+  (function () {
+    var s = document.createElement("script");
+    s.async = true;
+    s.defer = true;
+    s.src = "https://maps.googleapis.com/maps/api/js?key=" +
+      encodeURIComponent(GOOGLE_MAPS_BROWSER_KEY) +
+      "&libraries=places&callback=initGoogleMaps";
+    document.head.appendChild(s);
+  })();
+</script>
 <script src="pwa-register.js"></script>
 <script src="glass-effects.js?v=31"></script>
   <script src="/launch-countdown.js?v=20260912-01" defer></script>

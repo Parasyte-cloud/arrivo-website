@@ -651,12 +651,24 @@
 <script src="phone-input.js?v=32"></script>
 <script src="booking.js?v=32"></script>
 <script src="clock.js?v=32"></script>
-<!-- Google Maps Places Autocomplete + map preview for the pickup/drop-off/stop fields.
-     Real API key from Google Cloud Console is in place below. If this ever
-     needs rotating, replace the key= value and confirm the new key has
-     "Maps JavaScript API" + "Places API" enabled and ridearrivo.com allowed
-     under HTTP referrer restrictions. -->
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLWAbQmxIAoGPP0LLDp6oTosaHZBa0Y5s&libraries=places&callback=initGoogleMaps"></script>
+<!-- Google Maps: Places autocomplete, the map preview and the Distance
+     Matrix estimate on the pickup/drop-off/stop fields. The key lives in
+     maps-config.js, which also documents the restrictions it needs. No
+     ?v= on this one -- _headers marks it no-store, and sw.js never
+     caches it, so a rotated key is picked up on the very next load
+     instead of needing a version bump remembered here too. -->
+<script src="maps-config.js"></script>
+<script>
+  (function () {
+    var s = document.createElement("script");
+    s.async = true;
+    s.defer = true;
+    s.src = "https://maps.googleapis.com/maps/api/js?key=" +
+      encodeURIComponent(GOOGLE_MAPS_BROWSER_KEY) +
+      "&libraries=places&callback=initGoogleMaps";
+    document.head.appendChild(s);
+  })();
+</script>
 <script src="pwa-register.js?v=32"></script>
 <script src="glass-effects.js?v=32"></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>

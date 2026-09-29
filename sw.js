@@ -51,7 +51,12 @@ const SHELL_FILES = [
 
 // Same-origin paths that must always hit the network untouched. Payment
 // callbacks carry one-time references and must never be cached or replayed.
-const BYPASS_PATHS = ["/payment/", "/api/"];
+// maps-config.js holds the Google Maps browser key (see that file's own
+// comment) -- rotating it has to actually reach every returning visitor on
+// the very next load, not whenever their copy of this cache happens to
+// expire or get network-first-refreshed, so it's excluded entirely rather
+// than merely network-first like other same-origin JS.
+const BYPASS_PATHS = ["/payment/", "/api/", "/maps-config.js"];
 
 const IMAGE_OR_FONT = /\.(png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|otf)$/i;
 

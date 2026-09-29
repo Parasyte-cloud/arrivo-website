@@ -18,5 +18,8 @@
 /launch-countdown.css
   Cache-Control: no-store, no-cache, must-revalidate
 
+/maps-config.js
+  Cache-Control: no-store, no-cache, must-revalidate
+
 /sw.js
   Cache-Control: no-cache, must-revalidate
