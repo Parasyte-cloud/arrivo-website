@@ -1,0 +1,47 @@
+/* ArrivoExpress page — small additions on top of booking.css's existing
+   .booking-card / .vehicle-card / .field / .error-text, which this page
+   reuses as-is for visual consistency with book.html. */
+
+.rn-summary { margin: 6px 0 4px; }
+.rn-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  padding: 7px 0;
+  border-bottom: 1px solid var(--card-border);
+}
+.rn-summary-row:last-of-type { border-bottom: none; }
+.rn-summary-row.rn-total {
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 17px;
+  padding-top: 12px;
+}
+.rn-summary-row.rn-total span:last-child { color: var(--amber); }
+.rn-route { font-size: 13px; color: var(--ink); font-weight: 600; margin: 4px 0 10px; }
+.rn-fine-print { font-size: 11.5px; color: var(--text-muted); margin-top: 10px; }
+
+.rn-spinner {
+  width: 34px;
+  height: 34px;
+  margin: 0 auto;
+  border-radius: 50%;
+  border: 3px solid var(--card-border);
+  border-top-color: var(--amber);
+  animation: rn-spin 0.8s linear infinite;
+}
+@keyframes rn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Reuses .vehicle-card's existing look; .selected already exists too --
+   this just gives the tier cards on this page a description line under
+   the name, since book.html's vehicle cards don't need one. */
+.vehicle-card .v-description {
+  width: 100%;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
