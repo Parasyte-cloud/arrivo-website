@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Charter &amp; Flagged Destination Booking | RideArrivo</title>
+<link rel="canonical" href="https://ridearrivo.com/charter-booking.html">
+<meta name="description" content="Request a charter or a ride to a flagged/special-area destination — our Support team will arrange this with you directly.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=31">
+<link rel="stylesheet" href="booking.css?v=31">
+<style>
+  .booking-wrap { padding-top: 48px; }
+  .booking-wrap h1 { margin-bottom: 12px; }
+  .booking-wrap p.lead { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+  select.field { appearance: auto; background: #fff; }
+  .hp-field { position: absolute !important; left: -9999px !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
+</style>
+</head>
+<body>
+
+<svg style="position:absolute; width:0; height:0; overflow:hidden;" aria-hidden="true">
+  <filter id="liquid-glass-refraction" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.010 0.018" numOctaves="2" seed="7" result="noise"/>
+    <feGaussianBlur in="noise" stdDeviation="2" result="softNoise"/>
+    <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="brand">
+      <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
+      <img src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark">
+    </a>
+  </div>
+</header>
+
+<main class="wrap booking-wrap" style="max-width:640px;">
+  <h1>Charter &amp; flagged destination booking</h1>
+  <p class="lead">
+    For rentals and trips to areas our automated booking flow doesn't cover yet, tell us the
+    details below and our Support team will arrange it with you directly.
+  </p>
+
+  <div class="booking-card" id="charterForm">
+    <label class="field-label" for="chDate">Rental date</label>
+    <input type="date" id="chDate" class="field">
+
+    <label class="field-label" for="chPickupTime">Pick-up time</label>
+    <input type="text" id="chPickupTime" class="field" maxlength="40" placeholder="e.g. 9:00 AM">
+
+    <label class="field-label" for="chPickupAddress">Pick-up address</label>
+    <input type="text" id="chPickupAddress" class="field" maxlength="300" placeholder="Pick-up address">
+
+    <label class="field-label" for="chArea">Area of use</label>
+    <select id="chArea" class="field">
+      <option value="" disabled selected>Choose an area</option>
+      <option value="Ajah">Ajah</option>
+      <option value="Lekki-Epe">Lekki-Epe</option>
+      <option value="Festac">Festac</option>
+      <option value="Makoko">Makoko</option>
+      <option value="Interstate">Interstate</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <label class="field-label" for="chDropoffAddress">Drop-off address</label>
+    <input type="text" id="chDropoffAddress" class="field" maxlength="300" placeholder="Drop-off address">
+
+    <label class="field-label" for="chDuration">Rental duration</label>
+    <input type="text" id="chDuration" class="field" maxlength="80" placeholder="e.g. 4 hours, Full day">
+
+    <label class="field-label" for="chCarPreference">Car preference</label>
+    <select id="chCarPreference" class="field">
+      <option value="" disabled selected>Choose a car type</option>
+      <option value="Standard Sedan">Standard Sedan</option>
+      <option value="SUV">SUV</option>
+      <option value="Luxury">Luxury</option>
+      <option value="Van / Bus">Van / Bus</option>
+      <option value="No preference">No preference</option>
+    </select>
+
+    <label class="field-label" for="chName">Your name</label>
+    <input type="text" id="chName" class="field" maxlength="160" autocomplete="name" placeholder="Your name">
+
+    <label class="field-label" for="chContact">Contact number</label>
+    <input type="tel" id="chContact" class="field" maxlength="40" autocomplete="tel" placeholder="e.g. 0801 234 5678">
+
+    <label class="hp-field" for="chWebsite" aria-hidden="true">
+      Website
+      <input type="text" id="chWebsite" tabindex="-1" autocomplete="off">
+    </label>
+
+    <p class="error-text" id="charterError" hidden></p>
+    <button type="button" class="btn btn-primary" id="charterBtn" style="width:100%;">Submit request</button>
+  </div>
+
+  <div class="booking-card" id="charterSuccess" hidden>
+    <p style="margin:0;">Thank you — your request has been received. Our Support team will reach out using the contact details you provided to arrange it.</p>
+  </div>
+</main>
+
+<script src="supabase-config.js?v=1"></script>
+<script>
+  // Talks directly to the `intake` Supabase edge function (reusable intake
+  // platform — see RA-workspace supabase/functions/intake). This form's
+  // fields are hardcoded here rather than fetched dynamically because that
+  // is how every other form on this site works (see forgot-password.html);
+  // if the "charter-booking" form's fields or the "Area of use" / "Car
+  // preference" option lists ever change in Supabase
+  // (intake_form_versions), this file needs to be updated to match — it
+  // is not automatically kept in sync.
+  var INTAKE_SLUG = "charter-booking";
+
+  function submitIntake(slug, payload, website) {
+    return fetch(SUPABASE_URL + "/functions/v1/intake", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ slug: slug, payload: payload, website: website || "" }),
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        return { ok: res.ok, status: res.status, data: data };
+      });
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var errEl = document.getElementById("charterError");
+    var btn = document.getElementById("charterBtn");
+
+    btn.addEventListener("click", function () {
+      var fields = {
+        rental_date: document.getElementById("chDate").value.trim(),
+        pickup_time: document.getElementById("chPickupTime").value.trim(),
+        pickup_address: document.getElementById("chPickupAddress").value.trim(),
+        area_of_use: document.getElementById("chArea").value,
+        dropoff_address: document.getElementById("chDropoffAddress").value.trim(),
+        rental_duration: document.getElementById("chDuration").value.trim(),
+        car_preference: document.getElementById("chCarPreference").value,
+        full_name: document.getElementById("chName").value.trim(),
+        contact_number: document.getElementById("chContact").value.trim(),
+      };
+      var website = document.getElementById("chWebsite").value;
+
+      errEl.hidden = true;
+
+      var missing = Object.keys(fields).filter(function (key) { return !fields[key]; });
+      if (missing.length > 0) {
+        errEl.hidden = false;
+        errEl.textContent = "Please fill in every field before submitting.";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Submitting…";
+
+      submitIntake(INTAKE_SLUG, fields, website).then(function (result) {
+        btn.disabled = false;
+        btn.textContent = "Submit request";
+
+        if (!result.ok) {
+          errEl.hidden = false;
+          errEl.textContent = Array.isArray(result.data.fields)
+            ? result.data.fields.join(" ")
+            : (result.data.error || "Something went wrong. Please try again.");
+          return;
+        }
+
+        document.getElementById("charterForm").hidden = true;
+        document.getElementById("charterSuccess").hidden = false;
+      }).catch(function () {
+        btn.disabled = false;
+        btn.textContent = "Submit request";
+        errEl.hidden = false;
+        errEl.textContent = "Couldn't reach the server. Please try again.";
+      });
+    });
+  });
+</script>
+<script src="glass-effects.js?v=31"></script>
+</body>
+</html>
