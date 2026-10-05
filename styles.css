@@ -1199,9 +1199,9 @@ a { color: inherit; text-decoration: none; }
 
 /* ── Homepage services section ("More ways to move") -- one card per
    Arrivo product (Express/Move/Boat/Air), reusing .card's glass styling.
-   ArrivoExpress/ArrivoMove are live links; ArrivoBoat/ArrivoAir render as
-   a plain (non-link) card with a "Coming soon" tag until their subdomains
-   are live -- flip .service-card-soon to a real <a href> at that point. */
+   All four are live links with a photo header and a CTA. The old
+   .service-card-soon styles below are kept for any future product that
+   is not live yet. */
 .services-cards { grid-template-columns: 1fr; }
 @media (min-width: 780px) {
   .services-cards { grid-template-columns: repeat(2, 1fr); }
@@ -1668,3 +1668,42 @@ a { color: inherit; text-decoration: none; }
   color: var(--primary);
 }
 .for-who-opt:hover { border-color: var(--primary); }
+
+/* Photo header on each service card */
+.service-card-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+/* Membership band: copy beside a photo, stacked on phones */
+.promo-band {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  align-items: center;
+}
+.promo-band-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 18px;
+  order: -1;
+}
+.promo-band-copy h2 { margin: 6px 0 12px; }
+.promo-band-copy p { color: var(--text-muted); margin: 0 0 20px; max-width: 46ch; }
+.promo-band-ctas, .cross-sell-ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+@media (min-width: 860px) {
+  .promo-band { grid-template-columns: 1.05fr 1fr; gap: 48px; }
+  .promo-band-photo { order: 0; }
+}
+
+.hero-more { margin: 14px 0 0; font-size: 14px; }
+.hero-more a { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.cross-sell h2 { margin: 6px 0 18px; }
