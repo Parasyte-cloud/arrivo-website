@@ -337,9 +337,59 @@
         // Not enough balance: don't leave a gold button that looks live but
         // does nothing. Turn it into the one action that fixes the problem.
         confirmBtn.disabled = false;
-        confirmBtn.setAttribute("data-topup", "1");
-        confirmBtn.textContent = t("arrivoExpress.topUpWalletLink");
+        // Best practice: don't make a rider leave the booking to pre-fund a
+        // wallet. Offer to pay just the shortfall by card right here; it
+        // lands in their wallet and the ride is booked straight after.
+        var shortfall = Math.max(100, Math.ceil(q.fareNaira - balance));
+        confirmBtn.setAttribute("data-topup", String(shortfall));
+        confirmBtn.textContent = tFormat("arrivoExpress.payShortfallByCard", { amount: formatNaira(shortfall) });
       }
+    });
+  }
+
+  // Card-pay the shortfall through the same Paystack popup and verify
+  // endpoint the account page's wallet top-up already uses, then book the
+  // ride. The backend only trusts Paystack's confirmed amount, never ours.
+  function payShortfallThenBook(amountNaira, btn, err) {
+    if (typeof PaystackPop === "undefined" || typeof PAYSTACK_PUBLIC_KEY === "undefined" || PAYSTACK_PUBLIC_KEY.indexOf("replace_me") !== -1) {
+      err.textContent = t("account.cardTopUpNotConfigured");
+      err.hidden = false;
+      return;
+    }
+
+    btn.disabled = true;
+
+    api("/api/auth/me", { headers: authHeader() }).then(function (me) {
+      var email = me.ok && me.data && me.data.user && me.data.user.email ? me.data.user.email : "rider@ridearrivo.com";
+
+      var handler = PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: email,
+        amount: amountNaira * 100,
+        currency: "NGN",
+        callback: function (response) {
+          api("/api/wallet/topup/verify", {
+            method: "POST",
+            headers: authHeader(),
+            body: JSON.stringify({ reference: response.reference }),
+          }).then(function (result) {
+            if (!result.ok) {
+              btn.disabled = false;
+              err.textContent = result.data.error || tFormat("account.topUpNotConfirmed", { reference: response.reference });
+              err.hidden = false;
+              return;
+            }
+            // Paid and credited: clear the pay-by-card state and book.
+            btn.removeAttribute("data-topup");
+            btn.disabled = false;
+            confirmRide();
+          });
+        },
+        onClose: function () {
+          btn.disabled = false;
+        },
+      });
+      handler.openIframe();
     });
   }
 
@@ -348,8 +398,9 @@
     err.hidden = true;
 
     var btn = document.getElementById("confirmRideBtn");
-    if (btn.getAttribute("data-topup")) {
-      window.location.href = "account.html";
+    var shortfall = Number(btn.getAttribute("data-topup"));
+    if (shortfall) {
+      payShortfallThenBook(shortfall, btn, err);
       return;
     }
     btn.disabled = true;
