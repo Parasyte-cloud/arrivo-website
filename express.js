@@ -639,6 +639,8 @@
     var confirmBtn = document.getElementById("confirmRideBtn");
     var note = document.getElementById("walletBalanceNote");
     confirmBtn.disabled = true;
+    confirmBtn.removeAttribute("data-topup");
+    confirmBtn.textContent = t("arrivoExpress.confirmFindDriver");
     note.textContent = t("arrivoExpress.walletBalanceChecking");
 
     api("/api/wallet", { auth: true }).then(function (result) {
@@ -655,8 +657,86 @@
         note.innerHTML =
           tFormat("arrivoExpress.walletBalanceInsufficient", { balance: formatNaira(balance) }) +
           ' <a href="' + ACCOUNT_PATH + '">' + escapeHtml(t("arrivoExpress.topUpWalletLink")) + "</a>";
-        confirmBtn.disabled = true;
+        // Not enough balance: don't leave a gold button that looks live but
+        // does nothing. Turn it into the one action that fixes the problem.
+        confirmBtn.disabled = false;
+        // Best practice: don't make a rider leave the booking to pre-fund a
+        // wallet. Offer to pay just the shortfall by card right here; it
+        // lands in their wallet and the ride is booked straight after.
+        var shortfall = Math.max(100, Math.ceil(q.fareNaira - balance));
+        confirmBtn.setAttribute("data-topup", String(shortfall));
+        confirmBtn.textContent = tFormat("arrivoExpress.payShortfallByCard", { amount: formatNaira(shortfall) });
       }
+    });
+  }
+
+  // Card-pay the shortfall through the same Paystack popup and verify
+  // endpoint the account page's wallet top-up already uses, then book the
+  // ride. The backend only trusts Paystack's confirmed amount, never ours.
+  function payShortfallThenBook(amountNaira, btn, err) {
+    if (typeof PaystackPop === "undefined" || typeof PAYSTACK_PUBLIC_KEY === "undefined" || PAYSTACK_PUBLIC_KEY.indexOf("replace_me") !== -1) {
+      err.textContent = t("account.cardTopUpNotConfigured");
+      err.hidden = false;
+      return;
+    }
+
+    btn.disabled = true;
+
+    api("/api/auth/me", { auth: true }).then(function (me) {
+      // Paystack keys customer records off the email, so never take money
+      // under a placeholder address. If we can't tell who is paying, stop
+      // before the card popup opens and let the rider retry.
+      var email = me.ok && me.data && me.data.user && me.data.user.email;
+      if (!email) {
+        btn.disabled = false;
+        err.textContent = (me.data && me.data.error) || t("arrivoExpress.bookError");
+        err.hidden = false;
+        return;
+      }
+
+      var handler = PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: email,
+        amount: amountNaira * 100,
+        currency: "NGN",
+        callback: function (response) {
+          api("/api/wallet/topup/verify", {
+            method: "POST",
+            auth: true,
+            body: JSON.stringify({ reference: response.reference }),
+          }).then(function (result) {
+            if (!result.ok) {
+              btn.disabled = false;
+              // Always show the reference, even when the server gave a
+              // reason: a rider who was charged and then lost the verify
+              // call (network drop) needs it so support can trace the payment.
+              var reason = result.data && result.data.error ? result.data.error + " " : "";
+              err.textContent = reason + tFormat("account.topUpNotConfirmed", { reference: response.reference });
+              err.hidden = false;
+              return;
+            }
+            // Paid and credited. The fare can move between the quote and
+            // now (night rate, traffic), so confirm the wallet still covers
+            // it before booking instead of failing right after they paid.
+            btn.removeAttribute("data-topup");
+            btn.disabled = false;
+            api("/api/wallet", { auth: true }).then(function (w) {
+              var balance = w.ok ? Number(w.data.balanceNaira || 0) : null;
+              if (balance !== null && state.quote && balance < state.quote.fareNaira) {
+                renderQuote(); // re-checks the wallet and re-offers the (new) shortfall
+                err.textContent = t("arrivoExpress.topUpFareRose");
+                err.hidden = false;
+                return;
+              }
+              confirmRide();
+            });
+          });
+        },
+        onClose: function () {
+          btn.disabled = false;
+        },
+      });
+      handler.openIframe();
     });
   }
 
@@ -665,6 +745,11 @@
     err.hidden = true;
 
     var btn = document.getElementById("confirmRideBtn");
+    var shortfall = Number(btn.getAttribute("data-topup"));
+    if (shortfall) {
+      payShortfallThenBook(shortfall, btn, err);
+      return;
+    }
     btn.disabled = true;
     btn.textContent = t("arrivoExpress.bookingRide");
 
