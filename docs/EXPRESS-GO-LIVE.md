@@ -41,6 +41,7 @@ Rules that keep front ends independent: Express loads no scripts or images from 
 - Express works with the shared cookie (sends `credentials: "include"`, Bearer only if a token exists, shows the log-in card on a 401 instead of redirecting blindly).
 - `login.html` / `signup.html` accept a return URL on an exact allowlist of our own https hosts (`express`, `move`, `boat`, `air`, `membership`, `www`, apex), and send `credentials: "include"` so the browser stores the cookie. Anything else is refused (no open redirect). Tested: `evil.com`, `express.ridearrivo.com.evil.com`, `https://ridearrivo.com@evil.com/`, `http://`, `//evil.com`, `javascript:` and embedded credentials are all denied.
 - `account.html` logout also clears the shared cookie.
+- `track.html` no longer requires a locally stored token: it sends the shared cookie, adds the token when present, and sends a 401 to login.
 - `scripts/build-express.js` now builds Express only (plus privacy, terms, 404). Login, signup, account and tracking are links to www with `next=` pointing back at Express. No duplicate auth pages to drift.
 - Earlier hardening still applies (stale coordinates, 401 handling, fare-change guard, honest Maps errors, a11y, 7-language strings).
 
@@ -125,7 +126,7 @@ Why not split now: the instant-ride code and the wallet share database transacti
 
 ## 6. Things to know
 - **Logout and JWTs.** Tokens are stateless and last 7 days. Logout clears the cookie and the local token but cannot revoke a copy someone already stole. If that matters, shorten expiry and add refresh tokens later.
-- **Ride tracking lives on www.** It still reads the token that www stores at login. If a rider's browser storage was cleared but the cookie remains, tracking sends them to sign in once more. Making tracking cookie-only is a contained follow-up.
+- **Ride tracking lives on www and works from the shared login alone.** `track.html` sends the cookie and the stored token only if one exists; a 401 sends the rider to sign in.
 - **Emails** (verify, reset) link to ridearrivo.com by default, which is now correct for every product since login lives there.
 - **Service worker** on Express is network-first with its own cache name `arrivo-express-*`; deploys need no version bump.
 - **No launch countdown** on the standalone site.

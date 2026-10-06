@@ -277,6 +277,22 @@
   // wallet top-up) that need the rider's own auth token to call.
   var shareToken = urlParams.get("share");
   var token = localStorage.getItem(TOKEN_KEY);
+
+  // The rider may be signed in by the shared single sign-on cookie (set when
+  // they logged in on any ridearrivo.com site) with no token in this origin's
+  // localStorage, so the token is optional: send it when we have it, and
+  // always send the cookie.
+  function authHeaders(extra) {
+    var h = extra || {};
+    if (token) h.Authorization = "Bearer " + token;
+    return h;
+  }
+  function authInit() {
+    return { credentials: "include", headers: authHeaders() };
+  }
+  function goToLogin() {
+    window.location.href = "login.html?next=" + encodeURIComponent(window.location.pathname + window.location.search);
+  }
   // PAYSTACK_PUBLIC_KEY now comes from paystack-config.js (loaded below,
   // before this script runs) -- this used to be its own hardcoded
   // "pk_test_replace_me" placeholder that nobody remembered to update,
@@ -431,14 +447,13 @@
     setInterval(refreshPublic, POLL_INTERVAL_MS);
   } else if (!rideId) {
     showError(t("track.noRideSpecified"));
-  } else if (!token) {
-    window.location.href = "login.html?next=" + encodeURIComponent(window.location.pathname + window.location.search);
   } else {
 
     function refresh() {
-      fetch(API_BASE_URL + "/api/rides/" + rideId, { headers: { Authorization: "Bearer " + token } })
-        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      fetch(API_BASE_URL + "/api/rides/" + rideId, authInit())
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, status: res.status, data: data }; }); })
         .then(function (result) {
+          if (result.status === 401) { localStorage.removeItem(TOKEN_KEY); goToLogin(); return; }
           if (!result.ok) {
             showError(result.data.error || t("track.couldntLoadRide"));
             return;
@@ -506,7 +521,7 @@
     // /api/rides/:id/fleet requires the rider's own login.
     function refreshFleetConvoy() {
       if (!currentRide || !currentRide.fleet_group_id) return;
-      fetch(API_BASE_URL + "/api/rides/" + rideId + "/fleet", { headers: { Authorization: "Bearer " + token } })
+      fetch(API_BASE_URL + "/api/rides/" + rideId + "/fleet", authInit())
         .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
         .then(function (result) {
           if (!result.ok) return;
@@ -590,7 +605,8 @@
       }
       fetch(API_BASE_URL + "/api/rides/" + rideId + "/rate", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        credentials: "include",
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(body),
       })
         .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
@@ -660,13 +676,13 @@
       // Fetch the rider's email (for the card charge) and wallet balance
       // once, the first time the card becomes relevant -- not on every poll.
       if (riderEmail == null) {
-        fetch(API_BASE_URL + "/api/auth/me", { headers: { Authorization: "Bearer " + token } })
+        fetch(API_BASE_URL + "/api/auth/me", authInit())
           .then(function (res) { return res.json(); })
           .then(function (data) { if (data.user) riderEmail = data.user.email; })
           .catch(function () {});
       }
       if (walletBalanceNaira == null) {
-        fetch(API_BASE_URL + "/api/wallet", { headers: { Authorization: "Bearer " + token } })
+        fetch(API_BASE_URL + "/api/wallet", authInit())
           .then(function (res) { return res.json(); })
           .then(function (data) {
             if (data.balanceNaira != null) {
@@ -699,7 +715,8 @@
       var amountNaira = tipAmountNaira();
       return fetch(API_BASE_URL + "/api/rides/" + rideId + "/tip", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        credentials: "include",
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ amountNaira: amountNaira, paymentMethod: paymentMethod, paymentReference: paymentReference }),
       }).then(function (res) {
         return res.json().then(function (data) { return { ok: res.ok, data: data }; });
@@ -776,7 +793,8 @@
 
       fetch(API_BASE_URL + "/api/rides/" + rideId + "/panic", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        credentials: "include",
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ note: "Triggered from web tracking page" }),
       })
         .then(function (res) { return res.json(); })
