@@ -26,10 +26,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=32">
   <script>
-    document.documentElement.classList.add("ra-launch-pending");
-    window.setTimeout(function () {
-      document.documentElement.classList.remove("ra-launch-pending");
-    }, 5000);
+    // The launch gate only matters before launch day ends. After that, do not
+    // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
+    if (Date.now() < Date.parse("2026-09-12T14:30:00+01:00") || /[?&]launchTest=1/.test(location.search)) {
+      document.documentElement.classList.add("ra-launch-pending");
+      window.setTimeout(function () {
+        document.documentElement.classList.remove("ra-launch-pending");
+      }, 5000);
+    }
   </script>
   <link rel="stylesheet" href="/launch-countdown.css?v=20260912-02">
 <script type="application/ld+json">
