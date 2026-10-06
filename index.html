@@ -110,7 +110,19 @@
       <a href="#how" data-i18n="nav.how">How it works</a>
       <a href="#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="#safety" data-i18n="nav.safety">Safety</a>
-      <a href="express.html" data-i18n="nav.express">ArrivoExpress</a>
+      <div class="nav-dropdown" id="servicesDropdown">
+        <button type="button" class="nav-dropdown-trigger" id="servicesTrigger" aria-haspopup="true" aria-expanded="false">
+          Services
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <ul class="nav-dropdown-menu" id="servicesMenu" role="menu" hidden>
+          <li><a href="express.html" role="menuitem" data-i18n="nav.express">ArrivoExpress</a></li>
+          <li><a href="https://move.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoMove</a></li>
+          <li><a href="https://boat.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoBoat</a></li>
+          <li><a href="https://air.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoAir</a></li>
+          <li><a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">Membership</a></li>
+        </ul>
+      </div>
     </nav>
 
     <nav class="mobile-nav-menu" id="mobileNavMenu" aria-label="Primary" hidden>
@@ -120,7 +132,12 @@
       <a href="#how" data-i18n="nav.how">How it works</a>
       <a href="#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="#safety" data-i18n="nav.safety">Safety</a>
+      <span class="mobile-nav-menu-label">Services</span>
       <a href="express.html" data-i18n="nav.express">ArrivoExpress</a>
+      <a href="https://move.ridearrivo.com" target="_blank" rel="noopener">ArrivoMove</a>
+      <a href="https://boat.ridearrivo.com" target="_blank" rel="noopener">ArrivoBoat</a>
+      <a href="https://air.ridearrivo.com" target="_blank" rel="noopener">ArrivoAir</a>
+      <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener">Membership</a>
       <a href="login.html" id="accountNavLinkMobile"><span id="accountNavLabelMobile">Register or Login</span></a>
     </nav>
 
@@ -176,6 +193,7 @@
           <a href="book.html" class="btn btn-primary" data-i18n="hero.ctaPrimary">Book a ride now</a>
           <a href="#how" class="btn btn-ghost" data-i18n="hero.ctaSecondary">See how it works</a>
         </div>
+        <p class="hero-more">Also: <a href="#services">boat and jet charters, moving</a> and <a href="#membership">membership</a>.</p>
 
         <ul class="trust-strip">
           <li><span class="trust-dot"></span><span data-i18n="trust.verified">ID-verified drivers</span></li>
@@ -294,6 +312,86 @@
     </div>
   </section>
 
+  <!-- ============ SERVICES ============ -->
+  <section class="section" id="services">
+    <div class="wrap">
+      <span class="eyebrow">More ways to move</span>
+      <h2>One app. Four ways to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>.</h2>
+
+      <div class="cards services-cards">
+        <a class="card service-card" href="express.html">
+          <img class="service-card-photo" src="assets/services/express.webp" width="560" height="373" alt="A rider booking a car on her phone while a chauffeur waits" loading="lazy" decoding="async">
+          <div class="icon-badge">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 16l1.4-4.8A2 2 0 0 1 8.3 9.7h7.4a2 2 0 0 1 1.9 1.5L19 16" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="3.5" y="16" width="17" height="4" rx="1.4" stroke="var(--primary)" stroke-width="1.7"/>
+              <circle cx="7.5" cy="20" r="1.4" stroke="var(--primary)" stroke-width="1.7"/>
+              <circle cx="16.5" cy="20" r="1.4" stroke="var(--primary)" stroke-width="1.7"/>
+            </svg>
+          </div>
+          <h3>ArrivoExpress</h3>
+          <p>Airport pickups and everyday rides across Lagos, booked in seconds, with live tracking and upfront pricing.</p>
+          <span class="service-card-cta">Book a ride &rarr;</span>
+        </a>
+        <a class="card service-card" href="https://move.ridearrivo.com" target="_blank" rel="noopener">
+          <img class="service-card-photo" src="assets/services/move.webp" width="560" height="373" alt="A chauffeur opening the car door for a passenger at an airport" loading="lazy" decoding="async">
+          <div class="icon-badge">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="8" width="11" height="9" rx="1.4" stroke="var(--primary)" stroke-width="1.7"/>
+              <path d="M14 11h3.6a1.4 1.4 0 0 1 1.2.65L21 15v2h-3" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="7" cy="17.5" r="1.6" stroke="var(--primary)" stroke-width="1.7"/>
+              <circle cx="17" cy="17.5" r="1.6" stroke="var(--primary)" stroke-width="1.7"/>
+            </svg>
+          </div>
+          <h3>ArrivoMove</h3>
+          <p>Moving house or office? Get a quote for a full relocation crew, truck and packing support.</p>
+          <span class="service-card-cta">Get a quote &rarr;</span>
+        </a>
+        <a class="card service-card" href="https://boat.ridearrivo.com" target="_blank" rel="noopener">
+          <img class="service-card-photo" src="assets/services/boat.webp" width="560" height="373" alt="A passenger being helped aboard a boat at a marina at sunset" loading="lazy" decoding="async">
+          <div class="icon-badge">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 15.5h18l-1.8 3.1a3 3 0 0 1-2.6 1.5H7.4a3 3 0 0 1-2.6-1.5L3 15.5z" stroke="var(--primary)" stroke-width="1.7" stroke-linejoin="round"/>
+              <path d="M5.5 15.5V9.8a1.5 1.5 0 0 1 1.5-1.5h3l6 4.6" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M6 8.3V5" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3>ArrivoBoat</h3>
+          <p>Speedboat, yacht and water-taxi charters for point-to-point transfers, day trips and events, booked like a ride.</p>
+          <span class="service-card-cta">Request a charter &rarr;</span>
+        </a>
+        <a class="card service-card" href="https://air.ridearrivo.com" target="_blank" rel="noopener">
+          <img class="service-card-photo" src="assets/services/air.webp" width="560" height="373" alt="A passenger being welcomed aboard a private jet at sunset" loading="lazy" decoding="async">
+          <div class="icon-badge">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10.8 3.5l2 6.2 5.7 1.5a1.4 1.4 0 0 1 .3 2.6l-5.4 2.4-1.6 5.8a1.4 1.4 0 0 1-2.6.2l-2.4-5.4-6-1.2a1.4 1.4 0 0 1-.2-2.6l5.6-2.5 1.5-5.8a1.4 1.4 0 0 1 2.6-.2z" stroke="var(--primary)" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>ArrivoAir</h3>
+          <p>Private jet charters, one-way or round-trip, matched to the right aircraft class and priced on request.</p>
+          <span class="service-card-cta">Request a jet &rarr;</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MEMBERSHIP BAND ============ -->
+  <section class="section section-tint" id="membership">
+    <div class="wrap">
+      <div class="promo-band">
+        <div class="promo-band-copy">
+          <span class="eyebrow">RideArrivo Membership</span>
+          <h2>Ride more, pay less, every single trip.</h2>
+          <p>Priority rides, cashback to your wallet on every trip, and perks built for how you actually move. Pick a plan and join the list.</p>
+          <div class="promo-band-ctas">
+            <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" class="btn btn-primary">Join membership</a>
+            <a href="#services" class="btn btn-ghost">See all services</a>
+          </div>
+        </div>
+        <img class="promo-band-photo" src="assets/services/membership.webp" width="560" height="373" alt="A member in a hotel lounge holding a membership card and a phone" loading="lazy" decoding="async">
+      </div>
+    </div>
+  </section>
 
   <!-- ============ AUDIENCES ============ -->
   <section class="section section-tint" id="audiences">
@@ -519,6 +617,10 @@
     <div class="footer-col">
       <h4 data-i18n="footer.getStartedHeading">Get Started</h4>
       <a href="express.html" data-i18n="nav.express">ArrivoExpress</a>
+      <a href="https://move.ridearrivo.com" target="_blank" rel="noopener">ArrivoMove</a>
+      <a href="https://boat.ridearrivo.com" target="_blank" rel="noopener">ArrivoBoat</a>
+      <a href="https://air.ridearrivo.com" target="_blank" rel="noopener">ArrivoAir</a>
+      <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener">Membership</a>
       <a href="book.html" data-i18n="nav.bookCta">Book a ride</a>
       <a href="driver.html" data-i18n="footer.driverPortal">Driver Portal</a>
       <a href="account.html" data-i18n="footer.myAccount">My Account</a>
