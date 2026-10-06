@@ -46,7 +46,7 @@ const SHELL_FILES = [
   "/manifest.json",
   "/assets/icon.png",
   "/assets/favicon.png",
-  "/assets/ride-arrivo-wordmark.png",
+  "/assets/ridearrivo-wordmark-light.png",
 ];
 
 // Same-origin paths that must always hit the network untouched. Payment
