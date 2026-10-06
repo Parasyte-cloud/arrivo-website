@@ -46,8 +46,6 @@ const SHELL_FILES = [
   "/manifest.json",
   "/assets/icon.png",
   "/assets/favicon.png",
-  "/assets/ride-arrivo-wordmark.png",
-  "/assets/ridearrivo-wordmark.png",
   "/assets/ridearrivo-wordmark-light.png",
 ];
 
