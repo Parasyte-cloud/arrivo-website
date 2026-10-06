@@ -1,104 +1,137 @@
-# ArrivoExpress: standalone launch on express.ridearrivo.com
+# ArrivoExpress on express.ridearrivo.com: one login, independent deploys
 
-Audit results, what changed, and the exact steps to go live. Follow the steps in order; each one is safe to do before the next.
+This is the plan, the reasoning, and the exact steps. It replaces the earlier "separate login on the subdomain" design.
 
-## 1. What shipped in this change
+## 1. The architecture and why
 
-**Front end (this repo)**
+```
+                 .ridearrivo.com  (one login cookie, HttpOnly, Secure, SameSite=Lax)
+                          |
+   www.ridearrivo.com   express.   move.   air.   boat.   membership.     <- independent static deploys
+   (login, account,        \         |       |      |        /
+    tracking, book)         \________|_______|______|_______/
+                                      |
+                          api.ridearrivo.com  (Render)  ->  Postgres
+```
 
-| Area | Before | Now |
-|---|---|---|
-| Edited address | Typing over a picked suggestion kept the OLD coordinates, so the quote and charge could be for a different place than the text shown | Any manual edit clears the coordinates and the pin; the rider must pick a suggestion again |
-| Expired login mid-flow | Only handled at page load; a 401 later left a spinner or a vague error | One handler for every call: clears the token, redirects to login with `next=` |
-| Fare moved between quote and confirm | Rider could be charged a different fare than the one shown | Client sends `expectedFareNaira`; on `FARE_CHANGED` the new fare is shown and re-confirmation is required (needs the backend patch, harmless without it) |
-| Maps down or key rejected | Copy said "you can still type an address", which cannot work because a quote needs coordinates | Honest message in 7 languages; `gm_authFailure` also triggers it |
-| Directions API not enabled | No route line at all | Dashed straight line between the pins, both in view |
-| No current-location option | Rider had to type the pickup | "Use my current location" via the backend reverse-geocode endpoint |
-| `window.alert()` for timeout, expiry, cancel failure | Blocking browser dialogs | Inline, screen-reader-announced messages |
-| Poll failure counter | Not reset on a new search | Reset on every new search |
-| `localStorage` access | Throws in some private modes and killed init | Safe wrapper everywhere |
-| Hardcoded English | Services label, cross-sell strip | Translated in en, fr, zh, hi, de, es, pt |
-| Accessibility | Silent step changes, unlabeled map | Focus moves to the new step heading, `role="alert"` on errors, `aria-live` on status, map labelled, focus ring on tier cards, reduced-motion spinner |
-| Hardcoded URLs | API and page paths baked into `express.js` | Read from `express-config.js` (same defaults on the main site) |
+**What is a microservice setup here?** Each product is its own deployable (own Cloudflare Pages project, own release, own failure). They share exactly two things on purpose: the identity (who the rider is) and the wallet (what they can pay with). Everything else is separate.
 
-**Backend (separate repo): `docs/backend-patches/express-backend-hardening.patch`**
+**Why a cookie instead of the token in localStorage?** `localStorage` is per origin, so a token saved on `ridearrivo.com` is invisible on `express.ridearrivo.com`. That is what forced a second login. A cookie with `Domain=.ridearrivo.com` is sent by the browser to every subdomain automatically. It is also `HttpOnly`, so page JavaScript cannot read it: a script-injection bug on one site cannot steal the session, which a localStorage token cannot promise.
 
-Apply it in the Arrivo backend repo (`git apply --check` first). It touches `server.js` and `routes/instantRides.js` only and is additive.
+**Why does the API need its own ridearrivo.com address?** A browser only accepts `Domain=.ridearrivo.com` from a response that itself came from inside ridearrivo.com. From `arrivo-backend-g1ku.onrender.com` the cookie is rejected or treated as a third-party cookie, which Safari and Chrome block. So the API must be served as `api.ridearrivo.com` (a custom domain on Render). If you skip this, login still works on www through the old token, but the shared login silently does not.
 
-1. CORS: adds `https://express.ridearrivo.com`, plus an optional `EXTRA_ALLOWED_ORIGINS` env var (comma-separated exact origins, for Pages preview URLs).
-2. Per-rider rate limits: `/quote` 40 per 10 min, create 15 per 10 min (env: `INSTANT_QUOTE_RATE_LIMIT`, `INSTANT_CREATE_RATE_LIMIT`). `/quote` calls Google Distance Matrix every time, so it was the one unprotected cost path.
-3. `FARE_CHANGED` guard on create: 409 before any money moves if the fare to charge exceeds what the rider agreed to by more than 10% (env: `INSTANT_FARE_TOLERANCE_PCT`). A lower fare is never blocked.
-4. `/rider/active` bug: a request stays `matched` forever, so a rider whose last Express trip had finished was reported as active and bounced to the tracking page on every visit. A matched request now only counts while its ride is not `completed`/`cancelled`.
+**What stays the same:** the mobile apps. The API accepts a Bearer token or the cookie (Bearer wins), so nothing in the apps changes.
 
-Not run against a database from here. Review the SQL in item 4 against production `rides.ride_status` values before merging, and run a test ride.
+## 2. What "if one goes down, the others stay up" means
 
-## 2. Go-live steps
+| If this is down | What still works |
+|---|---|
+| www.ridearrivo.com | express., move., air., boat. load and work; riders with a session keep booking. Only sign-in (hosted on www), account and tracking pages are affected. |
+| express. | www and every other product |
+| Cloudflare Pages for one project | the other projects (separate deployments) |
+| api.ridearrivo.com / the database | **everything.** This is still the single shared failure point. See roadmap. |
 
-### Step 1: Merge the code
-1. PR #31 on `arrivo-website` still needs its required review approval. Get it approved and merged to `main`.
-2. Open a PR in the backend repo with the patch above, review, merge, let Render deploy.
-3. In Render set (all optional, defaults shown above): nothing is required. `ARRIVO_NOW_ENABLED=true` must already be set for Express to work at all.
+Rules that keep front ends independent: Express loads no scripts or images from www at runtime, and its links to www are plain links that fail only when clicked.
 
-Order matters: deploy the backend (specifically CORS) **before** the subdomain receives traffic, or every API call from the new site fails with a CORS error.
+**Honest limit:** the one thing front-end separation cannot fix is the shared API and database. The roadmap in section 5 is how to reduce that.
 
-### Step 2: Create the Cloudflare Pages project
-Create a **second** Pages project from the same `arrivo-website` repo (the existing one keeps serving ridearrivo.com unchanged).
+## 3. What shipped
 
-- Production branch: `main`
-- Build command: `node scripts/build-express.js`
-- Build output directory: `dist/express`
-- Environment variables: none required. Optional overrides: `API_BASE_URL`, `EXPRESS_ORIGIN`, `MAIN_SITE_ORIGIN`.
-- Node version: 18 or newer (the script uses only built-ins).
+**Website repo (PR #31)**
+- Express works with the shared cookie (sends `credentials: "include"`, Bearer only if a token exists, shows the log-in card on a 401 instead of redirecting blindly).
+- `login.html` / `signup.html` accept a return URL on an exact allowlist of our own https hosts (`express`, `move`, `boat`, `air`, `membership`, `www`, apex), and send `credentials: "include"` so the browser stores the cookie. Anything else is refused (no open redirect). Tested: `evil.com`, `express.ridearrivo.com.evil.com`, `https://ridearrivo.com@evil.com/`, `http://`, `//evil.com`, `javascript:` and embedded credentials are all denied.
+- `account.html` logout also clears the shared cookie.
+- `scripts/build-express.js` now builds Express only (plus privacy, terms, 404). Login, signup, account and tracking are links to www with `next=` pointing back at Express. No duplicate auth pages to drift.
+- Earlier hardening still applies (stale coordinates, 401 handling, fare-change guard, honest Maps errors, a11y, 7-language strings).
 
-Then **Custom domains** > add `express.ridearrivo.com`. If ridearrivo.com's DNS is in Cloudflare the CNAME is created for you; otherwise add `CNAME express -> <project>.pages.dev`. Wait for the certificate to show Active.
+**Backend repo (two patches, apply in order)**
+1. `docs/backend-patches/express-backend-hardening.patch`: CORS for `express.ridearrivo.com`, per-rider rate limits, `FARE_CHANGED` guard, stale-`matched` fix.
+2. `docs/backend-patches/express-sso-cookie.patch`:
+   - new `middleware/sessionCookie.js` (cookie set/clear/read, CSRF origin check)
+   - login, signup, Google and Apple sign-in also set the cookie; guest checkout does not
+   - `requireAuth` accepts Bearer or cookie
+   - `POST /api/auth/logout` clears the cookie
+   - CORS `credentials: true` (safe because origins are an exact list; browsers refuse a wildcard with credentials)
+   - `scripts/test-session-cookie.js` (needs only `express`; passes: cookie attributes, CSRF refusals, Bearer bypass, clearing)
 
-### Step 3: Google Cloud (Maps key)
-APIs & Services > Credentials > the browser key:
-1. HTTP referrers: add `https://express.ridearrivo.com/*` (keep the existing entries).
-2. API restrictions must include **Maps JavaScript API** and **Places API**.
-3. Directions: the key currently returns `REQUEST_DENIED` for Directions. Either enable the **Directions API** to get a drawn road route, or do nothing and riders see the dashed straight line. `DirectionsService` is deprecated by Google; plan a move to `routes.Route.computeRoutes` (Routes API) later.
-4. Billing must be on, and add a budget alert. Autocomplete and Distance Matrix are the spend drivers.
+**CSRF, explained.** Because a cookie is sent automatically, a malicious site could make your browser send a request that carries it. Two layers stop that: `SameSite=Lax` (the browser does not attach the cookie to cross-site POSTs) and an `Origin` check on state-changing requests that rely on the cookie (must be one of our own sites). Requests using a Bearer header or no cookie skip the check because there is nothing automatic to abuse.
 
-### Step 4: Sign-in providers
-Browser storage is per origin, so riders log in separately on express.ridearrivo.com. The bundled login page needs these registered or Google and Apple buttons fail there:
-- Google Cloud > OAuth client (the one `login.html` uses) > **Authorized JavaScript origins**: add `https://express.ridearrivo.com`.
-- Apple Developer > Services ID > add domain `express.ridearrivo.com` and its return URL. If you do not want Apple on this host yet, email and password and Google still work.
-- Paystack top-up uses the inline popup and needs no domain registration. Test one small top-up from the new host anyway.
+Not run against a real database or deployed from here. Review `git apply --check`, run the test script, and do a staging login before production.
 
-### Step 5: Smoke test (use a real rider account and a test driver)
-1. `https://express.ridearrivo.com/` loads Express; the log-in gate shows when logged out.
-2. Sign up, verify email, log in, you land back on Express.
-3. Pickup autocomplete and "Use my current location" both work; the map shows both pins.
-4. Edit the pickup text after choosing it, press See fare: you must be asked to pick a location again.
-5. Quote shows; wallet balance note is correct; insufficient balance links to the wallet.
-6. Top up the wallet from `account.html` on the new host.
-7. Confirm a ride; driver accepts; you are sent to `track.html?ride=...` and the live map works.
-8. Cancel a searching request; refund appears in the wallet.
-9. Switch language to French and Chinese on each step.
-10. Browser console: no CORS or CSP errors. Network tab: no 404s.
-11. Finish a ride, reload Express: you must see the picker (not a redirect to tracking).
+## 4. Go-live steps (in this order)
 
-### Step 6: Cut over the main site (after step 5 passes)
-- Point the Services menu and footer "ArrivoExpress" links on ridearrivo.com to `https://express.ridearrivo.com`, as the other services already do.
-- Add a Cloudflare redirect rule `ridearrivo.com/express.html` -> `https://express.ridearrivo.com/` (301) so old links and SEO move over.
-- Submit `https://express.ridearrivo.com/sitemap.xml` in Search Console.
+### Step 1: Backend code
+In the backend repo apply both patches (`git apply --check` first), review, merge, then set on Render:
+- `SESSION_COOKIE_DOMAIN=.ridearrivo.com` (leading dot)
+- `NODE_ENV=production` (makes the cookie `Secure`)
+- `ARRIVO_NOW_ENABLED=true` (already required for Express)
+- optional: `EXTRA_ALLOWED_ORIGINS` for a Pages preview URL while testing
 
-## 3. Things to know
+Run `node scripts/test-session-cookie.js` locally first. If `JWT_SECRET` ever changes, every session ends; that is expected.
 
-- **Separate sessions.** A rider logged in on ridearrivo.com is not logged in on the subdomain. Fixing that needs a shared-cookie SSO design on the backend; out of scope here.
-- **Emails.** Verification and reset emails link to ridearrivo.com by default (`EMAIL_VERIFY_BASE_URL`, `PASSWORD_RESET_BASE_URL`). A rider who signs up on the subdomain verifies on the main site, which works, then logs in again on the subdomain.
-- **No launch countdown** on the standalone site (the gate date, 2026-09-12, has passed).
-- **Bundled supporting pages** (login, signup, account, track, reset, verify, legal) are marked `noindex`; their canonical stays on the main-site originals.
-- **Service worker** is network-first, same as the main site, with its own cache name `arrivo-express-*`. Deploys need no version bump.
-- The build **fails** on: a missing source file, a broken local link, a stray em dash, or the launch gate still present.
+### Step 2: api.ridearrivo.com
+Render > the API service > Settings > Custom Domains > add `api.ridearrivo.com`. In Cloudflare DNS add the CNAME Render shows. Keep it **DNS only (grey cloud)** until Render shows the certificate as issued; the orange proxy can block Render's certificate check. Confirm `https://api.ridearrivo.com/` answers (the old onrender URL keeps working too, which the apps rely on).
 
-## 4. Rollback
-- Subdomain misbehaving: in Pages, roll back to the previous deployment, or remove the custom domain. ridearrivo.com is never affected.
-- Backend patch misbehaving: revert the PR; the front end still works without it (the new request field is ignored, and the old behavior returns).
-- Nothing here changes the database schema or existing request fields.
+### Step 3: Point the website at the API domain
+Merge PR #31 first (it still needs its required review). Then, once Step 2 is verified, in one commit run:
 
-## 5. Remaining risks (not fixed, by design)
-- Polling is every 4 seconds with no push for the web rider; the apps use push.
-- Fare uses live traffic, so quote and charge can differ within the 10% tolerance.
-- The Maps browser key is public by nature; referrer restriction and the budget alert are the protection.
-- `PR #31` has been open a long time and `main` keeps moving; merge soon to avoid another conflict round.
+```
+sed -i 's#https://arrivo-backend-g1ku.onrender.com#https://api.ridearrivo.com#g' \
+  account.html forgot-password.html login.html reset-password.html scan.html \
+  signup.html track.html verify-email.html booking.js driver.js script.js \
+  express.js express-config.js
+```
+
+Minimum that matters for the shared login: `login.html`, `signup.html`, `account.html` (they receive or clear the cookie). Flipping all is cleaner. The CSP in `_headers` already allows `api.ridearrivo.com`. Rollback is the same command in reverse.
+
+Other sites that sign riders in (the membership site posts to `/api/auth/google` and `/apple` itself) must also call the API at `api.ridearrivo.com` with `credentials: "include"`, or riders who sign up there will not get the shared cookie. That code is outside this repo.
+
+### Step 4: Cloudflare Pages project for Express
+New Pages project from the same repo:
+- Production branch `main`
+- Build command `node scripts/build-express.js`
+- Output directory `dist/express`
+- No environment variables needed (optional: `API_BASE_URL`, `EXPRESS_ORIGIN`, `MAIN_SITE_ORIGIN`)
+
+Custom domain `express.ridearrivo.com`. Wait for the certificate to be Active. The build fails loudly on a broken link, missing file, stray em dash or the launch gate.
+
+### Step 5: Google Maps key
+Add referrer `https://express.ridearrivo.com/*`. Allow Maps JavaScript API and Places API. Directions is currently denied for the key: enable it for a road-following route line, or leave it and riders see a dashed straight line. Keep a billing budget alert.
+
+You do **not** need new Google or Apple sign-in origins for Express, because sign-in only happens on www.
+
+### Step 6: Smoke test
+1. Logged out, open `https://express.ridearrivo.com/`: log-in card shows.
+2. Click Log in: you go to www, sign in, and land back on Express already signed in (no second login).
+3. DevTools > Application > Cookies: `arrivo_session`, Domain `.ridearrivo.com`, HttpOnly, Secure, SameSite Lax.
+4. Open `https://move.ridearrivo.com` (or any other subdomain that calls the API with credentials): also signed in.
+5. Pick pickup and destination, edit the pickup text: you must be asked to pick again. See fare, confirm, driver accepts, you are sent to tracking on www.
+6. Top up from www account, return to Express, balance updated.
+7. Log out on www: refresh Express, log-in card shows again.
+8. Console: no CORS or CSP errors. A POST from a foreign origin with your cookie is refused (403).
+9. Language switch on every step; finish a ride and reload Express: you see the picker, not tracking.
+10. Mobile app login still works (Bearer path).
+
+### Step 7: Cut over
+Point the Services menu and footer link on ridearrivo.com to `https://express.ridearrivo.com`, add a Cloudflare redirect `ridearrivo.com/express.html` to the subdomain (301), submit `https://express.ridearrivo.com/sitemap.xml` in Search Console.
+
+## 5. Roadmap: from "separate front ends" to real service isolation
+
+1. **Now:** independent front ends, one identity cookie, one API.
+2. **Harden the shared core (do before heavy traffic):** two or more API instances behind health checks, Postgres backups with point-in-time recovery, alerting on 5xx and latency, a status page. This removes most of the shared-failure risk for far less effort than splitting services.
+3. **Then, if load or team size justifies it:** move Express (dispatch, offers, matching) into its own API service with its own scaling. Switch JWTs from a shared secret to a public/private key pair (RS256) so each service can verify sessions with only the public key. Keep the wallet as one service that owns balances, so money logic exists in exactly one place with row locks and idempotent refunds.
+
+Why not split now: the instant-ride code and the wallet share database transactions today (accepting a ride locks rows and moves money atomically). Splitting before there is a clear boundary trades a database transaction for a distributed one, which is harder to get right and easy to get wrong with real money.
+
+## 6. Things to know
+- **Logout and JWTs.** Tokens are stateless and last 7 days. Logout clears the cookie and the local token but cannot revoke a copy someone already stole. If that matters, shorten expiry and add refresh tokens later.
+- **Ride tracking lives on www.** It still reads the token that www stores at login. If a rider's browser storage was cleared but the cookie remains, tracking sends them to sign in once more. Making tracking cookie-only is a contained follow-up.
+- **Emails** (verify, reset) link to ridearrivo.com by default, which is now correct for every product since login lives there.
+- **Service worker** on Express is network-first with its own cache name `arrivo-express-*`; deploys need no version bump.
+- **No launch countdown** on the standalone site.
+
+## 7. Rollback
+- Express misbehaving: roll back the Pages deployment or remove the custom domain; nothing else is affected.
+- Cookie login misbehaving: unset `SESSION_COOKIE_DOMAIN` (cookies become host-only and harmless) or revert patch 2; Bearer login for www and the apps keeps working throughout.
+- API domain misbehaving: reverse the `sed` command; the old onrender URL was never turned off.
+- No database schema changes in either patch.

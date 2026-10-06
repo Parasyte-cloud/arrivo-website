@@ -8,6 +8,9 @@
   // page behaves identically on both hosts.
   var CFG = window.ARRIVO_EXPRESS_CONFIG || {};
   var API_BASE_URL = CFG.apiBase || "https://arrivo-backend-g1ku.onrender.com"; // same as booking.js/script.js
+  // On the main site these are relative page names. On express.ridearrivo.com
+  // they are absolute URLs: login, account and ride tracking live on
+  // www.ridearrivo.com, and "next" carries the full Express URL back.
   var LOGIN_PATH = CFG.loginPath || "login.html";
   var ACCOUNT_PATH = CFG.accountPath || "account.html";
   var TRACK_PATH = CFG.trackPath || "track.html";
@@ -174,17 +177,27 @@
   }
 
   // ───────────────────────── API helpers (same shape as booking.js) ─────
+  //
+  // options.auth     -> this call needs a signed-in rider. Sends the Bearer
+  //                     token if this browser has one, and ALWAYS sends the
+  //                     shared single sign-on cookie (credentials:"include"),
+  //                     which is how a rider who logged in on www is already
+  //                     signed in here with no token of our own.
+  // options.soft401  -> a 401 is an expected answer (page-load probe), not a
+  //                     reason to redirect to login.
   function api(path, options) {
     options = options || {};
-    return fetch(API_BASE_URL + path, {
-      ...options,
-      headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-    }).then(function (res) {
+    var headers = Object.assign({ "Content-Type": "application/json" }, options.headers || {});
+    if (options.auth && state.token) headers.Authorization = "Bearer " + state.token;
+    var init = Object.assign({}, options, { headers: headers, credentials: "include" });
+    delete init.auth;
+    delete init.soft401;
+    return fetch(API_BASE_URL + path, init).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
         // A 401 on any authenticated call means the saved token is dead.
         // Handle it in one place so no step of the flow can strand the
         // rider on a spinner or a vague error.
-        if (res.status === 401 && options.headers && options.headers.Authorization) sessionExpired();
+        if (res.status === 401 && options.auth && !options.soft401) sessionExpired();
         return { ok: res.ok, status: res.status, data: data };
       });
     }).catch(function () {
@@ -199,10 +212,6 @@
     stopPolling();
     store.remove("arrivo_rider_token");
     window.location.href = LOGIN_PATH + "?next=" + encodeURIComponent(SELF_PATH);
-  }
-
-  function authHeader() {
-    return { Authorization: "Bearer " + state.token };
   }
 
   function formatNaira(amount) {
@@ -554,7 +563,7 @@
 
     api("/api/instant-rides/quote", {
       method: "POST",
-      headers: authHeader(),
+      auth: true,
       body: JSON.stringify(buildTrip()),
     }).then(function (result) {
       btn.disabled = false;
@@ -587,7 +596,7 @@
     navigator.geolocation.getCurrentPosition(function (pos) {
       var lat = pos.coords.latitude;
       var lng = pos.coords.longitude;
-      api("/api/places/reverse-geocode?lat=" + encodeURIComponent(lat) + "&lng=" + encodeURIComponent(lng), { headers: authHeader() }).then(function (result) {
+      api("/api/places/reverse-geocode?lat=" + encodeURIComponent(lat) + "&lng=" + encodeURIComponent(lng), { auth: true }).then(function (result) {
         done();
         if (!result.ok || !result.data.address) {
           err.textContent = t("arrivoExpress.locationFailed");
@@ -632,7 +641,7 @@
     confirmBtn.disabled = true;
     note.textContent = t("arrivoExpress.walletBalanceChecking");
 
-    api("/api/wallet", { headers: authHeader() }).then(function (result) {
+    api("/api/wallet", { auth: true }).then(function (result) {
       if (!result.ok) {
         note.textContent = "";
         confirmBtn.disabled = false; // let the backend be the final word on this
@@ -661,7 +670,7 @@
 
     api("/api/instant-rides", {
       method: "POST",
-      headers: authHeader(),
+      auth: true,
       // expectedFareNaira lets the server refuse (409 FARE_CHANGED) if live
       // traffic pushed the fare up since the rider saw it. Older backends
       // ignore the unknown field.
@@ -677,7 +686,7 @@
           // server what's actually active and resume watching that. This
           // mirrors the mobile app's ArrivoExpressScreen.confirmRide,
           // which does the same re-fetch instead of trusting the error body.
-          api("/api/instant-rides/rider/active", { headers: authHeader() }).then(function (activeResult) {
+          api("/api/instant-rides/rider/active", { auth: true }).then(function (activeResult) {
             var existing = activeResult.ok ? activeResult.data.request : null;
             if (existing) {
               state.pickup = existing.pickup_address || state.pickup;
@@ -752,7 +761,7 @@
   var MAX_POLL_FAILURES = 15; // ~1 minute at the 4s poll interval
 
   function pollActive() {
-    api("/api/instant-rides/rider/active", { headers: authHeader() }).then(function (result) {
+    api("/api/instant-rides/rider/active", { auth: true }).then(function (result) {
       if (!result.ok) {
         // Transient hiccup -- try again next tick, but not forever: after
         // MAX_POLL_FAILURES in a row (backend down, token expired, etc.)
@@ -798,7 +807,7 @@
     btn.disabled = true;
     api("/api/instant-rides/rider/requests/" + state.activeRequestId + "/cancel", {
       method: "POST",
-      headers: authHeader(),
+      auth: true,
     }).then(function (result) {
       btn.disabled = false;
       if (!result.ok) {
@@ -855,26 +864,27 @@
     // ArrivoExpress settles from the RideArrivo Wallet, so -- same rule
     // book.html already enforces for scheduled bookings -- a logged-in
     // account is required. No guest path here.
-    var savedToken = store.get("arrivo_rider_token");
-    if (!savedToken) {
-      showCard("authGate");
-      return;
-    }
-    state.token = savedToken;
+    // No saved token no longer means "logged out": on a subdomain the
+    // session is the shared cookie, which page JavaScript cannot see. So
+    // always ask the server; a 401 below shows the log-in card.
+    state.token = store.get("arrivo_rider_token");
     showCard("loadingCard");
 
     function loadEverything() {
       showCard("loadingCard");
       Promise.all([
-        api("/api/instant-rides/status", { headers: authHeader() }),
-        api("/api/instant-rides/rider/active", { headers: authHeader() }),
+        api("/api/instant-rides/status", { auth: true, soft401: true }),
+        api("/api/instant-rides/rider/active", { auth: true, soft401: true }),
       ]).then(function (results) {
         var statusResult = results[0];
         var activeResult = results[1];
 
         if (statusResult.status === 401) {
-          // Token expired/invalid -- same handling as book.html's initStep1.
-          sessionExpired();
+          // Not signed in (or the session expired). Show the log-in card
+          // rather than bouncing, so a first-time visitor sees what this is.
+          store.remove("arrivo_rider_token");
+          state.token = null;
+          showCard("authGate");
           return null;
         }
 
@@ -904,7 +914,7 @@
           return null;
         }
 
-        return api("/api/instant-rides/tiers", { headers: authHeader() }).then(function (tiersResult) {
+        return api("/api/instant-rides/tiers", { auth: true }).then(function (tiersResult) {
           state.tiers = (tiersResult.ok && tiersResult.data.tiers) || [];
           state.selectedTier = state.tiers.length ? state.tiers[0].key : null;
           renderTiers();
