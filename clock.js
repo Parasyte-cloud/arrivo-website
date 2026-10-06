@@ -1,4 +1,4 @@
-// Shows the visitor's own local date/time -- uses the browser's timezone
+// Shows the visitor's own local date/time — uses the browser's timezone
 // automatically (no geolocation needed), so someone in Lagos sees Lagos
 // time, someone in Paris sees Paris time, etc.
 //
@@ -6,14 +6,14 @@
 // browsers/webviews fire that event before this script's listener can
 // attach, which silently prevented the clock from ever rendering. Since
 // this script tag sits after the header in the HTML, #liveClock already
-// exists in the DOM by the time this code runs -- no need to wait at all.
+// exists in the DOM by the time this code runs — no need to wait at all.
 (function () {
   "use strict";
 
   var MOBILE_BREAKPOINT = 780;
 
   function applyVisibility(el) {
-    // Belt-and-suspenders alongside the CSS media query -- some webviews
+    // Belt-and-suspenders alongside the CSS media query — some webviews
     // report viewport widths that don't match their actual rendered size,
     // so we also check it directly in JS.
     el.style.display = window.innerWidth < MOBILE_BREAKPOINT ? "none" : "flex";

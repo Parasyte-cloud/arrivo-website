@@ -72,7 +72,7 @@
   <div class="booking-card" id="rideCard" hidden>
     <span class="status-pill" id="statusPill"></span>
     <p style="margin-top:10px; font-size:13.5px;"><strong data-i18n="track.pickupLabel">Pickup:</strong> <span id="pickupText"></span></p>
-    <!-- Only populated on the authenticated view (real GET /api/rides/:id) --
+    <!-- Only populated on the authenticated view (real GET /api/rides/:id) —
          never in the public ?share= mode above, which deliberately omits
          fare/payment fields from its response for anyone the rider shared
          the link with. -->
@@ -101,13 +101,13 @@
       <div id="fleetConvoyList"></div>
     </div>
 
-    <button class="panic-btn" id="panicBtn" data-i18n="track.panicBtn">🚨 I don't feel safe -- alert support</button>
+    <button class="panic-btn" id="panicBtn" data-i18n="track.panicBtn">🚨 I don't feel safe — alert support</button>
     <div class="panic-active" id="panicActiveMsg" hidden data-i18n="track.panicActiveMsg">🚨 Support has been alerted about this ride.</div>
   </div>
 
   <!-- Flight cancelled/rescheduled (services/scheduler.js on the backend
        flags ride.flight_issue and refunds the original fare to the
-       rider's wallet) -- prompts a top-up before the trip can start again,
+       rider's wallet) — prompts a top-up before the trip can start again,
        with the fare re-charged at drop-off instead of upfront this time. -->
   <div class="booking-card" id="flightIssueCard" hidden style="border:1.5px solid var(--amber, #F4A300);">
     <h2 style="font-size:16px; margin-bottom:6px;" id="flightIssueTitle"></h2>
@@ -115,7 +115,7 @@
     <a href="account.html" class="btn btn-primary" style="width:100%; display:block; text-align:center; box-sizing:border-box;" data-i18n="track.topUpWallet">Top up wallet</a>
   </div>
 
-  <!-- "Rate & Relax" -- one rating per completed trip. When the rated trip
+  <!-- "Rate & Relax" — one rating per completed trip. When the rated trip
        was an Airport Pickup, also offers "keep the same driver & vehicle
        for my return trip" (keepSameDriver), carried over automatically to
        whatever drop-off ride later gets linked back to this one. -->
@@ -138,14 +138,14 @@
     </div>
   </div>
 
-  <!-- Optional post-trip tip -- only shown once the ride is completed and
+  <!-- Optional post-trip tip — only shown once the ride is completed and
        hasn't already been tipped. Never cash: wallet debits immediately,
        card goes through Paystack same as the fare itself. -->
   <div class="booking-card" id="tipCard" hidden>
     <h2 style="font-size:16px; margin-bottom:6px;" data-i18n="track.tipDriverTitle">Tip your driver</h2>
     <p id="tipDoneMsg" style="font-size:13px; color:var(--text-muted);" hidden></p>
     <div id="tipForm">
-      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:10px;" data-i18n="track.tipDisclaimer">Entirely optional -- 100% goes to your driver. Never cash, same as your fare.</p>
+      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:10px;" data-i18n="track.tipDisclaimer">Entirely optional — 100% goes to your driver. Never cash, same as your fare.</p>
       <div class="for-who-toggle" id="tipPercentToggle" style="margin-bottom:10px;">
         <button type="button" class="for-who-opt is-active" data-percent="15">15%</button>
         <button type="button" class="for-who-opt" data-percent="20">20%</button>
@@ -268,7 +268,7 @@
   var urlParams = new URLSearchParams(window.location.search);
   var rideId = urlParams.get("ride");
   // A share=<token> link (see GET /api/rides/:id/share, and the rider
-  // app's TrackingScreen share button) needs no login at all -- meant for
+  // app's TrackingScreen share button) needs no login at all — meant for
   // someone RideArrivo has never heard of, like the emergency contact
   // named on the ride. Kept entirely separate from the ride=/token flow
   // below rather than reusing it, since the public endpoint intentionally
@@ -278,7 +278,7 @@
   var shareToken = urlParams.get("share");
   var token = localStorage.getItem(TOKEN_KEY);
   // PAYSTACK_PUBLIC_KEY now comes from paystack-config.js (loaded below,
-  // before this script runs) -- this used to be its own hardcoded
+  // before this script runs) — this used to be its own hardcoded
   // "pk_test_replace_me" placeholder that nobody remembered to update,
   // which silently disabled card tipping here while book.html had the
   // real live key. One shared value now, can't drift again.
@@ -303,7 +303,7 @@
 
   // Fleet Accompaniment convoy data (driver_name, make_model) below is
   // free text a driver typed during vehicle/profile setup, not something
-  // this rider controls -- must be escaped before going into innerHTML, or
+  // this rider controls — must be escaped before going into innerHTML, or
   // a malicious driver's name/vehicle string (e.g. an <img onerror>
   // payload) would execute in every rider's browser who views a shared
   // ride's convoy list, with full access to that rider's localStorage
@@ -382,7 +382,7 @@
 
   if (shareToken) {
     // Public, read-only mode. No auth header, no polling of anything that
-    // needs the rider's own token -- just status, driver, and live location.
+    // needs the rider's own token — just status, driver, and live location.
     document.getElementById("sharedViewNote").hidden = false;
     ["panicBtn", "panicActiveMsg", "rateCard", "tipCard", "flightIssueCard"].forEach(function (id) {
       document.getElementById(id).hidden = true;
@@ -424,7 +424,7 @@
             updateRideMap(Number(ride.current_lat), Number(ride.current_lng));
           }
         })
-        .catch(function () { /* transient -- next poll will retry */ });
+        .catch(function () { /* transient — next poll will retry */ });
     }
 
     refreshPublic();
@@ -461,9 +461,9 @@
 
           // Fare shown here uses the locked quoted_usd_amount snapshotted at
           // booking time (routes/rides.js), not a live-recomputed FX
-          // estimate -- same reasoning as the rider app's ActivityScreen and
+          // estimate — same reasoning as the rider app's ActivityScreen and
           // the website's own post-booking confirmation screen. Only this
-          // authenticated block does this -- the public ?share= view above
+          // authenticated block does this — the public ?share= view above
           // deliberately never receives fare_naira at all.
           if (ride.fare_naira != null) {
             var fareText = "NGN " + Number(ride.fare_naira).toLocaleString();
@@ -495,10 +495,10 @@
           refreshFlightIssueCard();
           refreshFleetConvoy();
         })
-        .catch(function () { /* transient -- next poll will retry */ });
+        .catch(function () { /* transient — next poll will retry */ });
     }
 
-    // Fleet Accompaniment convoy -- only ever populated for a ride that
+    // Fleet Accompaniment convoy — only ever populated for a ride that
     // actually has escort vehicles dispatched (fleet_group_id set by
     // createFleetCompanions on the backend). A no-op for the vast majority
     // of rides that aren't fleet bookings. Not shown in the public
@@ -526,7 +526,7 @@
               driverPart + vehiclePart + "</span><span style=\"color:var(--text-muted);\">" + statusPart + "</span></div>";
           }).join("");
         })
-        .catch(function () { /* best-effort -- leave whatever was last shown */ });
+        .catch(function () { /* best-effort — leave whatever was last shown */ });
     }
 
     // ───────────────────────── Rate & Relax (post-trip) ─────────────────────────
@@ -569,7 +569,7 @@
         var doneMsg = document.getElementById("rateDoneMsg");
         doneMsg.hidden = false;
         doneMsg.textContent = t("track.youRatedTrip") + "★".repeat(currentRide.rider_rating) + "☆".repeat(5 - currentRide.rider_rating) +
-          (currentRide.rider_rating_comment ? " -- \"" + currentRide.rider_rating_comment + "\"" : "");
+          (currentRide.rider_rating_comment ? " — \"" + currentRide.rider_rating_comment + "\"" : "");
       }
     }
 
@@ -630,7 +630,7 @@
     }
 
     // ───────────────────────── Tipping (optional, post-trip) ─────────────────────────
-    // Never cash -- same rails as the fare: an immediate wallet debit, or a
+    // Never cash — same rails as the fare: an immediate wallet debit, or a
     // fresh Paystack card charge verified against Paystack directly (see
     // POST /api/rides/:id/tip on the backend). Same feature as the apps.
     function tipAmountNaira() {
@@ -658,7 +658,7 @@
       }
 
       // Fetch the rider's email (for the card charge) and wallet balance
-      // once, the first time the card becomes relevant -- not on every poll.
+      // once, the first time the card becomes relevant — not on every poll.
       if (riderEmail == null) {
         fetch(API_BASE_URL + "/api/auth/me", { headers: { Authorization: "Bearer " + token } })
           .then(function (res) { return res.json(); })
@@ -738,7 +738,7 @@
       // typeof-undefined check on PAYSTACK_PUBLIC_KEY itself (not just
       // PaystackPop) matters here: if paystack-config.js ever fails to load,
       // referencing PAYSTACK_PUBLIC_KEY.indexOf(...) directly would throw
-      // an uncaught ReferenceError instead of showing the message below --
+      // an uncaught ReferenceError instead of showing the message below —
       // same fix already applied to account.html's wallet top-up guard.
       if (typeof PaystackPop === "undefined" || typeof PAYSTACK_PUBLIC_KEY === "undefined" || PAYSTACK_PUBLIC_KEY.indexOf("replace_me") !== -1) {
         tipSendBtn.disabled = false;
@@ -796,7 +796,7 @@
      already in use on book.html/express.html; confirm HTTP referrer
      restrictions in Google Cloud Console include ridearrivo.com. -->
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLWAbQmxIAoGPP0LLDp6oTosaHZBa0Y5s&callback=initGoogleMaps"></script>
-<!-- Paystack's official inline checkout library -- used for card tips only. -->
+<!-- Paystack's official inline checkout library — used for card tips only. -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
 </body>

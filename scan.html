@@ -63,7 +63,7 @@
   }
 
   // Show the driver's name/vehicle/plate straight from the QR code's own
-  // URL params -- no network call needed for this part at all, so a
+  // URL params — no network call needed for this part at all, so a
   // traveler with zero signal still sees "this is your driver" the moment
   // they scan, before anything is confirmed server-side.
   (function showDriverPreviewFromQr() {
@@ -92,29 +92,29 @@
       .then(function (result) {
         if (!result.ok) {
           // The server was reachable and gave a definitive answer (wrong
-          // ride, wrong driver, etc.) -- retrying won't help, so no retry button.
+          // ride, wrong driver, etc.) — retrying won't help, so no retry button.
           showError(result.data.error || "Couldn't confirm your ride. Please try again or ask your driver for help.", false);
           return;
         }
         statusIcon.textContent = "✅";
         statusMsg.style.color = "var(--teal)";
-        statusMsg.textContent = "Ride confirmed with " + result.data.driverName + ". Tracking has started -- have a safe trip!";
+        statusMsg.textContent = "Ride confirmed with " + result.data.driverName + ". Tracking has started — have a safe trip!";
         trackLink.style.display = "block";
         trackLink.setAttribute("href", "track.html?ride=" + result.data.ride.id);
       })
       .catch(function () {
-        // fetch() itself threw -- this is a connectivity failure, not a
+        // fetch() itself threw — this is a connectivity failure, not a
         // definitive server answer, so offer Retry rather than a dead end.
         // The driver-preview card above still shows who to look for either way.
-        showError("No internet connection right now. Your driver's details are shown above -- connect to WiFi (airport WiFi works fine, no SIM needed) and tap Retry to confirm your ride and start live tracking.", true);
+        showError("No internet connection right now. Your driver's details are shown above — connect to WiFi (airport WiFi works fine, no SIM needed) and tap Retry to confirm your ride and start live tracking.", true);
       });
   }
 
   var scanToken = getScanToken();
   if (!scanToken) {
-    showError("This link is missing its code -- please scan the QR code on your driver's placard directly.", false);
+    showError("This link is missing its code — please scan the QR code on your driver's placard directly.", false);
   } else if (!getToken()) {
-    // Not logged in -- send them to log in, then bounce right back to this
+    // Not logged in — send them to log in, then bounce right back to this
     // exact scan link (with the token still in the URL) to finish the job.
     var here = window.location.pathname + window.location.search;
     window.location.href = "login.html?next=" + encodeURIComponent(here);
