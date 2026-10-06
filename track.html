@@ -692,7 +692,13 @@
         headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
         body: JSON.stringify({ note: "Triggered from web tracking page" }),
       })
-        .then(function (res) { return res.json(); })
+        .then(function (res) {
+          // Without this check an expired login (401) or a server error still
+          // hid the button and said "alert sent", telling someone in danger
+          // that help was coming when nothing had been recorded.
+          if (!res.ok) throw new Error("panic request failed: " + res.status);
+          return res.json();
+        })
         .then(function () {
           document.getElementById("panicBtn").hidden = true;
           document.getElementById("panicActiveMsg").hidden = false;

@@ -107,17 +107,22 @@
   // shape: no scheme (blocks "javascript:", "https://…"), no leading "//"
   // or backslash (both are browser-recognized ways to point at a
   // different host from what looks like a relative path).
-  function isSafeNextPath(next) {
-    if (!next) return false;
-    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(next)) return false;
-    if (next.indexOf("//") === 0) return false;
-    if (next.indexOf("\\") !== -1) return false;
-    return true;
-  }
-
+  // The old version tested the raw text, but browsers throw away tabs, line
+  // breaks and leading spaces before reading a URL. So "/<TAB>/evil.com" read
+  // as a harmless path to the check, then as "//evil.com" to the browser, and
+  // " javascript:..." slipped past the scheme test the same way. The fix is to
+  // let the browser's own URL parser decide: resolve the value against this
+  // page and only follow it if it lands on this same site.
   function getNextUrl() {
     var next = new URLSearchParams(window.location.search).get("next");
-    return isSafeNextPath(next) ? next : "account.html";
+    if (!next) return "account.html";
+    try {
+      var resolved = new URL(next, window.location.href);
+      if (resolved.origin !== window.location.origin) return "account.html";
+      return resolved.pathname + resolved.search + resolved.hash;
+    } catch (e) {
+      return "account.html";
+    }
   }
 
   document.addEventListener("DOMContentLoaded", function () {
