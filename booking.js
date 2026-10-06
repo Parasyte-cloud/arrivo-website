@@ -129,6 +129,7 @@
 
     trigger.addEventListener("click", function (e) {
       e.stopPropagation();
+      closeServicesMenu();
       var isOpen = dropdown.classList.toggle("open");
       menu.hidden = !isOpen;
       trigger.setAttribute("aria-expanded", String(isOpen));
@@ -139,6 +140,42 @@
     });
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") closeLangMenu();
+    });
+  }
+
+  // ───────────────────────── Services nav dropdown ─────────────────────
+  // Same pattern as the language dropdown above, listing the four Arrivo
+  // products. ArrivoBoat/ArrivoAir show as non-interactive "Coming soon"
+  // rows (no href) until their subdomains are actually live.
+  function closeServicesMenu() {
+    var dropdown = document.getElementById("servicesDropdown");
+    var menu = document.getElementById("servicesMenu");
+    var trigger = document.getElementById("servicesTrigger");
+    if (!dropdown || !menu) return;
+    dropdown.classList.remove("open");
+    menu.hidden = true;
+    if (trigger) trigger.setAttribute("aria-expanded", "false");
+  }
+
+  function initServicesDropdown() {
+    var dropdown = document.getElementById("servicesDropdown");
+    var trigger = document.getElementById("servicesTrigger");
+    var menu = document.getElementById("servicesMenu");
+    if (!dropdown || !trigger || !menu) return;
+
+    trigger.addEventListener("click", function (e) {
+      e.stopPropagation();
+      closeLangMenu();
+      var isOpen = dropdown.classList.toggle("open");
+      menu.hidden = !isOpen;
+      trigger.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    document.addEventListener("click", function (e) {
+      if (!dropdown.contains(e.target)) closeServicesMenu();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeServicesMenu();
     });
   }
 
@@ -1886,6 +1923,7 @@
     }
 
     safeRun(initLanguage, "initLanguage");
+    safeRun(initServicesDropdown, "initServicesDropdown");
 
     // Registration is mandatory before booking — check for a saved rider
     // session before revealing the booking wizard at all.
