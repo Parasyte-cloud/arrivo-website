@@ -3,7 +3,7 @@
 // directly from the browser (currently contact-us.html and
 // charter-booking.html, via the `intake` function).
 //
-// This is the PUBLISHABLE key — safe to ship in client-side JS, same idea
+// This is the PUBLISHABLE key, safe to ship in client-side JS, same idea
 // as PAYSTACK_PUBLIC_KEY in paystack-config.js. Access control lives in
 // the edge function itself (origin allowlist, rate limiting, RLS on the
 // underlying tables), not in keeping this value secret.
