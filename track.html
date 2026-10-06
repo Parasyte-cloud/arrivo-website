@@ -27,10 +27,14 @@
   .map-link { display:block; margin-top:14px; text-align:center; background:#f5f5fa; border-radius:10px; padding:12px; font-weight:700; font-size:13px; color: var(--teal); text-decoration:none; }
 </style>
   <script>
-    document.documentElement.classList.add("ra-launch-pending");
-    window.setTimeout(function () {
-      document.documentElement.classList.remove("ra-launch-pending");
-    }, 5000);
+    // The launch gate only matters before launch day ends. After that, do not
+    // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
+    if (Date.now() < Date.parse("2026-09-12T14:30:00+01:00") || /[?&]launchTest=1/.test(location.search)) {
+      document.documentElement.classList.add("ra-launch-pending");
+      window.setTimeout(function () {
+        document.documentElement.classList.remove("ra-launch-pending");
+      }, 5000);
+    }
   </script>
   <link rel="stylesheet" href="/launch-countdown.css?v=20260912-02">
 </head>
@@ -797,7 +801,13 @@
         headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ note: "Triggered from web tracking page" }),
       })
-        .then(function (res) { return res.json(); })
+        .then(function (res) {
+          // Without this check an expired login (401) or a server error still
+          // hid the button and said "alert sent", telling someone in danger
+          // that help was coming when nothing had been recorded.
+          if (!res.ok) throw new Error("panic request failed: " + res.status);
+          return res.json();
+        })
         .then(function () {
           document.getElementById("panicBtn").hidden = true;
           document.getElementById("panicActiveMsg").hidden = false;

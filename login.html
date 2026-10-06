@@ -34,10 +34,14 @@
   .oauth-error { color: var(--coral, #e1523d); font-size: 12.5px; text-align: center; margin: 4px 0 0; }
 </style>
   <script>
-    document.documentElement.classList.add("ra-launch-pending");
-    window.setTimeout(function () {
-      document.documentElement.classList.remove("ra-launch-pending");
-    }, 5000);
+    // The launch gate only matters before launch day ends. After that, do not
+    // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
+    if (Date.now() < Date.parse("2026-09-12T14:30:00+01:00") || /[?&]launchTest=1/.test(location.search)) {
+      document.documentElement.classList.add("ra-launch-pending");
+      window.setTimeout(function () {
+        document.documentElement.classList.remove("ra-launch-pending");
+      }, 5000);
+    }
   </script>
   <link rel="stylesheet" href="/launch-countdown.css?v=20260912-02">
 </head>
@@ -109,29 +113,32 @@
   // shape: no scheme (blocks "javascript:", "https://…"), no leading "//"
   // or backslash (both are browser-recognized ways to point at a
   // different host from what looks like a relative path).
-  function isSafeNextPath(next) {
-    if (!next) return false;
-    // The one exception to "same-site paths only": an https URL on one of
-    // OUR OWN sites, so sign-in here can send the rider back to
-    // express./move./air./boat. after login. Exact host match, https only,
-    // no embedded credentials -- never "anything under ridearrivo.com".
-    var SSO_RETURN_HOSTS = ["ridearrivo.com", "www.ridearrivo.com", "express.ridearrivo.com",
-      "move.ridearrivo.com", "boat.ridearrivo.com", "air.ridearrivo.com", "membership.ridearrivo.com"];
-    if (/^https:\/\//i.test(next)) {
-      try {
-        var u = new URL(next);
-        return u.protocol === "https:" && !u.username && !u.password && SSO_RETURN_HOSTS.indexOf(u.hostname) !== -1;
-      } catch (e) { return false; }
-    }
-    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(next)) return false;
-    if (next.indexOf("//") === 0) return false;
-    if (next.indexOf("\\") !== -1) return false;
-    return true;
-  }
-
+  // Browsers throw away tabs, line breaks and leading spaces before reading a
+  // URL, so testing the raw text is unsafe ("/<TAB>/evil.com" reads as a path
+  // to a naive check, then as "//evil.com" to the browser). Let the browser's
+  // own URL parser decide: resolve the value against this page, then follow it
+  // only if it lands on this same site OR on one of OUR OWN sibling sites
+  // (express./move./air./boat./membership.) so shared sign-in can send the
+  // rider back where they came from. Exact host match, https only, no embedded
+  // credentials -- never "anything under ridearrivo.com".
+  var SSO_RETURN_HOSTS = ["ridearrivo.com", "www.ridearrivo.com", "express.ridearrivo.com",
+    "move.ridearrivo.com", "boat.ridearrivo.com", "air.ridearrivo.com", "membership.ridearrivo.com"];
   function getNextUrl() {
     var next = new URLSearchParams(window.location.search).get("next");
-    return isSafeNextPath(next) ? next : "account.html";
+    if (!next) return "account.html";
+    try {
+      var resolved = new URL(next, window.location.href);
+      if (resolved.origin === window.location.origin) {
+        return resolved.pathname + resolved.search + resolved.hash;
+      }
+      if (resolved.protocol === "https:" && !resolved.username && !resolved.password &&
+          SSO_RETURN_HOSTS.indexOf(resolved.hostname) !== -1) {
+        return resolved.href;
+      }
+      return "account.html";
+    } catch (e) {
+      return "account.html";
+    }
   }
 
   document.addEventListener("DOMContentLoaded", function () {

@@ -1922,7 +1922,7 @@
     return api("/api/payments/verify/" + encodeURIComponent(reference))
       .then(function (verifyResult) {
         if (!verifyResult.ok || !verifyResult.data.success) {
-          throw new Error(t("booking.paymentFailed"));
+          throw new Error(t("booking.paymentFailed") + " (" + reference + ")");
         }
         var payload = buildRidePayload({ paymentMethod: "card", paymentReference: reference });
 
@@ -1933,7 +1933,13 @@
         });
       })
       .then(function (rideResult) {
-        if (!rideResult.ok) throw new Error(t("booking.paymentFailed"));
+        if (!rideResult.ok) {
+          // The card may already have been charged. Say what the server said
+          // and always show the reference, so the rider does not pay twice and
+          // support can find the payment.
+          var serverReason = rideResult.data && rideResult.data.error ? rideResult.data.error + " " : "";
+          throw new Error(serverReason + t("booking.paymentFailed") + " (" + reference + ")");
+        }
         createdRide = rideResult.data.ride;
         var rideId = createdRide.id;
         return api("/api/rides/" + rideId + "/payment", {
