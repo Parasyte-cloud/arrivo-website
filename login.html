@@ -240,7 +240,7 @@
     //   2. Add that same string to APPLE_BUNDLE_IDS on Render (comma-separated
     //      alongside com.arrivo.app,com.arrivo.driver) — the backend checks
     //      the token's audience against that list.
-    var APPLE_WEB_SERVICES_ID = "";
+    var APPLE_WEB_SERVICES_ID = "com.ridearrivo.web";
 
     function handleAppleCredential(idToken) {
       submitOAuth("/api/auth/apple", { identityToken: idToken, role: "rider", agreedToTerms: true });
