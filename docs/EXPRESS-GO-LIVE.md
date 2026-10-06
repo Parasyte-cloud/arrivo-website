@@ -2,6 +2,17 @@
 
 This is the plan, the reasoning, and the exact steps. It replaces the earlier "separate login on the subdomain" design.
 
+## 0. The pull requests (merge in this order)
+
+| Order | PR | What | Merge when |
+|---|---|---|---|
+| 1 | Arrivo #50 (backend) | Shared login cookie, CORS, rate limits, fare guard, stale-matched fix | Reviewed and tested on staging; then set `SESSION_COOKIE_DOMAIN` and `NODE_ENV` on Render |
+| 2 | arrivo-website #31 | Express hardening, shared login, standalone build, this guide | Review approved |
+| 3 | arrivo-website #42 | Switch website to `api.ridearrivo.com` | `api.ridearrivo.com` is live on Render with a valid certificate |
+| 4 | arrivo-website #43 | Link cutover and 301 from `/express.html` | Express is live on its subdomain and the smoke test passed |
+
+#42 and #43 are drafts based on #31's branch; GitHub retargets them to `main` after #31 merges. The two `.patch` files in `docs/backend-patches/` are the same changes as #50, kept for reference.
+
 ## 1. The architecture and why
 
 ```
