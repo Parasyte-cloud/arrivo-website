@@ -199,7 +199,7 @@ for (const rel of PAGES.map((p) => (p === "payment/callback/index.html" ? p : p)
   }
 }
 for (const f of fs.readdirSync(OUT)) {
-  if (/\.(html|js|css)$/.test(f) && fs.readFileSync(path.join(OUT, f), "utf8").includes("—")) {
+  if (/\.(html|js|css)$/.test(f) && fs.readFileSync(path.join(OUT, f), "utf8").includes(String.fromCharCode(0x2014))) {
     die("em dash found in " + f);
   }
 }
