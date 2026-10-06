@@ -2,7 +2,25 @@
   "use strict";
 
   // ── Configuration ────────────────────────────────────────────────────
-  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com"; // same as booking.js/script.js
+  // Deployment settings come from express-config.js (loaded before this
+  // file). The standalone express.ridearrivo.com build ships its own copy of
+  // that file; the main-site copy just holds these same defaults, so this
+  // page behaves identically on both hosts.
+  var CFG = window.ARRIVO_EXPRESS_CONFIG || {};
+  var API_BASE_URL = CFG.apiBase || "https://arrivo-backend-g1ku.onrender.com"; // same as booking.js/script.js
+  var LOGIN_PATH = CFG.loginPath || "login.html";
+  var ACCOUNT_PATH = CFG.accountPath || "account.html";
+  var TRACK_PATH = CFG.trackPath || "track.html";
+  var SELF_PATH = CFG.selfPath || "express.html";
+
+  // localStorage throws in some private-browsing modes and when site data is
+  // blocked. Every read/write goes through these so the page still works
+  // (the visitor just isn't remembered) instead of dying mid-init.
+  var store = {
+    get: function (k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* ignore */ } },
+    remove: function (k) { try { window.localStorage.removeItem(k); } catch (e) { /* ignore */ } },
+  };
 
   var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt"];
   var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT" };
@@ -58,12 +76,16 @@
       var value = getNested(dict, el.getAttribute("data-i18n-placeholder"));
       if (value != null) el.setAttribute("placeholder", value);
     });
+    document.querySelectorAll("[data-i18n-aria-label]").forEach(function (el) {
+      var value = getNested(dict, el.getAttribute("data-i18n-aria-label"));
+      if (value != null) el.setAttribute("aria-label", value);
+    });
     document.querySelectorAll(".lang-opt").forEach(function (btn) {
       btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
     });
     var label = document.getElementById("langTriggerLabel");
     if (label) label.textContent = LANG_LABELS[lang] || lang.toUpperCase();
-    localStorage.setItem(LANG_KEY, lang);
+    store.set(LANG_KEY, lang);
 
     // Re-render anything that mixes translated copy with live values --
     // static data-i18n swaps above don't cover these.
@@ -83,7 +105,7 @@
   }
 
   function initLanguage() {
-    var saved = localStorage.getItem(LANG_KEY);
+    var saved = store.get(LANG_KEY);
     var browserLang = (navigator.language || "en").slice(0, 2);
     var detected = SUPPORTED_LANGS.indexOf(browserLang) !== -1 ? browserLang : "en";
     applyLanguage(saved || detected);
@@ -159,11 +181,24 @@
       headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     }).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
+        // A 401 on any authenticated call means the saved token is dead.
+        // Handle it in one place so no step of the flow can strand the
+        // rider on a spinner or a vague error.
+        if (res.status === 401 && options.headers && options.headers.Authorization) sessionExpired();
         return { ok: res.ok, status: res.status, data: data };
       });
     }).catch(function () {
       return { ok: false, status: 0, data: { error: t("arrivoExpress.networkError") } };
     });
+  }
+
+  var redirectingToLogin = false;
+  function sessionExpired() {
+    if (redirectingToLogin) return;
+    redirectingToLogin = true;
+    stopPolling();
+    store.remove("arrivo_rider_token");
+    window.location.href = LOGIN_PATH + "?next=" + encodeURIComponent(SELF_PATH);
   }
 
   function authHeader() {
@@ -188,6 +223,7 @@
     pollTimer: null,
     lastKnownStatus: null,
     pollFailures: 0,
+    booted: false,
   };
 
   var CARD_IDS = ["authGate", "unavailableCard", "loadingCard", "loadErrorCard", "pickerCard", "quoteCard", "searchingCard"];
@@ -197,6 +233,14 @@
       var el = document.getElementById(cid);
       if (el) el.hidden = cid !== id;
     });
+    // Move keyboard/screen-reader focus to the new card's heading so a
+    // step change is announced instead of silently swapping content.
+    var shown = document.getElementById(id);
+    var heading = shown && shown.querySelector("h2, p.error-text");
+    if (heading) {
+      heading.setAttribute("tabindex", "-1");
+      if (state.booted) heading.focus({ preventScroll: true });
+    }
     // Bring the shared map along to whichever card is now visible -- see
     // initRouteMap's comment on why this is one reparented div rather than
     // a map instance per card.
@@ -262,19 +306,38 @@
     });
   }
 
+  function setPickup(r) {
+    var el = document.getElementById("rnPickup");
+    state.pickup = r.address;
+    state.pickupLatLng = { lat: r.lat, lng: r.lng };
+    if (el) el.value = r.address;
+    updateMapMarkers();
+  }
+
   // Google's script tag calls this once the Maps JS API has loaded (see
   // express.html's script tag, callback=initGoogleMaps) -- same global
   // callback name booking.js uses, safe because the two pages never load
   // together.
+  // Typing over a chosen address invalidates the coordinates that came with
+  // it. Without this, editing the text after picking a suggestion would
+  // quote and charge for the OLD place while showing the NEW text.
+  function watchManualEdits() {
+    var pickupEl = document.getElementById("rnPickup");
+    var destEl = document.getElementById("rnDestination");
+    if (pickupEl) pickupEl.addEventListener("input", function () {
+      if (pickupEl.value.trim() !== state.pickup) { state.pickupLatLng = null; clearMarker("pickup"); }
+    });
+    if (destEl) destEl.addEventListener("input", function () {
+      if (destEl.value.trim() !== state.destination) { state.destinationLatLng = null; clearMarker("destination"); }
+    });
+  }
+
   window.initGoogleMaps = function () {
     placesReady = true;
     var pickupEl = document.getElementById("rnPickup");
     var destEl = document.getElementById("rnDestination");
     attachPlacesAutocomplete(pickupEl, function (r) {
-      state.pickup = r.address;
-      state.pickupLatLng = { lat: r.lat, lng: r.lng };
-      if (pickupEl) pickupEl.value = r.address;
-      updateMapMarkers();
+      setPickup(r);
     });
     attachPlacesAutocomplete(destEl, function (r) {
       state.destination = r.address;
@@ -304,7 +367,8 @@
     if (!mapEl) return;
 
     if (!window.google || !window.google.maps) {
-      if (errEl) errEl.hidden = false;
+      // Not loaded YET is normal (script is async); checkMapsLoaded decides
+      // when to give up and show the error.
       return;
     }
 
@@ -383,6 +447,18 @@
     }
   }
 
+  function clearMarker(which) {
+    if (which === "pickup" && pickupMarker) { pickupMarker.setMap(null); pickupMarker = null; }
+    if (which === "destination" && destinationMarker) { destinationMarker.setMap(null); destinationMarker = null; }
+    clearRouteLines();
+  }
+
+  var fallbackLine = null;
+  function clearRouteLines() {
+    if (fallbackLine) { fallbackLine.setMap(null); fallbackLine = null; }
+    if (directionsRenderer) directionsRenderer.set("directions", null);
+  }
+
   function drawRoute() {
     if (!directionsService || !directionsRenderer || !googleMapInstance) return;
     directionsService.route({
@@ -390,12 +466,23 @@
       destination: state.destinationLatLng,
       travelMode: google.maps.TravelMode.DRIVING,
     }, function (result, status) {
+      // Ignore a late answer for addresses the rider has since changed.
+      if (!state.pickupLatLng || !state.destinationLatLng) return;
+      if (fallbackLine) { fallbackLine.setMap(null); fallbackLine = null; }
       if (status === "OK") {
         directionsRenderer.setDirections(result);
         return;
       }
-      // No drivable route found, or a transient API error -- still show
-      // both pins so the map isn't left blank, just without a drawn line.
+      // Directions unavailable (API not enabled for this key, no drivable
+      // route, or a transient error): show both pins joined by a dashed
+      // straight line so the map still reads as a trip, and fit both in view.
+      directionsRenderer.set("directions", null);
+      fallbackLine = new google.maps.Polyline({
+        map: googleMapInstance,
+        path: [state.pickupLatLng, state.destinationLatLng],
+        strokeOpacity: 0,
+        icons: [{ icon: { path: "M 0,-1 0,1", strokeOpacity: 0.8, strokeColor: "#12123B", scale: 3 }, offset: "0", repeat: "14px" }],
+      });
       var bounds = new google.maps.LatLngBounds();
       bounds.extend(state.pickupLatLng);
       bounds.extend(state.destinationLatLng);
@@ -412,9 +499,17 @@
       setTimeout(function () { checkMapsLoaded(attemptsLeft - 1); }, 300);
       return;
     }
+    showMapsError();
+  }
+
+  function showMapsError() {
     var errEl = document.getElementById("mapsError");
     if (errEl) errEl.hidden = false;
   }
+
+  // Google calls this when the key is rejected (referrer not allowed, API
+  // not enabled, billing off). Treated like a load failure.
+  window.gm_authFailure = function () { showMapsError(); };
 
   // ───────────────────────── Quote / booking flow ────────────────────
   function buildTrip() {
@@ -474,6 +569,40 @@
     });
   }
 
+  function useMyLocation() {
+    var err = document.getElementById("pickerError");
+    var btn = document.getElementById("useLocationBtn");
+    err.hidden = true;
+    if (!navigator.geolocation) {
+      err.textContent = t("arrivoExpress.locationFailed");
+      err.hidden = false;
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = t("arrivoExpress.locating");
+    function done() {
+      btn.disabled = false;
+      btn.textContent = t("arrivoExpress.useMyLocation");
+    }
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      var lat = pos.coords.latitude;
+      var lng = pos.coords.longitude;
+      api("/api/places/reverse-geocode?lat=" + encodeURIComponent(lat) + "&lng=" + encodeURIComponent(lng), { headers: authHeader() }).then(function (result) {
+        done();
+        if (!result.ok || !result.data.address) {
+          err.textContent = t("arrivoExpress.locationFailed");
+          err.hidden = false;
+          return;
+        }
+        setPickup({ address: result.data.address, lat: lat, lng: lng });
+      });
+    }, function (e) {
+      done();
+      err.textContent = e && e.code === 1 ? t("arrivoExpress.locationDenied") : t("arrivoExpress.locationFailed");
+      err.hidden = false;
+    }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+  }
+
   function renderQuote(skipWalletCheck) {
     var q = state.quote;
     var tierConfig = state.tiers.filter(function (tr) { return tr.key === state.selectedTier; })[0];
@@ -481,8 +610,8 @@
     document.getElementById("quoteTierLabel").textContent = tierConfig ? tierText(tierConfig, "label") : state.selectedTier;
     document.getElementById("quoteZoneTag").style.display = q.zone === "yellow" ? "inline-block" : "none";
     document.getElementById("quoteRoute").textContent = state.pickup + " → " + state.destination;
-    document.getElementById("quoteDistance").textContent = tFormat("arrivoExpress.distanceKm", { distance: q.distanceKm != null ? q.distanceKm.toFixed(1) : "N/A" });
-    document.getElementById("quoteDuration").textContent = tFormat("arrivoExpress.durationMin", { duration: Math.round(q.durationMin) });
+    document.getElementById("quoteDistance").textContent = tFormat("arrivoExpress.distanceKm", { distance: typeof q.distanceKm === "number" ? q.distanceKm.toFixed(1) : "N/A" });
+    document.getElementById("quoteDuration").textContent = tFormat("arrivoExpress.durationMin", { duration: Math.round(Number(q.durationMin) || 0) });
     document.getElementById("quoteFare").textContent = formatNaira(q.fareNaira);
     document.getElementById("quoteError").hidden = true;
 
@@ -493,6 +622,11 @@
     // not re-checking the wallet balance again.
     if (skipWalletCheck) return;
 
+    refreshWalletNote();
+  }
+
+  function refreshWalletNote() {
+    var q = state.quote;
     var confirmBtn = document.getElementById("confirmRideBtn");
     var note = document.getElementById("walletBalanceNote");
     confirmBtn.disabled = true;
@@ -511,7 +645,7 @@
       } else {
         note.innerHTML =
           tFormat("arrivoExpress.walletBalanceInsufficient", { balance: formatNaira(balance) }) +
-          ' <a href="account.html">' + escapeHtml(t("arrivoExpress.topUpWalletLink")) + "</a>";
+          ' <a href="' + ACCOUNT_PATH + '">' + escapeHtml(t("arrivoExpress.topUpWalletLink")) + "</a>";
         confirmBtn.disabled = true;
       }
     });
@@ -528,7 +662,10 @@
     api("/api/instant-rides", {
       method: "POST",
       headers: authHeader(),
-      body: JSON.stringify(buildTrip()),
+      // expectedFareNaira lets the server refuse (409 FARE_CHANGED) if live
+      // traffic pushed the fare up since the rider saw it. Older backends
+      // ignore the unknown field.
+      body: JSON.stringify(Object.assign(buildTrip(), { expectedFareNaira: state.quote ? state.quote.fareNaira : undefined })),
     }).then(function (result) {
       btn.textContent = t("arrivoExpress.confirmFindDriver");
 
@@ -555,9 +692,18 @@
           return;
         }
         btn.disabled = false;
+        if (result.data.code === "FARE_CHANGED" && result.data.fareNaira != null) {
+          state.quote.fareNaira = Number(result.data.fareNaira);
+          renderQuote(true);
+          document.getElementById("walletBalanceNote").textContent = "";
+          refreshWalletNote();
+          err.textContent = tFormat("arrivoExpress.fareChanged", { fare: formatNaira(state.quote.fareNaira) });
+          err.hidden = false;
+          return;
+        }
         if (result.data.code === "INSUFFICIENT_WALLET") {
           err.innerHTML = tFormat("arrivoExpress.walletBalanceInsufficient", { balance: formatNaira(result.data.balanceNaira || 0) }) +
-            ' <a href="account.html">' + escapeHtml(t("arrivoExpress.topUpWalletLink")) + "</a>";
+            ' <a href="' + ACCOUNT_PATH + '">' + escapeHtml(t("arrivoExpress.topUpWalletLink")) + "</a>";
         } else {
           err.textContent = result.data.error || t("arrivoExpress.bookError");
         }
@@ -590,6 +736,8 @@
     document.getElementById("searchingRoute").textContent = state.pickup + " → " + state.destination;
     document.getElementById("searchingFare").textContent = request && request.estimated_fare_naira != null ? formatNaira(request.estimated_fare_naira) : "";
     stopPolling();
+    state.pollFailures = 0;
+    setSearchingError("");
     pollActive();
     state.pollTimer = setInterval(pollActive, 4000);
   }
@@ -613,8 +761,7 @@
         state.pollFailures += 1;
         if (state.pollFailures >= MAX_POLL_FAILURES) {
           stopPolling();
-          window.alert(t("arrivoExpress.searchTimedOutTitle") + "\n\n" + t("arrivoExpress.searchTimedOutBody"));
-          resetToPicker();
+          resetToPicker(t("arrivoExpress.searchTimedOutTitle") + " " + t("arrivoExpress.searchTimedOutBody"));
         }
         return;
       }
@@ -627,8 +774,7 @@
         // see arrivo-backend services/instantWallet.js) or cancelled from
         // another tab/device.
         stopPolling();
-        window.alert(t("arrivoExpress.expiredBody"));
-        resetToPicker();
+        resetToPicker(t("arrivoExpress.expiredBody"));
         return;
       }
 
@@ -641,7 +787,7 @@
 
       if (request.status === "matched" && request.ride_id) {
         stopPolling();
-        window.location.href = "track.html?ride=" + request.ride_id;
+        window.location.href = TRACK_PATH + "?ride=" + request.ride_id;
       }
     });
   }
@@ -660,7 +806,7 @@
         // still live there. Keep polling and tell the rider, instead of
         // silently resetting to the picker while a driver could still be
         // matched underneath them.
-        window.alert(t("arrivoExpress.cantCancelTitle") + "\n\n" + t("arrivoExpress.cantCancelBody"));
+        setSearchingError(t("arrivoExpress.cantCancelTitle") + " " + t("arrivoExpress.cantCancelBody"));
         return;
       }
       stopPolling();
@@ -668,10 +814,25 @@
     });
   }
 
-  function resetToPicker() {
+  function setSearchingError(msg) {
+    var el = document.getElementById("searchingError");
+    if (!el) return;
+    el.textContent = msg || "";
+    el.hidden = !msg;
+  }
+
+  function resetToPicker(message) {
     state.quote = null;
     state.activeRequestId = null;
+    state.pollFailures = 0;
     showCard("pickerCard");
+    var err = document.getElementById("pickerError");
+    if (message) {
+      err.textContent = message;
+      err.hidden = false;
+    } else {
+      err.hidden = true;
+    }
   }
 
   // ───────────────────────── Init ────────────────────────────────────
@@ -688,11 +849,13 @@
     document.getElementById("confirmRideBtn").addEventListener("click", confirmRide);
     document.getElementById("backToPickerBtn").addEventListener("click", function () { showCard("pickerCard"); });
     document.getElementById("cancelSearchBtn").addEventListener("click", cancelSearch);
+    document.getElementById("useLocationBtn").addEventListener("click", useMyLocation);
+    watchManualEdits();
 
     // ArrivoExpress settles from the RideArrivo Wallet, so -- same rule
     // book.html already enforces for scheduled bookings -- a logged-in
     // account is required. No guest path here.
-    var savedToken = localStorage.getItem("arrivo_rider_token");
+    var savedToken = store.get("arrivo_rider_token");
     if (!savedToken) {
       showCard("authGate");
       return;
@@ -711,8 +874,7 @@
 
         if (statusResult.status === 401) {
           // Token expired/invalid -- same handling as book.html's initStep1.
-          localStorage.removeItem("arrivo_rider_token");
-          window.location.href = "login.html?next=express.html";
+          sessionExpired();
           return null;
         }
 
@@ -730,7 +892,7 @@
         var existing = activeResult.ok ? activeResult.data.request : null;
 
         if (existing && existing.status === "matched" && existing.ride_id) {
-          window.location.href = "track.html?ride=" + existing.ride_id;
+          window.location.href = TRACK_PATH + "?ride=" + existing.ride_id;
           return null;
         }
 
@@ -753,6 +915,7 @@
 
     document.getElementById("loadRetryBtn").addEventListener("click", loadEverything);
     loadEverything();
+    state.booted = true;
   });
 
   // Exposed for automated testing only.

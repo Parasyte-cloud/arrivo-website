@@ -26,7 +26,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=31">
 <link rel="stylesheet" href="booking.css?v=31">
-<link rel="stylesheet" href="express.css?v=1">
+<link rel="stylesheet" href="express.css?v=2">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -83,7 +83,7 @@
       <a href="book.html" data-i18n="nav.bookCta">Book a ride</a>
       <div class="nav-dropdown" id="servicesDropdown">
         <button type="button" class="nav-dropdown-trigger" id="servicesTrigger" aria-haspopup="true" aria-expanded="false">
-          Services
+          <span data-i18n="arrivoExpress.servicesLabel">Services</span>
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         </button>
         <ul class="nav-dropdown-menu" id="servicesMenu" role="menu" hidden>
@@ -152,7 +152,7 @@
   </div>
 
   <div class="booking-card" id="loadErrorCard" hidden style="text-align:center;">
-    <p class="error-text" id="loadErrorText" style="margin-bottom:14px;"></p>
+    <p class="error-text" id="loadErrorText" role="alert" style="margin-bottom:14px;"></p>
     <button type="button" class="btn btn-primary" id="loadRetryBtn" style="width:100%;" data-i18n="arrivoExpress.tryAgain">Try again</button>
   </div>
 
@@ -164,6 +164,7 @@
     <h2 style="font-size:19px; margin-top:22px; margin-bottom:6px;" data-i18n="arrivoExpress.whereTo">Where to?</h2>
     <label class="field-label" for="rnPickup" data-i18n="arrivoExpress.pickupPlaceholder">Pickup location</label>
     <input type="text" id="rnPickup" class="field" data-i18n-placeholder="arrivoExpress.pickupPlaceholder" placeholder="Pickup location" autocomplete="off">
+    <button type="button" class="btn btn-ghost rn-locate" id="useLocationBtn" data-i18n="arrivoExpress.useMyLocation">Use my current location</button>
     <label class="field-label" for="rnDestination" data-i18n="arrivoExpress.destinationPlaceholder">Destination</label>
     <input type="text" id="rnDestination" class="field" data-i18n-placeholder="arrivoExpress.destinationPlaceholder" placeholder="Destination" autocomplete="off">
 
@@ -171,9 +172,9 @@
          between this slot and #rnMapQuoteSlot below rather than creating a
          second Google Map instance per card, same one-map-instance idea as
          book.html's #routeMap. -->
-    <div id="rnMapPickerSlot"><div id="rnMap" class="route-map"></div></div>
-    <p class="error-text" id="mapsError" hidden data-i18n="booking.mapsUnavailable">Location search is unavailable right now. You can still type an address, but auto-complete won't work.</p>
-    <p class="error-text" id="pickerError" hidden></p>
+    <div id="rnMapPickerSlot"><div id="rnMap" class="route-map" role="img" aria-label="Map showing your pickup and destination" data-i18n-aria-label="arrivoExpress.mapAriaLabel"></div></div>
+    <p class="error-text" id="mapsError" hidden role="alert" data-i18n="arrivoExpress.mapsUnavailable">Location search is unavailable right now, so we can't set your pickup. Please check your connection and reload the page.</p>
+    <p class="error-text" id="pickerError" role="alert" hidden></p>
     <button type="button" class="btn btn-primary" id="seeFareBtn" style="width:100%; margin-top:10px;" data-i18n="arrivoExpress.seeFare">See fare</button>
   </div>
 
@@ -192,7 +193,7 @@
       <div class="rn-summary-row rn-total"><span data-i18n="arrivoExpress.totalFare">Total fare</span><span id="quoteFare"></span></div>
       <p class="rn-fine-print" id="walletBalanceNote"></p>
     </div>
-    <p class="error-text" id="quoteError" hidden></p>
+    <p class="error-text" id="quoteError" role="alert" hidden></p>
     <button type="button" class="btn btn-primary" id="confirmRideBtn" style="width:100%; margin-top:10px;" data-i18n="arrivoExpress.confirmFindDriver">Confirm and find a driver</button>
     <button type="button" class="btn btn-ghost" id="backToPickerBtn" style="width:100%; margin-top:8px;" data-i18n="arrivoExpress.back">Back</button>
   </div>
@@ -200,19 +201,20 @@
   <!-- SEARCHING -->
   <div class="booking-card" id="searchingCard" hidden style="text-align:center;">
     <div class="rn-spinner" aria-hidden="true"></div>
-    <h2 id="searchingStatus" style="font-size:19px; margin-top:12px;" data-i18n="arrivoExpress.statusSearching">Finding you a nearby driver…</h2>
+    <h2 id="searchingStatus" aria-live="polite" style="font-size:19px; margin-top:12px;" data-i18n="arrivoExpress.statusSearching">Finding you a nearby driver…</h2>
     <p class="rn-route" id="searchingRoute"></p>
     <p id="searchingFare" style="font-weight:700; font-size:20px; color:var(--amber);"></p>
+    <p class="error-text" id="searchingError" role="alert" hidden></p>
     <button type="button" class="btn btn-ghost" id="cancelSearchBtn" style="width:100%; margin-top:14px;" data-i18n="arrivoExpress.cancelRequest">Cancel request</button>
   </div>
   <section class="section section-tint cross-sell">
     <div class="wrap">
-      <span class="eyebrow">More from RideArrivo</span>
-      <h2>Going further than the city?</h2>
+      <span class="eyebrow" data-i18n="arrivoExpress.crossSellEyebrow">More from RideArrivo</span>
+      <h2 data-i18n="arrivoExpress.crossSellTitle">Going further than the city?</h2>
       <div class="cross-sell-ctas">
-        <a href="https://boat.ridearrivo.com" target="_blank" rel="noopener" class="btn btn-ghost">Charter a boat</a>
-        <a href="https://air.ridearrivo.com" target="_blank" rel="noopener" class="btn btn-ghost">Charter a jet</a>
-        <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" class="btn btn-primary">Join membership</a>
+        <a href="https://boat.ridearrivo.com" target="_blank" rel="noopener" class="btn btn-ghost" data-i18n="arrivoExpress.crossSellBoat">Charter a boat</a>
+        <a href="https://air.ridearrivo.com" target="_blank" rel="noopener" class="btn btn-ghost" data-i18n="arrivoExpress.crossSellAir">Charter a jet</a>
+        <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" class="btn btn-primary" data-i18n="arrivoExpress.crossSellMembership">Join membership</a>
       </div>
     </div>
   </section>
@@ -339,8 +341,9 @@
   </div>
 </footer>
 
-<script src="i18n.js?v=34"></script>
-<script src="express.js?v=2"></script>
+<script src="i18n.js?v=35"></script>
+<script src="express-config.js?v=1"></script>
+<script src="express.js?v=3"></script>
 <script src="clock.js"></script>
 <!-- Google Maps Places Autocomplete for the pickup/destination fields --
      same key already in use on book.html; confirm HTTP referrer
