@@ -1609,6 +1609,15 @@
   // route, so point them at it instead of leaving a dead end.
   function bookingErrorText(data) {
     if (!data) return "";
+    // The server refuses a reused key for a different trip. This really
+    // happens: a wallet booking commits, the response is lost so the key is
+    // never cleared, then the rider changes the destination. Drop the stored
+    // key so the next try starts clean, and say it in plain words instead of
+    // showing the raw server string.
+    if (data.reason === "idempotency_key_reused_for_different_booking") {
+      clearBookingIdempotencyKey();
+      return t("booking.idempotencyConflict");
+    }
     if (data.blockedByBookingWindow) {
       return data.error + (data.whatsappNumber ? " For a pickup sooner than that, message us on WhatsApp at " + data.whatsappNumber + " or pick a later time." : "");
     }
@@ -1770,6 +1779,11 @@
       .then(function (rideResult) {
         if (!rideResult.ok) throw new Error(t("booking.paymentFailed"));
         createdRide = rideResult.data.ride;
+        // The ride exists and the rider was charged, so this attempt is over
+        // whatever happens to the payment-sync call below. Clear the key now,
+        // not after that call, or a failed sync would leave it in
+        // sessionStorage for the next booking in this tab.
+        clearBookingIdempotencyKey();
         var rideId = createdRide.id;
         return api("/api/rides/" + rideId + "/payment", {
           method: "PATCH",
@@ -1791,7 +1805,6 @@
             "Please contact support with reference " + reference + " (Ride #" + (createdRide ? createdRide.id : "—") + ")."
           );
         }
-        clearBookingIdempotencyKey();
         document.getElementById("confirmRef").textContent = reference;
         if (createdRide && createdRide.fare_naira != null) {
           document.getElementById("confirmFare").textContent = formatRideFare(createdRide.fare_naira, createdRide.quoted_usd_amount);

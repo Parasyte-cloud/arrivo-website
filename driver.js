@@ -29,6 +29,18 @@
       });
   }
 
+  // api() rejects on a network failure (no catch of its own, on purpose: the
+  // polling code below handles that itself). Every button guard that disables
+  // a control uses this instead, so a dropped request resolves to a normal
+  // "not ok" result and the same re-enable + error path runs, instead of
+  // leaving the control disabled forever.
+  var NETWORK_ERROR_TEXT = "Couldn't reach the server. Check your connection and try again.";
+  function apiGuarded(path, options) {
+    return api(path, options).catch(function () {
+      return { ok: false, status: 0, data: { error: NETWORK_ERROR_TEXT } };
+    });
+  }
+
   function showSection(id) {
     document.querySelectorAll("#driverApp section").forEach(function (s) { s.classList.remove("active"); });
     document.getElementById(id).classList.add("active");
@@ -248,7 +260,7 @@
 
     var saveProfileBtn = document.getElementById("saveProfileBtn");
     saveProfileBtn.disabled = true;
-    api("/api/drivers/profile", {
+    apiGuarded("/api/drivers/profile", {
       method: "POST",
       body: JSON.stringify({
         licenseNumber: license, lasdriNumber: lasdri, insuranceNumber: insurance, spokenLanguages: langs || "en",
@@ -321,7 +333,7 @@
     }
     var photosContinue = document.getElementById("photosContinue");
     photosContinue.disabled = true;
-    api("/api/drivers/me", {
+    apiGuarded("/api/drivers/me", {
       method: "PATCH",
       body: JSON.stringify({
         profilePhotoDataUrl: docPhotos.profile,
@@ -357,7 +369,7 @@
 
     var submitApplicationBtn = document.getElementById("submitApplicationBtn");
     submitApplicationBtn.disabled = true;
-    api("/api/drivers/me", {
+    apiGuarded("/api/drivers/me", {
       method: "PATCH",
       body: JSON.stringify({
         emergencyContactName: emergencyName,
@@ -394,12 +406,15 @@
       var onlineToggle = document.getElementById("onlineToggle");
       var goingOnline = !onlineToggle.classList.contains("on");
       var errEl = document.getElementById("onlineError");
+      // onlineToggle is a <div class="toggle-switch">, not a form control, so
+      // .disabled would be ignored by the browser. Guard with a flag instead.
+      if (onlineToggle.getAttribute("aria-busy") === "true") return;
       errEl.hidden = true;
-      onlineToggle.disabled = true;
+      onlineToggle.setAttribute("aria-busy", "true");
 
-      api("/api/drivers/status", { method: "PATCH", body: JSON.stringify({ isOnline: goingOnline }) })
+      apiGuarded("/api/drivers/status", { method: "PATCH", body: JSON.stringify({ isOnline: goingOnline }) })
         .then(function (result) {
-          onlineToggle.disabled = false;
+          onlineToggle.removeAttribute("aria-busy");
           if (!result.ok) {
             errEl.hidden = false;
             errEl.textContent = result.data.error || "Couldn't update status.";
@@ -489,7 +504,7 @@
       var advanceBtn = document.getElementById("advanceBtn");
       advanceBtn.disabled = true;
       var nextStatus = isAccepted ? "in_progress" : "completed";
-      api("/api/rides/" + r.id + "/status", { method: "PATCH", body: JSON.stringify({ status: nextStatus }) })
+      apiGuarded("/api/rides/" + r.id + "/status", { method: "PATCH", body: JSON.stringify({ status: nextStatus }) })
         .then(function (result) {
           if (!result.ok) {
             advanceBtn.disabled = false;
@@ -583,7 +598,7 @@
       // input instead -- that's what circle's click handler calls .click()
       // on, so this still blocks a second upload firing mid-request.
       e.target.disabled = true;
-      api("/api/drivers/me", { method: "PATCH", body: JSON.stringify({ profilePhotoDataUrl: reader.result }) })
+      apiGuarded("/api/drivers/me", { method: "PATCH", body: JSON.stringify({ profilePhotoDataUrl: reader.result }) })
         .then(function (result) {
           e.target.disabled = false;
           if (result.ok) state.driver = result.data.driver;
@@ -598,7 +613,7 @@
     var phoneResult = driverProfilePhoneField.getValue();
     if (!phoneResult.valid) return;
     saveDriverContactBtn.disabled = true;
-    api("/api/drivers/me", { method: "PATCH", body: JSON.stringify({ whatsappNumber: phoneResult.full }) })
+    apiGuarded("/api/drivers/me", { method: "PATCH", body: JSON.stringify({ whatsappNumber: phoneResult.full }) })
       .then(function (result) {
         saveDriverContactBtn.disabled = false;
         if (!result.ok) return;
@@ -613,7 +628,7 @@
   document.getElementById("viewEarningsBtn").addEventListener("click", function () {
     var viewEarningsBtn = document.getElementById("viewEarningsBtn");
     viewEarningsBtn.disabled = true;
-    api("/api/drivers/earnings").then(function (result) {
+    apiGuarded("/api/drivers/earnings").then(function (result) {
       viewEarningsBtn.disabled = false;
       if (!result.ok) return;
       document.getElementById("earnMonth").textContent = "NGN " + Number(result.data.thisMonthNaira).toLocaleString();
