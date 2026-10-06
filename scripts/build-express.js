@@ -68,7 +68,9 @@ function copyDir(src, dst) {
 
 function stripLaunchGate(html) {
   let out = html
-    .replace(/\s*<script>\s*document\.documentElement\.classList\.add\("ra-launch-pending"\);[\s\S]*?<\/script>/, "")
+    // Any inline script that toggles the launch gate class, in either the
+    // original form or the later date-guarded form from the launch-gate PR.
+    .replace(/\s*<script>(?:(?!<\/script>)[\s\S])*ra-launch-pending(?:(?!<\/script>)[\s\S])*<\/script>/, "")
     .replace(/\s*<link rel="stylesheet" href="\/launch-countdown\.css[^"]*">/, "")
     .replace(/\s*<script src="\/launch-countdown\.js[^"]*" defer><\/script>/, "");
   return out;
@@ -204,7 +206,10 @@ for (const f of fs.readdirSync(OUT)) {
   }
 }
 if (missing.length) die("unresolved local references:\n  " + [...new Set(missing)].join("\n  "));
-if (/launch-countdown/.test(fs.readFileSync(path.join(OUT, "index.html"), "utf8"))) die("launch gate still present");
+{
+  const idx = fs.readFileSync(path.join(OUT, "index.html"), "utf8");
+  if (/launch-countdown|ra-launch-pending/.test(idx)) die("launch gate still present");
+}
 
 const count = (function walk(d) { return fs.readdirSync(d, { withFileTypes: true }).reduce((n, e) => n + (e.isDirectory() ? walk(path.join(d, e.name)) : 1), 0); })(OUT);
 console.log("Built " + count + " files into " + path.relative(ROOT, OUT));
