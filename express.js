@@ -316,6 +316,8 @@
     var confirmBtn = document.getElementById("confirmRideBtn");
     var note = document.getElementById("walletBalanceNote");
     confirmBtn.disabled = true;
+    confirmBtn.removeAttribute("data-topup");
+    confirmBtn.textContent = t("arrivoExpress.confirmFindDriver");
     note.textContent = t("arrivoExpress.walletBalanceChecking");
 
     api("/api/wallet", { headers: authHeader() }).then(function (result) {
@@ -332,7 +334,11 @@
         note.innerHTML =
           tFormat("arrivoExpress.walletBalanceInsufficient", { balance: formatNaira(balance) }) +
           ' <a href="account.html">' + escapeHtml(t("arrivoExpress.topUpWalletLink")) + "</a>";
-        confirmBtn.disabled = true;
+        // Not enough balance: don't leave a gold button that looks live but
+        // does nothing. Turn it into the one action that fixes the problem.
+        confirmBtn.disabled = false;
+        confirmBtn.setAttribute("data-topup", "1");
+        confirmBtn.textContent = t("arrivoExpress.topUpWalletLink");
       }
     });
   }
@@ -342,6 +348,10 @@
     err.hidden = true;
 
     var btn = document.getElementById("confirmRideBtn");
+    if (btn.getAttribute("data-topup")) {
+      window.location.href = "account.html";
+      return;
+    }
     btn.disabled = true;
     btn.textContent = t("arrivoExpress.bookingRide");
 
