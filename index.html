@@ -81,7 +81,7 @@
 <body>
 
 <!-- Real Liquid Glass needs actual refraction of what's behind it, not just
-     blur — this is the difference between "frosted panel" and "glass".
+     blur -- this is the difference between "frosted panel" and "glass".
      feTurbulence generates an organic noise field, feDisplacementMap uses it
      to warp the content underneath, the way light bends through curved
      glass. Applied via backdrop-filter: url(#liquid-glass-refraction). -->
@@ -525,7 +525,7 @@
         </span>
       </div>
       <script>
-        // Flip these on the moment each app is actually live — that's the
+        // Flip these on the moment each app is actually live -- that's the
         // whole change needed. Leave a badge's URL as null and it keeps
         // showing "Coming soon" exactly as before; fill one in and that
         // badge alone becomes a real clickable download link (each store
@@ -655,7 +655,7 @@
           link.href = "mailto:" + address;
           document.getElementById("footerEmailText").textContent = address;
 
-          // Same idea for the phone number — split apart in the HTML,
+          // Same idea for the phone number -- split apart in the HTML,
           // reassembled only once a real browser runs this script.
           var phoneLink = document.getElementById("footerPhoneLink");
           if (phoneLink) {

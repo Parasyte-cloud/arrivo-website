@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  // Live backend on Render. This used to point at localhost:4000 — harmless
+  // Live backend on Render. This used to point at localhost:4000 -- harmless
   // while testing locally, but it meant the waitlist "Notify me" form on the
   // live site silently failed for every real visitor, since a visitor's
   // browser can never reach the developer's own machine.
@@ -25,7 +25,7 @@
       var value = getNested(dict, el.getAttribute("data-i18n"));
       if (value == null) return;
       // A handful of strings intentionally contain <br> for line breaks in
-      // the headline — safe here since every value comes from our own
+      // the headline -- safe here since every value comes from our own
       // hardcoded dictionary above, never from user input.
       el.innerHTML = value;
     });
@@ -178,7 +178,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     // Homepage account link: shows "Register or Login" for a first-time
     // visitor, or routes straight to their profile if they're already
-    // signed in — checked fresh on every load, not cached in the markup.
+    // signed in -- checked fresh on every load, not cached in the markup.
     function initAccountNav() {
       var isLoggedIn = !!localStorage.getItem("arrivo_rider_token");
       var dest = isLoggedIn ? "account.html" : "login.html";
@@ -219,7 +219,7 @@
       });
       if (backdrop) backdrop.addEventListener("click", closeMenu);
 
-      // Close the menu after tapping a link — otherwise it stays open
+      // Close the menu after tapping a link -- otherwise it stays open
       // sitting over the section the visitor just navigated to.
       menu.querySelectorAll("a").forEach(function (link) {
         link.addEventListener("click", closeMenu);

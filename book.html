@@ -62,7 +62,7 @@
 <body>
 
 <!-- Real Liquid Glass needs actual refraction of what's behind it, not just
-     blur — this is the difference between "frosted panel" and "glass".
+     blur -- this is the difference between "frosted panel" and "glass".
      feTurbulence generates an organic noise field, feDisplacementMap uses it
      to warp the content underneath, the way light bends through curved
      glass. Applied via backdrop-filter: url(#liquid-glass-refraction). -->
@@ -172,7 +172,7 @@
         </button>
       </div>
 
-      <!-- "Full Day" can be booked for any number of consecutive days —
+      <!-- "Full Day" can be booked for any number of consecutive days --
            just type a number, the fare is calculated on checkout. No preset
            ceiling here; arrivo-backend/services/fare.js still enforces a
            generous sanity-check upper bound server-side (MAX_FULL_DAY_COUNT
@@ -204,7 +204,7 @@
         <p class="error-text" id="scheduledPickupError" hidden data-i18n="booking.scheduledPickupError">Please choose a pickup date and time in the future.</p>
       </div>
 
-      <!-- Shown for both Airport Pickup and Airport Drop-off — required
+      <!-- Shown for both Airport Pickup and Airport Drop-off -- required
            only for Pickup (it's the only way to track an arriving rider's
            flight); optional for Drop-off (useful for delay-awareness, not
            required since timing already comes from the scheduled time
@@ -385,7 +385,7 @@
         </button>
       </div>
       <!-- Only shown when even MAX_AUTO_VEHICLE_COUNT (6) of the selected
-           vehicle can't fit the group — previously said "add fleet
+           vehicle can't fit the group -- previously said "add fleet
            accompaniment", which is wrong: that's a flat escort/convoy
            add-on, not a way to carry more passengers. The real fix (booking
            multiple of the same vehicle) now happens automatically and
@@ -393,10 +393,10 @@
            range. -->
       <p class="error-text" id="vehicleCapacityError" hidden data-i18n="booking.vehicleCapacityError">This group is too large for us to automatically match to vehicles. Please contact RideArrivo directly to arrange a larger group booking.</p>
 
-      <!-- Luxury surcharge — matches arrivo-backend/services/fare.js's
+      <!-- Luxury surcharge -- matches arrivo-backend/services/fare.js's
            LUXURY_SURCHARGE_USD ($60 sedan / $100 suv), same as both apps.
            Only sedan/suv have a luxury tier (Executive/Pickup are already
-           the premium/cargo tiers) — hidden entirely for any other vehicle,
+           the premium/cargo tiers) -- hidden entirely for any other vehicle,
            toggled by updateLuxuryVisibility() whenever the vehicle
            selection changes. -->
       <label class="checkbox-row" id="luxuryRow" hidden>
@@ -476,7 +476,7 @@
         <span data-i18n="booking.confirmReference">Booking reference</span>
         <strong id="confirmRef"></strong>
       </div>
-      <!-- Previously this confirmation screen showed no fare at all — the
+      <!-- Previously this confirmation screen showed no fare at all -- the
            backend snapshots quoted_usd_amount/quoted_ngn_per_usd at booking
            time specifically so trip history shows what was actually quoted,
            but nothing on the website ever displayed it. -->
@@ -489,7 +489,7 @@
         <strong id="confirmBarcode"></strong>
       </div>
 
-      <!-- Only shown after an Airport Pickup ("one_way") booking — the
+      <!-- Only shown after an Airport Pickup ("one_way") booking -- the
            whole point of "if they know their expected time and day of
            return, book it at once" rather than making them come find
            Book a Ride again later. Never shown for a drop-off or charter
@@ -631,7 +631,7 @@
           link.href = "mailto:" + address;
           document.getElementById("footerEmailText").textContent = address;
 
-          // Same idea for the phone number — split apart in the HTML,
+          // Same idea for the phone number -- split apart in the HTML,
           // reassembled only once a real browser runs this script.
           var phoneLink = document.getElementById("footerPhoneLink");
           if (phoneLink) {
