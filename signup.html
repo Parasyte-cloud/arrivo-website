@@ -35,10 +35,14 @@
   .oauth-error { color: var(--coral, #e1523d); font-size: 12.5px; text-align: center; margin: 4px 0 0; }
 </style>
   <script>
-    document.documentElement.classList.add("ra-launch-pending");
-    window.setTimeout(function () {
-      document.documentElement.classList.remove("ra-launch-pending");
-    }, 5000);
+    // The launch gate only matters before launch day ends. After that, do not
+    // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
+    if (Date.now() < Date.parse("2026-09-12T14:30:00+01:00") || /[?&]launchTest=1/.test(location.search)) {
+      document.documentElement.classList.add("ra-launch-pending");
+      window.setTimeout(function () {
+        document.documentElement.classList.remove("ra-launch-pending");
+      }, 5000);
+    }
   </script>
   <link rel="stylesheet" href="/launch-countdown.css?v=20260912-02">
 </head>
@@ -72,6 +76,9 @@
     <input type="text" id="fCountry" class="field" placeholder="Country of residence" autocomplete="country-name">
     <input type="password" id="fPassword" class="field" placeholder="Password" autocomplete="new-password">
     <input type="password" id="fPasswordConfirm" class="field" placeholder="Confirm password" autocomplete="new-password">
+    <!-- Honeypot -- same pattern as index.html's waitlist form: real
+         visitors never see or fill this in, bots often do. -->
+    <input type="text" name="company" id="signupHoneypot" class="sr-only" tabindex="-1" autocomplete="off">
 
     <label class="checkbox-row">
       <input type="checkbox" id="fAgree">
@@ -99,7 +106,9 @@
 
   function api(path, options) {
     options = options || {};
-    return fetch(API_BASE_URL + path, options).then(function (res) {
+    // credentials:"include" lets the browser accept the shared single
+    // sign-on cookie the API sets for *.ridearrivo.com on login/signup.
+    return fetch(API_BASE_URL + path, Object.assign({ credentials: "include" }, options)).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
         return { ok: res.ok, status: res.status, data: data };
       });
@@ -108,7 +117,7 @@
 
   // "next" is attacker-controllable (anyone can link to
   // login.html?next=<anything>) and gets assigned straight to
-  // window.location.href after a real, successful login/signup — an
+  // window.location.href after a real, successful login/signup -- an
   // unvalidated value here is an open redirect: a phishing link that
   // reads as trustworthy (it's really ridearrivo.com) which, right after
   // the visitor authenticates for real, bounces them to an attacker's
@@ -118,17 +127,32 @@
   // shape: no scheme (blocks "javascript:", "https://…"), no leading "//"
   // or backslash (both are browser-recognized ways to point at a
   // different host from what looks like a relative path).
-  function isSafeNextPath(next) {
-    if (!next) return false;
-    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(next)) return false;
-    if (next.indexOf("//") === 0) return false;
-    if (next.indexOf("\\") !== -1) return false;
-    return true;
-  }
-
+  // Browsers throw away tabs, line breaks and leading spaces before reading a
+  // URL, so testing the raw text is unsafe ("/<TAB>/evil.com" reads as a path
+  // to a naive check, then as "//evil.com" to the browser). Let the browser's
+  // own URL parser decide: resolve the value against this page, then follow it
+  // only if it lands on this same site OR on one of OUR OWN sibling sites
+  // (express./move./air./boat./membership.) so shared sign-in can send the
+  // rider back where they came from. Exact host match, https only, no embedded
+  // credentials -- never "anything under ridearrivo.com".
+  var SSO_RETURN_HOSTS = ["ridearrivo.com", "www.ridearrivo.com", "express.ridearrivo.com",
+    "move.ridearrivo.com", "boat.ridearrivo.com", "air.ridearrivo.com", "membership.ridearrivo.com"];
   function getNextUrl() {
     var next = new URLSearchParams(window.location.search).get("next");
-    return isSafeNextPath(next) ? next : "account.html";
+    if (!next) return "account.html";
+    try {
+      var resolved = new URL(next, window.location.href);
+      if (resolved.origin === window.location.origin) {
+        return resolved.pathname + resolved.search + resolved.hash;
+      }
+      if (resolved.protocol === "https:" && !resolved.username && !resolved.password &&
+          SSO_RETURN_HOSTS.indexOf(resolved.hostname) !== -1) {
+        return resolved.href;
+      }
+      return "account.html";
+    } catch (e) {
+      return "account.html";
+    }
   }
 
   document.addEventListener("DOMContentLoaded", function () {
@@ -141,7 +165,13 @@
     var errEl = document.getElementById("signupError");
     var btn = document.getElementById("signupBtn");
 
+    var signupHoneypot = document.getElementById("signupHoneypot");
+
     btn.addEventListener("click", function () {
+      // Honeypot: real visitors never fill this hidden field in; bots
+      // often do. Bail out silently, same as the waitlist form.
+      if (signupHoneypot && signupHoneypot.value) return;
+
       var firstName = document.getElementById("fFirstName").value.trim();
       var lastName = document.getElementById("fLastName").value.trim();
       var email = document.getElementById("fEmail").value.trim();
@@ -199,7 +229,7 @@
 
     // ── Google / Apple sign-in ──
     // Unlike Login, Signup keeps the explicit "I agree" checkbox as the
-    // consent gate — the OAuth buttons stay visually disabled (and are
+    // consent gate -- the OAuth buttons stay visually disabled (and are
     // re-checked again in the callback below, not just at the CSS layer)
     // until it's ticked, so a brand-new account via Google/Apple can't be
     // created without agreeing to the privacy policy/terms, same as the
@@ -250,7 +280,7 @@
       submitOAuth("/api/auth/google", { idToken: response.credential, role: "rider", agreedToTerms: true });
     }
 
-    // See login.html's identical comment — Google's renderButton takes a
+    // See login.html's identical comment -- Google's renderButton takes a
     // fixed pixel width, not a percentage, and the hardcoded 300 overflowed
     // .auth-wrap/.booking-card's padding on narrow phones.
     function googleButtonWidth() {
@@ -269,7 +299,7 @@
 
     // See login.html for the same note: Sign in with Apple on web needs a
     // Services ID from Apple Developer before this can go live. Left blank
-    // on purpose — button stays hidden until it's configured.
+    // on purpose -- button stays hidden until it's configured.
     var APPLE_WEB_SERVICES_ID = "";
 
     function handleAppleCredential(idToken) {
@@ -299,7 +329,7 @@
           }
           AppleID.auth.signIn().then(function (res) {
             handleAppleCredential(res.authorization.id_token);
-          }).catch(function () { /* user cancelled — no error needed */ });
+          }).catch(function () { /* user cancelled -- no error needed */ });
         });
       } else if (attemptsLeft > 0) {
         setTimeout(function () { initAppleSignIn(attemptsLeft - 1); }, 150);

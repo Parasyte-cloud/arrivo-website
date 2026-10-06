@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  // Live backend on Render. This used to point at localhost:4000 — harmless
+  // Live backend on Render. This used to point at localhost:4000 -- harmless
   // while testing locally, but it meant the waitlist "Notify me" form on the
   // live site silently failed for every real visitor, since a visitor's
   // browser can never reach the developer's own machine.
@@ -25,7 +25,7 @@
       var value = getNested(dict, el.getAttribute("data-i18n"));
       if (value == null) return;
       // A handful of strings intentionally contain <br> for line breaks in
-      // the headline — safe here since every value comes from our own
+      // the headline -- safe here since every value comes from our own
       // hardcoded dictionary above, never from user input.
       el.innerHTML = value;
     });
@@ -75,6 +75,7 @@
 
     trigger.addEventListener("click", function (e) {
       e.stopPropagation();
+      closeServicesMenu();
       var isOpen = dropdown.classList.toggle("open");
       menu.hidden = !isOpen;
       trigger.setAttribute("aria-expanded", String(isOpen));
@@ -85,6 +86,44 @@
     });
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") closeLangMenu();
+    });
+  }
+
+  // ───────────────────────── Services nav dropdown ─────────────────────
+  // Same open/close pattern as the language dropdown above, just listing
+  // the four Arrivo products instead of languages. ArrivoBoat/ArrivoAir
+  // are rendered as non-interactive "Coming soon" rows (no href) until
+  // their subdomains are actually live -- per the rule that a product
+  // only gets a real CTA once it's fully built and deployed.
+  function closeServicesMenu() {
+    var dropdown = document.getElementById("servicesDropdown");
+    var menu = document.getElementById("servicesMenu");
+    var trigger = document.getElementById("servicesTrigger");
+    if (!dropdown || !menu) return;
+    dropdown.classList.remove("open");
+    menu.hidden = true;
+    if (trigger) trigger.setAttribute("aria-expanded", "false");
+  }
+
+  function initServicesDropdown() {
+    var dropdown = document.getElementById("servicesDropdown");
+    var trigger = document.getElementById("servicesTrigger");
+    var menu = document.getElementById("servicesMenu");
+    if (!dropdown || !trigger || !menu) return;
+
+    trigger.addEventListener("click", function (e) {
+      e.stopPropagation();
+      closeLangMenu();
+      var isOpen = dropdown.classList.toggle("open");
+      menu.hidden = !isOpen;
+      trigger.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    document.addEventListener("click", function (e) {
+      if (!dropdown.contains(e.target)) closeServicesMenu();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeServicesMenu();
     });
   }
 
@@ -139,7 +178,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     // Homepage account link: shows "Register or Login" for a first-time
     // visitor, or routes straight to their profile if they're already
-    // signed in — checked fresh on every load, not cached in the markup.
+    // signed in -- checked fresh on every load, not cached in the markup.
     function initAccountNav() {
       var isLoggedIn = !!localStorage.getItem("arrivo_rider_token");
       var dest = isLoggedIn ? "account.html" : "login.html";
@@ -180,7 +219,7 @@
       });
       if (backdrop) backdrop.addEventListener("click", closeMenu);
 
-      // Close the menu after tapping a link — otherwise it stays open
+      // Close the menu after tapping a link -- otherwise it stays open
       // sitting over the section the visitor just navigated to.
       menu.querySelectorAll("a").forEach(function (link) {
         link.addEventListener("click", closeMenu);
@@ -201,6 +240,7 @@
       }
     }
     safeRun(initLanguage, "initLanguage");
+    safeRun(initServicesDropdown, "initServicesDropdown");
     safeRun(initMobileNav, "initMobileNav");
     safeRun(initAccountNav, "initAccountNav");
     safeRun(initWaitlistForm, "initWaitlistForm");

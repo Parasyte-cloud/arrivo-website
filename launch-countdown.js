@@ -904,6 +904,17 @@
 
   async function init() {
     /*
+     * Launch day is over. Visitors after it get the normal site with no gate
+     * built at all, so nothing flashes on refresh or page navigation. The
+     * 30 minute margin covers a visitor whose clock runs a little slow.
+     * ?launchTest=1 still runs the 20 second rehearsal.
+     */
+    if (!TEST && Date.now() >= PROD_LAUNCH + 30 * 60 * 1000) {
+      document.documentElement.classList.remove("ra-launch-pending");
+      return;
+    }
+
+    /*
      * Build the gate immediately so
      * the underlying website cannot
      * flash on screen first.

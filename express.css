@@ -1,4 +1,4 @@
-/* ArrivoExpress page — small additions on top of booking.css's existing
+/* ArrivoExpress page -- small additions on top of booking.css's existing
    .booking-card / .vehicle-card / .field / .error-text, which this page
    reuses as-is for visual consistency with book.html. */
 
@@ -44,4 +44,17 @@
   font-size: 11.5px;
   color: var(--text-muted);
   margin-top: 2px;
+}
+
+.rn-locate { width: 100%; margin: 8px 0 4px; font-size: 13px; }
+.rn-locate:disabled { opacity: 0.6; cursor: wait; }
+
+/* Visible keyboard focus on the tier cards and the card headings that
+   receive programmatic focus on step changes (no ring for the latter, it
+   is a screen-reader cue, not an interactive control). */
+.vehicle-card:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.booking-card h2:focus, .booking-card .error-text:focus { outline: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rn-spinner { animation-duration: 2.4s; }
 }
