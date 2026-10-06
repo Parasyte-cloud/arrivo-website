@@ -360,7 +360,16 @@
     btn.disabled = true;
 
     api("/api/auth/me", { headers: authHeader() }).then(function (me) {
-      var email = me.ok && me.data && me.data.user && me.data.user.email ? me.data.user.email : "rider@ridearrivo.com";
+      // Paystack keys customer records off the email, so never take money
+      // under a placeholder address. If we can't tell who is paying, stop
+      // before the card popup opens and let the rider retry.
+      var email = me.ok && me.data && me.data.user && me.data.user.email;
+      if (!email) {
+        btn.disabled = false;
+        err.textContent = (me.data && me.data.error) || t("arrivoExpress.bookError");
+        err.hidden = false;
+        return;
+      }
 
       var handler = PaystackPop.setup({
         key: PAYSTACK_PUBLIC_KEY,
@@ -375,14 +384,29 @@
           }).then(function (result) {
             if (!result.ok) {
               btn.disabled = false;
-              err.textContent = result.data.error || tFormat("account.topUpNotConfirmed", { reference: response.reference });
+              // Always show the reference, even when the server gave a
+              // reason: a rider who was charged and then lost the verify
+              // call (network drop) needs it so support can trace the payment.
+              var reason = result.data && result.data.error ? result.data.error + " " : "";
+              err.textContent = reason + tFormat("account.topUpNotConfirmed", { reference: response.reference });
               err.hidden = false;
               return;
             }
-            // Paid and credited: clear the pay-by-card state and book.
+            // Paid and credited. The fare can move between the quote and
+            // now (night rate, traffic), so confirm the wallet still covers
+            // it before booking instead of failing right after they paid.
             btn.removeAttribute("data-topup");
             btn.disabled = false;
-            confirmRide();
+            api("/api/wallet", { headers: authHeader() }).then(function (w) {
+              var balance = w.ok ? Number(w.data.balanceNaira || 0) : null;
+              if (balance !== null && state.quote && balance < state.quote.fareNaira) {
+                renderQuote(); // re-checks the wallet and re-offers the (new) shortfall
+                err.textContent = t("arrivoExpress.topUpFareRose");
+                err.hidden = false;
+                return;
+              }
+              confirmRide();
+            });
           });
         },
         onClose: function () {
