@@ -1,0 +1,104 @@
+/* Booking, account, tracking, driver and legal pages in light and dark mode.
+   Loads after booking.css, home.css and auth.css. Light is the existing look;
+   this file only adds the dark values the old stylesheets hard-coded, and
+   makes every secondary button flat so nothing looks glossy or gold. */
+
+/* Secondary buttons: flat outline, no glass sheen, on every page */
+main .btn-ghost, .site-header .btn-ghost {
+  background: transparent;
+  background-image: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
+}
+main .btn-ghost::before, main .btn-ghost::after,
+.site-header .btn-ghost::before, .site-header .btn-ghost::after { display: none; }
+main .btn-ghost:hover { border-color: var(--amber); background: var(--glass-bg); }
+
+/* Every amber button, wherever it sits, is the same amber */
+main .btn-primary, main button.btn-primary { color: #12123B; }
+main .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+
+/* Dark mode */
+html[data-theme="dark"] .chip,
+html[data-theme="dark"] .booking-type-chip {
+  background: rgba(255,255,255,.07);
+  border-color: rgba(255,255,255,.18);
+  color: #F3F3FA;
+}
+html[data-theme="dark"] .chip.selected,
+html[data-theme="dark"] .booking-type-chip.selected {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: #12123B;
+}
+html[data-theme="dark"] .chip.selected strong,
+html[data-theme="dark"] .booking-type-chip.selected strong { color: #12123B; }
+html[data-theme="dark"] .addon-section,
+html[data-theme="dark"] .login-prompt,
+html[data-theme="dark"] .reference-box,
+html[data-theme="dark"] .fare-estimate-box {
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.14);
+  color: #F3F3FA;
+}
+html[data-theme="dark"] .location-permission-box { background: rgba(255,255,255,.07); }
+html[data-theme="dark"] .vehicle-card.selected { background: rgba(244,163,0,.14); }
+html[data-theme="dark"] .route-map { background: #12153A; }
+html[data-theme="dark"] .route-map:empty {
+  background: repeating-linear-gradient(45deg, #12153A, #12153A 10px, #181C48 10px, #181C48 20px);
+}
+html[data-theme="dark"] .review-total { border-top-color: rgba(255,255,255,.5); }
+html[data-theme="dark"] .confirm-icon { background: var(--amber); color: #12123B; }
+html[data-theme="dark"] .progress li { color: #A9ADC9; }
+html[data-theme="dark"] .progress li.active { color: #fff; }
+html[data-theme="dark"] .progress { border-color: rgba(255,255,255,.14); }
+html[data-theme="dark"] .field, html[data-theme="dark"] select, html[data-theme="dark"] textarea,
+html[data-theme="dark"] input[type="text"], html[data-theme="dark"] input[type="email"],
+html[data-theme="dark"] input[type="tel"], html[data-theme="dark"] input[type="number"],
+html[data-theme="dark"] input[type="password"], html[data-theme="dark"] input[type="date"],
+html[data-theme="dark"] input[type="time"], html[data-theme="dark"] input[type="datetime-local"] {
+  background: rgba(255,255,255,.07);
+  border-color: rgba(255,255,255,.18);
+  color: #F3F3FA;
+}
+html[data-theme="dark"] select option { background: #12153A; color: #F3F3FA; }
+html[data-theme="dark"] ::placeholder { color: #8E92B3; opacity: 1; }
+
+/* Legal pages */
+html[data-theme="dark"] .legal, html[data-theme="dark"] .legal h1,
+html[data-theme="dark"] .legal h2, html[data-theme="dark"] .legal h3 { color: #F3F3FA; }
+html[data-theme="dark"] .legal p, html[data-theme="dark"] .legal li { color: #D5D9EC; }
+html[data-theme="dark"] .legal a { color: #A9C0F5; }
+
+/* Emergency SOS: flat red in both themes, white text (never tied to the
+   error colour, which turns pale in dark mode). */
+html[data-theme] .panic-btn,
+html[data-theme] .panic-btn:hover,
+html[data-theme] .panic-btn:active {
+  background-image: none;
+  background-color: #B3261E;
+  color: #fff;
+  border-color: transparent;
+}
+html[data-theme] .panic-btn:hover { background-color: #8F1D14; }
+html[data-theme="dark"] .panic-countdown-row,
+html[data-theme="dark"] .panic-active-banner,
+html[data-theme="dark"] .panic-active {
+  background: rgba(255,120,100,.12);
+  border-color: rgba(255,154,139,.5);
+  color: #FFD2CB;
+}
+html[data-theme="dark"] .panic-cancel-btn { background: transparent; border-color: #FF9A8B; color: #FF9A8B; -webkit-backdrop-filter: none; backdrop-filter: none; }
+html[data-theme="dark"] .listening-btn { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.18); color: #F3F3FA; }
+html[data-theme="dark"] .listening-btn.is-active { background: rgba(169,192,245,.16); border-color: #A9C0F5; color: #CFE0FF; }
+html[data-theme="dark"] .listening-btn.is-error { color: #FF9A8B; border-color: #FF9A8B; }
+html[data-theme="dark"] .trip-meta { border-top-color: rgba(255,255,255,.12); }
+html[data-theme="dark"] .status-completed { background: rgba(169,192,245,.18); color: #CFE0FF; }
+html[data-theme="dark"] .status-cancelled { background: rgba(255,154,139,.16); color: #FF9A8B; }
+html[data-theme="dark"] .status-other { background: rgba(255,255,255,.1); color: #D5D9EC; }
+html[data-theme="dark"] .status-in_progress { background: rgba(111,216,200,.16); color: #6FD8C8; }
+html[data-theme="dark"] .status-accepted { background: rgba(244,163,0,.16); color: #F4A300; }
+html[data-theme="dark"] .map-link { background: rgba(255,255,255,.08); color: #6FD8C8; }
+html[data-theme="dark"] { --teal: #6FD8C8; --teal-tint: rgba(111,216,200,.14); }

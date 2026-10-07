@@ -4,6 +4,7 @@
   "use strict";
 
   function initServices() {
+    if (document.body.getAttribute("data-nav-wired") === "services") return; // booking.js already wires it
     var dd = document.getElementById("servicesDropdown");
     var trigger = document.getElementById("servicesTrigger");
     var menu = document.getElementById("servicesMenu");
