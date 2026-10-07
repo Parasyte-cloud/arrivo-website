@@ -14,6 +14,8 @@ const I18N = {
       bookCta: "Book a ride",
       cta: "Get notified",
       express: "ArrivoExpress",
+      removals: "Removals",
+      membership: "Membership",
     },
     footer: {
       tagline: "Lagos airport pickups, done right.",
@@ -452,6 +454,8 @@ const I18N = {
       bookCta: "Réserver une course",
       cta: "Être prévenu",
       express: "ArrivoExpress",
+      removals: "Déménagement",
+      membership: "Abonnement",
     },
     hero: {
       eyebrow: "L'arrivée à Lagos, bien faite",
@@ -885,6 +889,8 @@ I18N.zh = {
     bookCta: "预订行程",
     cta: "获取通知",
     express: "ArrivoExpress",
+    removals: "搬家服务",
+    membership: "会员",
   },
   hero: {
     eyebrow: "拉各斯机场接送，值得信赖",
@@ -1319,6 +1325,8 @@ I18N.de = {
     bookCta: "Fahrt buchen",
     cta: "Benachrichtigen",
     express: "ArrivoExpress",
+    removals: "Umzüge",
+    membership: "Mitgliedschaft",
   },
   hero: {
     eyebrow: "Flughafenabholung in Lagos, richtig gemacht",
@@ -1751,6 +1759,8 @@ I18N.hi = {
     bookCta: "राइड बुक करें",
     cta: "सूचित करें",
     express: "ArrivoExpress",
+    removals: "शिफ्टिंग सेवा",
+    membership: "सदस्यता",
   },
   hero: {
     eyebrow: "लागोस एयरपोर्ट पिकअप, सही तरीके से",
@@ -2183,6 +2193,8 @@ I18N.es = {
     bookCta: "Reservar un viaje",
     cta: "Notificarme",
     express: "ArrivoExpress",
+    removals: "Mudanzas",
+    membership: "Membresía",
   },
   hero: {
     eyebrow: "Recogidas en el aeropuerto de Lagos, bien hechas",
@@ -2615,6 +2627,8 @@ I18N.pt = {
     bookCta: "Reservar uma corrida",
     cta: "Notificar-me",
     express: "ArrivoExpress",
+    removals: "Mudanças",
+    membership: "Assinatura",
   },
   hero: {
     eyebrow: "Buscas no aeroporto de Lagos, bem feitas",
