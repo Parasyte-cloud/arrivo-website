@@ -407,6 +407,11 @@
   // track ETA), but multi-day charter bookings (full_day/week/month) have
   // no single flight to track, so they skip this question entirely rather
   // than being blocked by a required field that doesn't apply to them.
+  // Mirrors ON_THE_GO_ONLY_HOURS in arrivo-backend/services/bookingWindow.js.
+  // Under this many hours the API refuses a standard booking and offers On the
+  // Go. The backend also defines STANDARD_MIN_HOURS = 48 with 12 to 48 hours
+  // left as an open "gap" Ops has not ruled on: today those bookings are
+  // accepted. If Ops closes the gap, change this and the backend together.
   var MIN_STANDARD_BOOKING_HOURS = 12;
 
   function initStep2() {

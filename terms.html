@@ -49,7 +49,7 @@
 </head>
 <body>
 
-<a class="skip-link" href="#main">Skip to content</a>
+<a class="skip-link" href="#main" data-i18n="ui.skip">Skip to content</a>
 <header class="site-header">
   <div class="wrap header-inner">
     <a href="index.html" class="brand" aria-label="RideArrivo">
@@ -57,10 +57,10 @@
       <img width="1829" height="309" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark wm-on-light"><img width="1829" height="309" src="assets/ridearrivo-wordmark-light.png" alt="" class="brand-wordmark wm-on-dark" aria-hidden="true">
     </a>
 
-    <nav class="main-nav" aria-label="Primary">
-      <a href="index.html#how">How it works</a>
-      <a href="index.html#audiences">Who it's for</a>
-      <a href="index.html#safety">Safety</a>
+    <nav class="main-nav" aria-label="Primary" data-i18n-aria="ui.navPrimary">
+      <a href="index.html#how" data-i18n="nav.how">How it works</a>
+      <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
+      <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
       <div class="nav-dropdown" id="servicesDropdown">
         <button type="button" class="nav-dropdown-trigger" id="servicesTrigger" aria-haspopup="true" aria-expanded="false">
           <span>Services</span>
@@ -71,24 +71,24 @@
           <li><a href="https://move.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoRemovals</a></li>
           <li><a href="https://boat.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoBoat</a></li>
           <li><a href="https://air.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoAir</a></li>
-          <li><a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">Membership</a></li>
+          <li><a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" role="menuitem" data-i18n="nav.membership">Membership</a></li>
         </ul>
       </div>
     </nav>
 
-    <nav class="mobile-nav-menu" id="mobileNavMenu" aria-label="Mobile" hidden>
+    <nav class="mobile-nav-menu" id="mobileNavMenu" aria-label="Mobile" data-i18n-aria="ui.navMobile" hidden>
       <div class="mobile-nav-menu-header">
         <img width="1829" height="309" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark wm-on-light"><img width="1829" height="309" src="assets/ridearrivo-wordmark-light.png" alt="" class="brand-wordmark wm-on-dark" aria-hidden="true">
       </div>
-      <a href="index.html#how">How it works</a>
-      <a href="index.html#audiences">Who it's for</a>
-      <a href="index.html#safety">Safety</a>
-      <span class="mobile-nav-menu-label">Services</span>
+      <a href="index.html#how" data-i18n="nav.how">How it works</a>
+      <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
+      <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
+      <span class="mobile-nav-menu-label" data-i18n="ui.services">Services</span>
       <a href="express.html">ArrivoExpress</a>
       <a href="https://move.ridearrivo.com" target="_blank" rel="noopener">ArrivoRemovals</a>
       <a href="https://boat.ridearrivo.com" target="_blank" rel="noopener">ArrivoBoat</a>
       <a href="https://air.ridearrivo.com" target="_blank" rel="noopener">ArrivoAir</a>
-      <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener">Membership</a>
+      <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" data-i18n="nav.membership">Membership</a>
       <button type="button" class="theme-toggle theme-toggle-row" aria-label="Switch to dark mode"><svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span class="theme-toggle-text">Switch to dark mode</span></button>
       <a href="login.html" id="accountNavLinkMobile"><span id="accountNavLabelMobile">Register or Login</span></a>
     </nav>
@@ -102,8 +102,8 @@
         </svg>
         <span id="accountNavLabel">Register or Login</span>
       </a>
-      <a href="book.html" class="btn btn-primary btn-sm">Book a ride</a>
-      <button type="button" class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Menu" aria-expanded="false">
+      <a href="book.html" class="btn btn-primary btn-sm" data-i18n="nav.book">Book a ride</a>
+      <button type="button" class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Menu" data-i18n-aria="ui.menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     </div>
@@ -203,6 +203,7 @@
 </footer>
 
 <script src="pwa-register.js?v=32"></script>
+<script src="i18n-apply.js?v=1" defer></script>
 <script src="theme.js?v=3" defer></script>
 <script src="auth-header.js?v=2" defer></script>
 </body>

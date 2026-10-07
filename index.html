@@ -177,7 +177,7 @@
   </filter>
 </svg>
 
-<a class="skip-link" href="#main">Skip to content</a>
+<a class="skip-link" href="#main" data-i18n="ui.skip">Skip to content</a>
 
 <header class="site-header">
   <div class="wrap header-inner">
@@ -186,13 +186,13 @@
       <img width="1829" height="309" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark wm-on-light"><img width="1829" height="309" src="assets/ridearrivo-wordmark-light.png" alt="" class="brand-wordmark wm-on-dark" aria-hidden="true">
     </a>
 
-    <nav class="main-nav" aria-label="Primary">
+    <nav class="main-nav" aria-label="Primary" data-i18n-aria="ui.navPrimary">
       <a href="#how" data-i18n="nav.how">How it works</a>
       <a href="#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="#safety" data-i18n="nav.safety">Safety</a>
       <div class="nav-dropdown" id="servicesDropdown">
         <button type="button" class="nav-dropdown-trigger" id="servicesTrigger" aria-haspopup="true" aria-expanded="false">
-          Services
+          <span data-i18n="ui.services">Services</span>
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         </button>
         <ul class="nav-dropdown-menu" id="servicesMenu" role="menu" hidden>
@@ -205,14 +205,14 @@
       </div>
     </nav>
 
-    <nav class="mobile-nav-menu" id="mobileNavMenu" aria-label="Mobile" hidden>
+    <nav class="mobile-nav-menu" id="mobileNavMenu" aria-label="Mobile" data-i18n-aria="ui.navMobile" hidden>
       <div class="mobile-nav-menu-header">
         <img width="1829" height="309" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark wm-on-light"><img width="1829" height="309" src="assets/ridearrivo-wordmark-light.png" alt="" class="brand-wordmark wm-on-dark" aria-hidden="true">
       </div>
       <a href="#how" data-i18n="nav.how">How it works</a>
       <a href="#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="#safety" data-i18n="nav.safety">Safety</a>
-      <span class="mobile-nav-menu-label">Services</span>
+      <span class="mobile-nav-menu-label" data-i18n="ui.services">Services</span>
       <a href="https://express.ridearrivo.com/" target="_blank" rel="noopener" data-i18n="nav.express">ArrivoExpress</a>
       <a href="https://move.ridearrivo.com" target="_blank" rel="noopener" data-i18n="nav.removals">ArrivoRemovals</a>
       <a href="https://boat.ridearrivo.com" target="_blank" rel="noopener">ArrivoBoat</a>
@@ -248,7 +248,7 @@
         <span id="accountNavLabel">Register or Login</span>
       </a>
       <a href="book.html" class="btn btn-primary btn-sm" data-i18n="nav.bookCta">Book a ride</a>
-      <button type="button" class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Menu" aria-expanded="false">
+      <button type="button" class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Menu" data-i18n-aria="ui.menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     </div>
@@ -276,7 +276,7 @@
           <a href="#how" class="btn btn-ghost" data-i18n="hero.ctaSecondary">See how it works</a>
         </div>
         <p class="hero-family-label" data-i18n="home.familyLabel">Five ways to move, one RideArrivo</p>
-        <nav class="hero-chips" aria-label="RideArrivo services">
+        <nav class="hero-chips" aria-label="RideArrivo services" data-i18n-aria="ui.servicesAria">
           <a href="book.html" class="chip-primary">RideArrivo</a>
           <a href="https://express.ridearrivo.com/" target="_blank" rel="noopener" data-i18n="nav.express">ArrivoExpress</a>
           <a href="https://move.ridearrivo.com" target="_blank" rel="noopener" data-i18n="nav.removals">ArrivoRemovals</a>
@@ -287,7 +287,7 @@
 
       <form class="hero-form" id="heroQuoteForm" novalidate aria-labelledby="heroFormTitle">
         <h2 class="sr-only" id="heroFormTitle" data-i18n="home.formTitle">Plan your ride</h2>
-        <div class="hf-tabs" role="group" aria-label="Ride type">
+        <div class="hf-tabs" role="group" aria-label="Ride type" data-i18n-aria="ui.rideType">
           <button type="button" class="hf-tab is-active" data-mode="one_way" aria-pressed="true" data-i18n="home.formTabBook">Book a ride</button>
           <button type="button" class="hf-tab" data-mode="dropoff" aria-pressed="false" data-i18n="home.formTabSchedule">Schedule</button>
         </div>
@@ -327,8 +327,8 @@
       <div class="fleet-photo-frame">
         <img src="assets/fleet-vehicle.jpg" srcset="assets/fleet-vehicle-640.webp 640w, assets/fleet-vehicle-1000.webp 1000w" sizes="(min-width: 1100px) 1072px, 100vw" width="1800" height="1200" alt="A RideArrivo fleet vehicle" class="fleet-photo" loading="lazy" decoding="async">
         <div class="fleet-caption">
-          <span class="eyebrow eyebrow-light">Our fleet</span>
-          <h3>Real vehicles. Real drivers. Real Lagos.</h3>
+          <span class="eyebrow eyebrow-light" data-i18n="idx.fleetEyebrow">Our fleet</span>
+          <h3 data-i18n="idx.fleetTitle">Real vehicles. Real drivers. Real Lagos.</h3>
         </div>
       </div>
     </div>
@@ -439,8 +439,8 @@
   <!-- ============ SERVICES ============ -->
   <section class="section" id="services">
     <div class="wrap">
-      <span class="eyebrow">More ways to move</span>
-      <h2>One app. Four ways to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>.</h2>
+      <span class="eyebrow" data-i18n="idx.moreEyebrow">More ways to move</span>
+      <h2 data-i18n="idx.moreTitle">One app. Four ways to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>.</h2>
 
       <div class="cards services-cards">
         <a class="card service-card" href="https://express.ridearrivo.com/">
@@ -454,8 +454,8 @@
             </svg>
           </div>
           <h3>ArrivoExpress</h3>
-          <p>On-demand rides across Lagos. Choose Economy, Comfort, XL or Premium and get matched with a nearby verified driver in minutes, with live tracking.</p>
-          <span class="service-card-cta">Book a ride &rarr;</span>
+          <p data-i18n="idx.expressBody">On-demand rides across Lagos. Choose Economy, Comfort, XL or Premium and get matched with a nearby verified driver in minutes, with live tracking.</p>
+          <span class="service-card-cta" data-i18n="idx.expressCta">Book a ride &rarr;</span>
         </a>
         <a class="card service-card" href="https://move.ridearrivo.com" target="_blank" rel="noopener">
           <img class="service-card-photo" src="assets/services/move.webp" width="560" height="373" alt="A removal crew carrying wrapped furniture from a truck to a new home at sunset" loading="lazy" decoding="async">
@@ -481,8 +481,8 @@
             </svg>
           </div>
           <h3>ArrivoBoat</h3>
-          <p>Speedboat, yacht and water-taxi charters for point-to-point transfers, day trips and events, booked like a ride.</p>
-          <span class="service-card-cta">Request a charter &rarr;</span>
+          <p data-i18n="idx.boatBody">Speedboat, yacht and water-taxi charters for point-to-point transfers, day trips and events, booked like a ride.</p>
+          <span class="service-card-cta" data-i18n="idx.boatCta">Request a charter &rarr;</span>
         </a>
         <a class="card service-card" href="https://air.ridearrivo.com" target="_blank" rel="noopener">
           <img class="service-card-photo" src="assets/services/air.webp" width="560" height="373" alt="A passenger being welcomed aboard a private jet at sunset" loading="lazy" decoding="async">
@@ -492,8 +492,8 @@
             </svg>
           </div>
           <h3>ArrivoAir</h3>
-          <p>Private jet charters, one-way or round-trip, matched to the right aircraft class and priced on request.</p>
-          <span class="service-card-cta">Request a jet &rarr;</span>
+          <p data-i18n="idx.airBody">Private jet charters, one-way or round-trip, matched to the right aircraft class and priced on request.</p>
+          <span class="service-card-cta" data-i18n="idx.airCta">Request a jet &rarr;</span>
         </a>
       </div>
     </div>
@@ -504,12 +504,12 @@
     <div class="wrap">
       <div class="promo-band">
         <div class="promo-band-copy">
-          <span class="eyebrow">RideArrivo Membership</span>
-          <h2>Ride more, pay less, every single trip.</h2>
-          <p>Priority rides, cashback to your wallet on every trip, and perks built for how you actually move. Pick a plan and join the list.</p>
+          <span class="eyebrow" data-i18n="idx.memEyebrow">RideArrivo Membership</span>
+          <h2 data-i18n="idx.memTitle">Ride more, pay less, every single trip.</h2>
+          <p data-i18n="idx.memBody">Priority rides, cashback to your wallet on every trip, and perks built for how you actually move. Pick a plan and join the list.</p>
           <div class="promo-band-ctas">
-            <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" class="btn btn-primary">Join membership</a>
-            <a href="#services" class="btn btn-ghost">See all services</a>
+            <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" class="btn btn-primary" data-i18n="idx.memJoin">Join membership</a>
+            <a href="#services" class="btn btn-ghost" data-i18n="idx.memAll">See all services</a>
           </div>
         </div>
         <img class="promo-band-photo" src="assets/services/membership.webp" width="560" height="373" alt="A member in a hotel lounge holding a membership card and a phone" loading="lazy" decoding="async">
@@ -569,7 +569,7 @@
                 <path d="M9 12l2 2 4-4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
-            <h4 aria-level="3" data-i18n="safety.item1Title">Verified identity, every time</h4>
+            <h3 data-i18n="safety.item1Title">Verified identity, every time</h3>
             <p data-i18n="safety.item1Body">See your driver's name, photo, and verification status before they even arrive.</p>
           </li>
           <li class="safety-chip">
@@ -579,7 +579,7 @@
                 <circle cx="12" cy="10" r="2.3" stroke="currentColor" stroke-width="1.7"/>
               </svg>
             </div>
-            <h4 data-i18n="safety.item2Title">Live tracking, not a promise but a fact</h4>
+            <h3 data-i18n="safety.item2Title">Live tracking, not a promise but a fact</h3>
             <p data-i18n="safety.item2Body">Watch the actual route on a live map from pickup to drop-off.</p>
           </li>
           <li class="safety-chip">
@@ -591,7 +591,7 @@
                 <path d="M8 11l7.5-3.7M8 13l7.5 3.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
               </svg>
             </div>
-            <h4 data-i18n="safety.item3Title">Share your ride</h4>
+            <h3 data-i18n="safety.item3Title">Share your ride</h3>
             <p data-i18n="safety.item3Body">Send live trip details to someone you trust, in one tap.</p>
           </li>
           <li class="safety-chip">
@@ -602,7 +602,7 @@
                 <path d="M15.5 3.5l1.6 1.6-4 4-2.2-.6-.6-2.2 4-4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
               </svg>
             </div>
-            <h4 data-i18n="safety.item4Title">Vetted vehicles &amp; owners</h4>
+            <h3 data-i18n="safety.item4Title">Vetted vehicles &amp; owners</h3>
             <p data-i18n="safety.item4Body">Every vehicle in the network is tied to a documented, agreed vehicle-owner relationship, not an anonymous car.</p>
           </li>
         </ul>
@@ -626,7 +626,7 @@
       <h2 data-i18n="download.title">Be there on day one</h2>
       <p data-i18n="download.body">Riders can book on the web right now. If you're a driver, leave your email and we'll let you know the moment the mobile apps are live.</p>
 
-      <a href="driver.html" class="btn btn-primary" style="display:inline-block;margin-bottom:20px;">Driver Portal →</a>
+      <a href="driver.html" class="btn btn-primary" style="display:inline-block;margin-bottom:20px;" data-i18n="idx.driverBtn">Driver Portal →</a>
 
       <form class="waitlist-form" id="waitlistForm">
         <label for="waitlistEmail" class="sr-only" data-i18n="download.emailLabel">Email address</label>
@@ -732,14 +732,14 @@
     </div>
 
     <div class="footer-col">
-      <h4 aria-level="3" data-i18n="footer.companyHeading">Company</h4>
+      <h3 data-i18n="footer.companyHeading">Company</h3>
       <a href="#how" data-i18n="nav.how">How it works</a>
       <a href="#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="#safety" data-i18n="nav.safety">Safety</a>
     </div>
 
     <div class="footer-col">
-      <h4 data-i18n="footer.getStartedHeading">Get Started</h4>
+      <h3 data-i18n="footer.getStartedHeading">Get Started</h3>
       <a href="https://express.ridearrivo.com/" target="_blank" rel="noopener" data-i18n="nav.express">ArrivoExpress</a>
       <a href="https://move.ridearrivo.com" target="_blank" rel="noopener" data-i18n="nav.removals">ArrivoRemovals</a>
       <a href="https://boat.ridearrivo.com" target="_blank" rel="noopener">ArrivoBoat</a>
@@ -751,13 +751,13 @@
     </div>
 
     <div class="footer-col">
-      <h4 data-i18n="footer.legalHeading">Legal</h4>
+      <h3 data-i18n="footer.legalHeading">Legal</h3>
       <a href="privacy.html" data-i18n="footer.privacy">Privacy Policy</a>
       <a href="terms.html" data-i18n="footer.terms">Terms of Service</a>
     </div>
 
     <div class="footer-col">
-      <h4 data-i18n="footer.contactHeading">Contact</h4>
+      <h3 data-i18n="footer.contactHeading">Contact</h3>
       <a href="contact-us.html" class="footer-contact-link" data-i18n="footer.contactUs">Contact form</a>
       <a href="#" class="footer-contact-link" id="footerEmailLink" data-user="info" data-domain="ridearrivo.com">
         <svg class="footer-contact-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -811,11 +811,12 @@
   </div>
 </footer>
 
-<script src="i18n.js?v=39"></script>
+<script src="i18n.js?v=40"></script>
 <script src="script.js?v=32"></script>
 <script src="clock.js?v=32"></script>
 <script src="pwa-register.js?v=32"></script>
 <script src="glass-effects.js?v=32"></script>
+<script src="i18n-apply.js?v=1" defer></script>
 <script src="theme.js?v=3" defer></script>
   <script src="maps-config.js"></script>
   <script src="hero-form.js?v=7" defer></script>
