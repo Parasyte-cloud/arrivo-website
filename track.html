@@ -76,7 +76,7 @@
   <div class="booking-card" id="rideCard" hidden>
     <span class="status-pill" id="statusPill"></span>
     <p style="margin-top:10px; font-size:13.5px;"><strong data-i18n="track.pickupLabel">Pickup:</strong> <span id="pickupText"></span></p>
-    <!-- Only populated on the authenticated view (real GET /api/rides/:id) —
+    <!-- Only populated on the authenticated view (real GET /api/rides/:id) --
          never in the public ?share= mode above, which deliberately omits
          fare/payment fields from its response for anyone the rider shared
          the link with. -->
@@ -90,7 +90,15 @@
       </div>
     </div>
 
-    <a href="#" id="mapLink" class="map-link" target="_blank" rel="noopener noreferrer" style="display:none;" data-i18n="track.mapLink">📍 View driver's last known location</a>
+    <!-- Live driver-position map. #rideMapWrap stays hidden until a poll
+         actually returns current_lat/current_lng (same gating condition
+         #mapLink alone used before) -- the inline map is the primary view,
+         #mapLink underneath it is a fallback that needs no Maps JS at all
+         and opens the same point in the rider's own Google Maps app. -->
+    <div id="rideMapWrap" hidden>
+      <div id="rideMap" class="route-map"></div>
+      <a href="#" id="mapLink" class="map-link" target="_blank" rel="noopener noreferrer" data-i18n="track.mapLink">📍 View driver's last known location</a>
+    </div>
 
     <div id="fleetConvoyBlock" hidden style="margin-top:14px; border-top:1px solid #eee; padding-top:12px;">
       <p style="font-size:12px; font-weight:700; margin-bottom:6px;">Your fleet convoy</p>
@@ -103,7 +111,7 @@
 
   <!-- Flight cancelled/rescheduled (services/scheduler.js on the backend
        flags ride.flight_issue and refunds the original fare to the
-       rider's wallet) — prompts a top-up before the trip can start again,
+       rider's wallet) -- prompts a top-up before the trip can start again,
        with the fare re-charged at drop-off instead of upfront this time. -->
   <div class="booking-card" id="flightIssueCard" hidden style="border:1.5px solid var(--amber, #F4A300);">
     <h2 style="font-size:16px; margin-bottom:6px;" id="flightIssueTitle"></h2>
@@ -111,7 +119,7 @@
     <a href="account.html" class="btn btn-primary" style="width:100%; display:block; text-align:center; box-sizing:border-box;" data-i18n="track.topUpWallet">Top up wallet</a>
   </div>
 
-  <!-- "Rate & Relax" — one rating per completed trip. When the rated trip
+  <!-- "Rate & Relax" -- one rating per completed trip. When the rated trip
        was an Airport Pickup, also offers "keep the same driver & vehicle
        for my return trip" (keepSameDriver), carried over automatically to
        whatever drop-off ride later gets linked back to this one. -->
@@ -134,7 +142,7 @@
     </div>
   </div>
 
-  <!-- Optional post-trip tip — only shown once the ride is completed and
+  <!-- Optional post-trip tip -- only shown once the ride is completed and
        hasn't already been tipped. Never cash: wallet debits immediately,
        card goes through Paystack same as the fare itself. -->
   <div class="booking-card" id="tipCard" hidden>
@@ -264,7 +272,7 @@
   var urlParams = new URLSearchParams(window.location.search);
   var rideId = urlParams.get("ride");
   // A share=<token> link (see GET /api/rides/:id/share, and the rider
-  // app's TrackingScreen share button) needs no login at all — meant for
+  // app's TrackingScreen share button) needs no login at all -- meant for
   // someone RideArrivo has never heard of, like the emergency contact
   // named on the ride. Kept entirely separate from the ride=/token flow
   // below rather than reusing it, since the public endpoint intentionally
@@ -273,8 +281,24 @@
   // wallet top-up) that need the rider's own auth token to call.
   var shareToken = urlParams.get("share");
   var token = localStorage.getItem(TOKEN_KEY);
+
+  // The rider may be signed in by the shared single sign-on cookie (set when
+  // they logged in on any ridearrivo.com site) with no token in this origin's
+  // localStorage, so the token is optional: send it when we have it, and
+  // always send the cookie.
+  function authHeaders(extra) {
+    var h = extra || {};
+    if (token) h.Authorization = "Bearer " + token;
+    return h;
+  }
+  function authInit() {
+    return { credentials: "include", headers: authHeaders() };
+  }
+  function goToLogin() {
+    window.location.href = "login.html?next=" + encodeURIComponent(window.location.pathname + window.location.search);
+  }
   // PAYSTACK_PUBLIC_KEY now comes from paystack-config.js (loaded below,
-  // before this script runs) — this used to be its own hardcoded
+  // before this script runs) -- this used to be its own hardcoded
   // "pk_test_replace_me" placeholder that nobody remembered to update,
   // which silently disabled card tipping here while book.html had the
   // real live key. One shared value now, can't drift again.
@@ -299,7 +323,7 @@
 
   // Fleet Accompaniment convoy data (driver_name, make_model) below is
   // free text a driver typed during vehicle/profile setup, not something
-  // this rider controls — must be escaped before going into innerHTML, or
+  // this rider controls -- must be escaped before going into innerHTML, or
   // a malicious driver's name/vehicle string (e.g. an <img onerror>
   // payload) would execute in every rider's browser who views a shared
   // ride's convoy list, with full access to that rider's localStorage
@@ -311,9 +335,74 @@
     return div.innerHTML;
   }
 
+  // ───────────────────────── Live driver-position map ─────────────────────────
+  // Single Google Map, created lazily the first time we have a real driver
+  // position and the Maps script has actually finished loading -- both the
+  // authenticated refresh() and the public refreshPublic() below call this
+  // with whatever current_lat/current_lng the poll just returned, same
+  // fields #mapLink already relied on. No Places library needed here (no
+  // address search on this page), so the script tag near the end of body
+  // only loads core Maps.
+  var googleMapInstance = null;
+  var driverMarker = null;
+  var lastKnownPosition = null;
+
+  function updateRideMap(lat, lng) {
+    lastKnownPosition = { lat: lat, lng: lng };
+    var wrap = document.getElementById("rideMapWrap");
+    if (wrap) wrap.hidden = false;
+
+    // Maps script may still be loading -- #mapLink above already works
+    // without it, and initGoogleMaps (below) replays the last known
+    // position through here again the moment Maps is actually ready.
+    if (!window.google || !window.google.maps) return;
+
+    var mapEl = document.getElementById("rideMap");
+    if (!mapEl) return;
+
+    if (!googleMapInstance) {
+      googleMapInstance = new google.maps.Map(mapEl, {
+        center: lastKnownPosition,
+        zoom: 15,
+        disableDefaultUI: true,
+        zoomControl: true,
+      });
+    } else {
+      // The map may have just become visible (rideMapWrap was hidden) --
+      // Google Maps needs an explicit nudge to redraw at the right size.
+      google.maps.event.trigger(googleMapInstance, "resize");
+    }
+
+    if (!driverMarker) {
+      driverMarker = new google.maps.Marker({
+        map: googleMapInstance,
+        position: lastKnownPosition,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 9,
+          fillColor: "#0E7C7B",
+          fillOpacity: 1,
+          strokeColor: "#fff",
+          strokeWeight: 2,
+        },
+      });
+    } else {
+      driverMarker.setPosition(lastKnownPosition);
+    }
+    googleMapInstance.panTo(lastKnownPosition);
+  }
+
+  // Google's script tag below calls this once the Maps JS API has loaded.
+  // If a poll already came back with a position before that happened,
+  // replay it now instead of waiting up to POLL_INTERVAL_MS for the next
+  // poll to draw the map for the first time.
+  window.initGoogleMaps = function () {
+    if (lastKnownPosition) updateRideMap(lastKnownPosition.lat, lastKnownPosition.lng);
+  };
+
   if (shareToken) {
     // Public, read-only mode. No auth header, no polling of anything that
-    // needs the rider's own token — just status, driver, and live location.
+    // needs the rider's own token -- just status, driver, and live location.
     document.getElementById("sharedViewNote").hidden = false;
     ["panicBtn", "panicActiveMsg", "rateCard", "tipCard", "flightIssueCard"].forEach(function (id) {
       document.getElementById(id).hidden = true;
@@ -351,25 +440,24 @@
 
           var mapLink = document.getElementById("mapLink");
           if (ride.current_lat && ride.current_lng) {
-            mapLink.style.display = "block";
             mapLink.setAttribute("href", "https://www.google.com/maps?q=" + ride.current_lat + "," + ride.current_lng);
+            updateRideMap(Number(ride.current_lat), Number(ride.current_lng));
           }
         })
-        .catch(function () { /* transient — next poll will retry */ });
+        .catch(function () { /* transient -- next poll will retry */ });
     }
 
     refreshPublic();
     setInterval(refreshPublic, POLL_INTERVAL_MS);
   } else if (!rideId) {
     showError(t("track.noRideSpecified"));
-  } else if (!token) {
-    window.location.href = "login.html?next=" + encodeURIComponent(window.location.pathname + window.location.search);
   } else {
 
     function refresh() {
-      fetch(API_BASE_URL + "/api/rides/" + rideId, { headers: { Authorization: "Bearer " + token } })
-        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      fetch(API_BASE_URL + "/api/rides/" + rideId, authInit())
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, status: res.status, data: data }; }); })
         .then(function (result) {
+          if (result.status === 401) { localStorage.removeItem(TOKEN_KEY); goToLogin(); return; }
           if (!result.ok) {
             showError(result.data.error || t("track.couldntLoadRide"));
             return;
@@ -392,9 +480,9 @@
 
           // Fare shown here uses the locked quoted_usd_amount snapshotted at
           // booking time (routes/rides.js), not a live-recomputed FX
-          // estimate — same reasoning as the rider app's ActivityScreen and
+          // estimate -- same reasoning as the rider app's ActivityScreen and
           // the website's own post-booking confirmation screen. Only this
-          // authenticated block does this — the public ?share= view above
+          // authenticated block does this -- the public ?share= view above
           // deliberately never receives fare_naira at all.
           if (ride.fare_naira != null) {
             var fareText = "NGN " + Number(ride.fare_naira).toLocaleString();
@@ -412,8 +500,8 @@
 
           var mapLink = document.getElementById("mapLink");
           if (ride.current_lat && ride.current_lng) {
-            mapLink.style.display = "block";
             mapLink.setAttribute("href", "https://www.google.com/maps?q=" + ride.current_lat + "," + ride.current_lng);
+            updateRideMap(Number(ride.current_lat), Number(ride.current_lng));
           }
 
           if (ride.panic_triggered_at && !ride.panic_resolved_at) {
@@ -426,10 +514,10 @@
           refreshFlightIssueCard();
           refreshFleetConvoy();
         })
-        .catch(function () { /* transient — next poll will retry */ });
+        .catch(function () { /* transient -- next poll will retry */ });
     }
 
-    // Fleet Accompaniment convoy — only ever populated for a ride that
+    // Fleet Accompaniment convoy -- only ever populated for a ride that
     // actually has escort vehicles dispatched (fleet_group_id set by
     // createFleetCompanions on the backend). A no-op for the vast majority
     // of rides that aren't fleet bookings. Not shown in the public
@@ -437,7 +525,7 @@
     // /api/rides/:id/fleet requires the rider's own login.
     function refreshFleetConvoy() {
       if (!currentRide || !currentRide.fleet_group_id) return;
-      fetch(API_BASE_URL + "/api/rides/" + rideId + "/fleet", { headers: { Authorization: "Bearer " + token } })
+      fetch(API_BASE_URL + "/api/rides/" + rideId + "/fleet", authInit())
         .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
         .then(function (result) {
           if (!result.ok) return;
@@ -457,7 +545,7 @@
               driverPart + vehiclePart + "</span><span style=\"color:var(--text-muted);\">" + statusPart + "</span></div>";
           }).join("");
         })
-        .catch(function () { /* best-effort — leave whatever was last shown */ });
+        .catch(function () { /* best-effort -- leave whatever was last shown */ });
     }
 
     // ───────────────────────── Rate & Relax (post-trip) ─────────────────────────
@@ -505,6 +593,7 @@
     }
 
     document.getElementById("rateSendBtn").addEventListener("click", function () {
+      var rateSendBtn = document.getElementById("rateSendBtn");
       var errEl = document.getElementById("rateError");
       errEl.hidden = true;
       if (!starsSelected) {
@@ -512,6 +601,7 @@
         errEl.textContent = t("track.tapStarError");
         return;
       }
+      rateSendBtn.disabled = true;
       var comment = document.getElementById("rateComment").value.trim();
       var body = { rating: starsSelected, comment: comment || undefined };
       if (currentRide.booking_type === "one_way") {
@@ -519,12 +609,14 @@
       }
       fetch(API_BASE_URL + "/api/rides/" + rideId + "/rate", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        credentials: "include",
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(body),
       })
         .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
         .then(function (result) {
           if (!result.ok) {
+            rateSendBtn.disabled = false;
             errEl.hidden = false;
             errEl.textContent = result.data.error || t("track.couldntSubmitRating");
             return;
@@ -532,6 +624,7 @@
           refresh();
         })
         .catch(function () {
+          rateSendBtn.disabled = false;
           errEl.hidden = false;
           errEl.textContent = t("track.couldntSubmitRating");
         });
@@ -557,7 +650,7 @@
     }
 
     // ───────────────────────── Tipping (optional, post-trip) ─────────────────────────
-    // Never cash — same rails as the fare: an immediate wallet debit, or a
+    // Never cash -- same rails as the fare: an immediate wallet debit, or a
     // fresh Paystack card charge verified against Paystack directly (see
     // POST /api/rides/:id/tip on the backend). Same feature as the apps.
     function tipAmountNaira() {
@@ -585,15 +678,15 @@
       }
 
       // Fetch the rider's email (for the card charge) and wallet balance
-      // once, the first time the card becomes relevant — not on every poll.
+      // once, the first time the card becomes relevant -- not on every poll.
       if (riderEmail == null) {
-        fetch(API_BASE_URL + "/api/auth/me", { headers: { Authorization: "Bearer " + token } })
+        fetch(API_BASE_URL + "/api/auth/me", authInit())
           .then(function (res) { return res.json(); })
           .then(function (data) { if (data.user) riderEmail = data.user.email; })
           .catch(function () {});
       }
       if (walletBalanceNaira == null) {
-        fetch(API_BASE_URL + "/api/wallet", { headers: { Authorization: "Bearer " + token } })
+        fetch(API_BASE_URL + "/api/wallet", authInit())
           .then(function (res) { return res.json(); })
           .then(function (data) {
             if (data.balanceNaira != null) {
@@ -626,7 +719,8 @@
       var amountNaira = tipAmountNaira();
       return fetch(API_BASE_URL + "/api/rides/" + rideId + "/tip", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        credentials: "include",
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ amountNaira: amountNaira, paymentMethod: paymentMethod, paymentReference: paymentReference }),
       }).then(function (res) {
         return res.json().then(function (data) { return { ok: res.ok, data: data }; });
@@ -634,6 +728,7 @@
     }
 
     document.getElementById("tipSendBtn").addEventListener("click", function () {
+      var tipSendBtn = document.getElementById("tipSendBtn");
       var errEl = document.getElementById("tipError");
       errEl.hidden = true;
       var amountNaira = tipAmountNaira();
@@ -643,9 +738,15 @@
         return;
       }
 
+      // Disable immediately on click for both payment paths below, and
+      // only re-enable on a failure/error branch -- a fast double-click
+      // here could otherwise double-tip or open two Paystack popups.
+      tipSendBtn.disabled = true;
+
       if (tipMethod === "wallet") {
         applyTip("wallet").then(function (result) {
           if (!result.ok) {
+            tipSendBtn.disabled = false;
             errEl.hidden = false;
             errEl.textContent = result.data.error || t("track.tipFailed");
             return;
@@ -658,9 +759,10 @@
       // typeof-undefined check on PAYSTACK_PUBLIC_KEY itself (not just
       // PaystackPop) matters here: if paystack-config.js ever fails to load,
       // referencing PAYSTACK_PUBLIC_KEY.indexOf(...) directly would throw
-      // an uncaught ReferenceError instead of showing the message below —
+      // an uncaught ReferenceError instead of showing the message below --
       // same fix already applied to account.html's wallet top-up guard.
       if (typeof PaystackPop === "undefined" || typeof PAYSTACK_PUBLIC_KEY === "undefined" || PAYSTACK_PUBLIC_KEY.indexOf("replace_me") !== -1) {
+        tipSendBtn.disabled = false;
         errEl.hidden = false;
         errEl.textContent = t("track.cardTippingNotConfigured");
         return;
@@ -673,6 +775,7 @@
         callback: function (response) {
           applyTip("card", response.reference).then(function (result) {
             if (!result.ok) {
+              tipSendBtn.disabled = false;
               errEl.hidden = false;
               errEl.textContent = result.data.error || tFormat("track.cardChargedTipNotConfirmed", { reference: response.reference });
               return;
@@ -680,7 +783,8 @@
             refresh();
           });
         },
-        onClose: function () {},
+        // Rider closed the popup without tipping -- let them try again.
+        onClose: function () { tipSendBtn.disabled = false; },
       });
       handler.openIframe();
     });
@@ -693,7 +797,8 @@
 
       fetch(API_BASE_URL + "/api/rides/" + rideId + "/panic", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        credentials: "include",
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ note: "Triggered from web tracking page" }),
       })
         .then(function (res) {
@@ -714,7 +819,12 @@
     });
   }
 </script>
-<!-- Paystack's official inline checkout library — used for card tips only. -->
+<!-- Google Maps JS for the live driver-position map above -- core Maps only,
+     no Places library needed (no address search on this page). Same key
+     already in use on book.html/express.html; confirm HTTP referrer
+     restrictions in Google Cloud Console include ridearrivo.com. -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLWAbQmxIAoGPP0LLDp6oTosaHZBa0Y5s&callback=initGoogleMaps"></script>
+<!-- Paystack's official inline checkout library -- used for card tips only. -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
 </body>
