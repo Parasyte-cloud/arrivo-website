@@ -43,7 +43,7 @@ const API = process.env.API_BASE_URL || "https://api.ridearrivo.com";
 const PAGES = ["express.html", "privacy.html", "terms.html", "404.html"];
 const FILES = [
   "express.js", "express.css", "styles.css", "booking.css", "home.css", "i18n.js",
-  "theme.js", "header-move.js", "clock.js", "glass-effects.js", "pwa-register.js", "paystack-config.js",
+  "theme.js", "header-move.js", "clock.js", "glass-effects.js", "pwa-register.js", "paystack-config.js", "maps-config.js",
 ];
 const MAIN_ONLY = "login|signup|account|track|forgot-password|reset-password|verify-email";
 

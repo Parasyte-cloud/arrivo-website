@@ -13,7 +13,9 @@
   var form = document.getElementById("heroQuoteForm");
   if (!form) return;
 
-  var MAPS_KEY = "AIzaSyCLWAbQmxIAoGPP0LLDp6oTosaHZBa0Y5s"; // same browser key book.html uses (referrer-restricted)
+  // The browser key lives in maps-config.js (loaded by index.html), the one place
+  // it is kept. If that file is missing, suggestions are simply off.
+  var MAPS_KEY = window.GOOGLE_MAPS_BROWSER_KEY || "";
   var MIN_HOURS = 12; // same rule as booking.js MIN_STANDARD_BOOKING_HOURS
   var STORE_KEY = "arrivo_hero_quote";
 
@@ -223,6 +225,7 @@
   function loadMaps() {
     if (mapsRequested) return;
     mapsRequested = true;
+    if (!MAPS_KEY) return;
     if (window.google && window.google.maps && window.google.maps.places) { window.__heroPlacesReady(); return; }
     var s = document.createElement("script");
     s.async = true;
