@@ -803,6 +803,18 @@
     window.__googleMapsReady = true;
   };
 
+  // Google calls this when it rejects the key or the page's address. Without
+  // it the address boxes keep Google's "Sorry! Something went wrong" artwork
+  // and look frozen. Clear it, and say plainly that typing still works.
+  window.gm_authFailure = function () {
+    Array.prototype.forEach.call(document.querySelectorAll(".gm-err-autocomplete"), function (el) {
+      el.classList.remove("gm-err-autocomplete");
+      el.style.backgroundImage = "";
+    });
+    var errEl = document.getElementById("mapsError");
+    if (errEl) errEl.hidden = false;
+  };
+
   // ───────────────────────── Zone-based pricing ─────────────────────────
   // Only applies to one-way bookings. Full day/week/month bookings are
   // chauffeur-style flat-rate pricing and keep using the existing
@@ -1326,6 +1338,39 @@
     }
   }
 
+  // Homepage hero form: when the visitor typed an address and never picked a
+  // suggestion, ask Places for its coordinates. Fails quietly; the rider can
+  // still pick a suggestion by hand, which is what happened before this.
+  function resolvePresetCoords() {
+    var lookup = state.presetLookup;
+    if (!lookup || !window.google || !window.google.maps || !window.google.maps.places) return;
+    state.presetLookup = null;
+    var service;
+    try { service = new google.maps.places.PlacesService(document.createElement("div")); } catch (e) { return; }
+    function find(text, apply) {
+      service.findPlaceFromQuery({
+        query: text,
+        fields: ["geometry"],
+        locationBias: { center: { lat: 6.5244, lng: 3.3792 }, radius: 50000 },
+      }, function (results, status) {
+        if (status !== google.maps.places.PlacesServiceStatus.OK || !results || !results[0] || !results[0].geometry) return;
+        apply(results[0].geometry.location);
+        checkExcludedAreas();
+        recalculateFareEstimate();
+      });
+    }
+    var pickupInput = document.getElementById("fPickup");
+    var dropoffInput = document.getElementById("fDropoff");
+    if (lookup.pickup && pickupInput && pickupInput.value.trim()) {
+      var pText = pickupInput.value;
+      find(pText, function (loc) { if (pickupInput.value === pText && !state.pickupLatLng) state.pickupLatLng = loc; });
+    }
+    if (lookup.dropoff && dropoffInput && dropoffInput.value.trim()) {
+      var dText = dropoffInput.value;
+      find(dText, function (loc) { if (dropoffInput.value === dText && !state.dropoffLatLng) state.dropoffLatLng = loc; });
+    }
+  }
+
   function setupPlacesForStep4(attempsLeft) {
     if (attempsLeft === undefined) attempsLeft = 20; // ~6 seconds total before giving up
     if (window.google && window.google.maps && window.google.maps.places) {
@@ -1333,6 +1378,7 @@
       attachPlacesAutocomplete(document.getElementById("fDropoff"));
       Array.prototype.slice.call(document.querySelectorAll(".stop-input")).forEach(attachPlacesAutocomplete);
       initRouteMap();
+      resolvePresetCoords();
     } else if (attempsLeft > 0) {
       // The Maps script loads async and may not be ready the instant the
       // rider reaches this step -- poll briefly rather than giving up immediately.
@@ -1898,15 +1944,35 @@
   // duplicating what it sets).
   function initReturnDropoffPreset() {
     var params = new URLSearchParams(window.location.search);
-    if (params.get("preset") !== "dropoff") return;
+    var fromHeroStore = false;
+    if (!params.get("preset")) {
+      // The homepage form keeps the trip in sessionStorage too, because a
+      // signed-out visitor goes through the sign-in page first and the query
+      // string would be lost on the way back here.
+      try {
+        var saved = JSON.parse(sessionStorage.getItem("arrivo_hero_quote") || "null");
+        if (saved && saved.q && Date.now() - saved.t < 60 * 60 * 1000) {
+          params = new URLSearchParams(saved.q);
+          fromHeroStore = true;
+        }
+      } catch (e) { /* storage unavailable: the query string path still works */ }
+    }
+    var preset = params.get("preset");
+    // "dropoff" comes from the return-trip prompt above; "quick" comes from
+    // the homepage hero form (pickup, destination and, for a scheduled
+    // drop-off, a date and time).
+    if (preset !== "dropoff" && preset !== "quick") return;
 
-    var pickup = params.get("pickup") || "";
-    var destination = params.get("destination") || "";
+    var chipType = "dropoff";
+    if (preset === "quick") chipType = params.get("type") === "dropoff" ? "dropoff" : "one_way";
+
+    var pickup = (params.get("pickup") || "").slice(0, 200);
+    var destination = (params.get("destination") || "").slice(0, 200);
     var pickupLat = parseFloat(params.get("pickupLat"));
     var pickupLng = parseFloat(params.get("pickupLng"));
     var destinationLat = parseFloat(params.get("destinationLat"));
     var destinationLng = parseFloat(params.get("destinationLng"));
-    var linkedRideId = params.get("linkedRideId");
+    var linkedRideId = preset === "dropoff" ? params.get("linkedRideId") : null;
 
     state.pickup = pickup;
     state.stops = [destination];
@@ -1919,8 +1985,30 @@
     var dropoffInput = document.getElementById("fDropoff");
     if (dropoffInput) dropoffInput.value = destination;
 
-    var dropoffChip = document.querySelector('.booking-type-chip[data-type="dropoff"]');
-    if (dropoffChip) dropoffChip.click();
+    // Typed text without a chosen suggestion has no coordinates yet. Look them
+    // up once Google Maps is ready (see resolvePresetCoords) so the fare can
+    // still be worked out without the rider re-picking both addresses.
+    if (preset === "quick") {
+      state.presetLookup = {
+        pickup: !state.pickupLatLng && !!pickup,
+        dropoff: !state.dropoffLatLng && !!destination,
+      };
+    }
+
+    if (preset === "quick" && chipType === "dropoff") {
+      var date = params.get("date") || "";
+      var time = params.get("time") || "";
+      var dateInput = document.getElementById("fScheduledDate");
+      var timeInput = document.getElementById("fScheduledTime");
+      if (dateInput && /^\d{4}-\d{2}-\d{2}$/.test(date)) dateInput.value = date;
+      if (timeInput && /^\d{2}:\d{2}$/.test(time)) timeInput.value = time;
+    }
+
+    var chip = document.querySelector('.booking-type-chip[data-type="' + chipType + '"]');
+    if (chip) chip.click();
+    if (fromHeroStore) {
+      try { sessionStorage.removeItem("arrivo_hero_quote"); } catch (e) { /* ignore */ }
+    }
   }
 
   function handlePaymentSuccess(reference) {

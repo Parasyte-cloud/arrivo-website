@@ -823,7 +823,18 @@
      no Places library needed (no address search on this page). Same key
      already in use on book.html/express.html; confirm HTTP referrer
      restrictions in Google Cloud Console include ridearrivo.com. -->
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLWAbQmxIAoGPP0LLDp6oTosaHZBa0Y5s&callback=initGoogleMaps"></script>
+<script src="maps-config.js"></script>
+<script>
+  (function () {
+    var s = document.createElement("script");
+    s.async = true;
+    s.defer = true;
+    s.src = "https://maps.googleapis.com/maps/api/js?key=" +
+      encodeURIComponent(GOOGLE_MAPS_BROWSER_KEY) +
+      "&callback=initGoogleMaps";
+    document.head.appendChild(s);
+  })();
+</script>
 <!-- Paystack's official inline checkout library -- used for card tips only. -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
