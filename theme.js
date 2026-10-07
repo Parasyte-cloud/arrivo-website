@@ -1,0 +1,111 @@
+// Light / dark theme switch for the homepage.
+// First paint is handled by a tiny inline script in <head> (no flash of the
+// wrong theme). This file only wires up the toggle buttons.
+(function () {
+  "use strict";
+  var KEY = "arrivo_theme";
+  var root = document.documentElement;
+
+  function current() {
+    return root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+  }
+
+  function dict() {
+    var lang = root.lang || "en";
+    return (typeof I18N !== "undefined" && (I18N[lang] || I18N.en)) || null;
+  }
+
+  function label(theme) {
+    var d = dict();
+    var home = d && d.home;
+    if (theme === "dark") return (home && home.toLight) || "Switch to light mode";
+    return (home && home.toDark) || "Switch to dark mode";
+  }
+
+  // Links to the other RideArrivo sites carry the current theme (?theme=dark),
+  // so the next page opens in the same mode even where cookies cannot be
+  // shared (preview addresses, a browser that blocks them).
+  var SKIP = /\/(login|signup|account|track|book|driver|forgot-password|reset-password|verify-email|privacy|terms)(\.html)?$/;
+  function isSibling(host) {
+    return host !== location.hostname &&
+      (/(^|\.)ridearrivo\.com$/.test(host) || /\.pages\.dev$/.test(host));
+  }
+  function tagLinks(theme) {
+    document.querySelectorAll("a[href]").forEach(function (a) {
+      var u;
+      try { u = new URL(a.getAttribute("href"), location.href); } catch (e) { return; }
+      if (u.protocol !== "https:" && u.protocol !== "http:") return;
+      if (!isSibling(u.hostname) || SKIP.test(u.pathname)) return;
+      u.searchParams.set("theme", theme);
+      a.setAttribute("href", u.href);
+    });
+  }
+
+  function paint() {
+    var theme = current();
+    tagLinks(theme);
+    var text = label(theme);
+    document.querySelectorAll(".theme-toggle").forEach(function (btn) {
+      btn.setAttribute("aria-label", text);
+      btn.setAttribute("title", text);
+      var span = btn.querySelector(".theme-toggle-text");
+      if (span) span.textContent = text;
+    });
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", theme === "dark" ? "#0A0C24" : "#12123B");
+  }
+
+  // Shared across every *.ridearrivo.com site (www, express, move, boat, air,
+  // membership). On any other host (previews, localhost) it is just a normal
+  // cookie for that host.
+  function readCookie() {
+    var m = document.cookie.match(/(?:^|; )arrivo_theme=(light|dark)/);
+    return m ? m[1] : null;
+  }
+  function writeCookie(theme) {
+    var host = location.hostname;
+    var domain = /(^|\.)ridearrivo\.com$/.test(host) ? "; Domain=.ridearrivo.com" : "";
+    var secure = location.protocol === "https:" ? "; Secure" : "";
+    try {
+      document.cookie = KEY + "=" + theme + "; Path=/; Max-Age=31536000; SameSite=Lax" + domain + secure;
+    } catch (e) { /* cookies blocked: the choice still lasts for this visit */ }
+  }
+
+  function set(theme) {
+    root.setAttribute("data-theme", theme);
+    writeCookie(theme);
+    try { localStorage.setItem(KEY, theme); } catch (e) { /* private mode: works for this visit only */ }
+    paint();
+  }
+
+  // Arrived with ?theme= from another RideArrivo site: keep it as this visitor's choice.
+  if (/[?&]theme=(light|dark)(?:&|$)/.test(location.search)) {
+    writeCookie(current());
+    try { localStorage.setItem(KEY, current()); } catch (e) { /* ignore */ }
+  }
+
+  document.querySelectorAll(".theme-toggle").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      set(current() === "dark" ? "light" : "dark");
+    });
+  });
+
+  // Follow the device setting until the visitor makes their own choice.
+  if (window.matchMedia) {
+    var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    var onChange = function (e) {
+      var saved = readCookie();
+      try { saved = saved || localStorage.getItem(KEY); } catch (err) { /* ignore */ }
+      if (saved !== "light" && saved !== "dark") {
+        root.setAttribute("data-theme", e.matches ? "dark" : "light");
+        paint();
+      }
+    };
+    if (mq.addEventListener) mq.addEventListener("change", onChange);
+    else if (mq.addListener) mq.addListener(onChange);
+  }
+
+  // The language switcher sets <html lang>; re-label the button when it changes.
+  new MutationObserver(paint).observe(root, { attributes: true, attributeFilter: ["lang"] });
+  paint();
+})();

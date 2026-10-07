@@ -1164,6 +1164,43 @@
     }
   }
 
+  // ───────────────────────── Header: account link and mobile menu ──────
+  // Same header as the homepage. The account link needs to know whether the
+  // rider is signed in; on this subdomain the session is a cookie page
+  // JavaScript cannot read, so it starts as "log in" and flips to "My
+  // Account" once the status call succeeds.
+  function setAccountNav(signedIn) {
+    var next = CFG.selfPath || "express.html";
+    var href = signedIn ? ACCOUNT_PATH : LOGIN_PATH + "?next=" + encodeURIComponent(next);
+    var label = signedIn ? t("footer.myAccount") : "Register or Login";
+    [["accountNavLink", "accountNavLabel"], ["accountNavLinkMobile", "accountNavLabelMobile"]].forEach(function (ids) {
+      var a = document.getElementById(ids[0]);
+      var l = document.getElementById(ids[1]);
+      if (a) a.href = href;
+      if (l) l.textContent = label;
+    });
+  }
+
+  function initMobileNav() {
+    var toggle = document.getElementById("mobileNavToggle");
+    var menu = document.getElementById("mobileNavMenu");
+    var backdrop = document.getElementById("mobileNavBackdrop");
+    if (!toggle || !menu) return;
+    function setOpen(open) {
+      menu.hidden = !open;
+      if (backdrop) backdrop.hidden = !open;
+      toggle.classList.toggle("is-open", open);
+      toggle.setAttribute("aria-expanded", String(open));
+    }
+    toggle.addEventListener("click", function () { setOpen(menu.hidden); });
+    if (backdrop) backdrop.addEventListener("click", function () { setOpen(false); });
+    menu.querySelectorAll("a").forEach(function (a) { a.addEventListener("click", function () { setOpen(false); }); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !menu.hidden) setOpen(false); });
+    document.addEventListener("click", function (e) {
+      if (!menu.hidden && !menu.contains(e.target) && !toggle.contains(e.target)) setOpen(false);
+    });
+  }
+
   // ───────────────────────── Init ────────────────────────────────────
   document.addEventListener("DOMContentLoaded", function () {
     function safeRun(fn, label) {
@@ -1172,6 +1209,8 @@
 
     safeRun(initLanguage, "initLanguage");
     safeRun(initServicesDropdown, "initServicesDropdown");
+    safeRun(initMobileNav, "initMobileNav");
+    safeRun(function () { setAccountNav(!!store.get("arrivo_rider_token")); }, "accountNav");
     checkMapsLoaded();
 
     document.getElementById("seeFareBtn").addEventListener("click", getFare);
@@ -1212,6 +1251,8 @@
           showCard("authGate");
           return null;
         }
+
+        setAccountNav(true);
 
         if (!statusResult.ok) {
           document.getElementById("loadErrorText").textContent = statusResult.data.error || t("arrivoExpress.loadError");
