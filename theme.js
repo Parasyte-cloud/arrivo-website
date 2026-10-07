@@ -22,8 +22,28 @@
     return (home && home.toDark) || "Switch to dark mode";
   }
 
+  // Links to the other RideArrivo sites carry the current theme (?theme=dark),
+  // so the next page opens in the same mode even where cookies cannot be
+  // shared (preview addresses, a browser that blocks them).
+  var SKIP = /\/(login|signup|account|track|book|driver|forgot-password|reset-password|verify-email|privacy|terms)(\.html)?$/;
+  function isSibling(host) {
+    return host !== location.hostname &&
+      (/(^|\.)ridearrivo\.com$/.test(host) || /\.pages\.dev$/.test(host));
+  }
+  function tagLinks(theme) {
+    document.querySelectorAll("a[href]").forEach(function (a) {
+      var u;
+      try { u = new URL(a.getAttribute("href"), location.href); } catch (e) { return; }
+      if (u.protocol !== "https:" && u.protocol !== "http:") return;
+      if (!isSibling(u.hostname) || SKIP.test(u.pathname)) return;
+      u.searchParams.set("theme", theme);
+      a.setAttribute("href", u.href);
+    });
+  }
+
   function paint() {
     var theme = current();
+    tagLinks(theme);
     var text = label(theme);
     document.querySelectorAll(".theme-toggle").forEach(function (btn) {
       btn.setAttribute("aria-label", text);
@@ -56,6 +76,12 @@
     writeCookie(theme);
     try { localStorage.setItem(KEY, theme); } catch (e) { /* private mode: works for this visit only */ }
     paint();
+  }
+
+  // Arrived with ?theme= from another RideArrivo site: keep it as this visitor's choice.
+  if (/[?&]theme=(light|dark)(?:&|$)/.test(location.search)) {
+    writeCookie(current());
+    try { localStorage.setItem(KEY, current()); } catch (e) { /* ignore */ }
   }
 
   document.querySelectorAll(".theme-toggle").forEach(function (btn) {
