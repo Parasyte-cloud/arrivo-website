@@ -143,6 +143,9 @@
         contact_number: document.getElementById("chContact").value.trim(),
       };
       var website = document.getElementById("chWebsite").value;
+      // Honeypot: people never see this field, bots fill it. Stop here without
+      // sending anything (the intake function also discards it, this just saves the call).
+      if (website) return;
 
       errEl.hidden = true;
 
