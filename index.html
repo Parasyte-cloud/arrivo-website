@@ -42,7 +42,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="styles.css?v=32">
-<link rel="stylesheet" href="home.css?v=11">
+<link rel="stylesheet" href="home.css?v=12">
   <script>
     // The launch gate only matters before launch day ends. After that, do not
     // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
@@ -230,9 +230,9 @@
           <button type="button" class="hf-tab" data-mode="dropoff" aria-pressed="false" data-i18n="home.formTabSchedule">Schedule</button>
         </div>
         <label class="hf-label" for="hfPickup" data-i18n="home.formPickup">Pickup</label>
-        <input class="hf-input" id="hfPickup" name="pickup" type="text" autocomplete="off" maxlength="200" data-i18n-placeholder="home.formPickupPh" placeholder="Airport, hotel or address">
+        <div class="hf-field"><input class="hf-input" id="hfPickup" name="pickup" type="text" autocomplete="off" maxlength="200" data-i18n-placeholder="home.formPickupPh" placeholder="Airport, hotel or address"></div>
         <label class="hf-label" for="hfDest" data-i18n="home.formDest">Destination</label>
-        <input class="hf-input" id="hfDest" name="destination" type="text" autocomplete="off" maxlength="200" data-i18n-placeholder="home.formDestPh" placeholder="Where to?">
+        <div class="hf-field"><input class="hf-input" id="hfDest" name="destination" type="text" autocomplete="off" maxlength="200" data-i18n-placeholder="home.formDestPh" placeholder="Where to?"></div>
         <div class="hf-when" id="hfWhen" hidden>
           <div>
             <label class="hf-label" for="hfDate" data-i18n="home.formDate">Date</label>
@@ -733,7 +733,7 @@
 <script src="pwa-register.js?v=32"></script>
 <script src="glass-effects.js?v=32"></script>
 <script src="theme.js?v=1" defer></script>
-  <script src="hero-form.js?v=4" defer></script>
+  <script src="hero-form.js?v=5" defer></script>
   <script src="header-move.js?v=2" defer></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
 </body>

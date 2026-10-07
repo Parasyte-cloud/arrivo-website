@@ -27,9 +27,6 @@
   var submitBtn = form.querySelector(".hf-submit");
   var mode = "one_way";
   var coords = { pickup: null, dest: null };
-  var suggestionsOff = false;
-  var mapsRequested = false;
-  var observer = null;
 
   function dict() {
     var lang = document.documentElement.lang || "en";
@@ -73,107 +70,134 @@
   });
   dateEl.min = isoDate(new Date());
 
-  // ---- Address inputs ----
-  function suggestionListOpen() {
-    var lists = document.querySelectorAll(".pac-container");
-    for (var i = 0; i < lists.length; i++) {
-      if (lists[i].offsetParent !== null && lists[i].children.length) return true;
+  // ---- Address inputs with our own suggestion list ----
+  // Google's ready-made Autocomplete widget takes over the text box and, when
+  // Google refuses the page, leaves it broken. So the box here is a plain input
+  // that Google never touches: we ask Google's AutocompleteService for text
+  // predictions and draw the dropdown ourselves. If Google says no, the list
+  // simply never appears and typing carries on as normal.
+  var svc = null;
+  var token = null;
+  var mapsRequested = false;
+  var combos = [];
+
+  function makeCombo(input, slot) {
+    var list = document.createElement("ul");
+    list.className = "hf-suggest";
+    list.id = "hfList-" + slot;
+    list.setAttribute("role", "listbox");
+    list.hidden = true;
+    input.parentNode.appendChild(list);
+    input.setAttribute("role", "combobox");
+    input.setAttribute("aria-autocomplete", "list");
+    input.setAttribute("aria-expanded", "false");
+    input.setAttribute("aria-controls", list.id);
+
+    var items = [];
+    var active = -1;
+    var timer = null;
+    var seq = 0;
+
+    function close() {
+      list.hidden = true;
+      list.innerHTML = "";
+      items = [];
+      active = -1;
+      input.setAttribute("aria-expanded", "false");
+      input.removeAttribute("aria-activedescendant");
     }
-    return false;
-  }
-  function bindInput(el, slot) {
-    // Typing free text invalidates coordinates from an earlier suggestion.
-    el.addEventListener("input", function () { coords[slot] = null; clearError(); });
-    el.addEventListener("focus", loadMaps);
-    // Enter inside the suggestion list means "pick this", not "submit the form".
-    el.addEventListener("keydown", function (e) {
-      if ((e.key === "Enter" || e.keyCode === 13) && suggestionListOpen()) e.preventDefault();
-    });
-  }
-  bindInput(pickup, "pickup");
-  bindInput(dest, "dest");
-
-  // ---- Google Places suggestions: loaded on first focus, dropped on any failure ----
-  function stripGoogleMarkup(el) {
-    el.className = "hf-input";
-    el.removeAttribute("style");
-    ["role", "aria-autocomplete", "aria-expanded", "aria-haspopup", "aria-owns", "aria-activedescendant"].forEach(function (a) {
-      el.removeAttribute(a);
-    });
-    el.setAttribute("autocomplete", "off");
-  }
-  function disableSuggestions() {
-    if (suggestionsOff) return;
-    suggestionsOff = true;
-    if (observer) { observer.disconnect(); observer = null; }
-    var slots = [["pickup", "hfPickup"], ["dest", "hfDest"]];
-    slots.forEach(function (s) {
-      var old = document.getElementById(s[1]);
-      if (!old) return;
-      var fresh = old.cloneNode(true); // a clone has none of Google's event listeners
-      stripGoogleMarkup(fresh);
-      fresh.value = old.value;
-      // Google overwrites the placeholder with its error text; put ours back.
-      var phKey = fresh.getAttribute("data-i18n-placeholder");
-      var phText = phKey ? tr(phKey.replace(/^home\./, ""), "") : "";
-      if (phText) fresh.setAttribute("placeholder", phText);
-      var hadFocus = document.activeElement === old;
-      var selStart = old.selectionStart, selEnd = old.selectionEnd;
-      old.parentNode.replaceChild(fresh, old);
-      if (s[0] === "pickup") pickup = fresh; else dest = fresh;
-      bindInput(fresh, s[0]);
-      if (hadFocus) {
-        fresh.focus();
-        // Chrome selects all text on a scripted focus(); the next key would
-        // then replace what was typed. Put the caret back where it was.
-        var end = fresh.value.length;
-        try { fresh.setSelectionRange(selStart == null ? end : selStart, selEnd == null ? end : selEnd); } catch (e) { /* ignore */ }
+    function setActive(i) {
+      var nodes = list.children;
+      if (!nodes.length) return;
+      active = (i + nodes.length) % nodes.length;
+      for (var n = 0; n < nodes.length; n++) {
+        var on = n === active;
+        nodes[n].classList.toggle("is-active", on);
+        nodes[n].setAttribute("aria-selected", on ? "true" : "false");
       }
-    });
-    coords.pickup = coords.dest = null;
-    Array.prototype.forEach.call(document.querySelectorAll(".pac-container"), function (n) {
-      if (n.parentNode) n.parentNode.removeChild(n);
-    });
-  }
-  // Google calls this when it rejects the key or referrer.
-  window.gm_authFailure = disableSuggestions;
-
-  function attachAutocomplete(input, slot) {
-    var ac = new google.maps.places.Autocomplete(input, {
-      componentRestrictions: { country: "ng" },
-      fields: ["formatted_address", "geometry", "name"],
-    });
-    ac.addListener("place_changed", function () {
-      var p = ac.getPlace();
-      if (!p || !p.geometry || !p.geometry.location) return;
-      coords[slot] = { lat: p.geometry.location.lat(), lng: p.geometry.location.lng() };
-      if (p.formatted_address) input.value = p.formatted_address;
-    });
-  }
-  window.__heroPlacesReady = function () {
-    if (suggestionsOff) return;
-    try {
-      attachAutocomplete(pickup, "pickup");
-      attachAutocomplete(dest, "dest");
-      // Google marks a failed box with this class instead of calling gm_authFailure in some cases.
-      observer = new MutationObserver(function () {
-        var failed = [pickup, dest].some(function (el) {
-          return el.classList.contains("gm-err-autocomplete") || /sorry|went wrong/i.test(el.getAttribute("placeholder") || "");
-        });
-        if (failed) disableSuggestions();
+      input.setAttribute("aria-activedescendant", nodes[active].id);
+    }
+    function choose(i) {
+      if (!items[i]) return;
+      input.value = items[i];
+      coords[slot] = null; // the booking page looks the place up from its text
+      close();
+      clearError();
+      token = null;
+    }
+    function render(preds) {
+      list.innerHTML = "";
+      items = preds.slice(0, 5).map(function (p) { return p.description; });
+      if (!items.length) { close(); return; }
+      items.forEach(function (text, i) {
+        var li = document.createElement("li");
+        li.id = list.id + "-" + i;
+        li.setAttribute("role", "option");
+        li.setAttribute("aria-selected", "false");
+        li.textContent = text;
+        li.addEventListener("mousedown", function (e) { e.preventDefault(); choose(i); });
+        list.appendChild(li);
       });
-      observer.observe(pickup, { attributes: true, attributeFilter: ["class", "placeholder"] });
-      observer.observe(dest, { attributes: true, attributeFilter: ["class", "placeholder"] });
-    } catch (e) { disableSuggestions(); }
+      list.hidden = false;
+      input.setAttribute("aria-expanded", "true");
+    }
+    function ask() {
+      var q = input.value.trim();
+      if (!svc || q.length < 3) { close(); return; }
+      var mine = ++seq;
+      if (!token && window.google.maps.places.AutocompleteSessionToken) {
+        token = new google.maps.places.AutocompleteSessionToken();
+      }
+      try {
+        svc.getPlacePredictions(
+          { input: q, componentRestrictions: { country: "ng" }, sessionToken: token || undefined },
+          function (res, status) {
+            if (mine !== seq || input.value.trim() !== q) return; // a newer keystroke owns the list
+            if (status === "OK" && res && res.length) render(res);
+            else close(); // no matches, or Google said no: just no list
+          }
+        );
+      } catch (e) { svc = null; close(); }
+    }
+
+    input.addEventListener("input", function () {
+      coords[slot] = null;
+      clearError();
+      clearTimeout(timer);
+      timer = setTimeout(ask, 220);
+    });
+    input.addEventListener("focus", loadMaps);
+    input.addEventListener("keydown", function (e) {
+      if (list.hidden) return;
+      if (e.key === "ArrowDown") { e.preventDefault(); setActive(active + 1); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); setActive(active - 1); }
+      else if (e.key === "Enter" && active >= 0) { e.preventDefault(); choose(active); }
+      else if (e.key === "Escape") { close(); }
+    });
+    input.addEventListener("blur", function () { setTimeout(close, 150); });
+    combos.push({ close: close });
+  }
+  makeCombo(pickup, "pickup");
+  makeCombo(dest, "dest");
+
+  function suggestionsOff() {
+    svc = null;
+    combos.forEach(function (c) { c.close(); });
+  }
+  window.gm_authFailure = suggestionsOff; // Google rejected the key or the page address
+  window.__heroPlacesReady = function () {
+    try {
+      svc = new google.maps.places.AutocompleteService();
+    } catch (e) { suggestionsOff(); }
   };
   function loadMaps() {
-    if (mapsRequested || suggestionsOff) return;
+    if (mapsRequested) return;
     mapsRequested = true;
     if (window.google && window.google.maps && window.google.maps.places) { window.__heroPlacesReady(); return; }
     var s = document.createElement("script");
     s.async = true;
     s.src = "https://maps.googleapis.com/maps/api/js?key=" + MAPS_KEY + "&libraries=places&callback=__heroPlacesReady";
-    s.onerror = disableSuggestions; // offline or blocked: carry on without suggestions
+    s.onerror = suggestionsOff; // offline or blocked: carry on without suggestions
     document.head.appendChild(s);
   }
 

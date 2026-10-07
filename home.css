@@ -463,3 +463,30 @@ html[data-theme="dark"] .site-header.is-floating {
 @media (min-width: 860px) {
   .site-header { -webkit-user-select: none; user-select: none; }
 }
+
+/* Address suggestions (our own list; Google only supplies the text). */
+.hf-field { position: relative; }
+.hf-suggest {
+  position: absolute;
+  z-index: 30;
+  left: 0; right: 0; top: calc(100% + 6px);
+  margin: 0; padding: 6px;
+  list-style: none;
+  border-radius: 14px;
+  background: rgba(14,16,48,.97);
+  border: 1px solid rgba(255,255,255,.2);
+  box-shadow: 0 18px 40px rgba(0,0,0,.5);
+  max-height: 260px;
+  overflow-y: auto;
+}
+.hf-suggest[hidden] { display: none; }
+.hf-suggest li {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14.5px;
+  line-height: 1.35;
+  color: #fff;
+  cursor: pointer;
+}
+.hf-suggest li:hover,
+.hf-suggest li.is-active { background: rgba(244,163,0,.22); }
