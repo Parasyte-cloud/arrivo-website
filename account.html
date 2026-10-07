@@ -99,7 +99,7 @@
     font-weight: 600;
     color: #B93838;
   }
-  .panic-countdown-row[hidden] { display: none; } /* the class's display:flex was overriding the hidden attribute's default display:none — this is what actually made Cancel visible before the SOS button was ever clicked */
+  .panic-countdown-row[hidden] { display: none; } /* the class's display:flex was overriding the hidden attribute's default display:none -- this is what actually made Cancel visible before the SOS button was ever clicked */
   .panic-cancel-btn {
     position: relative;
     overflow: hidden;
@@ -150,17 +150,21 @@
   .listening-btn.is-error { border-color: var(--coral, #E1523D); color: var(--coral, #E1523D); }
 </style>
   <script>
-    document.documentElement.classList.add("ra-launch-pending");
-    window.setTimeout(function () {
-      document.documentElement.classList.remove("ra-launch-pending");
-    }, 5000);
+    // The launch gate only matters before launch day ends. After that, do not
+    // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
+    if (Date.now() < Date.parse("2026-09-12T14:30:00+01:00") || /[?&]launchTest=1/.test(location.search)) {
+      document.documentElement.classList.add("ra-launch-pending");
+      window.setTimeout(function () {
+        document.documentElement.classList.remove("ra-launch-pending");
+      }, 5000);
+    }
   </script>
   <link rel="stylesheet" href="/launch-countdown.css?v=20260912-02">
 </head>
 <body>
 
 <!-- Real Liquid Glass needs actual refraction of what's behind it, not just
-     blur — this is the difference between "frosted panel" and "glass".
+     blur -- this is the difference between "frosted panel" and "glass".
      feTurbulence generates an organic noise field, feDisplacementMap uses it
      to warp the content underneath, the way light bends through curved
      glass. Applied via backdrop-filter: url(#liquid-glass-refraction). -->
@@ -362,7 +366,7 @@
 
     <div class="footer-col">
       <h4 data-i18n="footer.getStartedHeading">Get Started</h4>
-      <a href="express.html" data-i18n="nav.express">ArrivoExpress</a>
+      <a href="https://express.ridearrivo.com/" data-i18n="nav.express">ArrivoExpress</a>
       <a href="book.html" data-i18n="nav.bookCta">Book a ride</a>
       <a href="driver.html" data-i18n="footer.driverPortal">Driver Portal</a>
       <a href="account.html" data-i18n="footer.myAccount">My Account</a>
@@ -401,7 +405,7 @@
           link.href = "mailto:" + address;
           document.getElementById("footerEmailText").textContent = address;
 
-          // Same idea for the phone number — split apart in the HTML,
+          // Same idea for the phone number -- split apart in the HTML,
           // reassembled only once a real browser runs this script.
           var phoneLink = document.getElementById("footerPhoneLink");
           if (phoneLink) {
@@ -430,7 +434,7 @@
 
 <script src="i18n.js?v=35"></script>
 <script>
-  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
+  var API_BASE_URL = "https://api.ridearrivo.com";
   var TOKEN_KEY = "arrivo_rider_token";
 
   // ───────────────────────── i18n (same pattern as script.js/booking.js) ─────────────────────────
@@ -560,7 +564,7 @@
         var circle = document.getElementById("avatarCircle");
         circle.innerHTML = '<div class="avatar-edit-badge">✎</div>';
         var img = document.createElement("img");
-        img.src = user.avatar_url; // set as a property, not concatenated into HTML — can't break out of an attribute this way
+        img.src = user.avatar_url; // set as a property, not concatenated into HTML -- can't break out of an attribute this way
         circle.prepend(img);
       } else {
         document.getElementById("avatarInitial").textContent = (user.name || "?").charAt(0).toUpperCase();
@@ -614,7 +618,12 @@
     document.getElementById("logoutTile").addEventListener("click", function (e) {
       e.preventDefault();
       localStorage.removeItem(TOKEN_KEY);
-      window.location.href = "index.html";
+      // Also clear the shared single sign-on cookie so this logs the rider
+      // out of express./move./etc. too. Never block logout on the network.
+      var done = false;
+      function leave() { if (!done) { done = true; window.location.href = "index.html"; } }
+      setTimeout(leave, 1500);
+      fetch(API_BASE_URL + "/api/auth/logout", { method: "POST", credentials: "include" }).then(leave, leave);
     });
 
     initPanicButton("rider", TOKEN_KEY, API_BASE_URL);
@@ -632,7 +641,7 @@
   }
 
   // ───────────────────────── Wallet ─────────────────────────
-  // Was its own hardcoded "pk_test_replace_me" placeholder — a THIRD,
+  // Was its own hardcoded "pk_test_replace_me" placeholder -- a THIRD,
   // independently-drifting copy of the same key booking.js and track.html
   // each had (see paystack-config.js, loaded in <head> below). Worse than
   // the other two: this one had no guard against the placeholder actually
@@ -669,7 +678,7 @@
   function loadWallet(token) {
     return api("/api/wallet", { headers: authHeader() }).then(function (result) {
       if (!result.ok) {
-        // Previously a silent return — the balance stayed frozen on its
+        // Previously a silent return -- the balance stayed frozen on its
         // "NGN 0" placeholder with no indication that's not a real balance.
         document.getElementById("walletHistory").innerHTML =
           '<p style="font-size:12.5px;color:var(--coral, #E1523D);">' + t("account.walletLoadFailed") + '</p>';
@@ -741,7 +750,7 @@
 
   // ───────────────────────── Membership ─────────────────────────
   // Corrected 2026-09 from an annual, single-tier plan to a monthly,
-  // two-tier plan (Premium / Executive) — see PLANS in
+  // two-tier plan (Premium / Executive) -- see PLANS in
   // arrivo-backend/routes/memberships.js for the source of truth this
   // list is kept in sync with by hand (same convention this file already
   // used for the old single price).
@@ -846,7 +855,7 @@
   function initMembership(token) {
     api("/api/memberships/mine", { headers: authHeader() }).then(function (result) {
       if (!result.ok) {
-        // Previously a silent return — the card stayed stuck on "Loading…"
+        // Previously a silent return -- the card stayed stuck on "Loading…"
         // forever instead of telling the rider anything went wrong.
         document.getElementById("membershipCard").innerHTML =
           '<p style="font-size:13px;color:var(--coral, #E1523D);">' + t("account.membershipLoadFailed") + '</p>';
@@ -910,11 +919,11 @@
   //   - One trigger, full response: activating this fires the alert AND the
   //     listening device together, not as separate manual steps.
   //   - No manual reset: once active, neither driver nor passenger can turn
-  //     it off from this device. There is deliberately no button for this —
+  //     it off from this device. There is deliberately no button for this --
   //     state persists in localStorage across reloads until a real backend/
   //     admin-cleared flag exists to un-set it. (Dev note: to clear it while
   //     testing, run localStorage.removeItem("arrivo_panic_active") in the
-  //     console — there is intentionally no UI path to do this.)
+  //     console -- there is intentionally no UI path to do this.)
   // POST /api/rides/:id/panic and POST /api/rides/:id/listening-device are
   // both confirmed real (checked against the actual arrivo-backend source).
   function initPanicButton(userType, tokenKey, apiBaseUrl) {
@@ -943,7 +952,7 @@
       activeBanner.hidden = false;
     }
 
-    // The reverse of showActiveBanner — used when we find out (via the
+    // The reverse of showActiveBanner -- used when we find out (via the
     // backend, never manually) that a real alert has actually been
     // resolved, so the button comes back for next time.
     function clearActiveBanner() {
@@ -953,7 +962,7 @@
       btn.hidden = false;
     }
 
-    // Polls the one real source of truth — the ride record itself — and
+    // Polls the one real source of truth -- the ride record itself -- and
     // clears the locked UI the moment an admin resolves it. This is the
     // *only* way the "active" state goes away: never a local timer, never
     // a button, always checked against the backend.
@@ -974,7 +983,7 @@
 
     // If an alert is already active (e.g. the page was reloaded), show the
     // locked state immediately and start checking whether it's since been
-    // resolved — this is what makes "no manual reset, but not stuck
+    // resolved -- this is what makes "no manual reset, but not stuck
     // forever either" real, rather than just this one click handler's job.
     (function restoreActiveStateIfAny() {
       var raw = localStorage.getItem(PANIC_STATE_KEY);
@@ -985,7 +994,7 @@
       showActiveBanner();
       pollForResolution(saved.rideId);
       // Panic bundles listening-device activation server-side in the same
-      // write, so if panic is active, listening is guaranteed active too —
+      // write, so if panic is active, listening is guaranteed active too --
       // reflect that immediately rather than showing "off" until some
       // other action happens to correct it (the bug this replaces: a
       // reload right after SOS made the indicator lie).
@@ -1004,7 +1013,7 @@
       setListeningUiOn();
     })();
 
-    // Cancelling here aborts an accidental tap BEFORE the alert fires —
+    // Cancelling here aborts an accidental tap BEFORE the alert fires --
     // that's different from resetting an alert that's already active, which
     // this deliberately has no control for.
     function cancelCountdown() {
@@ -1048,7 +1057,7 @@
 
         // Previously called here, unconditionally, before it was known
         // whether the panic request (or even the ride lookup) would
-        // succeed — so the "Listening device: on" indicator could show
+        // succeed -- so the "Listening device: on" indicator could show
         // even when nothing was ever recorded server-side. Now it's only
         // shown once the panic POST below actually succeeds, since panic
         // bundles the real activation into that same write.
@@ -1062,10 +1071,10 @@
         }
 
         // The locked "admin must clear this" state is only for a REAL,
-        // recorded alert — a ride that the backend actually confirmed has
+        // recorded alert -- a ride that the backend actually confirmed has
         // panic_triggered_at set. Without an active ride, there's nothing
         // for an admin to resolve, so locking the UI forever here would be
-        // a false alarm with no way out — which is exactly the bug this
+        // a false alarm with no way out -- which is exactly the bug this
         // replaces. In that case, WhatsApp still went out above; the
         // button just becomes available again after a short confirmation.
         if (!activeRideId) {
@@ -1088,7 +1097,7 @@
           localStorage.setItem(PANIC_STATE_KEY, JSON.stringify({ rideId: activeRideId }));
           showActiveBanner(); // stays locked until pollForResolution finds it cleared
           pollForResolution(activeRideId);
-          // "One trigger, full response" — panic bundles listening-device
+          // "One trigger, full response" -- panic bundles listening-device
           // activation into the same server-side write, confirmed by the
           // same res.ok check above, so no separate request is needed here.
           listeningActive = true;
@@ -1096,7 +1105,7 @@
           setListeningUiOn();
         }).catch(function () {
           // The backend call itself failed (network error, ride no longer
-          // valid, etc.) — same reasoning as no active ride: don't lock a
+          // valid, etc.) -- same reasoning as no active ride: don't lock a
           // UI over an alert that was never actually recorded.
           statusText.hidden = false;
           statusText.textContent = t("account.alertNotConfirmedWhatsappSent");
@@ -1128,7 +1137,7 @@
       }
     }
 
-    // Marks the UI "on" — called either once the panic POST above actually
+    // Marks the UI "on" -- called either once the panic POST above actually
     // confirms success, or once the standalone activation below does.
     // Never called speculatively/optimistically anymore.
     function setListeningUiOn() {
@@ -1140,14 +1149,14 @@
       }
       // Deliberately no getUserMedia() call here (there used to be one).
       // "Listening device" is a server-side flag/timestamp on the ride
-      // (see routes/rides.js) — nothing in this product actually captures
+      // (see routes/rides.js) -- nothing in this product actually captures
       // or streams live audio from the browser or the apps. The old call
       // requested mic permission and immediately discarded the resulting
-      // MediaStream without ever storing, using, or stopping it — so it
+      // MediaStream without ever storing, using, or stopping it -- so it
       // did nothing useful even when it succeeded, and on iOS/Safari and
       // any non-secure context it's rejected outright (no user gesture on
       // these page-load restore paths), silently swallowed by its .catch,
-      // while the "on" indicator kept showing regardless — a false safety
+      // while the "on" indicator kept showing regardless -- a false safety
       // signal. Removing it fixes both problems at once; the indicator
       // above already only ever fires once the server confirms activation.
     }
@@ -1160,7 +1169,7 @@
     }
 
     // Listening device, activated independently of panic (the standalone
-    // button below) — ride-scoped, so a rideId is required. Only marks the
+    // button below) -- ride-scoped, so a rideId is required. Only marks the
     // UI "on" once the server actually confirms it; a failed request now
     // shows a distinct, clickable retry state instead of either silently
     // claiming success (the previous bug) or leaving the button dead for
@@ -1181,7 +1190,7 @@
     if (listeningBtn) {
       listeningBtn.addEventListener("click", function () {
         if (listeningActive) return; // already on, or a retry is handled by re-running this same handler
-        // Same "find my active ride" lookup used by the panic button above —
+        // Same "find my active ride" lookup used by the panic button above --
         // the endpoint is ride-scoped, so there's nothing to activate
         // without one.
         fetch(apiBaseUrl + "/api/rides/mine", {
