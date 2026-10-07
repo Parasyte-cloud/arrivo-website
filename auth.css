@@ -1,0 +1,75 @@
+/* Sign-in pages (login, signup, forgot / reset password, verify email).
+   Same header, colours and light / dark mode as the homepage and ArrivoExpress.
+   Loads after styles.css, booking.css and home.css. */
+
+.auth-wrap { max-width: 460px; margin: 0 auto; padding: 56px 20px 72px; }
+.auth-wrap h1 { margin-bottom: 24px; text-align: center; }
+
+/* The card sits on the page like the Express booking card: solid, not glass. */
+.auth-wrap .booking-card {
+  background: var(--glass-bg);
+  box-shadow: 0 12px 28px rgba(18,18,59,.07);
+}
+html[data-theme="dark"] .auth-wrap .booking-card {
+  box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 12px 28px rgba(0,0,0,.35);
+}
+
+/* Fields */
+html[data-theme="dark"] .auth-wrap .field,
+html[data-theme="dark"] .auth-wrap select.field,
+html[data-theme="dark"] .auth-wrap input[type="tel"],
+html[data-theme="dark"] .auth-wrap input[type="text"],
+html[data-theme="dark"] .auth-wrap input[type="email"],
+html[data-theme="dark"] .auth-wrap input[type="password"] {
+  background: rgba(255,255,255,.07);
+  border-color: rgba(255,255,255,.18);
+  color: #F3F3FA;
+}
+html[data-theme="dark"] .auth-wrap .field::placeholder,
+html[data-theme="dark"] .auth-wrap input::placeholder { color: #8E92B3; }
+
+/* Flat amber button (the glass sheen washed out the label) */
+.auth-wrap .btn-primary,
+.site-header .btn-primary {
+  background: var(--amber);
+  background-image: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-color: transparent;
+  color: #12123B;
+  box-shadow: 0 6px 16px rgba(244,163,0,.28);
+}
+.auth-wrap .btn-primary::before, .auth-wrap .btn-primary::after,
+.site-header .btn-primary::before, .site-header .btn-primary::after { display: none; }
+.auth-wrap .btn-primary:hover, .site-header .btn-primary:hover { background: #FFB627; }
+.auth-wrap .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+.auth-wrap .btn-primary:focus-visible,
+.auth-wrap .btn-apple:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+
+/* Errors, links, helper text: readable on both themes */
+.auth-wrap .error-text { color: #B3261E; }
+html[data-theme="dark"] .auth-wrap .error-text,
+html[data-theme="dark"] .auth-wrap .oauth-error { color: #FF9A8B; }
+.auth-wrap a { color: var(--primary); }
+.auth-wrap .auth-footer-link a { color: var(--primary); font-weight: 600; }
+html[data-theme="dark"] .auth-wrap a { color: #A9C0F5; }
+.auth-wrap .oauth-notice a { color: inherit; }
+.auth-wrap .checkbox-row, .auth-wrap .field-label { color: var(--ink); }
+.auth-wrap .step-sub, .auth-wrap .oauth-hint, .auth-wrap .oauth-notice { color: var(--text-muted); }
+html[data-theme="dark"] .auth-wrap .oauth-divider::before,
+html[data-theme="dark"] .auth-wrap .oauth-divider::after { background: rgba(255,255,255,.14); }
+
+/* Apple button keeps Apple's black; give it an edge so it shows on dark. */
+html[data-theme="dark"] .auth-wrap .btn-apple { border: 1px solid rgba(255,255,255,.35); }
+
+/* Anything else the pages style with the light palette */
+html[data-theme="dark"] .auth-wrap .success-box,
+html[data-theme="dark"] .auth-wrap .info-box { background: rgba(255,255,255,.07); color: #F3F3FA; }
+
+/* Verify-email result line */
+#statusMsg.status-ok { color: #0B6B5A; }
+#statusMsg.status-bad { color: #B3261E; }
+html[data-theme="dark"] #statusMsg.status-ok { color: #6FD8C0; }
+html[data-theme="dark"] #statusMsg.status-bad { color: #FF9A8B; }
+#statusMsg { color: #55557A; }
+html[data-theme="dark"] #statusMsg { color: #A9ADC9; }

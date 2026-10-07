@@ -54,7 +54,7 @@ function arrivoBuildPhoneInput(containerEl, options) {
 
   containerEl.innerHTML =
     '<div style="display:flex; gap:8px;">' +
-    '<select class="field arrivo-phone-country" style="flex:0 0 110px; padding-left:8px; padding-right:4px;"></select>' +
+    '<select class="field arrivo-phone-country" aria-label="Country code" style="flex:0 0 110px; padding-left:8px; padding-right:4px;"></select>' +
     '<input type="tel" class="field arrivo-phone-number" style="flex:1;" placeholder="' + (options.placeholder || "Phone number") + '">' +
     "</div>";
 
