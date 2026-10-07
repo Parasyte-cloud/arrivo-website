@@ -113,11 +113,22 @@
       var fresh = old.cloneNode(true); // a clone has none of Google's event listeners
       stripGoogleMarkup(fresh);
       fresh.value = old.value;
+      // Google overwrites the placeholder with its error text; put ours back.
+      var phKey = fresh.getAttribute("data-i18n-placeholder");
+      var phText = phKey ? tr(phKey.replace(/^home\./, ""), "") : "";
+      if (phText) fresh.setAttribute("placeholder", phText);
       var hadFocus = document.activeElement === old;
+      var selStart = old.selectionStart, selEnd = old.selectionEnd;
       old.parentNode.replaceChild(fresh, old);
       if (s[0] === "pickup") pickup = fresh; else dest = fresh;
       bindInput(fresh, s[0]);
-      if (hadFocus) fresh.focus();
+      if (hadFocus) {
+        fresh.focus();
+        // Chrome selects all text on a scripted focus(); the next key would
+        // then replace what was typed. Put the caret back where it was.
+        var end = fresh.value.length;
+        try { fresh.setSelectionRange(selStart == null ? end : selStart, selEnd == null ? end : selEnd); } catch (e) { /* ignore */ }
+      }
     });
     coords.pickup = coords.dest = null;
     Array.prototype.forEach.call(document.querySelectorAll(".pac-container"), function (n) {
@@ -146,12 +157,13 @@
       attachAutocomplete(dest, "dest");
       // Google marks a failed box with this class instead of calling gm_authFailure in some cases.
       observer = new MutationObserver(function () {
-        if (pickup.classList.contains("gm-err-autocomplete") || dest.classList.contains("gm-err-autocomplete")) {
-          disableSuggestions();
-        }
+        var failed = [pickup, dest].some(function (el) {
+          return el.classList.contains("gm-err-autocomplete") || /sorry|went wrong/i.test(el.getAttribute("placeholder") || "");
+        });
+        if (failed) disableSuggestions();
       });
-      observer.observe(pickup, { attributes: true, attributeFilter: ["class"] });
-      observer.observe(dest, { attributes: true, attributeFilter: ["class"] });
+      observer.observe(pickup, { attributes: true, attributeFilter: ["class", "placeholder"] });
+      observer.observe(dest, { attributes: true, attributeFilter: ["class", "placeholder"] });
     } catch (e) { disableSuggestions(); }
   };
   function loadMaps() {
