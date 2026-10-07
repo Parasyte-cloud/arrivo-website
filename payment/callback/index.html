@@ -29,15 +29,15 @@
 
 <!--
   Paystack redirects here after a rider completes payment through the
-  RIDER APP (opened via Linking.openURL in a system browser — see
+  RIDER APP (opened via Linking.openURL in a system browser -- see
   arrivo-app/screens/CheckoutScreen.js). This page is only a landing spot;
   the app itself already detects the completed payment on its own via an
   AppState listener the moment the rider switches back to it, and verifies
   the transaction server-side from there. This page never needs to call
-  the backend itself — its only job is to not be a broken 404 in the
+  the backend itself -- its only job is to not be a broken 404 in the
   moment between "payment done" and "rider taps back to the app."
 
-  The website's own checkout (book.html/booking.js) does NOT use this —
+  The website's own checkout (book.html/booking.js) does NOT use this --
   it uses Paystack's Inline JS popup with its own in-page success/close
   callbacks, so it never navigates here.
 -->
@@ -45,7 +45,7 @@
   <h1>Payment received</h1>
   <div class="booking-card">
     <p style="color: var(--text-muted); font-size: 14px;">
-      Thanks — your payment went through. Head back to the RideArrivo app to see your ride.
+      Thanks, your payment went through. Head back to the RideArrivo app to see your ride.
     </p>
   </div>
 </main>

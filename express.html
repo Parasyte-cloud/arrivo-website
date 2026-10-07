@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ArrivoExpress | RideArrivo</title>
 <link rel="canonical" href="https://ridearrivo.com/express.html">
-<meta name="description" content="ArrivoExpress — on-demand rides in Lagos. Choose Economy, Comfort, XL or Premium and get matched with a nearby verified driver in minutes, no schedule needed.">
+<meta name="description" content="ArrivoExpress: on-demand rides in Lagos. Choose Economy, Comfort, XL or Premium and get matched with a nearby verified driver in minutes, no schedule needed.">
 <meta property="og:title" content="ArrivoExpress | RideArrivo">
 <meta property="og:description" content="On-demand rides in Lagos, priced by distance and time. Choose your vehicle and get matched with a nearby driver.">
 <meta property="og:type" content="website">
@@ -26,7 +26,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=31">
 <link rel="stylesheet" href="booking.css?v=31">
-<link rel="stylesheet" href="express.css?v=1">
+<link rel="stylesheet" href="express.css?v=3">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -48,17 +48,21 @@
 }
 </script>
   <script>
-    document.documentElement.classList.add("ra-launch-pending");
-    window.setTimeout(function () {
-      document.documentElement.classList.remove("ra-launch-pending");
-    }, 5000);
+    // The launch gate only matters before launch day ends. After that, do not
+    // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
+    if (Date.now() < Date.parse("2026-09-12T14:30:00+01:00") || /[?&]launchTest=1/.test(location.search)) {
+      document.documentElement.classList.add("ra-launch-pending");
+      window.setTimeout(function () {
+        document.documentElement.classList.remove("ra-launch-pending");
+      }, 5000);
+    }
   </script>
   <link rel="stylesheet" href="/launch-countdown.css?v=20260912-01">
 </head>
 <body>
 
 <!-- Real Liquid Glass needs actual refraction of what's behind it, not just
-     blur — this is the difference between "frosted panel" and "glass".
+     blur -- this is the difference between "frosted panel" and "glass".
      feTurbulence generates an organic noise field, feDisplacementMap uses it
      to warp the content underneath, the way light bends through curved
      glass. Applied via backdrop-filter: url(#liquid-glass-refraction). -->
@@ -81,6 +85,19 @@
       <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
       <a href="book.html" data-i18n="nav.bookCta">Book a ride</a>
+      <div class="nav-dropdown" id="servicesDropdown">
+        <button type="button" class="nav-dropdown-trigger" id="servicesTrigger" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="arrivoExpress.servicesLabel">Services</span>
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <ul class="nav-dropdown-menu" id="servicesMenu" role="menu" hidden>
+          <li><a href="express.html" role="menuitem" data-i18n="nav.express">ArrivoExpress</a></li>
+          <li><a href="https://move.ridearrivo.com" target="_blank" rel="noopener" role="menuitem" data-i18n="nav.removals">Removals</a></li>
+          <li><a href="https://boat.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoBoat</a></li>
+          <li><a href="https://air.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoAir</a></li>
+          <li><a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" role="menuitem" data-i18n="nav.membership">Membership</a></li>
+        </ul>
+      </div>
     </nav>
     <div class="header-actions">
       <span class="live-clock" id="liveClock" aria-hidden="true"></span>
@@ -104,11 +121,18 @@
 </header>
 
 <main class="wrap booking-wrap">
+  <div class="page-banner">
+    <picture>
+      <source media="(max-width: 640px)" srcset="assets/services/express-page-mobile-560.webp" width="560" height="373" type="image/webp">
+      <source srcset="assets/services/express-page-640.webp 640w, assets/services/express-page-1024.webp 1024w" sizes="(max-width: 1100px) 92vw, 1024px" type="image/webp">
+      <img src="assets/services/express-page-1024.webp" width="1024" height="439" alt="A rider stepping out of a hotel while her driver opens the car door at dusk" decoding="async" fetchpriority="high">
+    </picture>
+  </div>
   <h1 data-i18n="arrivoExpress.title">ArrivoExpress</h1>
-  <p class="step-sub" data-i18n="arrivoExpress.tagline">On-demand rides across Lagos — tap to book, no schedule needed.</p>
+  <p class="step-sub" data-i18n="arrivoExpress.tagline">On-demand rides across Lagos. Tap to book, no schedule needed.</p>
 
   <!-- AUTH GATE: ArrivoExpress settles from your RideArrivo Wallet, so a
-       registered, logged-in account is required — same rule book.html
+       registered, logged-in account is required -- same rule book.html
        already enforces for scheduled bookings (no guest checkout there
        either, see its own authGate). -->
   <div class="booking-card" id="authGate" hidden style="text-align:center;">
@@ -132,23 +156,41 @@
   </div>
 
   <div class="booking-card" id="loadErrorCard" hidden style="text-align:center;">
-    <p class="error-text" id="loadErrorText" style="margin-bottom:14px;"></p>
+    <p class="error-text" id="loadErrorText" role="alert" style="margin-bottom:14px;"></p>
     <button type="button" class="btn btn-primary" id="loadRetryBtn" style="width:100%;" data-i18n="arrivoExpress.tryAgain">Try again</button>
   </div>
 
   <!-- PICKER -->
   <div class="booking-card" id="pickerCard" hidden>
-    <h2 style="font-size:19px; margin-bottom:6px;" data-i18n="arrivoExpress.chooseYourRide">Choose your ride</h2>
-    <div class="vehicle-options" id="tierOptions"></div>
-
-    <h2 style="font-size:19px; margin-top:22px; margin-bottom:6px;" data-i18n="arrivoExpress.whereTo">Where to?</h2>
+    <h2 style="font-size:19px; margin-bottom:6px;" data-i18n="arrivoExpress.whereTo">Where to?</h2>
     <label class="field-label" for="rnPickup" data-i18n="arrivoExpress.pickupPlaceholder">Pickup location</label>
     <input type="text" id="rnPickup" class="field" data-i18n-placeholder="arrivoExpress.pickupPlaceholder" placeholder="Pickup location" autocomplete="off">
+    <div class="rn-pickup-actions">
+      <button type="button" class="btn btn-ghost rn-locate" id="useLocationBtn" data-i18n="arrivoExpress.useMyLocation">Use my current location</button>
+      <button type="button" class="rn-swap" id="swapBtn" aria-label="Swap pickup and destination" data-i18n-aria-label="arrivoExpress.swapAria">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 4v15m0 0l-3.5-3.5M8 19l3.5-3.5M16 20V5m0 0l-3.5 3.5M16 5l3.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
     <label class="field-label" for="rnDestination" data-i18n="arrivoExpress.destinationPlaceholder">Destination</label>
     <input type="text" id="rnDestination" class="field" data-i18n-placeholder="arrivoExpress.destinationPlaceholder" placeholder="Destination" autocomplete="off">
-    <p class="error-text" id="mapsError" hidden data-i18n="booking.mapsUnavailable">Location search is unavailable right now — you can still type an address, but auto-complete won't work.</p>
-    <p class="error-text" id="pickerError" hidden></p>
-    <button type="button" class="btn btn-primary" id="seeFareBtn" style="width:100%; margin-top:10px;" data-i18n="arrivoExpress.seeFare">See fare</button>
+    <div class="rn-recent" id="recentPlaces" hidden>
+      <span class="rn-recent-label" data-i18n="arrivoExpress.recentLabel">Recent places</span>
+      <div class="rn-recent-list" id="recentList"></div>
+      <button type="button" class="rn-link" id="clearRecentBtn" data-i18n="arrivoExpress.clearRecent">Clear</button>
+    </div>
+
+    <!-- Single persistent map -- express.js physically reparents #rnMap
+         between this slot and #rnMapQuoteSlot below rather than creating a
+         second Google Map instance per card, same one-map-instance idea as
+         book.html's #routeMap. -->
+    <div id="rnMapPickerSlot"><div id="rnMap" class="route-map" role="img" aria-label="Map showing your pickup and destination" data-i18n-aria-label="arrivoExpress.mapAriaLabel"></div></div>
+    <p class="error-text" id="mapsError" hidden role="alert" data-i18n="arrivoExpress.mapsUnavailable">Location search is unavailable right now, so we can't set your pickup. Please check your connection and reload the page.</p>
+
+    <h2 style="font-size:19px; margin-top:22px; margin-bottom:2px;" data-i18n="arrivoExpress.chooseYourRide">Choose your ride</h2>
+    <p class="rn-fine-print rn-prices-status" id="pricesStatus" role="status" aria-live="polite"></p>
+    <div class="vehicle-options" id="tierOptions"></div>
+    <p class="error-text" id="pickerError" role="alert" hidden></p>
+    <button type="button" class="btn btn-primary" id="seeFareBtn" style="width:100%; margin-top:10px;" data-i18n="arrivoExpress.continueBtn">Continue</button>
   </div>
 
   <!-- QUOTE -->
@@ -160,24 +202,45 @@
         <span id="quoteZoneTag" class="v-badge" style="display:none;" data-i18n="arrivoExpress.highTrafficArea">High-traffic area</span>
       </div>
       <p class="rn-route" id="quoteRoute"></p>
+      <div id="rnMapQuoteSlot"></div>
       <div class="rn-summary-row"><span data-i18n="arrivoExpress.estimatedDistance">Estimated distance</span><span id="quoteDistance"></span></div>
       <div class="rn-summary-row"><span data-i18n="arrivoExpress.estimatedTime">Estimated time</span><span id="quoteDuration"></span></div>
+      <div class="rn-summary-row" id="quoteEtaRow" hidden><span data-i18n="arrivoExpress.quotePickupEta">Driver arrives in</span><span id="quoteEta"></span></div>
       <div class="rn-summary-row rn-total"><span data-i18n="arrivoExpress.totalFare">Total fare</span><span id="quoteFare"></span></div>
+      <details class="rn-breakdown" id="quoteBreakdown">
+        <summary data-i18n="arrivoExpress.fareBreakdownTitle">How this fare is worked out</summary>
+        <div id="quoteBreakdownRows"></div>
+      </details>
       <p class="rn-fine-print" id="walletBalanceNote"></p>
     </div>
-    <p class="error-text" id="quoteError" hidden></p>
-    <button type="button" class="btn btn-primary" id="confirmRideBtn" style="width:100%; margin-top:10px;" data-i18n="arrivoExpress.confirmFindDriver">Confirm — find a driver</button>
+    <p class="error-text" id="quoteError" role="alert" hidden></p>
+    <button type="button" class="btn btn-primary" id="confirmRideBtn" style="width:100%; margin-top:10px;" data-i18n="arrivoExpress.confirmFindDriver">Confirm and find a driver</button>
     <button type="button" class="btn btn-ghost" id="backToPickerBtn" style="width:100%; margin-top:8px;" data-i18n="arrivoExpress.back">Back</button>
   </div>
 
   <!-- SEARCHING -->
   <div class="booking-card" id="searchingCard" hidden style="text-align:center;">
     <div class="rn-spinner" aria-hidden="true"></div>
-    <h2 id="searchingStatus" style="font-size:19px; margin-top:12px;" data-i18n="arrivoExpress.statusSearching">Finding you a nearby driver…</h2>
+    <h2 id="searchingStatus" aria-live="polite" style="font-size:19px; margin-top:12px;" data-i18n="arrivoExpress.statusSearching">Finding you a nearby driver…</h2>
     <p class="rn-route" id="searchingRoute"></p>
     <p id="searchingFare" style="font-weight:700; font-size:20px; color:var(--amber);"></p>
+    <p class="rn-elapsed" id="searchingElapsed" aria-live="off"></p>
+    <p class="rn-fine-print" id="searchingLonger" hidden data-i18n="arrivoExpress.searchLonger">Still looking. We keep widening the search to reach more drivers.</p>
+    <p class="rn-fine-print" data-i18n="arrivoExpress.searchHeldNote">Your fare is held in your wallet. It is refunded automatically if no driver accepts, or if you cancel.</p>
+    <p class="error-text" id="searchingError" role="alert" hidden></p>
     <button type="button" class="btn btn-ghost" id="cancelSearchBtn" style="width:100%; margin-top:14px;" data-i18n="arrivoExpress.cancelRequest">Cancel request</button>
   </div>
+  <section class="section section-tint cross-sell">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="arrivoExpress.crossSellEyebrow">More from RideArrivo</span>
+      <h2 data-i18n="arrivoExpress.crossSellTitle">Going further than the city?</h2>
+      <div class="cross-sell-ctas">
+        <a href="https://boat.ridearrivo.com" target="_blank" rel="noopener" class="btn btn-ghost" data-i18n="arrivoExpress.crossSellBoat">Charter a boat</a>
+        <a href="https://air.ridearrivo.com" target="_blank" rel="noopener" class="btn btn-ghost" data-i18n="arrivoExpress.crossSellAir">Charter a jet</a>
+        <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" class="btn btn-primary" data-i18n="arrivoExpress.crossSellMembership">Join membership</a>
+      </div>
+    </div>
+  </section>
 </main>
 
 <footer class="site-footer">
@@ -235,6 +298,10 @@
     <div class="footer-col">
       <h4 data-i18n="footer.getStartedHeading">Get Started</h4>
       <a href="express.html" data-i18n="nav.express">ArrivoExpress</a>
+      <a href="https://move.ridearrivo.com" target="_blank" rel="noopener" data-i18n="nav.removals">Removals</a>
+      <a href="https://boat.ridearrivo.com" target="_blank" rel="noopener">ArrivoBoat</a>
+      <a href="https://air.ridearrivo.com" target="_blank" rel="noopener">ArrivoAir</a>
+      <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" data-i18n="nav.membership">Membership</a>
       <a href="book.html" data-i18n="nav.bookCta">Book a ride</a>
       <a href="driver.html" data-i18n="footer.driverPortal">Driver Portal</a>
       <a href="account.html" data-i18n="footer.myAccount">My Account</a>
@@ -297,8 +364,11 @@
   </div>
 </footer>
 
-<script src="i18n.js?v=31"></script>
-<script src="express.js?v=1"></script>
+<script src="i18n.js?v=37"></script>
+<script src="express-config.js?v=1"></script>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script src="paystack-config.js?v=32"></script>
+<script src="express.js?v=7"></script>
 <script src="clock.js"></script>
 <!-- Google Maps Places Autocomplete for the pickup/destination fields.
      Same key as book.html, now loaded from maps-config.js instead of
