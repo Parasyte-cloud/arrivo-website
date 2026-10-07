@@ -48,7 +48,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="styles.css?v=33">
-<link rel="stylesheet" href="home.css?v=14">
+<link rel="stylesheet" href="home.css?v=15">
   <script>
     // The launch gate only matters before launch day ends. After that, do not
     // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
@@ -103,6 +103,62 @@
       "name": "Book a RideArrivo pickup"
     }
   }
+}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "What if my flight is delayed?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "We track your flight number, so your driver is there when you actually land, not when the schedule said you would. If a flight is cancelled or badly delayed, contact us and we will sort it out with you."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do I pay?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "At checkout by card through Paystack, from your RideArrivo wallet balance, or with a membership. The fare is shown before you confirm anything."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Can I cancel a booking?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes. Cancel at least 48 hours before pickup for a full refund. Later than that, you get 50% back. Refunds are processed within 7 business days."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How far ahead should I book?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Airport pickups work best booked ahead, so a driver is lined up for your flight. Need a ride sooner than that? Book on demand with ArrivoExpress."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Are the drivers verified?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Every driver completes identity and licence verification before accepting rides, and you can share your trip live with someone who wants to know you arrived safely."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Is RideArrivo available in my language?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes. The website and booking are available in English, French, Chinese, Hindi, German, Spanish and Portuguese."
+   }
+  }
+ ]
 }
 </script>
 </head>
@@ -327,6 +383,56 @@
           <a href="book.html" class="btn btn-primary" data-i18n="hero.ctaPrimary">Book a ride now</a>
         </li>
       </ol>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="section faq-section" id="faq">
+    <div class="wrap">
+      <div class="faq-head">
+        <span class="eyebrow" data-i18n="home.faqEyebrow">Questions</span>
+        <h2 data-i18n="home.faqHeadline">Before you book, answered.</h2>
+      </div>
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary><span data-i18n="home.faqQ1">What if my flight is delayed?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+          <div class="faq-body">
+            <p data-i18n="home.faqA1">We track your flight number, so your driver is there when you actually land, not when the schedule said you would. If a flight is cancelled or badly delayed, contact us and we will sort it out with you.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary><span data-i18n="home.faqQ2">How do I pay?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+          <div class="faq-body">
+            <p data-i18n="home.faqA2">At checkout by card through Paystack, from your RideArrivo wallet balance, or with a membership. The fare is shown before you confirm anything.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary><span data-i18n="home.faqQ3">Can I cancel a booking?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+          <div class="faq-body">
+            <p data-i18n="home.faqA3">Yes. Cancel at least 48 hours before pickup for a full refund. Later than that, you get 50% back. Refunds are processed within 7 business days.</p>
+            <p><a href="terms.html#cancellation" data-i18n="home.faqTermsLink">Read the full cancellation policy</a></p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary><span data-i18n="home.faqQ4">How far ahead should I book?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+          <div class="faq-body">
+            <p data-i18n="home.faqA4">Airport pickups work best booked ahead, so a driver is lined up for your flight. Need a ride sooner than that? Book on demand with ArrivoExpress.</p>
+            <p><a href="express.html" data-i18n="home.faqExpressLink">Go to ArrivoExpress</a></p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary><span data-i18n="home.faqQ5">Are the drivers verified?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+          <div class="faq-body">
+            <p data-i18n="home.faqA5">Every driver completes identity and licence verification before accepting rides, and you can share your trip live with someone who wants to know you arrived safely.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary><span data-i18n="home.faqQ6">Is RideArrivo available in my language?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+          <div class="faq-body">
+            <p data-i18n="home.faqA6">Yes. The website and booking are available in English, French, Chinese, Hindi, German, Spanish and Portuguese.</p>
+          </div>
+        </details>
+      </div>
     </div>
   </section>
 
@@ -705,7 +811,7 @@
   </div>
 </footer>
 
-<script src="i18n.js?v=38"></script>
+<script src="i18n.js?v=39"></script>
 <script src="script.js?v=32"></script>
 <script src="clock.js?v=32"></script>
 <script src="pwa-register.js?v=32"></script>
