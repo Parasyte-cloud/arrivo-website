@@ -62,7 +62,7 @@
 </head>
 <body>
 
-<a class="skip-link" href="#main">Skip to content</a>
+<a class="skip-link" href="#main" data-i18n="ui.skip">Skip to content</a>
 <header class="site-header">
   <div class="wrap header-inner">
     <a href="index.html" class="brand" aria-label="RideArrivo">
@@ -70,7 +70,7 @@
       <img width="1829" height="309" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark wm-on-light"><img width="1829" height="309" src="assets/ridearrivo-wordmark-light.png" alt="" class="brand-wordmark wm-on-dark" aria-hidden="true">
     </a>
 
-    <nav class="main-nav" aria-label="Primary">
+    <nav class="main-nav" aria-label="Primary" data-i18n-aria="ui.navPrimary">
       <a href="index.html#how" data-i18n="nav.how">How it works</a>
       <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
@@ -89,7 +89,7 @@
       </div>
     </nav>
 
-    <nav class="mobile-nav-menu" id="mobileNavMenu" aria-label="Mobile" hidden>
+    <nav class="mobile-nav-menu" id="mobileNavMenu" aria-label="Mobile" data-i18n-aria="ui.navMobile" hidden>
       <div class="mobile-nav-menu-header">
         <img width="1829" height="309" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark wm-on-light"><img width="1829" height="309" src="assets/ridearrivo-wordmark-light.png" alt="" class="brand-wordmark wm-on-dark" aria-hidden="true">
       </div>
@@ -131,7 +131,7 @@
         <span id="accountNavLabel">Register or Login</span>
       </a>
       <a href="book.html" class="btn btn-primary btn-sm" data-i18n="nav.bookCta">Book a ride</a>
-      <button type="button" class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Menu" aria-expanded="false">
+      <button type="button" class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Menu" data-i18n-aria="ui.menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     </div>
@@ -179,7 +179,7 @@
       <div id="fleetConvoyList"></div>
     </div>
 
-    <button class="panic-btn" id="panicBtn" data-i18n="track.panicBtn">🚨 I don't feel safe, alert support</button>
+    <button type="button" class="panic-btn" id="panicBtn" data-i18n="track.panicBtn">🚨 I don't feel safe, alert support</button>
     <div class="panic-active" id="panicActiveMsg" hidden data-i18n="track.panicActiveMsg">🚨 Support has been alerted about this ride.</div>
   </div>
 
@@ -212,7 +212,7 @@
         </div>
       </div>
       <p class="error-text" id="rateError" hidden></p>
-      <button class="btn btn-primary" id="rateSendBtn" style="width:100%;" data-i18n="track.submitRating">Submit rating</button>
+      <button type="button" class="btn btn-primary" id="rateSendBtn" style="width:100%;" data-i18n="track.submitRating">Submit rating</button>
     </div>
   </div>
 
@@ -236,7 +236,7 @@
         <button type="button" class="for-who-opt" data-method="card" data-i18n="track.tipMethodCard">Card</button>
       </div>
       <p class="error-text" id="tipError" hidden></p>
-      <button class="btn btn-primary" id="tipSendBtn" style="width:100%;" data-i18n="track.sendTip">Send tip</button>
+      <button type="button" class="btn btn-primary" id="tipSendBtn" style="width:100%;" data-i18n="track.sendTip">Send tip</button>
     </div>
   </div>
 
@@ -245,7 +245,7 @@
   </div>
 </main>
 
-<script src="i18n.js?v=39"></script>
+<script src="i18n.js?v=40"></script>
 <script src="paystack-config.js?v=32"></script>
 <script>
   var API_BASE_URL = "https://api.ridearrivo.com";
@@ -912,6 +912,7 @@
 <!-- Paystack's official inline checkout library -- used for card tips only. -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
+<script src="i18n-apply.js?v=1" defer></script>
 <script src="theme.js?v=3" defer></script>
 <script src="auth-header.js?v=2" defer></script>
 </body>
