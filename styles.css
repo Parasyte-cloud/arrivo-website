@@ -1728,8 +1728,19 @@ a { color: inherit; text-decoration: none; }
   .promo-band-photo { order: 0; }
 }
 
-.hero-more { margin: 14px 0 0; font-size: 14px; }
-.hero-more a { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+/* Secondary service links in the hero: pills, not a sentence of bare links.
+   Light text on the dark glass card (white on ink is well above 4.5:1),
+   44px tap height, visible hover and keyboard focus. */
+.hero-chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 22px; }
+.hero-chips a {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px;
+  border: 1px solid rgba(255,255,255,0.45); border-radius: 999px;
+  background: rgba(255,255,255,0.10); color: #fff;
+  font-size: 14px; font-weight: 600; text-decoration: none;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.hero-chips a:hover { background: var(--amber); border-color: var(--amber); color: var(--ink); }
+.hero-chips a:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .cross-sell h2 { margin: 6px 0 18px; }
 
 /* Banner photo at the top of the ArrivoExpress page. The photo is the first
