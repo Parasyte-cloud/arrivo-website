@@ -1,10 +1,10 @@
 (function () {
   "use strict";
 
-  // ── Configuration — replace before going live ──────────────────────────
-  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com"; // same as script.js — point at your deployed backend
+  // ── Configuration -- replace before going live ──────────────────────────
+  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com"; // same as script.js -- point at your deployed backend
   // PAYSTACK_PUBLIC_KEY now lives in paystack-config.js (loaded before this
-  // file in book.html) — shared with track.html's tip flow so the two
+  // file in book.html) -- shared with track.html's tip flow so the two
   // can't drift out of sync again (see that file for why).
 
   var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt"];
@@ -42,6 +42,19 @@
     userLocation: null, locationPermission: null, excludedAreaMatch: null,
   };
 
+  // ── Uber-style rebuild: cross-step validator hooks ──────────────────────
+  // The old 5-tab wizard is now 3 screens (Trip / You & Ride / Review & Pay)
+  // -- each screen's single Continue button now has to run validation that
+  // used to live on two separate steps. Rather than duplicating that logic,
+  // each contributing init function (initStep1, initStep2) assigns its
+  // validator function here once, and the screen's actual Continue handler
+  // (in initStep4 for Trip, initStep3 for You & Ride) calls it first. All of
+  // these init functions share this one closure, so this is just a plain
+  // variable, not global state.
+  var flightValidator = null; // set by initStep2 -- validates flight/schedule fields
+  var contactFieldsValidator = null; // set by initStep1 -- validates contact fields
+  var saveContactProfileFn = null; // set by initStep1 -- persists contact fields to the rider's profile
+
   // ───────────────────────── i18n (same pattern as script.js) ─────────────────────────
   function getNested(obj, path) {
     return path.split(".").reduce(function (acc, key) { return acc && acc[key]; }, obj);
@@ -78,7 +91,7 @@
   }
 
   // Same idea as t(), but for copy that needs a runtime value spliced in
-  // (a passenger count, a vehicle name) — replaces {token} placeholders in
+  // (a passenger count, a vehicle name) -- replaces {token} placeholders in
   // the translated string. Simple on purpose: this app has no existing
   // templated-string convention, and a real i18n formatting library would
   // be overkill for a handful of strings.
@@ -91,7 +104,7 @@
   }
 
   // "dropoff" (Airport Drop-off) is priced and location-gathered exactly
-  // like "one_way" (Airport Pickup) — both are per-location trips with a
+  // like "one_way" (Airport Pickup) -- both are per-location trips with a
   // real pickup/destination address, unlike the flat-rate multi-day
   // charter types. Used everywhere a check used to just be
   // `bookingType === "one_way"` before Airport Drop-off existed.
@@ -190,7 +203,7 @@
         return { ok: res.ok, status: res.status, data: data };
       });
     }).catch(function () {
-      // fetch() itself rejected — offline, server unreachable, CORS, etc.
+      // fetch() itself rejected -- offline, server unreachable, CORS, etc.
       // Previously uncaught here, so every caller's .then(...) simply never
       // ran on a network failure: renderReview() left loadingText visible
       // and payBtn disabled forever with no error shown, since its only
@@ -237,7 +250,7 @@
     }
     function hideError(el) { el.hidden = true; }
 
-    // "Who is this ride for" — myself vs. someone else. The top WhatsApp
+    // "Who is this ride for" -- myself vs. someone else. The top WhatsApp
     // field is always the account holder's own number; when it's for
     // someone else, a separate "Passenger's WhatsApp number" field appears
     // alongside their name, so the two numbers are always visibly distinct
@@ -257,7 +270,7 @@
     }
 
     // Prefill the read-only name/email summary from the already-authenticated
-    // rider's profile — registration happened on signup.html/login.html
+    // rider's profile -- registration happened on signup.html/login.html
     // before they ever reached this page.
     api("/api/auth/me", { headers: authHeader() }).then(function (result) {
       if (result.ok) {
@@ -266,7 +279,7 @@
         document.getElementById("profileName").textContent = state.name;
         document.getElementById("profileEmail").textContent = state.email;
         if (result.data.user.whatsapp_number) {
-          // Stored as a full international number (e.g. "+2348011112222") —
+          // Stored as a full international number (e.g. "+2348011112222") --
           // split it back into country code + national number for the two-part input.
           var stored = result.data.user.whatsapp_number;
           var match = ARRIVO_COUNTRY_CODES
@@ -286,19 +299,26 @@
           if (eMatch) emergencyPhoneField.setRaw(eMatch.dial, eStored.slice(eMatch.dial.length));
         }
       } else {
-        // Token expired or invalid — send them back to log in properly.
+        // Token expired or invalid -- send them back to log in properly.
         localStorage.removeItem("arrivo_rider_token");
         window.location.href = "login.html?next=book.html";
       }
     });
 
-    document.getElementById("contactContinue").addEventListener("click", function () {
+    // Was the "contactContinue" click handler, back when Contact was its own
+    // step with its own Continue button. Contact is now the top half of the
+    // "You & Ride" screen (Step 2), whose single Continue button also has to
+    // validate the luggage/vehicle fields below it -- so this only validates
+    // and stores the contact fields; the actual navigation and the luggage/
+    // vehicle checks live in initStep3's "rideContinue" handler, which calls
+    // this first via the contactFieldsValidator hook above.
+    function validateContactFields() {
       hideError(contactError);
 
       var phoneResult = whatsappField.getValue();
       if (!phoneResult.valid) {
         showError(contactError, phoneResult.message);
-        return;
+        return false;
       }
       state.whatsapp = phoneResult.full;
       state.country = document.getElementById("fCountry").value.trim();
@@ -310,16 +330,16 @@
         state.passengerName = passengerNameInput ? passengerNameInput.value.trim() : "";
         if (!state.passengerName) {
           showError(contactError, t("booking.passengerNameRequired"));
-          return;
+          return false;
         }
         var passengerPhoneResult = passengerPhoneField.getValue();
         if (!passengerPhoneResult.valid) {
           showError(contactError, t("booking.passengerWhatsappRequired"));
-          return;
+          return false;
         }
         if (passengerPhoneResult.full === state.whatsapp) {
           showError(contactError, t("booking.samePassengerNumber"));
-          return;
+          return false;
         }
         state.passengerWhatsapp = passengerPhoneResult.full;
       } else {
@@ -331,54 +351,53 @@
       state.emergencyContactName = emergencyNameInput ? emergencyNameInput.value.trim() : "";
       if (!state.emergencyContactName) {
         showError(contactError, t("booking.emergencyContactNameRequired"));
-        return;
+        return false;
       }
       var emergencyPhoneResult = emergencyPhoneField.getValue();
       if (!emergencyPhoneResult.valid) {
         showError(contactError, t("booking.emergencyContactPhoneRequired"));
-        return;
+        return false;
       }
       if (emergencyPhoneResult.full === state.whatsapp || emergencyPhoneResult.full === state.passengerWhatsapp) {
         showError(contactError, t("booking.emergencyContactSameAsRider"));
-        return;
+        return false;
       }
       state.emergencyContactPhone = emergencyPhoneResult.full;
 
       if (!state.country) {
         showError(contactError, "Please enter your country of residence.");
-        return;
+        return false;
       }
       if (!state.dashcamConsent) {
         showError(contactError, t("booking.dashcamConsentRequired"));
-        return;
+        return false;
       }
       if (!state.agreedToTerms) {
         showError(contactError, "Please agree to the privacy policy and terms of service to continue.");
-        return;
+        return false;
       }
+      return true;
+    }
 
-
-      // Save WhatsApp/Country to the rider's profile for next time, then continue.
-      // Only when booking for self — if this is a passenger's number, it
-      // belongs to the ride, not to the account holder's saved profile.
+    // Save WhatsApp/Country to the rider's profile for next time. Only
+    // called once every field on the combined "You & Ride" screen has
+    // validated -- see initStep3's rideContinue handler.
+    function saveContactProfile() {
       var profilePatch = {
         countryOfResidence: state.country,
         whatsappNumber: state.whatsapp,
         emergencyContactName: state.emergencyContactName,
         emergencyContactPhone: state.emergencyContactPhone,
       };
-
-      api("/api/auth/me", {
+      return api("/api/auth/me", {
         method: "PATCH",
         headers: authHeader(),
         body: JSON.stringify(profilePatch),
-      }).then(function () {
-        goToStep(2);
-      }).catch(function () {
-        // Non-critical if this save fails — don't block the booking over it.
-        goToStep(2);
       });
-    });
+    }
+
+    contactFieldsValidator = validateContactFields;
+    saveContactProfileFn = saveContactProfile;
   }
 
   // ───────────────────────── Step 2: Trip type + Flight ─────────────────────────
@@ -402,7 +421,7 @@
     var scheduledErrorBox = document.getElementById("scheduledPickupError");
     var dateInput = document.getElementById("fScheduledDate");
     var timeInput = document.getElementById("fScheduledTime");
-    // Can't be a static HTML attribute since "today" changes — set it once
+    // Can't be a static HTML attribute since "today" changes -- set it once
     // here instead, so the date picker itself refuses a past date (immediate
     // feedback) rather than only learning it's invalid after hitting Continue.
     if (dateInput) {
@@ -413,10 +432,10 @@
     var fullDayCountSection = document.getElementById("fullDayCountSection");
     var fullDayCountInput = document.getElementById("fFullDayCountInput");
     // Matches CHARTER_MULTIPLIER.full_day in arrivo-backend/services/fare.js
-    // — a single full day's multiplier, before any multi-day count is applied.
+    // -- a single full day's multiplier, before any multi-day count is applied.
     var FULL_DAY_BASE_MULTIPLIER = 6;
 
-    // No preset ceiling here — any whole number the rider types (8, 18, 78...)
+    // No preset ceiling here -- any whole number the rider types (8, 18, 78...)
     // is accepted and the fare calculated on checkout. Only a floor of 1 and
     // a fallback to 1 for non-numeric input. The backend still enforces a
     // generous sanity-check upper bound server-side (MAX_FULL_DAY_COUNT in
@@ -428,6 +447,7 @@
       state.multiplier = FULL_DAY_BASE_MULTIPLIER * normalized;
       if (fullDayCountInput) fullDayCountInput.value = normalized;
       updatePriceLabels();
+      recalculateFareEstimate();
     }
 
     if (fullDayCountInput) {
@@ -459,7 +479,7 @@
 
       // Airport Pickup: flight number required (it's the only way to track
       // an arriving rider's ETA). Airport Drop-off: optional (useful for
-      // delay-awareness — timing already comes from the scheduled date/time
+      // delay-awareness -- timing already comes from the scheduled date/time
       // above, not from a flight-landing event).
       if (isDropoff) {
         flightLabel.textContent = t("booking.flightTitleOptional");
@@ -477,16 +497,17 @@
         state.bookingType = chip.getAttribute("data-type");
         state.durationDays = Number(chip.getAttribute("data-days"));
         state.multiplier = Number(chip.getAttribute("data-multiplier"));
-        // Reset back to a single day each time "Full Day" is (re)selected —
+        // Reset back to a single day each time "Full Day" is (re)selected --
         // same "leave it as it is" default as landing on the step fresh.
         if (state.bookingType === "full_day") setFullDayCount(1);
         updateFlightSectionVisibility();
         updatePriceLabels();
+        recalculateFareEstimate(); // the live fare box (Step 2) is priced differently per booking type
       });
     });
     updateFlightSectionVisibility(); // set initial state on first load (defaults to one-way)
 
-    // Flight number is required for one-way bookings — it's the only way
+    // Flight number is required for one-way bookings -- it's the only way
     // we can actually track a rider's flight and know their real arrival
     // time (see arrivo-backend/routes/flights.js). Clear the "required"
     // warning as soon as they start typing again, rather than leaving it
@@ -520,7 +541,7 @@
               : "");
         } else {
           // Show the server's actual message (it already distinguishes
-          // "not found yet" from a real lookup failure — see
+          // "not found yet" from a real lookup failure -- see
           // arrivo-backend/routes/flights.js) instead of one hardcoded
           // string for every failure. Previously this always showed the
           // static "double-check the number" copy even when the real
@@ -534,13 +555,18 @@
       });
     });
 
-    document.getElementById("flightContinue").addEventListener("click", function () {
+    // Was the "flightContinue" click handler, back when Flight/schedule was
+    // its own step. Flight/schedule fields are now the top half of the
+    // "Trip" screen (Step 1), whose single Continue button also has to
+    // validate the pickup/drop-off route below it -- so this only validates
+    // and stores the flight/schedule fields; navigation and the route
+    // validation live in initStep4's "tripContinue" handler, which calls
+    // this first via the flightValidator hook above.
+    function validateFlightAndSchedule() {
       if (!isOneWayStyle(state.bookingType)) {
         // Charter bookings don't have a flight to track.
         state.flightNumber = "";
-        goToStep(3);
-        setupPlacesForStep4(); // Pickup is now step 3 — the map container only has real dimensions once this step is visible. Function name predates the reorder.
-        return;
+        return true;
       }
 
       if (state.bookingType === "dropoff") {
@@ -551,16 +577,16 @@
         scheduledErrorBox.textContent = scheduledErrorBox.dataset.defaultText;
         if (!scheduled || isNaN(scheduled.getTime()) || scheduled.getTime() <= Date.now()) {
           scheduledErrorBox.hidden = false;
-          return;
+          return false;
         }
         // Mirrors arrivo-backend/services/bookingWindow.js ON_THE_GO_ONLY_HOURS.
         // Caught here so the rider fixes the time now, not after filling in
-        // three more steps.
+        // the rest of the form.
         if (scheduled.getTime() - Date.now() < MIN_STANDARD_BOOKING_HOURS * 60 * 60 * 1000) {
           scheduledErrorBox.hidden = false;
           scheduledErrorBox.textContent = "Drop-offs need to be booked at least " + MIN_STANDARD_BOOKING_HOURS +
             " hours ahead. Please pick a later time, or message us on WhatsApp at +2348162706078 for a pickup sooner than that.";
-          return;
+          return false;
         }
         scheduledErrorBox.hidden = true;
         state.scheduledPickupAt = scheduled.toISOString();
@@ -574,14 +600,14 @@
       if (state.bookingType === "one_way" && !flightNumber) {
         requiredErrorBox.hidden = false;
         flightInput.focus();
-        return;
+        return false;
       }
       requiredErrorBox.hidden = true;
       state.flightNumber = flightNumber;
-      goToStep(3);
-      setupPlacesForStep4(); // Pickup is now step 3 — the map container only has real dimensions once this step is visible. Function name predates the reorder.
-    });
-    document.getElementById("backTo1").addEventListener("click", function () { goToStep(1); });
+      return true;
+    }
+
+    flightValidator = validateFlightAndSchedule;
   }
 
   // ───────────────────────── Step 3: Luggage & Vehicle ─────────────────────────
@@ -589,11 +615,11 @@
   // affects vehicle choice) + checked bags (the actual cargo load) + a
   // heavy/oversized flag (mirrors an airline's "excess baggage" question).
   // Heavy/oversized or a large checked-bag count is what should steer
-  // someone toward the Pickup Truck — it's a cargo vehicle, not a bigger
+  // someone toward the Pickup Truck -- it's a cargo vehicle, not a bigger
   // passenger vehicle, so it's recommended independently of passenger
   // count. A big passenger count with normal luggage still recommends
   // Executive (truck), same as before. Recommending is the only thing
-  // this does — the rider can always pick a different vehicle manually
+  // this does -- the rider can always pick a different vehicle manually
   // (see selectVehicle below), same as the existing suv/truck behavior.
   function recommendVehicle(checkedBags, bulky, passengers) {
     if (bulky || checkedBags >= 5) return "pickup";
@@ -609,13 +635,13 @@
     var childrenInput = document.getElementById("fChildren");
     var passengersError = document.getElementById("passengersError");
     var vehicleCards = Array.prototype.slice.call(document.querySelectorAll(".vehicle-card"));
-    // Booking-type chips now live in Step 2 (initStep2) — moved there so
+    // Booking-type chips now live in Step 2 (initStep2) -- moved there so
     // the flight-number question can react to them. Nothing to bind here
     // anymore.
 
     // Updates each vehicle card's "× N" multi-vehicle note and disables
     // only the vehicles that would need MORE than MAX_AUTO_VEHICLE_COUNT of
-    // themselves to fit the group — a group bigger than one vehicle holds
+    // themselves to fit the group -- a group bigger than one vehicle holds
     // no longer blocks anything, it just books more than one (see
     // computeVehicleCount above), same as both apps already do.
     function updateRecommendation() {
@@ -648,7 +674,7 @@
 
       // If the passenger count grew past what the manually-picked vehicle
       // can handle even across MAX_AUTO_VEHICLE_COUNT of it, don't leave an
-      // invalid selection standing — fall back to the auto-recommendation.
+      // invalid selection standing -- fall back to the auto-recommendation.
       if (state.vehicleManuallyPicked) {
         var currentCard = vehicleCards.filter(function (c) { return c.getAttribute("data-vehicle") === state.vehicle; })[0];
         var currentTooLarge = currentCard ? computeVehicleCount(passengers, state.vehicle) > MAX_AUTO_VEHICLE_COUNT : false;
@@ -667,11 +693,16 @@
       state.vehicleBasePrice = Number(card.getAttribute("data-price"));
       if (manual) state.vehicleManuallyPicked = true;
       updateLuxuryVisibility();
+      // The vehicle is what the live fare estimate below is actually
+      // priced on now (see recalculateFareEstimate) -- re-run it any time
+      // the selection changes, not just on the route/add-on changes it
+      // already listened for.
+      recalculateFareEstimate();
     }
 
     // Luxury only applies to sedan/suv (arrivo-backend/services/fare.js's
-    // LUXURY_SURCHARGE_USD has no entry for truck/pickup — Executive is
-    // already the premium tier, Pickup Truck is a cargo vehicle) — this was
+    // LUXURY_SURCHARGE_USD has no entry for truck/pickup -- Executive is
+    // already the premium tier, Pickup Truck is a cargo vehicle) -- this was
     // previously missing entirely from the website, so switching to a
     // vehicle type without a luxury tier un-checks and hides it rather than
     // silently sending a stale luxury:true the backend would just ignore.
@@ -687,15 +718,18 @@
     }
 
     var carryOnInput = document.getElementById("fCarryOn");
-    checkedInput.addEventListener("input", updateRecommendation);
-    bulkyInput.addEventListener("change", updateRecommendation);
-    adultsInput.addEventListener("input", updateRecommendation);
-    childrenInput.addEventListener("input", updateRecommendation);
+    // Passenger count doesn't change the fare itself for one-way/dropoff
+    // (that's area/vehicle-based), but it does for full_day/week/month
+    // vehicleCount scaling shown in the estimate, so keep it live here too.
+    checkedInput.addEventListener("input", function () { updateRecommendation(); recalculateFareEstimate(); });
+    bulkyInput.addEventListener("change", function () { updateRecommendation(); recalculateFareEstimate(); });
+    adultsInput.addEventListener("input", function () { updateRecommendation(); recalculateFareEstimate(); });
+    childrenInput.addEventListener("input", function () { updateRecommendation(); recalculateFareEstimate(); });
     vehicleCards.forEach(function (card) {
       card.addEventListener("click", function () {
         var capacityError = document.getElementById("vehicleCapacityError");
         // over-capacity now only means "even MAX_AUTO_VEHICLE_COUNT of this
-        // vehicle can't fit the group" — anything short of that is a
+        // vehicle can't fit the group" -- anything short of that is a
         // perfectly bookable multi-vehicle trip, so it's selectable.
         if (card.classList.contains("over-capacity")) {
           capacityError.hidden = false;
@@ -708,8 +742,15 @@
 
     updatePriceLabels();
     updateRecommendation(); // set initial state on first load
+    recalculateFareEstimate();
 
-    document.getElementById("luggageContinue").addEventListener("click", function () {
+    // Combined Continue button for the "You & Ride" screen (Step 2) --
+    // was "luggageContinue" back when this was its own step; now also
+    // validates the contact fields above it (see contactFieldsValidator,
+    // set by initStep1) before checking passengers/vehicle capacity.
+    document.getElementById("rideContinue").addEventListener("click", function () {
+      if (!contactFieldsValidator()) return;
+
       var adults = Number(adultsInput.value) || 0;
       var children = Number(childrenInput.value) || 0;
       passengersError.hidden = true;
@@ -719,7 +760,7 @@
         return;
       }
       // Only genuinely blocks when the selected vehicle would need MORE
-      // than MAX_AUTO_VEHICLE_COUNT of itself to fit the whole group — a
+      // than MAX_AUTO_VEHICLE_COUNT of itself to fit the whole group -- a
       // group that fits within that (even across several vehicles of the
       // same type) proceeds normally; vehicleCount is recomputed from
       // adults/children server-side at quote and booking time regardless.
@@ -733,15 +774,22 @@
       state.carryOnBags = Number(carryOnInput.value) || 0;
       state.checkedBags = Number(checkedInput.value) || 0;
       state.bulky = bulkyInput.checked;
-      renderReview();
-      goToStep(5);
+
+      saveContactProfileFn().then(function () {
+        renderReview();
+        goToStep(3);
+      }).catch(function () {
+        // Non-critical if this save fails -- don't block the booking over it.
+        renderReview();
+        goToStep(3);
+      });
     });
-    document.getElementById("backTo2").addEventListener("click", function () { goToStep(3); }); // Pickup is now the previous step — id predates the reorder
+    document.getElementById("backToTrip").addEventListener("click", function () { goToStep(1); });
   }
 
   // ───────────────────────── Google Places autocomplete + map preview ─────────────────────────
   // RideArrivo operates in Nigeria, so search results are restricted to Nigerian
-  // addresses — this also makes suggestions far more relevant than an
+  // addresses -- this also makes suggestions far more relevant than an
   // unrestricted worldwide search would be.
   var LAGOS_CENTER = { lat: 6.5244, lng: 3.3792 };
   var googleMapInstance = null;
@@ -759,31 +807,31 @@
   // Only applies to one-way bookings. Full day/week/month bookings are
   // chauffeur-style flat-rate pricing and keep using the existing
   // vehicleBasePrice × booking-type multiplier shown on the vehicle cards.
-  // Lagos Zone Classification & Pricing — per the operations team's PRD.
+  // Lagos Zone Classification & Pricing -- per the operations team's PRD.
   // Each area maps to a tier (green = operate freely, yellow = dynamic
   // pricing due to traffic/distance, red = don't operate) and a sedan
   // base price. Where the PRD gave a range (e.g. "₦45,000–₦50,000"), the
-  // midpoint is used as the actual charged price — a range isn't
+  // midpoint is used as the actual charged price -- a range isn't
   // something a checkout can charge directly, and picking the low or
   // high end arbitrarily would be a bigger assumption than the middle.
   // Where the PRD's "Recommended Fixed Pricing" table (which explicitly
   // supersedes the earlier range) gave a number for an area, that number
   // is used instead of the general range table.
-  // How many passengers each vehicle type seats — mirrors
+  // How many passengers each vehicle type seats -- mirrors
   // arrivo-backend/services/fare.js's MAX_PASSENGERS exactly (same numbers
   // kept in sync manually, same as both apps' booking screens). This used
   // to be treated as a hard per-vehicle cap that dead-ended any group over
-  // 5-6 people with a prompt to "add fleet accompaniment" — but fleet
+  // 5-6 people with a prompt to "add fleet accompaniment" -- but fleet
   // accompaniment is a flat escort/convoy add-on (see FLEET_PRICE below),
   // not a way to carry more passengers. The real mechanism for a big group
   // is booking multiple of the SAME vehicle (see computeVehicleCount below),
-  // which the backend and both apps already do — this brings the website in
+  // which the backend and both apps already do -- this brings the website in
   // line with that instead of blocking bookings it can actually fulfill.
-  // Pickup Truck seats fewer passengers than SUV/Executive — it's a cargo
+  // Pickup Truck seats fewer passengers than SUV/Executive -- it's a cargo
   // vehicle first, so the bed isn't passenger space.
   var MAX_PASSENGERS = { sedan: 3, suv: 5, truck: 5, pickup: 3 };
   // Past this many vehicles, no driver pool can realistically staff one
-  // group's trip at once — mirrors arrivo-backend/services/fare.js's
+  // group's trip at once -- mirrors arrivo-backend/services/fare.js's
   // MAX_AUTO_VEHICLE_COUNT exactly. Above this, the rider is asked to
   // contact RideArrivo directly, same message the backend itself would
   // give if this client-side check were somehow bypassed.
@@ -791,7 +839,7 @@
 
   // Given a passenger count and a vehicle type, works out how many of that
   // vehicle are actually needed to fit everyone (e.g. 8 passengers in a
-  // 5-seat SUV needs 2 SUVs) — same math as the backend's computeVehicleCount
+  // 5-seat SUV needs 2 SUVs) -- same math as the backend's computeVehicleCount
   // and the rider app's RouteScreen.js. This is purely a UI preview; the
   // backend independently re-derives the real vehicleCount from adults/
   // children at quote and booking time and never trusts a client-sent count.
@@ -808,11 +856,11 @@
   };
   // Security escort is now priced at $100-equivalent, computed live by the
   // backend (services/fare.js SECURITY_ESCORT_PRICE_USD) via the real quote
-  // endpoint — there's no local naira constant for it anymore. The old
+  // endpoint -- there's no local naira constant for it anymore. The old
   // NGN 100,000 flat price this constant used to hold is gone; the UI shows
   // "priced at checkout" instead of a specific number for this reason.
 
-  // Luxury surcharge — previously missing entirely from the website (app-only
+  // Luxury surcharge -- previously missing entirely from the website (app-only
   // feature). Matches arrivo-backend/services/fare.js's LUXURY_SURCHARGE_USD
   // exactly: only sedan/suv have a tier, no truck/pickup entry. Same
   // "priced at checkout" treatment as security escort above, rather than a
@@ -820,26 +868,26 @@
   var LUXURY_SURCHARGE_USD = { sedan: 60, suv: 100 };
 
   var AREA_PRICING = {
-    // Green zone — operate freely (closer to airport, best roads)
+    // Green zone -- operate freely (closer to airport, best roads)
     "ikeja gra": 27500, "maryland": 30000, "ogba": 30000, "magodo": 32500,
     "surulere": 32500, "yaba": 34500, "anthony": 30000, "anthony village": 30000,
     "ilupeju": 30000, "gbagada": 37500, "allen avenue": 30000, "alausa": 30000,
     "ajao estate": 30000, "victoria island": 45000, "ikoyi": 50000,
     "lekki phase 1": 45000,
 
-    // Yellow zone — traffic corridors, using the Recommended Fixed
+    // Yellow zone -- traffic corridors, using the Recommended Fixed
     // Pricing table (supersedes the earlier general range for these)
     "iyana-ipaja": 47500, "iyana ipaja": 47500, "egbeda": 47500, "akowonjo": 47500,
     "idimu": 52500, "ipaja": 47500, "ayobo": 55000, "baruwa": 55000,
     "alimosho": 50000, "command": 57500, "abule egba": 55000,
     "ijaiye": 47500, "oko oba": 47500, "dopemu": 42500, "shasha": 50000,
 
-    // Yellow zone — premium/distance pricing
+    // Yellow zone -- premium/distance pricing
     "lekki": 45000, "ajah": 55000, "ikorodu": 50000, "festac": 50000,
     "satellite town": 60000,
   };
 
-  // Red zone — limited or no operations. Reuses the same exclusion
+  // Red zone -- limited or no operations. Reuses the same exclusion
   // mechanism built for the generic "outskirts" blocking feature, since
   // this is exactly that feature with real data now filled in.
   var EXCLUDED_AREAS = [
@@ -849,11 +897,11 @@
     { name: "Makoko", keywords: ["makoko"] },
   ];
 
-  // Areas not explicitly listed above still need *some* price — rather
+  // Areas not explicitly listed above still need *some* price -- rather
   // than silently defaulting to the cheapest tier (which would make
   // unlisted-but-genuinely-far areas underpriced), unmatched addresses
   // fall back to this mid-range green-zone figure. Flag this to whoever
-  // owns pricing if a specific area keeps hitting the fallback — it
+  // owns pricing if a specific area keeps hitting the fallback -- it
   // probably needs its own entry.
   var DEFAULT_AREA_PRICE = 32000;
 
@@ -873,25 +921,25 @@
 
   // Vehicle tier pricing is the area's base (sedan) price plus a fixed
   // delta per tier, matching the "from ₦30,000 / ₦45,000 / ₦60,000"
-  // spacing given for Standard Sedan / Premium SUV / Executive Vehicle —
+  // spacing given for Standard Sedan / Premium SUV / Executive Vehicle --
   // a flat +15k / +30k rather than re-deriving a per-area number for
   // every vehicle type across 20+ areas. "pickup" (Pickup Truck) is a
-  // later addition for heavy/bulky cargo — a working vehicle, not a
+  // later addition for heavy/bulky cargo -- a working vehicle, not a
   // luxury one, so it's priced between Sedan and SUV rather than at/above
-  // Executive. Mirrors arrivo-backend/services/fare.js exactly — that's
+  // Executive. Mirrors arrivo-backend/services/fare.js exactly -- that's
   // the real source of truth; this is just what's shown before a live
-  // quote loads. "truck" is the internal id for Executive Vehicle — kept
+  // quote loads. "truck" is the internal id for Executive Vehicle -- kept
   // stable to avoid renaming every reference; only the *label* shown to
   // riders changed.
   var VEHICLE_TIER_DELTA = { sedan: 0, suv: 15000, truck: 30000, pickup: 10000 };
 
   // Night pricing (8pm–5am) and the one-fee-per-location model live
-  // entirely server-side now (arrivo-backend/services/fare.js) — the old
+  // entirely server-side now (arrivo-backend/services/fare.js) -- the old
   // itemized excess-luggage/multi-stop/midnight-pickup fees this file used
   // to calculate here were removed from actual billing a while back, per
   // the "one fee per location, no more fees" product decision. Luggage
   // counts below only drive which vehicle gets auto-recommended, same as
-  // before — they were never sent to the backend or billed directly.
+  // before -- they were never sent to the backend or billed directly.
 
   // Roads named after a red-zone town that run through areas we DO serve:
   // Google puts "Lekki - Epe Expy" in most Ajah/Sangotedo/Ikota/VGC
@@ -965,7 +1013,7 @@
   // ───────────────────────── Location permission ─────────────────────────
   // Explicit, visible prompt rather than silently calling
   // getCurrentPosition() and letting the browser's own native permission
-  // dialog be the only thing asking — the requirement was that the rider
+  // dialog be the only thing asking -- the requirement was that the rider
   // clearly understands what's being requested and why before it happens.
   function initLocationPermission() {
     var box = document.getElementById("locationPermissionBox");
@@ -988,7 +1036,7 @@
           applyLocationBiasToAllAutocompletes();
         },
         function () {
-          // Browser prompt was shown but the rider said no at that layer —
+          // Browser prompt was shown but the rider said no at that layer --
           // same outcome as clicking "Not now" here, just via a different path.
           state.locationPermission = "declined";
           box.hidden = true;
@@ -1006,18 +1054,18 @@
   }
 
   // ───────────────────────── Currency display ─────────────────────────
-  // Payments themselves stay in Naira — Paystack/wallet only ever charge
+  // Payments themselves stay in Naira -- Paystack/wallet only ever charge
   // NGN here. This is display-only: for a rider who isn't currently in
   // Nigeria, show an approximate USD figure next to the fare so the price
   // means something to them. A prior review of adding real USD payment
   // processing (Stripe) found it blocked by foreign-entity requirements for
-  // a Nigerian business — the recommendation then was to keep pricing in
+  // a Nigerian business -- the recommendation then was to keep pricing in
   // Naira and let the card network handle conversion, which this still
   // does; this just adds a clearer estimate on screen, not a new payment
   // path.
   //
   // Detection uses the browser's language/region setting, matching how the
-  // apps do it via device locale (see arrivo-app/hooks/useCurrency.js) —
+  // apps do it via device locale (see arrivo-app/hooks/useCurrency.js) --
   // this used to depend on the geolocation permission prompt above
   // ("share your location for... the right currency"), which conflated two
   // unrelated things (address-search proximity bias vs. what currency to
@@ -1052,7 +1100,7 @@
     api("/api/rides/fx-rate", { headers: authHeader() }).then(function (result) {
       if (result.ok) state.ngnPerUsd = result.data.ngnPerUsd;
     }).catch(function () {
-      // Best-effort — formatNairaWithUsdEstimate below just keeps showing
+      // Best-effort -- formatNairaWithUsdEstimate below just keeps showing
       // naira if this never resolves (e.g. offline). Explicit no-op catch
       // so a network failure here doesn't surface as an unhandled
       // rejection in the console.
@@ -1065,7 +1113,7 @@
     return "NGN " + nairaAmount.toLocaleString() + " (~$" + usd + ")";
   }
 
-  // Same idea as the rider app's useCurrency.js formatRideFare — once a ride
+  // Same idea as the rider app's useCurrency.js formatRideFare -- once a ride
   // is actually booked, show the USD figure the backend locked in at that
   // exact moment (quoted_usd_amount/quoted_ngn_per_usd, snapshotted in
   // routes/rides.js) instead of a live-recomputed estimate that could have
@@ -1079,16 +1127,47 @@
     return formatNairaWithUsdEstimate(Number(fareNaira));
   }
 
+  // Now lives on the "You & Ride" screen (Step 2) instead of the old Pickup
+  // step, so it can actually price the vehicle the rider has selected as
+  // they select it, rather than a generic "choose your vehicle on the next
+  // step" placeholder. Also now covers full_day/week/month charter bookings
+  // (previously hidden for those entirely) -- same flat-rate math the
+  // vehicle cards' own price labels already use (updatePriceLabels), just
+  // surfaced here as a running total alongside the add-ons. This is still
+  // only ever an estimate: the real, final fare always comes from the
+  // backend's live quote at Review & Pay (see getLiveQuote below).
   function recalculateFareEstimate() {
     var box = document.getElementById("fareEstimateBox");
     var errEl = document.getElementById("fareError");
     if (!box) return;
 
+    var vehicleLabel = state.vehicle.charAt(0).toUpperCase() + state.vehicle.slice(1);
+    var luxuryApplies = state.luxury && LUXURY_SURCHARGE_USD.hasOwnProperty(state.vehicle);
+
+    document.getElementById("fareSecurityRow").hidden = !state.securityEscort;
+    var luxuryRowEstimate = document.getElementById("fareLuxuryRow");
+    if (luxuryRowEstimate) luxuryRowEstimate.hidden = !luxuryApplies;
+    var fleetRow = document.getElementById("fareFleetRow");
+    fleetRow.hidden = !state.fleetSize;
+    if (state.fleetSize) {
+      document.getElementById("fareFleetLabel").textContent = "Fleet of " + state.fleetSize;
+      document.getElementById("fareFleetAmount").textContent = "+NGN " + (FLEET_PRICE.sedan[state.fleetSize] || 0).toLocaleString();
+    }
+
     if (!isOneWayStyle(state.bookingType)) {
-      box.hidden = true;
+      // Charter (full_day / full_week / full_month) -- flat rate: the
+      // selected vehicle's base price × the booking type's multiplier
+      // (× the rider's day count for full_day -- see setFullDayCount).
       errEl.hidden = true;
+      var charterTotal = state.vehicleBasePrice * state.multiplier;
+      document.getElementById("fareDistanceText").textContent = state.durationDays > 1 ? state.durationDays + " days" : "Flat rate";
+      document.getElementById("fareBaseText").textContent = vehicleLabel + " NGN " + charterTotal.toLocaleString();
+      document.getElementById("fareTotalText").textContent = "~" + formatNairaWithUsdEstimate(charterTotal) +
+        (luxuryApplies || state.securityEscort ? " + add-ons priced at checkout" : "");
+      box.hidden = false;
       return;
     }
+
     if (!state.stops.length && !state.dropoffLatLng) {
       box.hidden = true;
       return;
@@ -1098,22 +1177,15 @@
     state.zone = { areaPrice: findAreaPrice(dropoffAddress) };
     errEl.hidden = true;
 
+    var vehicleTotal = zoneVehiclePrice(state.vehicle, state.zone);
     document.getElementById("fareDistanceText").textContent = "Base fare for this area";
-    document.getElementById("fareBaseText").textContent = "Sedan NGN " + zoneVehiclePrice("sedan", state.zone).toLocaleString() + " · SUV NGN " + zoneVehiclePrice("suv", state.zone).toLocaleString();
-    document.getElementById("fareSecurityRow").hidden = !state.securityEscort;
-    var luxuryRowEstimate = document.getElementById("fareLuxuryRow");
-    if (luxuryRowEstimate) luxuryRowEstimate.hidden = !(state.luxury && LUXURY_SURCHARGE_USD.hasOwnProperty(state.vehicle));
-    var fleetRow = document.getElementById("fareFleetRow");
-    fleetRow.hidden = !state.fleetSize;
-    if (state.fleetSize) {
-      document.getElementById("fareFleetLabel").textContent = "Fleet of " + state.fleetSize;
-      document.getElementById("fareFleetAmount").textContent = "+NGN " + (FLEET_PRICE.sedan[state.fleetSize] || 0).toLocaleString();
-    }
-    document.getElementById("fareTotalText").textContent = "Choose your vehicle on the next step to see the exact price.";
+    document.getElementById("fareBaseText").textContent = vehicleLabel + " NGN " + vehicleTotal.toLocaleString();
+    document.getElementById("fareTotalText").textContent = "~" + formatNairaWithUsdEstimate(vehicleTotal) +
+      (luxuryApplies || state.securityEscort ? " + add-ons priced at checkout" : "");
     box.hidden = false;
 
     // Optional nice-to-have: real distance/duration for display only, never
-    // used for pricing — if this fails for any reason, area-based pricing
+    // used for pricing -- if this fails for any reason, area-based pricing
     // above already works regardless.
     if (state.pickupLatLng && state.dropoffLatLng && window.google && window.google.maps) {
       var service = new google.maps.DistanceMatrixService();
@@ -1169,7 +1241,7 @@
     autocomplete.addListener("place_changed", function () {
       var place = autocomplete.getPlace();
       // A place with no geometry means the visitor typed free text and hit
-      // Enter without picking a suggestion from the dropdown — that's still
+      // Enter without picking a suggestion from the dropdown -- that's still
       // a valid address to us, we just can't show it on the map preview,
       // and we can't calculate a real distance-based fare for it either.
       if (!place.geometry || !place.geometry.location) return;
@@ -1191,6 +1263,20 @@
     var pickupText = document.getElementById("fPickup") ? document.getElementById("fPickup").value : "";
     var dropoffText = document.getElementById("fDropoff") ? document.getElementById("fDropoff").value : "";
     var matched = findExcludedArea(pickupText, state.pickupLatLng) || findExcludedArea(dropoffText, state.dropoffLatLng);
+
+    // Intermediate stops/waypoints can land in an excluded area just as
+    // easily as the pickup or drop-off -- check those too instead of only
+    // ever validating the two endpoints. Stop inputs don't carry their own
+    // tracked lat/lng (only pickup/dropoff do), so this matches on address
+    // text/keywords the same way the pickup/dropoff check falls back to
+    // when it has no coordinates either.
+    if (!matched) {
+      var stopInputs = document.querySelectorAll(".stop-input");
+      for (var i = 0; i < stopInputs.length && !matched; i++) {
+        matched = findExcludedArea(stopInputs[i].value, null);
+      }
+    }
+
     state.excludedAreaMatch = matched;
     if (matched) {
       errEl.hidden = false;
@@ -1220,7 +1306,7 @@
         zoomControl: true,
       });
     } else {
-      // The map container is hidden (display:none) on every step except 4 —
+      // The map container is hidden (display:none) on every step except 4 --
       // Google Maps needs an explicit nudge to redraw correctly once it
       // becomes visible again, otherwise it can render blank or mis-sized.
       google.maps.event.trigger(googleMapInstance, "resize");
@@ -1249,7 +1335,7 @@
       initRouteMap();
     } else if (attempsLeft > 0) {
       // The Maps script loads async and may not be ready the instant the
-      // rider reaches this step — poll briefly rather than giving up immediately.
+      // rider reaches this step -- poll briefly rather than giving up immediately.
       setTimeout(function () { setupPlacesForStep4(attempsLeft - 1); }, 300);
     } else {
       var errEl = document.getElementById("mapsError");
@@ -1271,13 +1357,43 @@
         '<span class="route-dot route-dot-stop"></span>' +
         '<input type="text" class="field route-input stop-input" placeholder="' + t("booking.stopPlaceholder") + '">';
       stopsList.appendChild(row);
-      attachPlacesAutocomplete(row.querySelector(".stop-input"));
+      var stopInput = row.querySelector(".stop-input");
+      attachPlacesAutocomplete(stopInput);
+      stopInput.addEventListener("input", function () {
+        checkExcludedAreas();
+        recalculateFareEstimate();
+      });
     });
 
-    document.getElementById("fPickup").addEventListener("input", function () { this.style.borderColor = ""; });
-    document.getElementById("fDropoff").addEventListener("input", function () { this.style.borderColor = ""; });
+    document.getElementById("fPickup").addEventListener("input", function () {
+      this.style.borderColor = "";
+      // The visitor is typing free text again after (maybe) picking a
+      // suggestion earlier -- that suggestion's coordinates no longer
+      // necessarily match what's in the box, and place_changed won't fire
+      // again unless they pick a new suggestion. Drop the stale
+      // coordinates rather than silently keep routing/dispatch against an
+      // address the field no longer shows; a fresh place_changed selection
+      // (or the plain address text at submit time) replaces this normally.
+      state.pickupLatLng = null;
+      checkExcludedAreas();
+      recalculateFareEstimate();
+    });
+    document.getElementById("fDropoff").addEventListener("input", function () {
+      this.style.borderColor = "";
+      state.dropoffLatLng = null;
+      checkExcludedAreas();
+      recalculateFareEstimate();
+    });
 
-    document.getElementById("pickupContinue").addEventListener("click", function () {
+    // Combined Continue button for the "Trip" screen (Step 1) -- was
+    // "pickupContinue" back when Pickup was its own step after Flight; now
+    // also validates the flight/schedule fields above it (see
+    // flightValidator, set by initStep2) before checking the route itself.
+    // This is the first screen in the flow now, so there's no Back button
+    // to wire up here anymore.
+    document.getElementById("tripContinue").addEventListener("click", function () {
+      if (!flightValidator()) return;
+
       var pickup = document.getElementById("fPickup").value.trim();
       var dropoff = document.getElementById("fDropoff").value.trim();
 
@@ -1296,19 +1412,18 @@
 
       state.pickup = pickup;
       state.stops = waypoints.concat([dropoff]); // waypoints first, drop-off always last
-      updatePriceLabels(); // zone is known now — refresh vehicle card prices before showing them
-      goToStep(4);
+      updatePriceLabels(); // zone is known now -- refresh vehicle card prices before showing them
+      goToStep(2);
     });
-    document.getElementById("backTo3").addEventListener("click", function () { goToStep(2); }); // Flight is now the previous step — id predates the reorder
   }
 
   // ───────────────────────── Step 5: Review & Pay ─────────────────────────
   // The fare charged and submitted here now ALWAYS comes from the backend's
-  // live quote (POST /api/rides/quote) — the same real, distance-based
+  // live quote (POST /api/rides/quote) -- the same real, distance-based
   // formula (services/fare.js + actual Google Distance Matrix driving
   // distance) that both RideArrivo apps use. This used to be computed
   // locally from a hardcoded area-price table and never sent real
-  // pickup/drop-off coordinates to the backend at all — which meant the
+  // pickup/drop-off coordinates to the backend at all -- which meant the
   // backend's own fare re-verification (added when the apps got real
   // distance-based pricing) would reject essentially every one-way booking
   // made through this website, in some cases AFTER a card had already been
@@ -1317,7 +1432,7 @@
   //
   // One consequence worth knowing: the excess-luggage/multi-stop/midnight
   // situational fees this file used to add locally are NOT part of the
-  // backend's fare formula yet, so they're no longer charged here either —
+  // backend's fare formula yet, so they're no longer charged here either --
   // charging for something the backend doesn't independently verify would
   // trip the same rejection this fix is meant to solve. If those fees are
   // still wanted, they need to be added to arrivo-backend/services/fare.js
@@ -1330,10 +1445,10 @@
       fleetSize: state.fleetSize,
       luxury: state.luxury,
       // Only actually changes the charged fare for 'full_day' (see
-      // arrivo-backend/services/fare.js computeCharterFare) — harmless to
+      // arrivo-backend/services/fare.js computeCharterFare) -- harmless to
       // always send it.
       durationDays: state.durationDays,
-      // Previously never sent — the backend defaulted passengerCount to 1
+      // Previously never sent -- the backend defaulted passengerCount to 1
       // (vehicleCount 1) for every quote, so a 6+ passenger group booking 2
       // SUVs would see a 1-SUV preview fare here and only get charged the
       // real (vehicleCount-scaled) amount at POST /api/rides. Sending these
@@ -1353,7 +1468,7 @@
         });
       }
       // pickupAddress/destinationAddress are what actually price a one-way
-      // trip now — a flat per-location fare (see
+      // trip now -- a flat per-location fare (see
       // arrivo-backend/services/fare.js), same formula the apps use.
       // lat/lng are sent too, but only used server-side for an
       // informational distance/duration display, never for the fare
@@ -1368,7 +1483,7 @@
     return api("/api/rides/quote", { method: "POST", headers: authHeader(), body: JSON.stringify(body) });
   }
 
-  // Coordinates for the actual POST /api/rides call below — same
+  // Coordinates for the actual POST /api/rides call below -- same
   // derivation as getLiveQuote, only needed for one-way bookings.
   function getCoordsPayload() {
     if (!isOneWayStyle(state.bookingType) || !state.pickupLatLng || !state.dropoffLatLng) return {};
@@ -1380,12 +1495,62 @@
     };
   }
 
+  // One place a booking attempt's idempotency key lives. Persisted in
+  // sessionStorage (not plain state) so it survives a page reload mid
+  // attempt, but reused across retries of the SAME attempt rather than a
+  // fresh key per request -- the backend can then recognize a retried
+  // POST /api/rides as the same attempt instead of double-booking.
+  var BOOKING_IDEMPOTENCY_KEY_STORAGE = "arrivo_booking_idempotency_key";
+
+  function makeIdempotencyKey() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+    // Fallback for older browsers without crypto.randomUUID -- still
+    // unique enough for this purpose, just not RFC4122-shaped.
+    return "idem-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+  }
+
+  // Used only when sessionStorage itself is unavailable (private browsing
+  // mode, a locked-down browser setting, etc.) -- see getBookingIdempotencyKey
+  // below. Module-scoped rather than function-scoped so it actually survives
+  // across the several calls one booking attempt makes.
+  var fallbackIdempotencyKey = null;
+
+  function getBookingIdempotencyKey() {
+    try {
+      var existing = sessionStorage.getItem(BOOKING_IDEMPOTENCY_KEY_STORAGE);
+      if (existing) return existing;
+      var key = makeIdempotencyKey();
+      sessionStorage.setItem(BOOKING_IDEMPOTENCY_KEY_STORAGE, key);
+      return key;
+    } catch (err) {
+      // sessionStorage unavailable -- fall back to one key held in memory
+      // for the whole attempt, not a fresh one per call. buildRidePayload
+      // calls this more than once for a single card booking (pre-charge
+      // validation, then again after Paystack succeeds), and without a
+      // stable fallback each of those calls generated its own key -- which
+      // meant a lost response and a retry never actually matched the
+      // original attempt's key, silently defeating the backend's
+      // idempotency check for exactly the riders this fallback exists for.
+      if (!fallbackIdempotencyKey) fallbackIdempotencyKey = makeIdempotencyKey();
+      return fallbackIdempotencyKey;
+    }
+  }
+
+  // Call once a booking attempt actually succeeds (or the rider starts a
+  // genuinely new one), so the NEXT attempt gets its own fresh key instead
+  // of reusing a completed attempt's key.
+  function clearBookingIdempotencyKey() {
+    fallbackIdempotencyKey = null;
+    try { sessionStorage.removeItem(BOOKING_IDEMPOTENCY_KEY_STORAGE); } catch (err) {}
+  }
+
   // One place that builds the POST /api/rides body. Used by the wallet /
   // membership path, the pre-charge validation, and the post-payment
   // booking, so all three always send exactly the same thing.
   function buildRidePayload(extra) {
     return Object.assign({
       pickupAddress: state.pickup,
+      idempotencyKey: getBookingIdempotencyKey(),
       stops: state.stops,
       flightNumber: state.flightNumber || null,
       vehicleType: state.vehicle,
@@ -1434,7 +1599,7 @@
         // api() now always resolves {ok:false} instead of rejecting on a
         // real network failure (see the fetch().catch in api() above), so
         // this path is reachable on a plain connectivity blip, not just a
-        // real validation error — offer a retry right here instead of
+        // real validation error -- offer a retry right here instead of
         // forcing a trip back through earlier steps.
         retryBtn.style.display = "inline-block";
         return;
@@ -1466,12 +1631,12 @@
     }
     rows.push([t("booking.reviewEmergencyContact"), escapeHtml(state.emergencyContactName)]);
     // adult/adults and child/children pluralization is still hardcoded
-    // English here (a pre-existing, separately-flagged i18n gap — see
-    // reviewPassengers row) — not changed by this edit.
+    // English here (a pre-existing, separately-flagged i18n gap -- see
+    // reviewPassengers row) -- not changed by this edit.
     var passengersText = state.adults + " adult" + (state.adults === 1 ? "" : "s") + (state.children > 0 ? ", " + state.children + " child" + (state.children === 1 ? "" : "ren") : "");
     // vehicleCount comes from the live quote (the backend's own
-    // computeVehicleCount, re-derived from adults/children — see
-    // getLiveQuote above) — not recomputed locally, so this always matches
+    // computeVehicleCount, re-derived from adults/children -- see
+    // getLiveQuote above) -- not recomputed locally, so this always matches
     // what was actually priced, never a stale client-side guess.
     var vehicleCount = (state.liveQuote && state.liveQuote.vehicleCount) || 1;
     var vehicleText = escapeHtml(vehicleLabel) + (vehicleCount > 1 ? " × " + vehicleCount : "");
@@ -1489,7 +1654,7 @@
         tFormat("booking.reviewMultiVehicleDetail", { count: vehicleCount, vehicle: escapeHtml(vehicleLabel), passengers: passengerCountForFare }),
       ]);
     }
-    // Only Airport Drop-off collects an explicit scheduled time — Airport
+    // Only Airport Drop-off collects an explicit scheduled time -- Airport
     // Pickup is flight-landing-driven instead, and charter bookings don't
     // show a review row for it at all here.
     if (state.bookingType === "dropoff" && state.scheduledPickupAt) {
@@ -1501,7 +1666,7 @@
     if (state.bookingType === "full_day" && state.durationDays > 1) {
       rows.push([t("booking.reviewFullDayCount"), state.durationDays + " days"]);
     }
-    // No per-item naira breakdown for escort/fleet here anymore — the
+    // No per-item naira breakdown for escort/fleet here anymore -- the
     // backend only returns one final total, not a line-item split, and
     // showing a made-up number for "how much of the total was the escort"
     // would just be a guess. "Included" says what's true without faking precision.
@@ -1538,7 +1703,7 @@
         });
         insufficientNote.hidden = false;
       } else {
-        // Previously only ever set to hidden=false above, never re-hidden —
+        // Previously only ever set to hidden=false above, never re-hidden --
         // once shown (e.g. a cheaper fare or a top-up made the balance
         // sufficient again on a later renderReview()), it stayed on screen
         // until the manual toggle-click handler happened to clear it.
@@ -1546,7 +1711,7 @@
       }
       // This wallet-balance check and checkWalletMinimum() below both run
       // as their own independent network requests and both read/act on
-      // state.paymentMethod — without this call, a checkWalletMinimum()
+      // state.paymentMethod -- without this call, a checkWalletMinimum()
       // that already resolved (showing its own top-up note) never learns
       // paymentMethod just changed to "card" above, and its stale wallet
       // top-up note can be left on screen at the same time as this one,
@@ -1559,7 +1724,7 @@
       var membershipOpt = document.getElementById("membershipPaymentOpt");
       if (result.data.membership) {
         membershipOpt.hidden = false;
-        // A membership covers the ride outright — the obviously better
+        // A membership covers the ride outright -- the obviously better
         // default the moment it's available, rather than making someone
         // notice and switch to it themselves.
         state.paymentMethod = "membership";
@@ -1574,19 +1739,19 @@
 
   // GET /api/rides/wallet-minimum reflects a narrow backend check (see
   // rides.js: MIN_WALLET_BALANCE_USD) that only matters for one specific
-  // scenario — re-confirming a rider can still cover their trip after a
+  // scenario -- re-confirming a rider can still cover their trip after a
   // flight-issue refund landed in their wallet before that ride restarts.
   // It was never meant to gate booking in general, since wallet is only
   // ever one optional way to pay (see the payment-method toggle above,
   // and walletInsufficientNote for the real per-fare wallet check).
   //
   // This used to disable payBtn outright whenever the balance fell short
-  // of that ~$100-equivalent figure — blocking Card and Membership too,
+  // of that ~$100-equivalent figure -- blocking Card and Membership too,
   // even though neither draws from the wallet at all. That's the same
   // class of bug as the api() fix above (payBtn stuck disabled with no
   // way forward): a rider with NGN 0 in their wallet paying by card for a
   // normal fare would hit a dead Pay button with nothing telling them why.
-  // Now purely informational — it never blocks Card or Membership, and
+  // Now purely informational -- it never blocks Card or Membership, and
   // only ever nudges toward topping up if they'd want to pay by wallet.
   function checkWalletMinimum() {
     var note = document.getElementById("walletMinimumNote");
@@ -1609,6 +1774,15 @@
   // route, so point them at it instead of leaving a dead end.
   function bookingErrorText(data) {
     if (!data) return "";
+    // The server refuses a reused key for a different trip. This really
+    // happens: a wallet booking commits, the response is lost so the key is
+    // never cleared, then the rider changes the destination. Drop the stored
+    // key so the next try starts clean, and say it in plain words instead of
+    // showing the raw server string.
+    if (data.reason === "idempotency_key_reused_for_different_booking") {
+      clearBookingIdempotencyKey();
+      return t("booking.idempotencyConflict");
+    }
     if (data.blockedByBookingWindow) {
       return data.error + (data.whatsappNumber ? " For a pickup sooner than that, message us on WhatsApp at " + data.whatsappNumber + " or pick a later time." : "");
     }
@@ -1623,9 +1797,16 @@
   // Paystack popup (which needs a real key + real browser + a real card).
   function handleDirectPayment() {
     var payError = document.getElementById("payError");
+    var payBtn = document.getElementById("payBtn");
     payError.hidden = true;
+    // Same guard the card path uses (see the click handler below): disable
+    // immediately so a fast double-click can't fire this twice, and only
+    // re-enable it on a failure/error branch -- a successful booking moves
+    // the rider off this step entirely, so it doesn't need re-enabling.
+    payBtn.disabled = true;
 
     if (!state.liveQuote) {
+      payBtn.disabled = false;
       payError.hidden = false;
       payError.textContent = "We couldn't confirm your fare. Please go back to the review step and try again.";
       return Promise.resolve();
@@ -1639,10 +1820,15 @@
       body: JSON.stringify(payload),
     }).then(function (rideResult) {
       if (!rideResult.ok) {
+        payBtn.disabled = false;
         payError.hidden = false;
         payError.textContent = bookingErrorText(rideResult.data) || t("booking.paymentFailed");
         return;
       }
+      // Booking succeeded -- this attempt is done, so the next one (if any)
+      // should get its own fresh idempotency key rather than reusing this
+      // completed attempt's key.
+      clearBookingIdempotencyKey();
       var createdRide = rideResult.data.ride;
       document.getElementById("confirmRef").textContent = "Ride #" + createdRide.id;
       if (createdRide.fare_naira != null) {
@@ -1656,14 +1842,15 @@
         barcodeBox.hidden = false;
       }
       if (state.bookingType === "one_way") showReturnDropoffPrompt(createdRide.id);
-      goToStep(6);
+      goToStep(4);
     }).catch(function () {
+      payBtn.disabled = false;
       payError.hidden = false;
       payError.textContent = t("booking.paymentFailed");
     });
   }
 
-  // Offered right after paying for an Airport Pickup ("one_way") — builds a
+  // Offered right after paying for an Airport Pickup ("one_way") -- builds a
   // link back into this same booking flow with the reversed route
   // (destination becomes pickup, original pickup/airport becomes
   // destination) and the airport pickup's own resolved coordinates
@@ -1696,7 +1883,7 @@
     }
     link.href = "book.html?" + params.toString();
     promptBox.hidden = false;
-    // "Add my return drop-off" becomes the prominent action here — "Book
+    // "Add my return drop-off" becomes the prominent action here -- "Book
     // another ride" (a completely blank booking) steps back to secondary.
     if (bookAnotherLink) {
       bookAnotherLink.classList.remove("btn-primary");
@@ -1705,7 +1892,7 @@
   }
 
   // Reads the query params showReturnDropoffPrompt above builds, on a fresh
-  // page load — pre-fills the reversed route and selects the "dropoff"
+  // page load -- pre-fills the reversed route and selects the "dropoff"
   // booking-type chip by simulating the same click a rider would make
   // themselves (reuses that handler's existing logic exactly, rather than
   // duplicating what it sets).
@@ -1763,6 +1950,11 @@
           throw new Error(serverReason + t("booking.paymentFailed") + " (" + reference + ")");
         }
         createdRide = rideResult.data.ride;
+        // The ride exists and the rider was charged, so this attempt is over
+        // whatever happens to the payment-sync call below. Clear the key now,
+        // not after that call, or a failed sync would leave it in
+        // sessionStorage for the next booking in this tab.
+        clearBookingIdempotencyKey();
         var rideId = createdRide.id;
         return api("/api/rides/" + rideId + "/payment", {
           method: "PATCH",
@@ -1771,11 +1963,11 @@
         });
       })
       .then(function (paymentSyncResult) {
-        // The ride was already created successfully at this point — this
+        // The ride was already created successfully at this point -- this
         // PATCH just re-verifies the Paystack reference and marks it paid
         // server-side. If THIS step fails (Paystack re-verify hiccup,
         // amount mismatch), the rider was actually charged and a ride DOES
-        // exist, so don't show a false "not confirmed" error either — just
+        // exist, so don't show a false "not confirmed" error either -- just
         // don't claim it's fully confirmed, and point them to support with
         // the reference so nothing gets lost.
         if (!paymentSyncResult.ok) {
@@ -1796,7 +1988,7 @@
           barcodeBox.hidden = false;
         }
         if (state.bookingType === "one_way" && createdRide) showReturnDropoffPrompt(createdRide.id);
-        goToStep(6);
+        goToStep(4);
       })
       .catch(function (err) {
         payError.hidden = false;
@@ -1805,7 +1997,7 @@
   }
 
   function initStep5() {
-    document.getElementById("backTo4").addEventListener("click", function () { goToStep(4); });
+    document.getElementById("backToRide").addEventListener("click", function () { goToStep(2); });
 
     // Privacy policy popup (step 1's link)
     var privacyLink = document.getElementById("openPrivacyModalBooking");
@@ -1867,7 +2059,7 @@
         return;
       }
 
-      // This is the primary revenue path — card payment for a real booking —
+      // This is the primary revenue path -- card payment for a real booking --
       // so it gets the same guard account.html/track.html already have for
       // their card flows: checks PAYSTACK_PUBLIC_KEY is actually defined
       // (not just PaystackPop) and isn't still the "replace_me" placeholder,
@@ -1891,8 +2083,13 @@
         headers: authHeader(),
         body: JSON.stringify(buildRidePayload({ paymentMethod: "card", validateOnly: true })),
       }).then(function (check) {
-        payBtn.disabled = false;
+        // Stay disabled past this point -- only re-enable on an error
+        // branch below, or in Paystack's onClose once the iframe has
+        // actually opened. Re-enabling right here (as soon as this
+        // response lands) left a window for a fast second click to open a
+        // second Paystack popup before openIframe() below ever ran.
         if (!check.ok || !check.data || !check.data.ok || !(check.data.fareNaira > 0)) {
+          payBtn.disabled = false;
           payError.hidden = false;
           payError.textContent = bookingErrorText(check.data) || t("booking.paymentFailed");
           return;
@@ -1902,6 +2099,7 @@
           // Price moved since the review screen loaded (e.g. the 8pm night
           // rate started). Show the new number and let them press Pay again
           // rather than silently charging something different.
+          payBtn.disabled = false;
           state.liveQuote.fareNaira = check.data.fareNaira;
           renderReviewContent();
           payError.hidden = false;
@@ -1915,7 +2113,9 @@
           currency: "NGN",
           metadata: { name: state.name, phone: state.phone },
           callback: function (response) { handlePaymentSuccess(response.reference); },
-          onClose: function () {},
+          // The rider closed the popup without paying -- let them press Pay
+          // again rather than leaving payBtn stuck disabled forever.
+          onClose: function () { payBtn.disabled = false; },
         });
         handler.openIframe();
       });
@@ -1931,13 +2131,13 @@
     safeRun(initLanguage, "initLanguage");
     safeRun(initServicesDropdown, "initServicesDropdown");
 
-    // Registration is mandatory before booking — check for a saved rider
+    // Registration is mandatory before booking -- check for a saved rider
     // session before revealing the booking wizard at all.
     var savedToken = localStorage.getItem("arrivo_rider_token");
     if (!savedToken) {
       document.getElementById("authGate").hidden = false;
       document.getElementById("bookingCard").hidden = true;
-      return; // don't initialize any of the booking steps — nothing to do yet
+      return; // don't initialize any of the booking steps -- nothing to do yet
     }
 
     state.token = savedToken;
@@ -1949,6 +2149,12 @@
     safeRun(initStep2, "initStep2");
     safeRun(initStep3, "initStep3");
     safeRun(initStep4, "initStep4");
+    // The Pickup/route section used to only become visible after a step
+    // transition, which is when this used to run (from inside the removed
+    // flightContinue handler). "Trip" (Step 1) is now the first thing the
+    // rider sees, so the map needs its real dimensions from page load
+    // instead. Function name predates the reorder.
+    safeRun(setupPlacesForStep4, "setupPlacesForStep4");
     safeRun(initLocationPermission, "initLocationPermission");
     safeRun(initStep5, "initStep5");
     // Must run after initStep2 (it simulates a click on the "dropoff" chip,

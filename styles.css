@@ -1,12 +1,12 @@
 :root {
   --ink: #12123B;
   --ink-soft: #1E1E4D;
-  --title: #0C0C10; /* near-black, used specifically for headings per design feedback — body text stays --ink */
+  --title: #0C0C10; /* near-black, used specifically for headings per design feedback -- body text stays --ink */
   --amber: #F4A300;
-  --amber-text: #95590A; /* darker burnt-amber for text use — --amber itself is only 2.08:1 on white/cream, failing WCAG AA even for large bold text; this passes 4.5:1+ on both */
+  --amber-text: #95590A; /* darker burnt-amber for text use -- --amber itself is only 2.08:1 on white/cream, failing WCAG AA even for large bold text; this passes 4.5:1+ on both */
   --teal: #0E7C7B;
   --teal-tint: #E5F4F3;
-  --primary: #2E4C8C;      /* lighter navy blue — new primary accent per design feedback, replaces teal for icons/links/accents */
+  --primary: #2E4C8C;      /* lighter navy blue -- new primary accent per design feedback, replaces teal for icons/links/accents */
   --primary-tint: #EAEFF9;
   --cream: #F7F4EC;
   --coral: #E1523D;
@@ -37,7 +37,7 @@ body {
 
 /* Liquid Glass UI: soft, fixed color blobs behind everything, so the
    translucent/blurred surfaces (header, cards) have real depth and color
-   to refract — glass over a flat solid color just looks like a tint. */
+   to refract -- glass over a flat solid color just looks like a tint. */
 body::before {
   content: "";
   position: fixed;
@@ -107,7 +107,7 @@ a { color: inherit; text-decoration: none; }
   transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, opacity 0.15s ease;
 }
 /* Fluid = motion that feels physical, not just a fade. A quick scale-down
-   on press, then a springy overshoot back — every control gets a little
+   on press, then a springy overshoot back -- every control gets a little
    give, the way glass-and-light actually behaves under a touch. */
 .btn:hover { transform: translateY(-1px) scale(1.015); }
 .btn:active { transform: scale(0.94); transition-duration: 0.12s; }
@@ -125,7 +125,7 @@ a { color: inherit; text-decoration: none; }
   --my: 25%;
 }
 /* The real hallmark of Liquid Glass reference material (WWDC25): a bright,
-   concentrated highlight — not a flat tint — that reads as light bouncing
+   concentrated highlight -- not a flat tint -- that reads as light bouncing
    off a curved wet surface. This one sits at a fixed resting spot by
    default and actually tracks the cursor on hover (see glass-effects.js),
    which is what makes it feel dynamic rather than a static texture. */
@@ -138,7 +138,7 @@ a { color: inherit; text-decoration: none; }
   pointer-events: none;
   transition: background 0.4s ease;
 }
-/* Real Liquid Glass doesn't tint on interaction — it just catches more
+/* Real Liquid Glass doesn't tint on interaction -- it just catches more
    light. On hover the fill thins out (more of what's behind shows through)
    and the rim brightens, the way a curved glass surface looks when it
    tips toward a light source. No color added anywhere. */
@@ -147,7 +147,7 @@ a { color: inherit; text-decoration: none; }
   box-shadow: 0 1px 0 rgba(255,255,255,0.75) inset, 0 -1px 0 rgba(0,0,0,0.1) inset, 0 10px 26px rgba(244,163,0,0.3);
 }
 /* A quick one-shot diagonal shine, like the header's ambient sheen but
-   triggered by intent (hover) rather than looping forever — the same
+   triggered by intent (hover) rather than looping forever -- the same
    "light catching glass" cue, applied to a moment of interaction. */
 .btn-primary::after {
   content: "";
@@ -204,17 +204,17 @@ a { color: inherit; text-decoration: none; }
   box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 8px 24px rgba(18,18,59,0.08);
   transition: top 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), margin 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
               border-radius 0.35s ease, background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-  /* Deliberately no overflow:hidden here — the language dropdown and
+  /* Deliberately no overflow:hidden here -- the language dropdown and
      mobile menu both render below this box and must not be clipped.
      The sheen below is contained within its own bounds instead. */
 }
-/* On initial load the header sits flush against the top — no gap above
+/* On initial load the header sits flush against the top -- no gap above
    it, so on pages like the hero (a full-bleed photo) there's nothing
    showing through behind it. It only becomes the floating pill once the
    person has actually scrolled past the very top (see script.js), at
    which point there's always page content behind that gap regardless of
    which page you're on, so it never exposes a stray strip of plain
-   background. This was a real, reported bug — a cream sliver was
+   background. This was a real, reported bug -- a cream sliver was
    visible above the header specifically at the top of the hero page,
    because the hero photo only starts below the header in document flow,
    not behind it. */
@@ -230,7 +230,7 @@ a { color: inherit; text-decoration: none; }
   .site-header.is-scrolled {
     /* Full 12px margins on the narrowest phones previously caused real
        overflow (the header content was already fitted right to the
-       edge) — a smaller margin here still gives the pill/floating look
+       edge) -- a smaller margin here still gives the pill/floating look
        without losing the width the header actually needs. */
     margin: 0 6px;
     top: 6px;
@@ -238,7 +238,7 @@ a { color: inherit; text-decoration: none; }
 }
 @media (max-width: 340px) {
   .site-header.is-scrolled {
-    /* Even 6px margins are one 320px device too many — genuinely zero
+    /* Even 6px margins are one 320px device too many -- genuinely zero
        room to spare at this width, so the pill look is dropped in favor
        of not overflowing. */
     margin: 0;
@@ -246,7 +246,7 @@ a { color: inherit; text-decoration: none; }
     border-radius: 0;
   }
 }
-/* The moving sheen — a soft diagonal highlight that drifts slowly across
+/* The moving sheen -- a soft diagonal highlight that drifts slowly across
    the glass, like light catching a curved surface. Uses background-position
    on a fixed-size box (not transform + overflow:hidden) specifically so it
    never clips the language dropdown or mobile nav menu that render below
@@ -255,7 +255,7 @@ a { color: inherit; text-decoration: none; }
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: inherit; /* without this, the sheen is a plain rectangle sitting inside a rounded pill header — its square corners poke out past the rounded boundary as it animates, since overflow:hidden can't be used here (it would also clip the language dropdown and mobile menu) */
+  border-radius: inherit; /* without this, the sheen is a plain rectangle sitting inside a rounded pill header -- its square corners poke out past the rounded boundary as it animates, since overflow:hidden can't be used here (it would also clip the language dropdown and mobile menu) */
   background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.55) 47%, rgba(255,255,255,0.75) 50%, rgba(255,255,255,0.55) 53%, transparent 65%);
   background-size: 300% 300%;
   animation: glassSheen 9s ease-in-out infinite;
@@ -283,7 +283,7 @@ a { color: inherit; text-decoration: none; }
 .brand {
   display: flex;
   align-items: center;
-  /* Tightened from 8px — at 8px the pin and wordmark read as two separate
+  /* Tightened from 8px -- at 8px the pin and wordmark read as two separate
      logos sitting next to each other rather than one designed lockup.
      Matched to .footer-brand's 8px gap below so the pin-to-wordmark
      spacing reads identically in both places. */
@@ -302,16 +302,16 @@ a { color: inherit; text-decoration: none; }
   z-index: 2;
   /* Soft amber halo behind the pin mark so it doesn't float bare against
      whatever's behind the nav (cream hero, dark footer, or a photo
-     background) — a subtle rounded glow rather than a hard box. */
+     background) -- a subtle rounded glow rather than a hard box. */
   box-shadow: 0 0 0 8px rgba(244, 163, 0, 0.10), 0 2px 14px rgba(244, 163, 0, 0.30);
 }
 .brand-ride { color: var(--ink); }
 /* Default usage is body copy on light backgrounds (e.g. index.html's "Who
-   RideArrivo is for" on .section-tint) — full-strength --amber there is
+   RideArrivo is for" on .section-tint) -- full-strength --amber there is
    only 2.08:1 against white/cream, failing WCAG AA even for large bold
    text. --amber-text is the same hue darkened for legibility. The
    dark-background contexts below (hero/safety glass panels, footer) keep
-   the original bright --amber, which already reads fine there — mirrors
+   the original bright --amber, which already reads fine there -- mirrors
    the existing .brand-ride overrides just below, in reverse. */
 .brand-arrivo { color: var(--amber-text); }
 /* Large headings on light sections: a true gold close to the logo amber instead of the brown
@@ -319,7 +319,7 @@ a { color: inherit; text-decoration: none; }
    Small inline uses keep --amber-text (5.15:1). Dark panels override below. */
 h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
 .section-dark h2 .brand-arrivo { color: var(--amber); }
-.site-footer .brand-ride { color: var(--cream); } /* footer background is dark navy throughout — any "Ride" text needs a light color here instead, not just the logo */
+.site-footer .brand-ride { color: var(--cream); } /* footer background is dark navy throughout -- any "Ride" text needs a light color here instead, not just the logo */
 .hero-glass-panel .brand-arrivo,
 .safety-hero .brand-arrivo,
 .site-footer .brand-arrivo { color: var(--amber); }
@@ -339,7 +339,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
 }
 
 /* The "soft continuous location ping pulse" promised in the comment above
-   never actually existed as a second animation — the halo was a static
+   never actually existed as a second animation -- the halo was a static
    box-shadow with nothing animating it. This ring is the pulse: it expands
    outward from the pin and fades, on loop, starting right as the drop-in
    lands (0.6s delay) so the two read as one continuous motion instead of
@@ -356,7 +356,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
   animation: logoPing 2.4s ease-out 0.6s infinite;
 }
 
-/* Previously scaled to only 1.65x at 0.45 starting opacity — against most
+/* Previously scaled to only 1.65x at 0.45 starting opacity -- against most
    nav backgrounds that read as barely-there by the time it actually
    expanded outward. Bigger max scale + a brighter starting opacity makes
    the pulse itself clearly visible instead of just a faint flicker. */
@@ -395,7 +395,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
 .main-nav a:hover { color: var(--amber); background: rgba(244,163,0,0.14); }
 .header-actions { display: flex; align-items: center; gap: 12px; }
 
-/* ── Mobile hamburger nav — the secondary links (How it works / Who it's
+/* ── Mobile hamburger nav -- the secondary links (How it works / Who it's
    for / Safety) are hidden below 860px via .main-nav; this is the only way
    to reach them on a phone, since the primary "Book a ride" CTA already
    stays visible in .header-actions regardless of screen width. ── */
@@ -569,7 +569,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
 /* ridearrivo-wordmark.png is the same design/font/kerning as the footer's
    ridearrivo-wordmark-light.png (in fact re-colored from that exact file:
    the cream "Ride" swapped for ink, "Arrivo" left amber, transparent bg
-   preserved) — sized identically to .footer-wordmark below so the navbar
+   preserved) -- sized identically to .footer-wordmark below so the navbar
    and footer lockups match pixel-for-pixel in proportion, not just color. */
 .brand-wordmark {
   height: 20px;
@@ -598,7 +598,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
 
 /* Relocated below every base rule it overrides (.header-inner,
    .brand/.brand-wordmark, .header-actions, .lang-trigger, .btn-sm,
-   .nav-account-link) — CSS resolves same-specificity ties by source
+   .nav-account-link) -- CSS resolves same-specificity ties by source
    order, so when this narrow-phone tightening block sat ABOVE those
    base rules (as it originally did, right under the unrelated .btn-sm
    rule near the top of the file), every property it shares with a base
@@ -609,12 +609,12 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
    won the tie. The wordmark (and the untightened gaps/padding) staying
    at full size ate exactly the ~80-90px that "Book a ride" + the
    hamburger needed, pushing the hamburger past the header's right edge
-   entirely — the reported "hamburger floating outside the pill" bug.
+   entirely -- the reported "hamburger floating outside the pill" bug.
    Same rules, same breakpoints, just positioned so they're actually the
    last word for every property they touch. */
 /* On the narrowest phones, the header-actions row (clock, language, book
    button, hamburger) gets tight enough that "Book a ride" was wrapping
-   into 2-3 lines — tighten spacing here instead of letting that happen. */
+   into 2-3 lines -- tighten spacing here instead of letting that happen. */
 @media (max-width: 470px) {
   .header-inner { gap: 6px; }
   .lang-trigger { padding: 9px 7px; font-size: 10px; }
@@ -626,7 +626,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
   .brand { gap: 6px; }
 }
 @media (min-width: 401px) and (max-width: 440px) {
-  .brand-wordmark { height: 15px; } /* shrink instead of hiding — still legible, just doesn't crowd the header */
+  .brand-wordmark { height: 15px; } /* shrink instead of hiding -- still legible, just doesn't crowd the header */
 }
 @media (max-width: 400px) {
   .brand-wordmark { display: none; } /* genuinely no room left at this width even at the smallest readable size */
@@ -971,7 +971,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
   color: var(--cream);
   overflow: hidden;
 }
-/* Subtle route/dot texture standing in for a real photo — a flat solid
+/* Subtle route/dot texture standing in for a real photo -- a flat solid
    navy behind this text had no visual depth. I don't have an actual Lagos
    photo to use here; happy to swap this for one if you have a real shot
    you want featured instead. */
@@ -987,7 +987,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
 .section-dark .wrap { position: relative; z-index: 1; }
 .section-dark h2 { color: var(--cream); }
 .section-dark p { color: #C9C9E6; }
-.section-dark .brand-ride { color: var(--cream); } /* same dark-background issue as the footer — "Ride" in navy would be invisible here too */
+.section-dark .brand-ride { color: var(--cream); } /* same dark-background issue as the footer -- "Ride" in navy would be invisible here too */
 .hero-glass-panel .brand-ride { color: var(--cream); } /* hero now sits on a dark photo background too */
 .safety-hero .brand-ride { color: var(--cream); } /* safety section also sits on a dark photo background */
 
@@ -1020,7 +1020,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
   .steps-5 { grid-template-columns: repeat(5, 1fr); }
 }
 
-/* ── How It Works — dark photo background, glass cards ──
+/* ── How It Works -- dark photo background, glass cards ──
    This section sits on a dark blurred photo, unlike the rest of the
    (light/cream) site, so the glass here is dark translucent glass with
    white text, not the light glass used everywhere else. */
@@ -1041,7 +1041,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
 .how-it-works-overlay {
   position: absolute;
   inset: 0;
-  /* A radial spotlight instead of a flat wash — darkest behind the actual
+  /* A radial spotlight instead of a flat wash -- darkest behind the actual
      cards and heading (where text needs contrast), fading out toward the
      edges so the photo stays visible around the perimeter rather than
      the whole section reading as one uniform dark rectangle. */
@@ -1249,7 +1249,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
   vertical-align: middle;
 }
 
-/* ── Safety hero — full-bleed photo background with a glass panel ── */
+/* ── Safety hero -- full-bleed photo background with a glass panel ── */
 .safety-hero {
   position: relative;
   padding: 48px 0;
@@ -1408,7 +1408,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
 .footer-legal { font-size: 12px; color: #8a8ab0; margin: 0; }
 .footer-legal-entity { font-size: 11px; color: #6f6f96; margin: 3px 0 0; }
 /* Small inline pin + wordmark lockup inside the "© 2026 RideArrivo..."
-   copyright line, replacing what used to be plain colored text — sized to
+   copyright line, replacing what used to be plain colored text -- sized to
    the surrounding .footer-legal text (12px) so it sits on the same line
    without disrupting the paragraph's height or baseline. */
 .footer-legal-brand {
@@ -1421,7 +1421,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
 .footer-legal-mark { width: 12px; height: 12px; display: block; }
 .footer-legal-wordmark { height: 12px; width: auto; display: block; }
 
-/* Top: brand + social on the left, three link columns on the right —
+/* Top: brand + social on the left, three link columns on the right --
    stacks to a single column on mobile so nothing feels cramped. */
 .footer-top {
   display: flex;
@@ -1624,7 +1624,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
 .fleet-caption h3 { color: #fff; margin: 4px 0 0; font-size: 19px; }
 
 /* ── Showcase strip ──
-   User-controlled (swipe/scroll), not a timer — small cards, next one
+   User-controlled (swipe/scroll), not a timer -- small cards, next one
    peeking at the edge so it reads as "more to see" without ever taking
    over the page or moving on its own. */
 .showcase-strip {
