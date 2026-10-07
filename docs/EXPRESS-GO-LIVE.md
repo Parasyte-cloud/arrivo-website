@@ -11,7 +11,7 @@ This is the plan, the reasoning, and the exact steps. It replaces the earlier "s
 | 3 | arrivo-website #42 | Switch website to `api.ridearrivo.com` | `api.ridearrivo.com` is live on Render with a valid certificate |
 | 4 | arrivo-website #43 | Link cutover and 301 from `/express.html` | Express is live on its subdomain and the smoke test passed |
 
-#42 and #43 are drafts based on #31's branch; GitHub retargets them to `main` after #31 merges. The two `.patch` files in `docs/backend-patches/` are the same changes as #50, kept for reference.
+#42 and #43 are drafts based on #31's branch; GitHub retargets them to `main` after #31 merges. The backend half of this work is already on the backend `main` (Arrivo #50).
 
 ## 1. The architecture and why
 
@@ -56,45 +56,33 @@ Rules that keep front ends independent: Express loads no scripts or images from 
 - `scripts/build-express.js` now builds Express only (plus privacy, terms, 404). Login, signup, account and tracking are links to www with `next=` pointing back at Express. No duplicate auth pages to drift.
 - Earlier hardening still applies (stale coordinates, 401 handling, fare-change guard, honest Maps errors, a11y, 7-language strings).
 
-**Backend repo (two patches, apply in order)**
-1. `docs/backend-patches/express-backend-hardening.patch`: CORS for `express.ridearrivo.com`, per-rider rate limits, `FARE_CHANGED` guard, stale-`matched` fix.
-2. `docs/backend-patches/express-sso-cookie.patch`:
-   - new `middleware/sessionCookie.js` (cookie set/clear/read, CSRF origin check)
-   - login, signup, Google and Apple sign-in also set the cookie; guest checkout does not
-   - `requireAuth` accepts Bearer or cookie
-   - `POST /api/auth/logout` clears the cookie
-   - CORS `credentials: true` (safe because origins are an exact list; browsers refuse a wildcard with credentials)
-   - `scripts/test-session-cookie.js` (needs only `express`; passes: cookie attributes, CSRF refusals, Bearer bypass, clearing)
+**Backend repo (already merged, Arrivo #50)**
+- CORS for `express.ridearrivo.com`, per-rider rate limits, `FARE_CHANGED` guard, stale-`matched` fix.
+- New `middleware/sessionCookie.js` (cookie set/clear/read, CSRF origin check); login, signup, Google and Apple sign-in also set the cookie; guest checkout does not.
+- `requireAuth` accepts Bearer or cookie; `POST /api/auth/logout` clears the cookie.
+- CORS `credentials: true` (safe because origins are an exact list; browsers refuse a wildcard with credentials).
+- `scripts/test-session-cookie.js` covers cookie attributes, CSRF refusals, Bearer bypass and clearing.
 
 **CSRF, explained.** Because a cookie is sent automatically, a malicious site could make your browser send a request that carries it. Two layers stop that: `SameSite=Lax` (the browser does not attach the cookie to cross-site POSTs) and an `Origin` check on state-changing requests that rely on the cookie (must be one of our own sites). Requests using a Bearer header or no cookie skip the check because there is nothing automatic to abuse.
 
-Not run against a real database or deployed from here. Review `git apply --check`, run the test script, and do a staging login before production.
+Do a staging login before production.
 
 ## 4. Go-live steps (in this order)
 
-### Step 1: Backend code
-In the backend repo apply both patches (`git apply --check` first), review, merge, then set on Render:
+### Step 1: Backend environment
+The backend code is already on `main` (Arrivo #50). What is still outstanding is the Render environment:
 - `SESSION_COOKIE_DOMAIN=.ridearrivo.com` (leading dot)
 - `NODE_ENV=production` (makes the cookie `Secure`)
 - `ARRIVO_NOW_ENABLED=true` (already required for Express)
 - optional: `EXTRA_ALLOWED_ORIGINS` for a Pages preview URL while testing
 
-Run `node scripts/test-session-cookie.js` locally first. If `JWT_SECRET` ever changes, every session ends; that is expected.
+If `JWT_SECRET` ever changes, every session ends; that is expected.
 
 ### Step 2: api.ridearrivo.com
 Render > the API service > Settings > Custom Domains > add `api.ridearrivo.com`. In Cloudflare DNS add the CNAME Render shows. Keep it **DNS only (grey cloud)** until Render shows the certificate as issued; the orange proxy can block Render's certificate check. Confirm `https://api.ridearrivo.com/` answers (the old onrender URL keeps working too, which the apps rely on).
 
 ### Step 3: Point the website at the API domain
-Merge PR #31 first (it still needs its required review). Then, once Step 2 is verified, in one commit run:
-
-```
-sed -i 's#https://arrivo-backend-g1ku.onrender.com#https://api.ridearrivo.com#g' \
-  account.html forgot-password.html login.html reset-password.html scan.html \
-  signup.html track.html verify-email.html booking.js driver.js script.js \
-  express.js express-config.js
-```
-
-Minimum that matters for the shared login: `login.html`, `signup.html`, `account.html` (they receive or clear the cookie). Flipping all is cleaner. The CSP in `_headers` already allows `api.ridearrivo.com`. Rollback is the same command in reverse.
+Do not repeat the cutover here. It is PR #42 (draft), which holds the exact change, its hold conditions and the rollback. Merge it once Step 2 is verified.
 
 Other sites that sign riders in (the membership site posts to `/api/auth/google` and `/apple` itself) must also call the API at `api.ridearrivo.com` with `credentials: "include"`, or riders who sign up there will not get the shared cookie. That code is outside this repo.
 
