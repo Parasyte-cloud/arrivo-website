@@ -34,10 +34,14 @@
   .oauth-error { color: var(--coral, #e1523d); font-size: 12.5px; text-align: center; margin: 4px 0 0; }
 </style>
   <script>
-    document.documentElement.classList.add("ra-launch-pending");
-    window.setTimeout(function () {
-      document.documentElement.classList.remove("ra-launch-pending");
-    }, 5000);
+    // The launch gate only matters before launch day ends. After that, do not
+    // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
+    if (Date.now() < Date.parse("2026-09-12T14:30:00+01:00") || /[?&]launchTest=1/.test(location.search)) {
+      document.documentElement.classList.add("ra-launch-pending");
+      window.setTimeout(function () {
+        document.documentElement.classList.remove("ra-launch-pending");
+      }, 5000);
+    }
   </script>
   <link rel="stylesheet" href="/launch-countdown.css?v=20260912-02">
 </head>
@@ -83,12 +87,14 @@
 </main>
 
 <script>
-  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
+  var API_BASE_URL = "https://api.ridearrivo.com";
   var TOKEN_KEY = "arrivo_rider_token";
 
   function api(path, options) {
     options = options || {};
-    return fetch(API_BASE_URL + path, options).then(function (res) {
+    // credentials:"include" lets the browser accept the shared single
+    // sign-on cookie the API sets for *.ridearrivo.com on login/signup.
+    return fetch(API_BASE_URL + path, Object.assign({ credentials: "include" }, options)).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
         return { ok: res.ok, status: res.status, data: data };
       });
@@ -97,7 +103,7 @@
 
   // "next" is attacker-controllable (anyone can link to
   // login.html?next=<anything>) and gets assigned straight to
-  // window.location.href after a real, successful login/signup — an
+  // window.location.href after a real, successful login/signup -- an
   // unvalidated value here is an open redirect: a phishing link that
   // reads as trustworthy (it's really ridearrivo.com) which, right after
   // the visitor authenticates for real, bounces them to an attacker's
@@ -107,17 +113,32 @@
   // shape: no scheme (blocks "javascript:", "https://…"), no leading "//"
   // or backslash (both are browser-recognized ways to point at a
   // different host from what looks like a relative path).
-  function isSafeNextPath(next) {
-    if (!next) return false;
-    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(next)) return false;
-    if (next.indexOf("//") === 0) return false;
-    if (next.indexOf("\\") !== -1) return false;
-    return true;
-  }
-
+  // Browsers throw away tabs, line breaks and leading spaces before reading a
+  // URL, so testing the raw text is unsafe ("/<TAB>/evil.com" reads as a path
+  // to a naive check, then as "//evil.com" to the browser). Let the browser's
+  // own URL parser decide: resolve the value against this page, then follow it
+  // only if it lands on this same site OR on one of OUR OWN sibling sites
+  // (express./move./air./boat./membership.) so shared sign-in can send the
+  // rider back where they came from. Exact host match, https only, no embedded
+  // credentials -- never "anything under ridearrivo.com".
+  var SSO_RETURN_HOSTS = ["ridearrivo.com", "www.ridearrivo.com", "express.ridearrivo.com",
+    "move.ridearrivo.com", "boat.ridearrivo.com", "air.ridearrivo.com", "membership.ridearrivo.com"];
   function getNextUrl() {
     var next = new URLSearchParams(window.location.search).get("next");
-    return isSafeNextPath(next) ? next : "account.html";
+    if (!next) return "account.html";
+    try {
+      var resolved = new URL(next, window.location.href);
+      if (resolved.origin === window.location.origin) {
+        return resolved.pathname + resolved.search + resolved.hash;
+      }
+      if (resolved.protocol === "https:" && !resolved.username && !resolved.password &&
+          SSO_RETURN_HOSTS.indexOf(resolved.hostname) !== -1) {
+        return resolved.href;
+      }
+      return "account.html";
+    } catch (e) {
+      return "account.html";
+    }
   }
 
   document.addEventListener("DOMContentLoaded", function () {
@@ -172,7 +193,7 @@
     });
 
     // ── Google / Apple sign-in ──
-    // Login (unlike Signup) has no separate consent checkbox — tapping
+    // Login (unlike Signup) has no separate consent checkbox -- tapping
     // "Continue with Google/Apple" under the visible privacy notice below
     // IS the consent action, same pattern used in the rider/driver apps'
     // Login screens. agreedToTerms is still sent through and still enforced
@@ -200,7 +221,7 @@
       });
     }
 
-    // Google Identity Services — web Client ID (already whitelisted server-side
+    // Google Identity Services -- web Client ID (already whitelisted server-side
     // in GOOGLE_OAUTH_CLIENT_IDS alongside the mobile apps' iOS/Android ones).
     var GOOGLE_WEB_CLIENT_ID = "425853448895-r6ha3gh7b4i4lcsl3lohncuk3ecblsl3.apps.googleusercontent.com";
 
@@ -208,7 +229,7 @@
       submitOAuth("/api/auth/google", { idToken: response.credential, role: "rider", agreedToTerms: true });
     }
 
-    // Google's renderButton takes a fixed pixel width, not a percentage —
+    // Google's renderButton takes a fixed pixel width, not a percentage --
     // hardcoding 300 overflowed the .auth-wrap/.booking-card padding on
     // narrow phones (as little as ~279px usable width at 375px viewport),
     // pushing the button past its container's edge. Deriving it from the
@@ -231,7 +252,7 @@
     }
     initGoogleSignIn(40);
 
-    // Sign in with Apple (web) — needs a Services ID from Apple Developer
+    // Sign in with Apple (web) -- needs a Services ID from Apple Developer
     // (separate from the app Bundle IDs used natively), configured with this
     // site's domain + a return URL, before it can go live. Left blank on
     // purpose: the button simply won't render until that's set up, so
@@ -248,7 +269,7 @@
     }
 
     function initAppleSignIn(attemptsLeft) {
-      if (!APPLE_WEB_SERVICES_ID) return; // not configured yet — button stays hidden
+      if (!APPLE_WEB_SERVICES_ID) return; // not configured yet -- button stays hidden
       if (window.AppleID) {
         AppleID.auth.init({
           clientId: APPLE_WEB_SERVICES_ID,
@@ -261,7 +282,7 @@
         appleBtn.addEventListener("click", function () {
           AppleID.auth.signIn().then(function (res) {
             handleAppleCredential(res.authorization.id_token);
-          }).catch(function () { /* user cancelled — no error needed */ });
+          }).catch(function () { /* user cancelled -- no error needed */ });
         });
       } else if (attemptsLeft > 0) {
         setTimeout(function () { initAppleSignIn(attemptsLeft - 1); }, 150);

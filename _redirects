@@ -1,0 +1,4 @@
+# ArrivoExpress now lives on its own subdomain. Keep old links, bookmarks and
+# search results working with a permanent redirect.
+/express.html https://express.ridearrivo.com/ 301
+/express https://express.ridearrivo.com/ 301
