@@ -3,7 +3,7 @@
 // file into dist/express with the same keys. express.js reads these and falls
 // back to the same defaults if the file is missing.
 window.ARRIVO_EXPRESS_CONFIG = {
-  apiBase: "https://arrivo-backend-g1ku.onrender.com",
+  apiBase: "https://api.ridearrivo.com",
   loginPath: "login.html",
   accountPath: "account.html",
   trackPath: "track.html",

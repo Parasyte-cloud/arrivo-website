@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
+  var API_BASE_URL = "https://api.ridearrivo.com";
   var TOKEN_KEY = "arrivo_driver_token";
   var POLL_INTERVAL_MS = 8000;
 

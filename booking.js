@@ -2,7 +2,7 @@
   "use strict";
 
   // ── Configuration -- replace before going live ──────────────────────────
-  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com"; // same as script.js -- point at your deployed backend
+  var API_BASE_URL = "https://api.ridearrivo.com"; // same as script.js -- point at your deployed backend
   // PAYSTACK_PUBLIC_KEY now lives in paystack-config.js (loaded before this
   // file in book.html) -- shared with track.html's tip flow so the two
   // can't drift out of sync again (see that file for why).

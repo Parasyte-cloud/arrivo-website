@@ -7,7 +7,7 @@
   // that file; the main-site copy just holds these same defaults, so this
   // page behaves identically on both hosts.
   var CFG = window.ARRIVO_EXPRESS_CONFIG || {};
-  var API_BASE_URL = CFG.apiBase || "https://arrivo-backend-g1ku.onrender.com"; // same as booking.js/script.js
+  var API_BASE_URL = CFG.apiBase || "https://api.ridearrivo.com"; // same as booking.js/script.js
   // On the main site these are relative page names. On express.ridearrivo.com
   // they are absolute URLs: login, account and ride tracking live on
   // www.ridearrivo.com, and "next" carries the full Express URL back.
