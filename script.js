@@ -5,7 +5,7 @@
   // while testing locally, but it meant the waitlist "Notify me" form on the
   // live site silently failed for every real visitor, since a visitor's
   // browser can never reach the developer's own machine.
-  var API_BASE_URL = "https://arrivo-backend-g1ku.onrender.com";
+  var API_BASE_URL = "https://api.ridearrivo.com";
 
   // ───────────────────────── i18n ─────────────────────────
   var LANG_KEY = "arrivo_site_lang";
