@@ -14,7 +14,7 @@ const I18N = {
       bookCta: "Book a ride",
       cta: "Get notified",
       express: "ArrivoExpress",
-      removals: "Removals",
+      removals: "ArrivoRemovals",
       membership: "Membership",
     },
     footer: {
@@ -454,7 +454,7 @@ const I18N = {
       bookCta: "Réserver une course",
       cta: "Être prévenu",
       express: "ArrivoExpress",
-      removals: "Déménagement",
+      removals: "ArrivoRemovals",
       membership: "Abonnement",
     },
     hero: {
@@ -889,7 +889,7 @@ I18N.zh = {
     bookCta: "预订行程",
     cta: "获取通知",
     express: "ArrivoExpress",
-    removals: "搬家服务",
+    removals: "ArrivoRemovals",
     membership: "会员",
   },
   hero: {
@@ -1325,7 +1325,7 @@ I18N.de = {
     bookCta: "Fahrt buchen",
     cta: "Benachrichtigen",
     express: "ArrivoExpress",
-    removals: "Umzüge",
+    removals: "ArrivoRemovals",
     membership: "Mitgliedschaft",
   },
   hero: {
@@ -1759,7 +1759,7 @@ I18N.hi = {
     bookCta: "राइड बुक करें",
     cta: "सूचित करें",
     express: "ArrivoExpress",
-    removals: "शिफ्टिंग सेवा",
+    removals: "ArrivoRemovals",
     membership: "सदस्यता",
   },
   hero: {
@@ -2193,7 +2193,7 @@ I18N.es = {
     bookCta: "Reservar un viaje",
     cta: "Notificarme",
     express: "ArrivoExpress",
-    removals: "Mudanzas",
+    removals: "ArrivoRemovals",
     membership: "Membresía",
   },
   hero: {
@@ -2627,7 +2627,7 @@ I18N.pt = {
     bookCta: "Reservar uma corrida",
     cta: "Notificar-me",
     express: "ArrivoExpress",
-    removals: "Mudanças",
+    removals: "ArrivoRemovals",
     membership: "Assinatura",
   },
   hero: {
