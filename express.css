@@ -46,7 +46,8 @@
   margin-top: 2px;
 }
 
-.rn-locate { width: 100%; margin: 8px 0 4px; font-size: 13px; }
+.rn-locate { flex: 1; margin: 8px 0 4px; font-size: 13px; }
+.rn-pickup-actions { display: flex; gap: 8px; align-items: center; }
 .rn-locate:disabled { opacity: 0.6; cursor: wait; }
 
 /* Visible keyboard focus on the tier cards and the card headings that
@@ -58,3 +59,66 @@
 @media (prefers-reduced-motion: reduce) {
   .rn-spinner { animation-duration: 2.4s; }
 }
+
+/* Swap pickup and destination */
+.rn-swap {
+  all: unset; box-sizing: border-box; cursor: pointer; flex: none;
+  width: 40px; height: 40px; margin-top: 4px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--card-border); border-radius: 10px; color: var(--ink);
+  background: var(--glass-bg);
+}
+.rn-swap:hover { border-color: var(--amber); }
+.rn-swap:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+/* Recent places */
+.rn-recent { margin: 8px 0 4px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.rn-recent-label { font-size: 11.5px; font-weight: 600; color: var(--text-muted); }
+.rn-recent-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.rn-chip {
+  all: unset; box-sizing: border-box; cursor: pointer; max-width: 100%;
+  font-size: 12px; padding: 5px 10px; border-radius: 999px;
+  border: 1px solid var(--card-border); color: var(--ink); background: var(--glass-bg);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rn-chip:hover { border-color: var(--amber); }
+.rn-chip:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.rn-link {
+  all: unset; cursor: pointer; font-size: 11.5px; color: var(--text-muted);
+  text-decoration: underline; margin-left: auto;
+}
+.rn-link:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+/* Vehicle cards with live price and pickup time */
+.rn-prices-status { margin: 0 0 4px; min-height: 16px; }
+.vehicle-card .v-main { display: flex; flex-direction: column; min-width: 0; }
+.vehicle-card .v-side { margin-left: auto; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.vehicle-card .v-price { font-size: 16px; margin-left: 0; }
+.vehicle-card .v-eta { font-size: 11.5px; color: var(--text-muted); }
+.vehicle-card .v-eta.none { color: var(--error, #B3261E); }
+.vehicle-card .v-fast {
+  display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.02em;
+  padding: 1px 6px; border-radius: 999px; background: var(--amber); color: #fff; margin-left: 6px;
+}
+.vehicle-card .v-skel {
+  display: inline-block; width: 64px; height: 14px; border-radius: 6px;
+  background: linear-gradient(90deg, var(--card-border), transparent, var(--card-border));
+  background-size: 200% 100%; animation: rn-shimmer 1.2s linear infinite;
+}
+@keyframes rn-shimmer { to { background-position: -200% 0; } }
+
+/* Fare breakdown */
+.rn-breakdown { margin-top: 8px; font-size: 13px; }
+.rn-breakdown summary { cursor: pointer; color: var(--text-muted); font-size: 12.5px; padding: 4px 0; }
+.rn-breakdown summary:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.rn-breakdown .rn-summary-row { font-size: 12.5px; padding: 5px 0; }
+
+/* Searching */
+.rn-elapsed { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--text-muted); margin: 4px 0 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .vehicle-card .v-skel { animation: none; }
+}
+
+/* display:flex above would otherwise beat the [hidden] attribute */
+.rn-recent[hidden], .rn-summary-row[hidden], .rn-breakdown[hidden], .rn-elapsed[hidden] { display: none !important; }
