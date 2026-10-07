@@ -122,3 +122,73 @@
 
 /* display:flex above would otherwise beat the [hidden] attribute */
 .rn-recent[hidden], .rn-summary-row[hidden], .rn-breakdown[hidden], .rn-elapsed[hidden] { display: none !important; }
+
+/* ---------- Matches the homepage look ---------- */
+/* Flat amber buttons: the glass sheen washed out the label. */
+.site-header .btn-primary,
+.booking-card .btn-primary,
+.cross-sell .btn-primary {
+  background: var(--amber);
+  background-image: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-color: transparent;
+  color: #12123B;
+  box-shadow: 0 6px 16px rgba(244, 163, 0, .28);
+}
+.site-header .btn-primary::before, .site-header .btn-primary::after,
+.booking-card .btn-primary::before, .booking-card .btn-primary::after,
+.cross-sell .btn-primary::before, .cross-sell .btn-primary::after { display: none; }
+.site-header .btn-primary:hover,
+.booking-card .btn-primary:hover,
+.cross-sell .btn-primary:hover { background: #FFB627; }
+
+/* "More from RideArrivo" sits on the page, not in a lighter box. */
+.cross-sell.section-tint { background: transparent; padding: 28px 0 8px; }
+.cross-sell .wrap { padding: 0; }
+.cross-sell .btn-ghost { border-color: var(--card-border); color: var(--ink); background: var(--glass-bg); }
+.cross-sell .btn-ghost::before, .cross-sell .btn-ghost::after { display: none; }
+.cross-sell .btn-ghost:hover { border-color: var(--amber); }
+
+/* Page title and banner line up with the cards below. */
+.booking-wrap h1 { margin: 20px 0 6px; }
+.booking-wrap .step-sub { margin: 0 0 18px; }
+
+/* Dark mode: the controls this page adds on top of booking.css. */
+html[data-theme="dark"] .rn-swap,
+html[data-theme="dark"] .rn-chip { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.16); color: #F3F3FA; }
+html[data-theme="dark"] .vehicle-card .v-fast { color: #12123B; }
+html[data-theme="dark"] .rn-breakdown summary { color: #A9ADC9; }
+
+/* Dark mode: fields, tier cards and ghost buttons on the booking cards. */
+html[data-theme="dark"] .booking-card .field,
+html[data-theme="dark"] .booking-card select.field {
+  background: rgba(255,255,255,.07);
+  border-color: rgba(255,255,255,.18);
+  color: #F3F3FA;
+}
+html[data-theme="dark"] .booking-card .field::placeholder { color: #8E92B3; }
+html[data-theme="dark"] .vehicle-card { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.14); color: #F3F3FA; }
+html[data-theme="dark"] .vehicle-card.selected { background: rgba(244,163,0,.14); border-color: var(--amber); }
+html[data-theme="dark"] .vehicle-card .v-name,
+html[data-theme="dark"] .vehicle-card .v-price { color: #F3F3FA; }
+html[data-theme="dark"] .vehicle-card .v-description,
+html[data-theme="dark"] .vehicle-card .v-capacity { color: #A9ADC9; }
+html[data-theme="dark"] .rn-summary-row.rn-total { color: #fff; }
+html[data-theme="dark"] .rn-route { color: #F3F3FA; }
+html[data-theme="dark"] .route-map { background: #12153A; }
+html[data-theme="dark"] .section-tint.cross-sell,
+.section-tint.cross-sell { background: transparent; }
+.booking-card .btn-ghost,
+.booking-card .btn-ghost::before { background-image: none; }
+.booking-card .btn-ghost {
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  background: transparent; border: 1.5px solid var(--card-border); color: var(--ink);
+}
+.booking-card .btn-ghost::before, .booking-card .btn-ghost::after { display: none; }
+.booking-card .btn-ghost:hover { border-color: var(--amber); background: var(--glass-bg); }
+html[data-theme="dark"] .booking-card .btn-ghost { border-color: rgba(255,255,255,.3); color: #F3F3FA; }
+
+/* Error text: the default coral is under 4.5:1 on the light cards. */
+.booking-card .error-text { color: #B3261E; }
+html[data-theme="dark"] .booking-card .error-text { color: #FF9A8B; }
