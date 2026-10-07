@@ -314,6 +314,11 @@ a { color: inherit; text-decoration: none; }
    the original bright --amber, which already reads fine there — mirrors
    the existing .brand-ride overrides just below, in reverse. */
 .brand-arrivo { color: var(--amber-text); }
+/* Large headings on light sections: a true gold close to the logo amber instead of the brown
+   small-text colour. #B97700 is 3.35:1 on cream, which passes AA for large bold text (3:1).
+   Small inline uses keep --amber-text (5.15:1). Dark panels override below. */
+h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
+.section-dark h2 .brand-arrivo { color: var(--amber); }
 .site-footer .brand-ride { color: var(--cream); } /* footer background is dark navy throughout — any "Ride" text needs a light color here instead, not just the logo */
 .hero-glass-panel .brand-arrivo,
 .safety-hero .brand-arrivo,
