@@ -92,7 +92,7 @@
 
     // Re-render anything that mixes translated copy with live values --
     // static data-i18n swaps above don't cover these.
-    if (!document.getElementById("pickerCard").hidden) renderTiers();
+    if (!document.getElementById("pickerCard").hidden) { renderTiers(); renderRecent(); }
     if (!document.getElementById("quoteCard").hidden && state.quote) renderQuote(true);
     if (!document.getElementById("searchingCard").hidden) renderSearchingChrome();
   }
@@ -228,6 +228,13 @@
     destination: "",
     destinationLatLng: null,
     quote: null,
+    quotes: {},          // tier key -> full quote, from /quote/all
+    quotesAt: 0,
+    quotesSeq: 0,        // guards against a late answer for places the rider changed
+    availability: null,  // tier key -> { drivers, etaMin } or null
+    pricesState: "idle", // idle | loading | ready | error | unavailable
+    searchStartedAt: 0,
+    elapsedTimer: null,
     activeRequestId: null,
     pollTimer: null,
     lastKnownStatus: null,
@@ -276,23 +283,181 @@
     return (entry && entry[field]) || tier[field];
   }
 
+  // A quote fetched more than this long ago is re-priced rather than reused,
+  // because the fare moves with live traffic.
+  var QUOTES_MAX_AGE_MS = 5 * 60 * 1000;
+
+  function fastestTierKey() {
+    var av = state.availability;
+    if (!av) return null;
+    var best = null, bestMin = Infinity, distinct = {};
+    state.tiers.forEach(function (tier) {
+      var a = av[tier.key];
+      if (a && typeof a.etaMin === "number") {
+        distinct[a.etaMin] = true;
+        if (a.etaMin < bestMin) { bestMin = a.etaMin; best = tier.key; }
+      }
+    });
+    // A "Fastest" badge only means something when the times actually differ.
+    return Object.keys(distinct).length > 1 ? best : null;
+  }
+
+  function renderPricesStatus() {
+    var el = document.getElementById("pricesStatus");
+    if (!el) return;
+    var msg = "";
+    if (state.pricesState === "idle") msg = t("arrivoExpress.pricesHint");
+    else if (state.pricesState === "loading") msg = t("arrivoExpress.pricesLoading");
+    else if (state.pricesState === "error") msg = t("arrivoExpress.pricesError");
+    el.textContent = msg;
+  }
+
   function renderTiers() {
     var container = document.getElementById("tierOptions");
     if (!container) return;
     container.innerHTML = "";
+    var fastest = fastestTierKey();
     state.tiers.forEach(function (tier) {
+      var quote = state.quotes[tier.key];
+      var avail = state.availability && state.availability[tier.key];
+      var side = "";
+      if (state.pricesState === "loading") {
+        side = '<span class="v-side"><span class="v-skel" aria-hidden="true"></span></span>';
+      } else if (quote) {
+        var eta = "";
+        if (avail && typeof avail.etaMin === "number") {
+          eta = '<span class="v-eta">' + escapeHtml(tFormat("arrivoExpress.etaAway", { min: avail.etaMin })) + "</span>";
+        } else if (avail && avail.drivers === 0) {
+          eta = '<span class="v-eta none">' + escapeHtml(t("arrivoExpress.noCarsNearby")) + "</span>";
+        }
+        side = '<span class="v-side"><span class="v-price">' + escapeHtml(formatNaira(quote.fareNaira)) + "</span>" + eta + "</span>";
+      }
       var btn = document.createElement("button");
       btn.type = "button";
       btn.className = "vehicle-card" + (tier.key === state.selectedTier ? " selected" : "");
+      btn.setAttribute("aria-pressed", tier.key === state.selectedTier ? "true" : "false");
       btn.innerHTML =
-        '<span class="v-name">' + escapeHtml(tierText(tier, "label")) + "</span>" +
-        '<span class="v-description">' + escapeHtml(tierText(tier, "description")) + "</span>";
+        '<span class="v-main"><span class="v-name">' + escapeHtml(tierText(tier, "label")) +
+        (fastest === tier.key ? '<span class="v-fast">' + escapeHtml(t("arrivoExpress.fastestBadge")) + "</span>" : "") +
+        "</span>" +
+        '<span class="v-description">' + escapeHtml(tierText(tier, "description")) + "</span></span>" + side;
       btn.addEventListener("click", function () {
         state.selectedTier = tier.key;
         renderTiers();
       });
       container.appendChild(btn);
     });
+    renderPricesStatus();
+  }
+
+  // Prices every vehicle for the chosen route in one request, so the rider
+  // compares fares and pickup times BEFORE picking a vehicle. Runs whenever
+  // both places are set; clears itself when either is removed. A 404/405 means
+  // an older backend without this endpoint: fall back silently to the
+  // one-vehicle quote that "Continue" already knows how to do.
+  function loadAllQuotes() {
+    var mySeq = ++state.quotesSeq;
+    state.quotes = {};
+    state.availability = null;
+    state.quotesAt = 0;
+    if (!state.pickupLatLng || !state.destinationLatLng) {
+      state.pricesState = "idle";
+      renderTiers();
+      return;
+    }
+    state.pricesState = "loading";
+    renderTiers();
+    api("/api/instant-rides/quote/all", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({
+        pickupAddress: state.pickup,
+        pickupLat: state.pickupLatLng.lat,
+        pickupLng: state.pickupLatLng.lng,
+        destinationAddress: state.destination,
+        destinationLat: state.destinationLatLng.lat,
+        destinationLng: state.destinationLatLng.lng,
+      }),
+    }).then(function (result) {
+      if (mySeq !== state.quotesSeq) return; // places changed while we waited
+      if (result.status === 404 || result.status === 405) {
+        state.pricesState = "unavailable";
+      } else if (!result.ok || !result.data || !result.data.quotes) {
+        state.pricesState = "error";
+      } else {
+        result.data.quotes.forEach(function (q) { state.quotes[q.tier] = q; });
+        state.availability = result.data.availability || null;
+        state.quotesAt = Date.now();
+        state.pricesState = "ready";
+      }
+      renderTiers();
+    });
+  }
+
+  // ───────────────────────── Recent places ─────────────────────────────
+  // Kept only in this browser (never sent anywhere), capped, and clearable.
+  var RECENT_KEY = "arrivo_express_recent";
+  var RECENT_MAX = 5;
+
+  function loadRecent() {
+    try {
+      var list = JSON.parse(store.get(RECENT_KEY) || "[]");
+      return Array.isArray(list) ? list.filter(function (r) {
+        return r && typeof r.address === "string" && isFinite(r.lat) && isFinite(r.lng);
+      }) : [];
+    } catch (e) { return []; }
+  }
+
+  function rememberPlace(place) {
+    if (!place || !place.address || !place.lat || !place.lng) return;
+    var list = loadRecent().filter(function (r) { return r.address !== place.address; });
+    list.unshift({ address: place.address, lat: place.lat, lng: place.lng });
+    store.set(RECENT_KEY, JSON.stringify(list.slice(0, RECENT_MAX)));
+  }
+
+  function renderRecent() {
+    var wrap = document.getElementById("recentPlaces");
+    var listEl = document.getElementById("recentList");
+    if (!wrap || !listEl) return;
+    var list = loadRecent();
+    wrap.hidden = list.length === 0;
+    listEl.innerHTML = "";
+    list.forEach(function (r) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "rn-chip";
+      chip.textContent = r.address;
+      chip.title = r.address;
+      chip.addEventListener("click", function () { setDestination(r); });
+      listEl.appendChild(chip);
+    });
+  }
+
+  function setDestination(r) {
+    var el = document.getElementById("rnDestination");
+    state.destination = r.address;
+    state.destinationLatLng = { lat: r.lat, lng: r.lng };
+    if (el) el.value = r.address;
+    updateMapMarkers();
+    loadAllQuotes();
+  }
+
+  function swapPlaces() {
+    var pEl = document.getElementById("rnPickup");
+    var dEl = document.getElementById("rnDestination");
+    var pickupVal = pEl ? pEl.value : "";
+    var destVal = dEl ? dEl.value : "";
+    var pLL = state.pickupLatLng, dLL = state.destinationLatLng;
+    if (pEl) pEl.value = destVal;
+    if (dEl) dEl.value = pickupVal;
+    state.pickup = destVal.trim();
+    state.destination = pickupVal.trim();
+    state.pickupLatLng = dLL;
+    state.destinationLatLng = pLL;
+    clearMarker("pickup");
+    clearMarker("destination");
+    updateMapMarkers();
+    loadAllQuotes();
   }
 
   // ───────────────────────── Google Places (same pattern as booking.js) ─
@@ -321,6 +486,7 @@
     state.pickupLatLng = { lat: r.lat, lng: r.lng };
     if (el) el.value = r.address;
     updateMapMarkers();
+    loadAllQuotes();
   }
 
   // Google's script tag calls this once the Maps JS API has loaded (see
@@ -334,10 +500,10 @@
     var pickupEl = document.getElementById("rnPickup");
     var destEl = document.getElementById("rnDestination");
     if (pickupEl) pickupEl.addEventListener("input", function () {
-      if (pickupEl.value.trim() !== state.pickup) { state.pickupLatLng = null; clearMarker("pickup"); }
+      if (pickupEl.value.trim() !== state.pickup && state.pickupLatLng) { state.pickupLatLng = null; clearMarker("pickup"); loadAllQuotes(); }
     });
     if (destEl) destEl.addEventListener("input", function () {
-      if (destEl.value.trim() !== state.destination) { state.destinationLatLng = null; clearMarker("destination"); }
+      if (destEl.value.trim() !== state.destination && state.destinationLatLng) { state.destinationLatLng = null; clearMarker("destination"); loadAllQuotes(); }
     });
   }
 
@@ -349,10 +515,7 @@
       setPickup(r);
     });
     attachPlacesAutocomplete(destEl, function (r) {
-      state.destination = r.address;
-      state.destinationLatLng = { lat: r.lat, lng: r.lng };
-      if (destEl) destEl.value = r.address;
-      updateMapMarkers();
+      setDestination(r);
     });
     initRouteMap();
   };
@@ -557,6 +720,17 @@
     state.pickup = pickupVal;
     state.destination = destVal;
 
+    // Best case: the rider already saw this vehicle's price on the picker
+    // (from /quote/all), so go straight to confirm with no second wait. The
+    // server still re-prices at booking and refuses a meaningfully higher
+    // fare (FARE_CHANGED), so reusing it is safe.
+    var seen = state.quotes[state.selectedTier];
+    if (state.pricesState === "ready" && seen && Date.now() - state.quotesAt < QUOTES_MAX_AGE_MS) {
+      state.quote = seen;
+      renderQuote();
+      return;
+    }
+
     var btn = document.getElementById("seeFareBtn");
     btn.disabled = true;
     btn.textContent = t("arrivoExpress.gettingFare");
@@ -567,7 +741,7 @@
       body: JSON.stringify(buildTrip()),
     }).then(function (result) {
       btn.disabled = false;
-      btn.textContent = t("arrivoExpress.seeFare");
+      btn.textContent = t("arrivoExpress.continueBtn");
       if (!result.ok) {
         err.textContent = result.data.error || t("arrivoExpress.fareError");
         err.hidden = false;
@@ -623,6 +797,7 @@
     document.getElementById("quoteDuration").textContent = tFormat("arrivoExpress.durationMin", { duration: Math.round(Number(q.durationMin) || 0) });
     document.getElementById("quoteFare").textContent = formatNaira(q.fareNaira);
     document.getElementById("quoteError").hidden = true;
+    renderQuoteExtras(q);
 
     updateMapMarkers();
     showCard("quoteCard");
@@ -632,6 +807,35 @@
     if (skipWalletCheck) return;
 
     refreshWalletNote();
+  }
+
+  // Pickup time (when we know it) and the itemised fare. Showing exactly what
+  // the rider pays for is the whole point: no hidden surge, no surprises.
+  function renderQuoteExtras(q) {
+    var avail = state.availability && state.availability[q.tier];
+    var etaRow = document.getElementById("quoteEtaRow");
+    if (etaRow) {
+      var hasEta = avail && typeof avail.etaMin === "number";
+      etaRow.hidden = !hasEta;
+      if (hasEta) document.getElementById("quoteEta").textContent = tFormat("arrivoExpress.etaAbout", { min: avail.etaMin });
+    }
+    var rows = document.getElementById("quoteBreakdownRows");
+    var box = document.getElementById("quoteBreakdown");
+    if (!rows || !box) return;
+    var b = q.breakdown;
+    if (!b) { box.hidden = true; return; }
+    box.hidden = false;
+    var items = [
+      [t("arrivoExpress.bdBase"), formatNaira(b.baseNaira)],
+      [t("arrivoExpress.bdDistance"), formatNaira(b.distanceNaira)],
+      [t("arrivoExpress.bdTime"), formatNaira(b.timeNaira)],
+    ];
+    if (Number(b.zoneMultiplier) > 1) items.push([tFormat("arrivoExpress.bdHighTraffic", { x: Number(b.zoneMultiplier) }), ""]);
+    if (Number(b.nightMultiplier) > 1) items.push([tFormat("arrivoExpress.bdNight", { x: Number(b.nightMultiplier) }), ""]);
+    if (b.minimumApplied) items.push([t("arrivoExpress.bdMinimum"), formatNaira(b.minimumFareNaira)]);
+    rows.innerHTML = items.map(function (it) {
+      return '<div class="rn-summary-row"><span>' + escapeHtml(it[0]) + "</span><span>" + escapeHtml(it[1]) + "</span></div>";
+    }).join("");
   }
 
   function refreshWalletNote() {
@@ -806,6 +1010,7 @@
       }
 
       state.activeRequestId = result.data.request.id;
+      rememberPlace({ address: state.destination, lat: state.destinationLatLng && state.destinationLatLng.lat, lng: state.destinationLatLng && state.destinationLatLng.lng });
       startSearching(result.data.request);
     });
   }
@@ -814,6 +1019,26 @@
   function renderSearchingChrome() {
     document.getElementById("searchingStatus").textContent = statusLabel(state.lastKnownStatus);
     document.getElementById("searchingRoute").textContent = state.pickup + " → " + state.destination;
+    renderElapsed();
+  }
+
+  function formatElapsed(totalSeconds) {
+    var m = Math.floor(totalSeconds / 60);
+    var sec = totalSeconds % 60;
+    return m + ":" + (sec < 10 ? "0" : "") + sec;
+  }
+
+  function renderElapsed() {
+    var el = document.getElementById("searchingElapsed");
+    if (!el || !state.searchStartedAt) return;
+    var seconds = Math.max(0, Math.round((Date.now() - state.searchStartedAt) / 1000));
+    el.textContent = tFormat("arrivoExpress.searchElapsed", { time: formatElapsed(seconds) });
+    var longer = document.getElementById("searchingLonger");
+    if (longer) longer.hidden = seconds < 30;
+  }
+
+  function stopElapsed() {
+    if (state.elapsedTimer) { clearInterval(state.elapsedTimer); state.elapsedTimer = null; }
   }
 
   function statusLabel(status) {
@@ -829,7 +1054,14 @@
     document.getElementById("searchingStatus").textContent = statusLabel(state.lastKnownStatus);
     document.getElementById("searchingRoute").textContent = state.pickup + " → " + state.destination;
     document.getElementById("searchingFare").textContent = request && request.estimated_fare_naira != null ? formatNaira(request.estimated_fare_naira) : "";
-    stopPolling();
+    stopPolling(); // also stops any previous elapsed timer, so start ours after it
+    // Count from when the request was really created, so a rider who reloads
+    // mid-search sees the true wait, not a timer that restarted at zero.
+    var created = request && request.created_at ? Date.parse(request.created_at) : NaN;
+    state.searchStartedAt = isFinite(created) && created <= Date.now() ? created : Date.now();
+    stopElapsed();
+    renderElapsed();
+    state.elapsedTimer = setInterval(renderElapsed, 1000);
     state.pollFailures = 0;
     setSearchingError("");
     pollActive();
@@ -837,6 +1069,7 @@
   }
 
   function stopPolling() {
+    stopElapsed();
     if (state.pollTimer) {
       clearInterval(state.pollTimer);
       state.pollTimer = null;
@@ -920,6 +1153,8 @@
     state.activeRequestId = null;
     state.pollFailures = 0;
     showCard("pickerCard");
+    renderRecent();
+    loadAllQuotes(); // wallet and fares may have moved; show fresh prices
     var err = document.getElementById("pickerError");
     if (message) {
       err.textContent = message;
@@ -944,6 +1179,11 @@
     document.getElementById("backToPickerBtn").addEventListener("click", function () { showCard("pickerCard"); });
     document.getElementById("cancelSearchBtn").addEventListener("click", cancelSearch);
     document.getElementById("useLocationBtn").addEventListener("click", useMyLocation);
+    document.getElementById("swapBtn").addEventListener("click", swapPlaces);
+    document.getElementById("clearRecentBtn").addEventListener("click", function () {
+      store.remove(RECENT_KEY);
+      renderRecent();
+    });
     watchManualEdits();
 
     // ArrivoExpress settles from the RideArrivo Wallet, so -- same rule
@@ -1003,6 +1243,7 @@
           state.tiers = (tiersResult.ok && tiersResult.data.tiers) || [];
           state.selectedTier = state.tiers.length ? state.tiers[0].key : null;
           renderTiers();
+          renderRecent();
           showCard("pickerCard");
         });
       });
@@ -1014,5 +1255,5 @@
   });
 
   // Exposed for automated testing only.
-  window.__arrivoExpressTestHooks = { state: state, showCard: showCard };
+  window.__arrivoExpressTestHooks = { state: state, showCard: showCard, setPickup: setPickup, setDestination: setDestination, swapPlaces: swapPlaces, loadAllQuotes: loadAllQuotes, rememberPlace: rememberPlace, renderRecent: renderRecent };
 })();
