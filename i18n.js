@@ -17,6 +17,10 @@ const I18N = {
       removals: "ArrivoRemovals",
       membership: "Membership",
     },
+    services: {
+      removalsBody: "Moving home or office? A vetted crew, a truck and one booking for loading, transport and unloading. See a starting price before you commit.",
+      removalsCta: "Get my removals quote →",
+    },
     footer: {
       tagline: "Lagos airport pickups, done right.",
       companyHeading: "Company",
@@ -457,6 +461,10 @@ const I18N = {
       removals: "ArrivoRemovals",
       membership: "Abonnement",
     },
+    services: {
+      removalsBody: "Vous déménagez votre domicile ou vos bureaux ? Une équipe vérifiée, un camion et une seule réservation pour le chargement, le transport et le déchargement. Voyez un prix de départ avant de vous engager.",
+      removalsCta: "Obtenir mon devis de déménagement →",
+    },
     hero: {
       eyebrow: "L'arrivée à Lagos, bien faite",
       headline: "Atterrissez à Lagos.<br>Quelqu'un vous attend déjà.",
@@ -891,6 +899,10 @@ I18N.zh = {
     express: "ArrivoExpress",
     removals: "ArrivoRemovals",
     membership: "会员",
+  },
+  services: {
+    removalsBody: "要搬家或搬办公室？经过审核的搬运团队、一辆货车、一次预订，搞定装车、运输和卸货。确认之前就能看到起步价。",
+    removalsCta: "获取搬家报价 →",
   },
   hero: {
     eyebrow: "拉各斯机场接送，值得信赖",
@@ -1328,6 +1340,10 @@ I18N.de = {
     removals: "ArrivoRemovals",
     membership: "Mitgliedschaft",
   },
+  services: {
+    removalsBody: "Umzug von Wohnung oder Büro? Ein geprüftes Team, ein Lkw und eine Buchung für Beladen, Transport und Entladen. Sehen Sie einen Startpreis, bevor Sie sich entscheiden.",
+    removalsCta: "Mein Umzugsangebot einholen →",
+  },
   hero: {
     eyebrow: "Flughafenabholung in Lagos, richtig gemacht",
     headline: "Landung in Lagos.<br>Jemand wartet bereits.",
@@ -1761,6 +1777,10 @@ I18N.hi = {
     express: "ArrivoExpress",
     removals: "ArrivoRemovals",
     membership: "सदस्यता",
+  },
+  services: {
+    removalsBody: "घर या दफ़्तर शिफ्ट कर रहे हैं? जाँचे-परखे क्रू, एक ट्रक और एक ही बुकिंग में लोडिंग, ढुलाई और अनलोडिंग। तय करने से पहले शुरुआती कीमत देखें।",
+    removalsCta: "अपना शिफ्टिंग कोट पाएँ →",
   },
   hero: {
     eyebrow: "लागोस एयरपोर्ट पिकअप, सही तरीके से",
@@ -2196,6 +2216,10 @@ I18N.es = {
     removals: "ArrivoRemovals",
     membership: "Membresía",
   },
+  services: {
+    removalsBody: "¿Te mudas de casa u oficina? Un equipo verificado, un camión y una sola reserva para la carga, el transporte y la descarga. Consulta un precio inicial antes de comprometerte.",
+    removalsCta: "Obtener mi presupuesto de mudanza →",
+  },
   hero: {
     eyebrow: "Recogidas en el aeropuerto de Lagos, bien hechas",
     headline: "Aterriza en Lagos.<br>Alguien ya te espera.",
@@ -2629,6 +2653,10 @@ I18N.pt = {
     express: "ArrivoExpress",
     removals: "ArrivoRemovals",
     membership: "Assinatura",
+  },
+  services: {
+    removalsBody: "Vai mudar de casa ou de escritório? Uma equipe verificada, um caminhão e uma única reserva para carga, transporte e descarga. Veja um preço inicial antes de se comprometer.",
+    removalsCta: "Pedir meu orçamento de mudança →",
   },
   hero: {
     eyebrow: "Buscas no aeroporto de Lagos, bem feitas",
