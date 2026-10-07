@@ -490,3 +490,21 @@ html[data-theme="dark"] .site-header.is-floating {
 }
 .hf-suggest li:hover,
 .hf-suggest li.is-active { background: rgba(244,163,0,.22); }
+
+/* ---------- Phone menu fixes ---------- */
+/* The menu header lost both wordmarks (styles.css hides them at 400px and
+   below); show the one that matches the theme. */
+.mobile-nav-menu-header .brand-wordmark { display: none; }
+html:not([data-theme="dark"]) .mobile-nav-menu-header .wm-on-light { display: block !important; }
+html[data-theme="dark"] .mobile-nav-menu-header .wm-on-dark { display: block !important; }
+/* The theme row was shrinking to 34px wide and wrapping its label onto the next links. */
+.mobile-nav-menu .theme-toggle-row {
+  display: flex;
+  width: 100%;
+  align-self: stretch;
+  white-space: nowrap;
+  gap: 10px;
+}
+/* A solid menu panel: the glass blur let the page text show through the links. */
+.mobile-nav-menu { background: rgba(247, 244, 236, .98); }
+html[data-theme="dark"] .mobile-nav-menu { background: #0E1131; }
