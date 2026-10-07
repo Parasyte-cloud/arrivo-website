@@ -25,7 +25,10 @@
   (function () {
     var t = "light";
     try {
-      var saved = localStorage.getItem("arrivo_theme");
+      // The choice is also kept in a cookie shared by every *.ridearrivo.com
+      // site, so it follows the rider from the website to Express and back.
+      var m = document.cookie.match(/(?:^|; )arrivo_theme=(light|dark)/);
+      var saved = m ? m[1] : localStorage.getItem("arrivo_theme");
       if (saved === "light" || saved === "dark") t = saved;
       else if (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches) t = "dark";
     } catch (e) {}
@@ -732,8 +735,8 @@
 <script src="clock.js?v=32"></script>
 <script src="pwa-register.js?v=32"></script>
 <script src="glass-effects.js?v=32"></script>
-<script src="theme.js?v=1" defer></script>
-  <script src="hero-form.js?v=5" defer></script>
+<script src="theme.js?v=2" defer></script>
+  <script src="hero-form.js?v=6" defer></script>
   <script src="header-move.js?v=2" defer></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
 </body>

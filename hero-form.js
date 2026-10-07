@@ -127,7 +127,7 @@
     }
     function render(preds) {
       list.innerHTML = "";
-      items = preds.slice(0, 5).map(function (p) { return p.description; });
+      items = preds.slice(0, 5);
       if (!items.length) { close(); return; }
       items.forEach(function (text, i) {
         var li = document.createElement("li");
@@ -145,19 +145,11 @@
       var q = input.value.trim();
       if (!svc || q.length < 3) { close(); return; }
       var mine = ++seq;
-      if (!token && window.google.maps.places.AutocompleteSessionToken) {
-        token = new google.maps.places.AutocompleteSessionToken();
-      }
-      try {
-        svc.getPlacePredictions(
-          { input: q, componentRestrictions: { country: "ng" }, sessionToken: token || undefined },
-          function (res, status) {
-            if (mine !== seq || input.value.trim() !== q) return; // a newer keystroke owns the list
-            if (status === "OK" && res && res.length) render(res);
-            else close(); // no matches, or Google said no: just no list
-          }
-        );
-      } catch (e) { svc = null; close(); }
+      predict(q, function (texts) {
+        if (mine !== seq || input.value.trim() !== q) return; // a newer keystroke owns the list
+        if (texts && texts.length) render(texts);
+        else close(); // no matches, or Google said no: just no list
+      });
     }
 
     input.addEventListener("input", function () {
@@ -180,14 +172,52 @@
   makeCombo(pickup, "pickup");
   makeCombo(dest, "dest");
 
+  // Suggestions: try Google's newer Places API first and fall back to the
+  // older one, because a Google Cloud project may have only one of them
+  // switched on. Either way Google only supplies text; it never touches the box.
+  var useNew = true;
+  function predict(q, done) {
+    var P = window.google && google.maps && google.maps.places;
+    if (!P) { done(null); return; }
+    if (token === null && P.AutocompleteSessionToken) token = new P.AutocompleteSessionToken();
+    if (useNew && P.AutocompleteSuggestion && P.AutocompleteSuggestion.fetchAutocompleteSuggestions) {
+      P.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+        input: q, includedRegionCodes: ["ng"], sessionToken: token || undefined
+      }).then(function (res) {
+        done((res.suggestions || []).filter(function (x) { return x.placePrediction; })
+          .map(function (x) { return x.placePrediction.text.toString(); }));
+      }).catch(function (err) {
+        console.warn("[hero-form] Places API (New) refused:", err && err.message ? err.message : err, "- trying the older Places API");
+        useNew = false;
+        predict(q, done);
+      });
+      return;
+    }
+    try {
+      svc.getPlacePredictions(
+        { input: q, componentRestrictions: { country: "ng" }, sessionToken: token || undefined },
+        function (res, status) {
+          if (status !== "OK" && status !== "ZERO_RESULTS") {
+            console.warn("[hero-form] address suggestions off, Google said:", status);
+          }
+          done(status === "OK" && res ? res.map(function (p) { return p.description; }) : []);
+        }
+      );
+    } catch (e) { console.warn("[hero-form] suggestions failed:", e); svc = null; done([]); }
+  }
+
   function suggestionsOff() {
     svc = null;
     combos.forEach(function (c) { c.close(); });
   }
-  window.gm_authFailure = suggestionsOff; // Google rejected the key or the page address
+  window.gm_authFailure = function () { // Google rejected the key or the page address
+    console.warn("[hero-form] Google rejected the Maps key for this page address. Add this site to the key's allowed referrers.");
+    suggestionsOff();
+  };
   window.__heroPlacesReady = function () {
     try {
-      svc = new google.maps.places.AutocompleteService();
+      var P = google.maps.places;
+      svc = P.AutocompleteService ? new P.AutocompleteService() : true;
     } catch (e) { suggestionsOff(); }
   };
   function loadMaps() {

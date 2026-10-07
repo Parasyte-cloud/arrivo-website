@@ -35,8 +35,25 @@
     if (meta) meta.setAttribute("content", theme === "dark" ? "#0A0C24" : "#12123B");
   }
 
+  // Shared across every *.ridearrivo.com site (www, express, move, boat, air,
+  // membership). On any other host (previews, localhost) it is just a normal
+  // cookie for that host.
+  function readCookie() {
+    var m = document.cookie.match(/(?:^|; )arrivo_theme=(light|dark)/);
+    return m ? m[1] : null;
+  }
+  function writeCookie(theme) {
+    var host = location.hostname;
+    var domain = /(^|\.)ridearrivo\.com$/.test(host) ? "; Domain=.ridearrivo.com" : "";
+    var secure = location.protocol === "https:" ? "; Secure" : "";
+    try {
+      document.cookie = KEY + "=" + theme + "; Path=/; Max-Age=31536000; SameSite=Lax" + domain + secure;
+    } catch (e) { /* cookies blocked: the choice still lasts for this visit */ }
+  }
+
   function set(theme) {
     root.setAttribute("data-theme", theme);
+    writeCookie(theme);
     try { localStorage.setItem(KEY, theme); } catch (e) { /* private mode: works for this visit only */ }
     paint();
   }
@@ -51,8 +68,8 @@
   if (window.matchMedia) {
     var mq = window.matchMedia("(prefers-color-scheme: dark)");
     var onChange = function (e) {
-      var saved = null;
-      try { saved = localStorage.getItem(KEY); } catch (err) { /* ignore */ }
+      var saved = readCookie();
+      try { saved = saved || localStorage.getItem(KEY); } catch (err) { /* ignore */ }
       if (saved !== "light" && saved !== "dark") {
         root.setAttribute("data-theme", e.matches ? "dark" : "light");
         paint();
