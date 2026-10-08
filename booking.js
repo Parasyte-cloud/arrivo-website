@@ -195,7 +195,12 @@
   // ───────────────────────── API helpers ─────────────────────────
   function api(path, options) {
     options = options || {};
+    // credentials:"include" sends the shared single sign-on cookie (set by the
+    // API for .ridearrivo.com). The API answers with an exact-origin CORS
+    // allowlist plus Access-Control-Allow-Credentials, so this is safe; a
+    // Bearer token, when present, still takes precedence server-side.
     return fetch(API_BASE_URL + path, {
+      credentials: "include",
       ...options,
       headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     }).then(function (res) {
@@ -216,7 +221,9 @@
   }
 
   function authHeader() {
-    return { Authorization: "Bearer " + state.token };
+    // A cookie-only session has no token. Never send "Bearer null": the API
+    // gives a Bearer header priority over the cookie and would reject it.
+    return state.token ? { Authorization: "Bearer " + state.token } : {};
   }
 
   // ───────────────────────── Step navigation ─────────────────────────
@@ -298,11 +305,18 @@
             .find(function (c) { return eStored.indexOf(c.dial) === 0; });
           if (eMatch) emergencyPhoneField.setRaw(eMatch.dial, eStored.slice(eMatch.dial.length));
         }
-      } else {
+      } else if (result.status === 401 || result.status === 403) {
         // Token expired or invalid -- send them back to log in properly.
         localStorage.removeItem("arrivo_rider_token");
         window.location.href = "login.html?next=book.html";
+      } else {
+        // 429/5xx or other transient failure: keep the session and the trip.
+        // The rider can still continue; profile prefill just didn't load.
+        console.warn("[arrivo booking] profile check failed with status", result.status);
       }
+    }).catch(function (err) {
+      // Offline / DNS / timeout: never treat as a logout.
+      console.warn("[arrivo booking] profile check unreachable:", err);
     });
 
     // Was the "contactContinue" click handler, back when Contact was its own
@@ -817,7 +831,8 @@
 
   // Google calls this when it rejects the key or the page's address. Without
   // it the address boxes keep Google's "Sorry! Something went wrong" artwork
-  // and look frozen. Clear it, and say plainly that typing still works.
+  // and look frozen. Clear it, and say plainly that we can't price a trip until
+  // addresses can be confirmed (typed text alone has no coordinates).
   window.gm_authFailure = function () {
     Array.prototype.forEach.call(document.querySelectorAll(".gm-err-autocomplete"), function (el) {
       el.classList.remove("gm-err-autocomplete");
@@ -1522,7 +1537,7 @@
       if (!state.pickupLatLng || !state.dropoffLatLng) {
         return Promise.resolve({
           ok: false,
-          data: { error: "Please select a suggested pickup and drop-off address (from the dropdown) on the previous step so we can calculate your exact fare." },
+          data: { error: "We couldn't confirm your pickup and drop-off on the map. Please pick each address from the suggestions on the Trip step. If suggestions aren't appearing, reload the page or try again shortly." },
         });
       }
       // pickupAddress/destinationAddress are what actually price a one-way
@@ -2156,14 +2171,29 @@
   function initStep5() {
     document.getElementById("backToRide").addEventListener("click", function () { goToStep(2); });
 
-    // Privacy policy popup (step 1's link)
-    var privacyLink = document.getElementById("openPrivacyModalBooking");
-    if (privacyLink) {
-      privacyLink.addEventListener("click", function (e) {
+    // Policy popups use delegated clicks on document: applyLanguage() swaps
+    // translated innerHTML, which discards the original <a> nodes and any
+    // listener bound directly to them.
+    document.addEventListener("click", function (e) {
+      var priv = e.target.closest && e.target.closest("#openPrivacyModalBooking");
+      if (priv) {
         e.preventDefault();
         document.getElementById("privacyModal").style.display = "flex";
+        return;
+      }
+      var canc = e.target.closest && e.target.closest("#openCancellationModal");
+      if (canc) {
+        e.preventDefault();
+        document.getElementById("cancellationModal").style.display = "flex";
+      }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      ["privacyModal", "cancellationModal"].forEach(function (id) {
+        var m = document.getElementById(id);
+        if (m && m.style.display !== "none") m.style.display = "none";
       });
-    }
+    });
     document.getElementById("closePrivacyModal").addEventListener("click", function () {
       document.getElementById("privacyModal").style.display = "none";
     });
@@ -2173,10 +2203,6 @@
     });
 
     // Cancellation & Refund Policy popup (step 5, before payment)
-    document.getElementById("openCancellationModal").addEventListener("click", function (e) {
-      e.preventDefault();
-      document.getElementById("cancellationModal").style.display = "flex";
-    });
     document.getElementById("closeCancellationModal").addEventListener("click", function () {
       document.getElementById("cancellationModal").style.display = "none";
     });
@@ -2264,18 +2290,26 @@
           payError.textContent = "Your fare has been updated to NGN " + check.data.fareNaira.toLocaleString() + ". Please review and press Pay again.";
           return;
         }
-        var handler = PaystackPop.setup({
-          key: PAYSTACK_PUBLIC_KEY,
-          email: state.email,
-          amount: Math.round(check.data.fareNaira * 100),
-          currency: "NGN",
-          metadata: { name: state.name, phone: state.phone },
-          callback: function (response) { handlePaymentSuccess(response.reference); },
-          // The rider closed the popup without paying -- let them press Pay
-          // again rather than leaving payBtn stuck disabled forever.
-          onClose: function () { payBtn.disabled = false; },
-        });
-        handler.openIframe();
+        try {
+          var handler = PaystackPop.setup({
+            key: PAYSTACK_PUBLIC_KEY,
+            email: state.email,
+            amount: Math.round(check.data.fareNaira * 100),
+            currency: "NGN",
+            metadata: { name: state.name, phone: state.phone },
+            callback: function (response) { handlePaymentSuccess(response.reference); },
+            // The rider closed the popup without paying -- let them press Pay
+            // again rather than leaving payBtn stuck disabled forever.
+            onClose: function () { payBtn.disabled = false; },
+          });
+          handler.openIframe();
+        } catch (err) {
+          // Checkout failed to open before any charge: safe to retry.
+          console.error("[arrivo booking] checkout failed to open:", err);
+          payBtn.disabled = false;
+          payError.hidden = false;
+          payError.textContent = t("booking.checkoutOpenFailed");
+        }
       });
     });
   }
@@ -2289,35 +2323,51 @@
     safeRun(initLanguage, "initLanguage");
     safeRun(initServicesDropdown, "initServicesDropdown");
 
-    // Registration is mandatory before booking -- check for a saved rider
-    // session before revealing the booking wizard at all.
-    var savedToken = localStorage.getItem("arrivo_rider_token");
-    if (!savedToken) {
+    // Registration is mandatory before booking. A rider may be signed in by a
+    // saved token (this site) OR by the shared cookie set on another
+    // *.ridearrivo.com site, so ask the API before showing the sign-up gate.
+    function showGate() {
       document.getElementById("authGate").hidden = false;
       document.getElementById("bookingCard").hidden = true;
-      return; // don't initialize any of the booking steps -- nothing to do yet
+    }
+    function startBooking() {
+      document.getElementById("authGate").hidden = true;
+      document.getElementById("bookingCard").hidden = false;
+
+      safeRun(loadFxRate, "loadFxRate");
+      safeRun(initStep1, "initStep1");
+      safeRun(initStep2, "initStep2");
+      safeRun(initStep3, "initStep3");
+      safeRun(initStep4, "initStep4");
+      // The Pickup/route section used to only become visible after a step
+      // transition, which is when this used to run (from inside the removed
+      // flightContinue handler). "Trip" (Step 1) is now the first thing the
+      // rider sees, so the map needs its real dimensions from page load
+      // instead. Function name predates the reorder.
+      safeRun(setupPlacesForStep4, "setupPlacesForStep4");
+      safeRun(initLocationPermission, "initLocationPermission");
+      safeRun(initStep5, "initStep5");
+      // Must run after initStep2 (it simulates a click on the "dropoff" chip,
+      // which only has its listener bound once initStep2 has run).
+      safeRun(initReturnDropoffPreset, "initReturnDropoffPreset");
     }
 
-    state.token = savedToken;
-    document.getElementById("authGate").hidden = true;
-    document.getElementById("bookingCard").hidden = false;
-
-    safeRun(loadFxRate, "loadFxRate");
-    safeRun(initStep1, "initStep1");
-    safeRun(initStep2, "initStep2");
-    safeRun(initStep3, "initStep3");
-    safeRun(initStep4, "initStep4");
-    // The Pickup/route section used to only become visible after a step
-    // transition, which is when this used to run (from inside the removed
-    // flightContinue handler). "Trip" (Step 1) is now the first thing the
-    // rider sees, so the map needs its real dimensions from page load
-    // instead. Function name predates the reorder.
-    safeRun(setupPlacesForStep4, "setupPlacesForStep4");
-    safeRun(initLocationPermission, "initLocationPermission");
-    safeRun(initStep5, "initStep5");
-    // Must run after initStep2 (it simulates a click on the "dropoff" chip,
-    // which only has its listener bound once initStep2 has run).
-    safeRun(initReturnDropoffPreset, "initReturnDropoffPreset");
+    var savedToken = localStorage.getItem("arrivo_rider_token");
+    if (savedToken) {
+      state.token = savedToken;
+      startBooking();
+      return;
+    }
+    // No saved token. Only a definite 401/403 means "not signed in"; an
+    // outage or timeout also shows the gate, but never discards anything.
+    api("/api/auth/me").then(function (result) {
+      if (result.ok && result.data && result.data.user) {
+        state.token = null; // cookie session; authHeader() sends nothing
+        startBooking();
+      } else {
+        showGate();
+      }
+    });
   });
 
   // Exposed for automated testing only.

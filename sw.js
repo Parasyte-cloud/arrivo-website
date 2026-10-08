@@ -20,7 +20,7 @@
 // and JSON only); this file does it for every page and script, so the two
 // should not both exist. The dated name below is newer than v2, and the
 // activate handler deletes every cache that is not it, including v2.
-const VERSION = "2026-09-26";
+const VERSION = "2026-10-08";
 const CACHE_NAME = "arrivo-shell-" + VERSION;
 
 // Precached on install so a first-time offline visit has something to show.
@@ -29,13 +29,10 @@ const SHELL_FILES = [
   "/",
   "/index.html",
   "/book.html",
-  "/driver.html",
   "/privacy.html",
   "/terms.html",
   "/signup.html",
   "/forgot-password.html",
-  "/reset-password.html",
-  "/verify-email.html",
   "/styles.css",
   "/booking.css",
   "/i18n.js",
@@ -57,6 +54,12 @@ const SHELL_FILES = [
 // expire or get network-first-refreshed, so it's excluded entirely rather
 // than merely network-first like other same-origin JS.
 const BYPASS_PATHS = ["/payment/", "/api/", "/maps-config.js"];
+
+// Token-bearing or account pages: never cached, so a reset/verify token in the
+// URL or a signed-in account shell is not retained by the Cache API (which
+// ignores Cache-Control: no-store). Matches with or without ".html".
+const SENSITIVE_PAGES = /^\/(reset-password|verify-email|account|login|driver|track|scan)(\.html)?$/i;
+const SENSITIVE_PARAMS = ["token", "code", "reset", "key", "access_token", "ref", "reference", "trxref"];
 
 const IMAGE_OR_FONT = /\.(png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|otf)$/i;
 
@@ -104,6 +107,8 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
   if (BYPASS_PATHS.some((prefix) => url.pathname.startsWith(prefix))) return;
   if (url.pathname === "/sw.js") return;
+  if (SENSITIVE_PAGES.test(url.pathname)) return;
+  if (SENSITIVE_PARAMS.some((p) => url.searchParams.has(p))) return;
 
   if (request.mode === "navigate") {
     event.respondWith(networkFirst(event, request, true));
