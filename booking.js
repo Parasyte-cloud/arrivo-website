@@ -2095,7 +2095,40 @@
     }
   }
 
-  function handlePaymentSuccess(reference) {
+  // Pending card payment: written just before Paystack opens, cleared once
+  // the ride is confirmed. If the rider pays and then reloads or closes the
+  // tab, the next visit to /book finishes the booking from this record. The
+  // POST /api/rides retry is safe: the backend hands the same rider back the
+  // ride a spent reference already paid for instead of creating a second one.
+  var PENDING_KEY = "arrivo_pending_card_payment";
+  var PENDING_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+  function savePendingPayment(reference, payload) {
+    try {
+      localStorage.setItem(PENDING_KEY, JSON.stringify({ reference: reference, payload: payload, savedAt: Date.now() }));
+    } catch (e) { /* storage unavailable: recovery just won't be offered */ }
+  }
+  function clearPendingPayment() {
+    try { localStorage.removeItem(PENDING_KEY); } catch (e) { /* ignore */ }
+  }
+  function readPendingPayment() {
+    try {
+      var rec = JSON.parse(localStorage.getItem(PENDING_KEY) || "null");
+      if (!rec || typeof rec.reference !== "string" || !rec.payload || typeof rec.savedAt !== "number") return null;
+      if (Date.now() - rec.savedAt > PENDING_MAX_AGE_MS) { clearPendingPayment(); return null; }
+      return rec;
+    } catch (e) { return null; }
+  }
+  function newPaymentReference() {
+    var bytes = "";
+    try {
+      var a = new Uint8Array(9);
+      crypto.getRandomValues(a);
+      bytes = Array.prototype.map.call(a, function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+    } catch (e) { bytes = String(Math.random()).slice(2, 14); }
+    return "arrivo_" + Date.now().toString(36) + "_" + bytes;
+  }
+
+  function handlePaymentSuccess(reference, storedPayload) {
     var payError = document.getElementById("payError");
     payError.hidden = true;
     var createdRide = null;
@@ -2105,7 +2138,7 @@
         if (!verifyResult.ok || !verifyResult.data.success) {
           throw new Error(t("booking.paymentFailed") + " (" + reference + ")");
         }
-        var payload = buildRidePayload({ paymentMethod: "card", paymentReference: reference });
+        var payload = storedPayload || buildRidePayload({ paymentMethod: "card", paymentReference: reference });
 
         return api("/api/rides", {
           method: "POST",
@@ -2122,9 +2155,14 @@
             throw new Error(t("booking.paymentFailed") + " (" + reference + ")");
           }
           var serverReason = rideResult.data && rideResult.data.error ? rideResult.data.error + " " : "";
+          // A definite refusal will not change on retry, so stop re-offering
+          // recovery on every page load (the message below carries the
+          // reference for support). A 5xx or network failure keeps the record.
+          if (rideResult.status >= 400 && rideResult.status < 500) clearPendingPayment();
           throw new Error(serverReason + t("booking.paymentFailed") + " (" + reference + ")");
         }
         createdRide = rideResult.data.ride;
+        clearPendingPayment();
         // The ride exists and the rider was charged, so this attempt is over
         // whatever happens to the payment-sync call below. Clear the key now,
         // not after that call, or a failed sync would leave it in
@@ -2162,7 +2200,7 @@
           barcodeEl.textContent = createdRide.barcode;
           barcodeBox.hidden = false;
         }
-        if (state.bookingType === "one_way" && createdRide) showReturnDropoffPrompt(createdRide.id);
+        if ((storedPayload ? storedPayload.bookingType : state.bookingType) === "one_way" && createdRide) showReturnDropoffPrompt(createdRide.id);
         goToStep(4);
       })
       .catch(function (err) {
@@ -2294,13 +2332,16 @@
           return;
         }
         try {
+          var payReference = newPaymentReference();
+          savePendingPayment(payReference, buildRidePayload({ paymentMethod: "card", paymentReference: payReference }));
           var handler = PaystackPop.setup({
             key: PAYSTACK_PUBLIC_KEY,
             email: state.email,
+            ref: payReference,
             amount: Math.round(check.data.fareNaira * 100),
             currency: "NGN",
             metadata: { name: state.name, phone: state.phone },
-            callback: function (response) { handlePaymentSuccess(response.reference); },
+            callback: function (response) { handlePaymentSuccess(response.reference || payReference); },
             // The rider closed the popup without paying -- let them press Pay
             // again rather than leaving payBtn stuck disabled forever.
             onClose: function () { payBtn.disabled = false; },
@@ -2309,6 +2350,7 @@
         } catch (err) {
           // Checkout failed to open before any charge: safe to retry.
           console.error("[arrivo booking] checkout failed to open:", err);
+          clearPendingPayment();
           payBtn.disabled = false;
           payError.hidden = false;
           payError.textContent = t("booking.checkoutOpenFailed");
@@ -2355,10 +2397,36 @@
       safeRun(initReturnDropoffPreset, "initReturnDropoffPreset");
     }
 
+    // Finish a booking whose card payment completed but whose page was lost
+    // before confirmation. Runs after startBooking so step 4 and its fields
+    // exist. A payment Paystack does not report as successful is dropped.
+    function recoverPendingPayment() {
+      var rec = readPendingPayment();
+      if (!rec) return;
+      var payError = document.getElementById("payError");
+      api("/api/payments/verify/" + encodeURIComponent(rec.reference)).then(function (v) {
+        if (v.ok && v.data && v.data.success) {
+          goToStep(5);
+          payError.hidden = false;
+          payError.textContent = t("booking.recovering");
+          return handlePaymentSuccess(rec.reference, rec.payload);
+        }
+        // Definite answer from Paystack that nothing was charged: forget it.
+        // Network or server trouble keeps the record for the next visit.
+        var st = v.ok && v.data ? String(v.data.status || "") : "";
+        var dead = st === "abandoned" || st === "failed" || st === "reversed";
+        // "abandoned" is also what a payment looks like before the card is
+        // entered, so give a just-opened checkout a couple of hours first.
+        var old = Date.now() - rec.savedAt > 2 * 60 * 60 * 1000;
+        if (v.status === 400 || (dead && old)) clearPendingPayment();
+      });
+    }
+
     var savedToken = localStorage.getItem("arrivo_rider_token");
     if (savedToken) {
       state.token = savedToken;
       startBooking();
+      recoverPendingPayment();
       return;
     }
     // No saved token. Only a definite 401/403 means "not signed in"; an
@@ -2367,6 +2435,7 @@
       if (result.ok && result.data && result.data.user) {
         state.token = null; // cookie session; authHeader() sends nothing
         startBooking();
+        recoverPendingPayment();
       } else {
         showGate();
       }
@@ -2374,5 +2443,5 @@
   });
 
   // Exposed for automated testing only.
-  window.__arrivoBookingTestHooks = { state: state, handlePaymentSuccess: handlePaymentSuccess, goToStep: goToStep, renderReview: renderReview };
+  window.__arrivoBookingTestHooks = { state: state, PENDING_KEY: PENDING_KEY, handlePaymentSuccess: handlePaymentSuccess, goToStep: goToStep, renderReview: renderReview };
 })();
