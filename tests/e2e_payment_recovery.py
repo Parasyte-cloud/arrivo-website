@@ -38,7 +38,7 @@ async def main():
     b=await p.chromium.launch()
     calls,step4,left=await scenario(b,"paid",{"success":True,"status":"success"},200,pending())
     rec("paid then reloaded: booking confirmed (step 4)",step4)
-    rec("paid then reloaded: verify (check, then confirm), one ride, one patch",calls==["verify","verify","ride","patch"],str(calls))
+    rec("paid then reloaded: one verify, one ride, one patch",calls==["verify","ride","patch"],str(calls))
     rec("paid then reloaded: pending record cleared",left is None,str(left))
     calls,step4,left=await scenario(b,"abandoned recent",{"success":False,"status":"abandoned"},200,pending(1000))
     rec("recent abandoned: no ride created, record kept",calls==["verify"] and not step4 and left is not None,str(calls))

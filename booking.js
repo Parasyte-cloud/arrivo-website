@@ -2128,12 +2128,16 @@
     return "arrivo_" + Date.now().toString(36) + "_" + bytes;
   }
 
-  function handlePaymentSuccess(reference, storedPayload) {
+  // skipVerify is for recovery, which has just asked Paystack itself.
+  function handlePaymentSuccess(reference, storedPayload, skipVerify) {
     var payError = document.getElementById("payError");
     payError.hidden = true;
     var createdRide = null;
 
-    return api("/api/payments/verify/" + encodeURIComponent(reference))
+    var verifyStep = skipVerify
+      ? Promise.resolve({ ok: true, data: { success: true } })
+      : api("/api/payments/verify/" + encodeURIComponent(reference), { headers: authHeader() });
+    return verifyStep
       .then(function (verifyResult) {
         if (!verifyResult.ok || !verifyResult.data.success) {
           throw new Error(t("booking.paymentFailed") + " (" + reference + ")");
@@ -2404,12 +2408,12 @@
       var rec = readPendingPayment();
       if (!rec) return;
       var payError = document.getElementById("payError");
-      api("/api/payments/verify/" + encodeURIComponent(rec.reference)).then(function (v) {
+      api("/api/payments/verify/" + encodeURIComponent(rec.reference), { headers: authHeader() }).then(function (v) {
         if (v.ok && v.data && v.data.success) {
           goToStep(5);
           payError.hidden = false;
           payError.textContent = t("booking.recovering");
-          return handlePaymentSuccess(rec.reference, rec.payload);
+          return handlePaymentSuccess(rec.reference, rec.payload, true);
         }
         // Definite answer from Paystack that nothing was charged: forget it.
         // Network or server trouble keeps the record for the next visit.
