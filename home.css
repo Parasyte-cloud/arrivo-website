@@ -709,3 +709,18 @@ html[data-theme="dark"] .faq-item[open] { box-shadow: 0 14px 32px rgba(0,0,0,.45
 .hero-dot:hover span { background: #fff; }
 .hero-pause:focus-visible, .hero-dot:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 @media (max-width: 779px) { .hero-slider-ui { bottom: 10px; } }
+
+/* Phones and tablets: the hero is tall (headline, form and trust strip stack), so a
+   wide photo set to "cover" would be blown up and blurry. Show it instead as a band
+   behind the headline at about its natural size, focused on --pos (set per photo in
+   hero-slides.js), and fade the bottom of the band into the dark hero colour. */
+@media (max-width: 999px) {
+  .hero { background-color: #0b0d1c; }
+  .hero-slide {
+    bottom: auto;
+    height: 620px;
+    background-position: var(--pos, 50% 50%);
+    -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 58%, transparent 100%);
+            mask-image: linear-gradient(to bottom, #000 0, #000 58%, transparent 100%);
+  }
+}

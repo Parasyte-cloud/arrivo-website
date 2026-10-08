@@ -8,6 +8,7 @@
 
    TO CHANGE THE PICTURES: edit SLIDES below. Each entry needs a small file
    (phones, about 960px wide) and a large one (1000px and up, about 1672px wide).
+   "pos" is the focal point on phones and tablets, where only a slice of the photo shows.
    Photos should keep the subject in the middle and stay fairly dark on the left,
    where the headline sits; the dark overlay in styles.css does the rest.
 
@@ -20,15 +21,15 @@
 
   var SLIDES = [
     // 1. Yacht at the dock. This one is the static background in CSS and the head preload.
-    { sm: "assets/hero/slide-1-960.webp", lg: "assets/hero/slide-1-1672.webp" },
+    { sm: "assets/hero/slide-1-960.webp", lg: "assets/hero/slide-1-1672.webp", pos: "72% 50%" },
     // 2. Removals truck at a house
-    { sm: "assets/hero/slide-2-960.webp", lg: "assets/hero/slide-2-1672.webp" },
+    { sm: "assets/hero/slide-2-960.webp", lg: "assets/hero/slide-2-1672.webp", pos: "68% 50%" },
     // 3. Private jet on the apron
-    { sm: "assets/hero/slide-3-960.webp", lg: "assets/hero/slide-3-1672.webp" },
+    { sm: "assets/hero/slide-3-960.webp", lg: "assets/hero/slide-3-1672.webp", pos: "62% 50%" },
     // 4. Sedan at the hotel entrance
-    { sm: "assets/hero/slide-4-960.webp", lg: "assets/hero/slide-4-1672.webp" },
+    { sm: "assets/hero/slide-4-960.webp", lg: "assets/hero/slide-4-1672.webp", pos: "38% 50%" },
     // 5. SUV at the airport kerb
-    { sm: "assets/hero/slide-5-960.webp", lg: "assets/hero/slide-5-1672.webp" }
+    { sm: "assets/hero/slide-5-960.webp", lg: "assets/hero/slide-5-1672.webp", pos: "58% 50%" }
   ];
   var INTERVAL = 7000; // how long each picture stays, in milliseconds
   var FADE = 1400;     // how long the cross-fade takes (must match --hero-fade in home.css)
@@ -52,6 +53,7 @@
   els[0] = first;
   first.classList.add("hero-slide", "is-active");
   first.setAttribute("data-kb", "0");
+  first.style.setProperty("--pos", SLIDES[0].pos);
 
   function t(key, fallback) {
     return typeof window.RAt === "function" ? window.RAt(key, fallback) : fallback;
@@ -68,6 +70,7 @@
         el.className = "hero-bg hero-slide";
         el.setAttribute("aria-hidden", "true");
         el.setAttribute("data-kb", String(i % 3));
+        el.style.setProperty("--pos", SLIDES[i].pos);
         el.style.backgroundImage = 'url("' + url + '")';
         hero.insertBefore(el, first.nextSibling);
         els[i] = el;
