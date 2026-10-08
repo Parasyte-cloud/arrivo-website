@@ -610,3 +610,13 @@ html[data-theme="dark"] .faq-item[open] { box-shadow: 0 14px 32px rgba(0,0,0,.45
 .hero-chips a .ico { width: 1.2em; height: 1.2em; }
 .hero-trust li { gap: 12px; }
 .hero-trust .ico { width: 1.7em; height: 1.7em; color: var(--amber); }
+
+/* Logo lettering as the last line of the English headline. */
+.hero-copy h1 .hero-wordmark { display: block; height: 1.02em; width: auto; margin-top: .12em; }
+
+/* Play icon on the secondary hero button. */
+.btn-ghost .ico-play { width: 1.5em; height: 1.5em; margin-left: 10px; vertical-align: -0.38em; }
+
+/* Pin inside the pickup and destination fields. */
+.hf-field .hf-pin { position: absolute; left: 14px; top: 24px; transform: translateY(-50%); width: 1em; height: 1em; color: #fff; pointer-events: none; }
+.hf-field .hf-input { padding-left: 42px; }

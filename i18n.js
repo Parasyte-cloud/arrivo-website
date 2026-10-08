@@ -189,7 +189,7 @@ const I18N = {
     },
     hero: {
       eyebrow: "Lagos airport pickups, done right",
-      headline: "Land in Lagos.<br>Arrive. Relax. <span class=\"brand-ride\">Ride</span><span class=\"brand-arrivo\">Arrivo</span>.",
+      headline: "Land in Lagos.<br>Arrive. Relax. <img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"RideArrivo\" class=\"hero-wordmark\" width=\"1829\" height=\"309\">",
       sub: "A verified driver, a live-tracked ride, and a trip you can share with someone who cares about your safe arrival. Available in 7 languages, including English, Français, and 中文.",
       ctaPrimary: "Book a ride now",
       ctaSecondary: "See how it works",
