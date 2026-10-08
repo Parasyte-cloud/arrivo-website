@@ -56,3 +56,6 @@ async def main():
     await b.close()
   print(sum(res),"/",len(res))
 asyncio.run(main())
+# Non-zero exit on any failed check so CI turns red.
+import sys
+sys.exit(0 if all(res) else 1)

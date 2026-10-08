@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Redirect unit tests
+        run: node --test tests/redirect.test.js
+
+      - name: Build the allowlisted site
+        run: node scripts/build-site.js
+
+      - name: Install browser test tooling
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+
+      - name: Serve the build with the Pages runtime
+        run: |
+          npx --yes wrangler@3 pages dev dist/site --port 8788 --persist-to "$RUNNER_TEMP/wrangler-state" > "$RUNNER_TEMP/wrangler.log" 2>&1 &
+          for i in $(seq 1 60); do
+            curl -fsS -o /dev/null http://127.0.0.1:8788/ && exit 0
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/wrangler.log"
+          exit 1
+
+      - name: Browser tests
+        env:
+          SITE_BASE: http://127.0.0.1:8788
+        run: |
+          python3 -I tests/e2e_dev.py
+          python3 -I tests/e2e_session_checkout.py
+          python3 -I tests/e2e_typed_address.py
+          python3 -I tests/e2e_payment_recovery.py

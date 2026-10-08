@@ -96,3 +96,6 @@ async def main():
     await b.close()
   print(sum(1 for r in results if r[1]),"/",len(results),"passed")
 asyncio.run(main())
+# Non-zero exit on any failed check so CI turns red.
+import sys
+sys.exit(0 if all(r[1] for r in results) else 1)
