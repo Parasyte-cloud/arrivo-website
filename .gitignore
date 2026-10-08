@@ -2,3 +2,6 @@
 .DS_Store
 dist/
 .wrangler/
+
+# local archives of the site are never committed
+*.zip
