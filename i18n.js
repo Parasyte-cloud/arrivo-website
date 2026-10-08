@@ -13,6 +13,9 @@ const I18N = {
       menu: "Menu",
       services: "Services",
       servicesAria: "RideArrivo services",
+      heroPause: "Pause the background pictures",
+      heroPlay: "Play the background pictures",
+      heroSlide: "Show picture {n} of {total}",
       rideType: "Ride type",
     },
     idx: {
@@ -619,6 +622,9 @@ const I18N = {
       menu: "Menu",
       services: "Services",
       servicesAria: "Services RideArrivo",
+      heroPause: "Mettre en pause les images d'arrière-plan",
+      heroPlay: "Lire les images d'arrière-plan",
+      heroSlide: "Afficher l'image {n} sur {total}",
       rideType: "Type de course",
     },
     idx: {
@@ -1220,6 +1226,9 @@ I18N.zh = {
     menu: "菜单",
     services: "服务",
     servicesAria: "RideArrivo 服务",
+    heroPause: "暂停背景图片",
+    heroPlay: "播放背景图片",
+    heroSlide: "显示第 {n} 张，共 {total} 张",
     rideType: "行程类型",
   },
   idx: {
@@ -1822,6 +1831,9 @@ I18N.de = {
     menu: "Menü",
     services: "Dienste",
     servicesAria: "RideArrivo Dienste",
+    heroPause: "Hintergrundbilder anhalten",
+    heroPlay: "Hintergrundbilder abspielen",
+    heroSlide: "Bild {n} von {total} anzeigen",
     rideType: "Fahrtart",
   },
   idx: {
@@ -2422,6 +2434,9 @@ I18N.hi = {
     menu: "मेनू",
     services: "सेवाएं",
     servicesAria: "RideArrivo सेवाएं",
+    heroPause: "बैकग्राउंड तस्वीरें रोकें",
+    heroPlay: "बैकग्राउंड तस्वीरें चलाएं",
+    heroSlide: "{total} में से तस्वीर {n} दिखाएं",
     rideType: "राइड का प्रकार",
   },
   idx: {
@@ -3022,6 +3037,9 @@ I18N.es = {
     menu: "Menú",
     services: "Servicios",
     servicesAria: "Servicios de RideArrivo",
+    heroPause: "Pausar las imágenes de fondo",
+    heroPlay: "Reproducir las imágenes de fondo",
+    heroSlide: "Mostrar la imagen {n} de {total}",
     rideType: "Tipo de viaje",
   },
   idx: {
@@ -3622,6 +3640,9 @@ I18N.pt = {
     menu: "Menu",
     services: "Serviços",
     servicesAria: "Serviços RideArrivo",
+    heroPause: "Pausar as imagens de fundo",
+    heroPlay: "Reproduzir as imagens de fundo",
+    heroSlide: "Mostrar a imagem {n} de {total}",
     rideType: "Tipo de viagem",
   },
   idx: {
