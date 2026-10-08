@@ -1534,24 +1534,27 @@
       scheduledPickupAt: state.scheduledPickupAt || null,
     };
     if (isOneWayStyle(state.bookingType)) {
-      if (!state.pickupLatLng || !state.dropoffLatLng) {
+      // The API prices a one-way trip from the pickup/destination TEXT
+      // (a flat per-area fare, see arrivo-backend/services/fare.js). Map
+      // coordinates only add a distance/duration estimate, so they are sent
+      // when we have them and the quote still works from typed addresses when
+      // Google suggestions are unavailable. The server stays the authority
+      // on the fare either way.
+      var destinationText = state.stops.length ? state.stops[state.stops.length - 1] : "";
+      if (!state.pickup || !destinationText) {
         return Promise.resolve({
           ok: false,
-          data: { error: "We couldn't confirm your pickup and drop-off on the map. Please pick each address from the suggestions on the Trip step. If suggestions aren't appearing, reload the page or try again shortly." },
+          data: { error: "Please enter your pickup and drop-off addresses on the Trip step so we can work out your fare." },
         });
       }
-      // pickupAddress/destinationAddress are what actually price a one-way
-      // trip now -- a flat per-location fare (see
-      // arrivo-backend/services/fare.js), same formula the apps use.
-      // lat/lng are sent too, but only used server-side for an
-      // informational distance/duration display, never for the fare
-      // itself.
       body.pickupAddress = state.pickup;
-      body.destinationAddress = state.stops.length ? state.stops[state.stops.length - 1] : "";
-      body.pickupLat = typeof state.pickupLatLng.lat === "function" ? state.pickupLatLng.lat() : state.pickupLatLng.lat;
-      body.pickupLng = typeof state.pickupLatLng.lng === "function" ? state.pickupLatLng.lng() : state.pickupLatLng.lng;
-      body.destinationLat = typeof state.dropoffLatLng.lat === "function" ? state.dropoffLatLng.lat() : state.dropoffLatLng.lat;
-      body.destinationLng = typeof state.dropoffLatLng.lng === "function" ? state.dropoffLatLng.lng() : state.dropoffLatLng.lng;
+      body.destinationAddress = destinationText;
+      if (state.pickupLatLng && state.dropoffLatLng) {
+        body.pickupLat = typeof state.pickupLatLng.lat === "function" ? state.pickupLatLng.lat() : state.pickupLatLng.lat;
+        body.pickupLng = typeof state.pickupLatLng.lng === "function" ? state.pickupLatLng.lng() : state.pickupLatLng.lng;
+        body.destinationLat = typeof state.dropoffLatLng.lat === "function" ? state.dropoffLatLng.lat() : state.dropoffLatLng.lat;
+        body.destinationLng = typeof state.dropoffLatLng.lng === "function" ? state.dropoffLatLng.lng() : state.dropoffLatLng.lng;
+      }
     }
     return api("/api/rides/quote", { method: "POST", headers: authHeader(), body: JSON.stringify(body) });
   }
@@ -2371,5 +2374,5 @@
   });
 
   // Exposed for automated testing only.
-  window.__arrivoBookingTestHooks = { state: state, handlePaymentSuccess: handlePaymentSuccess, goToStep: goToStep };
+  window.__arrivoBookingTestHooks = { state: state, handlePaymentSuccess: handlePaymentSuccess, goToStep: goToStep, renderReview: renderReview };
 })();
