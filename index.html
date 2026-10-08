@@ -41,6 +41,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RideArrivo">
+<script>
+/* Hero intro animation: switched on here, switched off again after it has played,
+   so text is never hidden without script and a later language switch does not replay it. */
+(function(){try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches){var r=document.documentElement;r.classList.add('hero-intro');setTimeout(function(){r.classList.remove('hero-intro')},3200)}}catch(e){}})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="image" href="assets/hero-night-960.jpg" media="(max-width: 999px)" fetchpriority="high">
@@ -279,7 +284,7 @@
     <div class="wrap hero-inner hero-split-inner">
       <div class="hero-copy">
         <span class="eyebrow eyebrow-light" data-i18n="hero.eyebrow">Lagos airport pickups, done right</span>
-        <h1 data-i18n="hero.headline">Land in Lagos.<br>Arrive. Relax. <img src="assets/ridearrivo-wordmark-light.png" alt="RideArrivo" class="hero-wordmark" width="1829" height="309"></h1>
+        <h1 data-i18n="hero.headline"><span class="hl-line">Land in Lagos.</span><span class="hl-line">Arrive. Relax.</span><span class="hero-wm"><img src="assets/ridearrivo-wordmark-light.png" alt="RideArrivo" class="hero-wordmark" width="1829" height="309"><img src="assets/ridearrivo-wordmark-light.png" alt="" aria-hidden="true" class="hero-wordmark-glow" width="1829" height="309"></span></h1>
         <p class="hero-sub" data-i18n="hero.sub">
           A verified driver, a live-tracked ride, and a trip you can share with someone who cares about your safe arrival.
           Available in 7 languages, including English, Français, and 中文.

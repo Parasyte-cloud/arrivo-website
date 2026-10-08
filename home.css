@@ -612,7 +612,17 @@ html[data-theme="dark"] .faq-item[open] { box-shadow: 0 14px 32px rgba(0,0,0,.45
 .hero-trust .ico { width: 1.7em; height: 1.7em; color: var(--amber); }
 
 /* Logo lettering as the last line of the English headline. */
-.hero-copy h1 .hero-wordmark { display: block; height: 1.02em; width: auto; margin-top: .12em; }
+.hero-copy h1 .hero-wm { display: block; position: relative; width: fit-content; margin-top: .12em; }
+.hero-copy h1 .hero-wordmark { display: block; height: 1.02em; width: auto; }
+/* A second copy of the lettering that carries the glow. It is cut off just before
+   the A, so only "Arrivo" lights up. The cut uses negative insets so the glow can
+   spill past the top, bottom and right edges (a filter is applied before the clip). */
+.hero-copy h1 .hero-wordmark-glow {
+  position: absolute; left: 0; top: 0; height: 100%; width: auto;
+  clip-path: inset(-40% -12% -40% 47%);
+  filter: drop-shadow(0 0 14px rgba(255,150,10,.85));
+  opacity: 0; pointer-events: none;
+}
 
 /* Play icon on the secondary hero button. */
 .btn-ghost .ico-play { width: 1.5em; height: 1.5em; margin-left: 10px; vertical-align: -0.38em; }
@@ -620,3 +630,29 @@ html[data-theme="dark"] .faq-item[open] { box-shadow: 0 14px 32px rgba(0,0,0,.45
 /* Pin inside the pickup and destination fields. */
 .hf-field .hf-pin { position: absolute; left: 14px; top: 24px; transform: translateY(-50%); width: 1em; height: 1em; color: #fff; pointer-events: none; }
 .hf-field .hf-input { padding-left: 42px; }
+
+/* Headline intro, "touchdown": each line glides in from the left with extra slant
+   and settles into the normal italic; the logo lettering lands last and gives
+   one soft glow. Runs only while html has .hero-intro (set in the page head, and
+   never set when the visitor prefers reduced motion). Transform, opacity and
+   filter only, so it stays on the compositor. */
+.hero-copy h1 .hl-line { display: block; }
+@keyframes hl-touchdown {
+  from { opacity: 0; transform: translateX(-46px) skewX(-12deg); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes hl-logo-in {
+  from { opacity: 0; transform: translateX(-34px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes hl-glow { 0%, 100% { opacity: 0; } 45% { opacity: 1; } }
+@keyframes hl-fade { from { opacity: 0; } to { opacity: 1; } }
+.hero-intro .hero-copy h1 .hl-line { animation: hl-touchdown .85s cubic-bezier(.16,1,.3,1) both; }
+.hero-intro .hero-copy h1 .hl-line:nth-child(2) { animation-delay: .16s; }
+.hero-intro .hero-copy h1 .hero-wm { animation: hl-logo-in .8s cubic-bezier(.16,1,.3,1) .42s both; }
+.hero-intro .hero-copy h1 .hero-wordmark-glow { animation: hl-glow 1.3s ease-in-out 1.15s 1 both; }
+/* Other languages have no split lines: a plain fade of the whole headline. */
+.hero-intro .hero-copy h1:not(:has(.hl-line)) { animation: hl-fade .7s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-intro .hero-copy h1, .hero-intro .hero-copy h1 * { animation: none !important; }
+}
