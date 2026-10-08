@@ -23,3 +23,33 @@
 
 /sw.js
   Cache-Control: no-cache, must-revalidate
+
+# Private or one-time pages: keep them out of search results. robots.txt alone
+# only asks crawlers not to fetch them; this header also stops a linked URL
+# from being indexed.
+/account
+  X-Robots-Tag: noindex, nofollow
+/account.html
+  X-Robots-Tag: noindex, nofollow
+/driver
+  X-Robots-Tag: noindex, nofollow
+/driver.html
+  X-Robots-Tag: noindex, nofollow
+/track
+  X-Robots-Tag: noindex, nofollow
+/track.html
+  X-Robots-Tag: noindex, nofollow
+/scan
+  X-Robots-Tag: noindex, nofollow
+/scan.html
+  X-Robots-Tag: noindex, nofollow
+/reset-password
+  X-Robots-Tag: noindex, nofollow
+/reset-password.html
+  X-Robots-Tag: noindex, nofollow
+/verify-email
+  X-Robots-Tag: noindex, nofollow
+/verify-email.html
+  X-Robots-Tag: noindex, nofollow
+/payment/*
+  X-Robots-Tag: noindex, nofollow
