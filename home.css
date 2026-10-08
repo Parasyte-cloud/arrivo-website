@@ -285,6 +285,11 @@ html[data-theme="dark"] .skip-link { background: var(--amber); color: #12123B; }
   letter-spacing: -.02em;
   margin: 10px 0 18px;
 }
+.hero-copy h1 {
+  font-family: 'Poppins', 'Space Grotesk', sans-serif;
+  font-style: italic;
+  font-weight: 700;
+}
 .hero-copy h1 .brand-ride { color: #fff; }
 .hero-copy h1 .brand-arrivo { color: var(--amber); }
 .hero-copy .hero-sub { max-width: 520px; font-size: 16.5px; line-height: 1.55; }
@@ -597,3 +602,11 @@ html[data-theme="dark"] .faq-item[open] { box-shadow: 0 14px 32px rgba(0,0,0,.45
   .faq-item, .faq-icon, .faq-icon::before, .faq-icon::after { transition: none; }
   .faq-item:hover { transform: none; }
 }
+
+/* Hero icons (Font Awesome Free, CC BY 4.0). Sized in em so they follow the text,
+   coloured with currentColor so hover and focus states carry over. */
+.ico { width: 1.15em; height: 1.15em; flex: none; }
+.hero-chips a { gap: 9px; }
+.hero-chips a .ico { width: 1.2em; height: 1.2em; }
+.hero-trust li { gap: 12px; }
+.hero-trust .ico { width: 1.7em; height: 1.7em; color: var(--amber); }
