@@ -434,8 +434,8 @@ html[data-theme="dark"] .site-header.is-floating {
 
 /* ---------- Audit fixes ---------- */
 /* Hero photo: a 960px file for phones and tablets, the full one on desktop. */
-.hero-bg { background-image: url("assets/hero-night-960.jpg"); }
-@media (min-width: 1000px) { .hero-bg { background-image: url("assets/hero-night-1672.jpg"); } }
+.hero-bg { background-image: url("assets/hero/slide-1-960.webp"); }
+@media (min-width: 1000px) { .hero-bg { background-image: url("assets/hero/slide-1-1672.webp"); } }
 
 /* iOS zooms the page when a field under 16px gets focus. */
 @media (max-width: 979px) {

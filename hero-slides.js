@@ -19,13 +19,16 @@
   "use strict";
 
   var SLIDES = [
-    // 1. The existing night photo. Already on the page and preloaded; do not move it.
-    { sm: "assets/hero-night-960.jpg", lg: "assets/hero-night-1672.jpg" },
-    // 2 to 5. PLACEHOLDERS, replace with the real photos.
-    { sm: "assets/hero-bg.jpg", lg: "assets/hero-bg.jpg" },
-    { sm: "assets/safety-hero-bg.jpg", lg: "assets/safety-hero-bg.jpg" },
-    { sm: "assets/fleet-vehicle-1000.webp", lg: "assets/fleet-vehicle-1000.webp" },
-    { sm: "assets/services/air.webp", lg: "assets/services/air.webp" }
+    // 1. Yacht at the dock. This one is the static background in CSS and the head preload.
+    { sm: "assets/hero/slide-1-960.webp", lg: "assets/hero/slide-1-1672.webp" },
+    // 2. Removals truck at a house
+    { sm: "assets/hero/slide-2-960.webp", lg: "assets/hero/slide-2-1672.webp" },
+    // 3. Private jet on the apron
+    { sm: "assets/hero/slide-3-960.webp", lg: "assets/hero/slide-3-1672.webp" },
+    // 4. Sedan at the hotel entrance
+    { sm: "assets/hero/slide-4-960.webp", lg: "assets/hero/slide-4-1672.webp" },
+    // 5. SUV at the airport kerb
+    { sm: "assets/hero/slide-5-960.webp", lg: "assets/hero/slide-5-1672.webp" }
   ];
   var INTERVAL = 7000; // how long each picture stays, in milliseconds
   var FADE = 1400;     // how long the cross-fade takes (must match --hero-fade in home.css)
