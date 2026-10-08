@@ -1,3 +1,6 @@
 *.log
 .DS_Store
 dist/
+
+# local archives of the site are never committed
+*.zip
