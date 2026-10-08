@@ -36,7 +36,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=33">
 <link rel="stylesheet" href="booking.css?v=32">
-<link rel="stylesheet" href="home.css?v=13">
+<link rel="stylesheet" href="home.css?v=15">
 <link rel="stylesheet" href="auth.css?v=3">
 <link rel="stylesheet" href="pages.css?v=2">
   <script>
@@ -100,15 +100,15 @@
   </filter>
 </svg>
 
-<a class="skip-link" href="#main">Skip to content</a>
+<a class="skip-link" href="#main" data-i18n="ui.skip">Skip to content</a>
 <header class="site-header">
   <div class="wrap header-inner">
     <a href="index.html" class="brand" aria-label="RideArrivo">
       <span class="logo-wrap"><img src="assets/icon.png" alt="" class="brand-mark" width="28" height="28"></span>
-      <img src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark wm-on-light"><img src="assets/ridearrivo-wordmark-light.png" alt="" class="brand-wordmark wm-on-dark" aria-hidden="true">
+      <img width="1829" height="309" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark wm-on-light"><img width="1829" height="309" src="assets/ridearrivo-wordmark-light.png" alt="" class="brand-wordmark wm-on-dark" aria-hidden="true">
     </a>
 
-    <nav class="main-nav" aria-label="Primary">
+    <nav class="main-nav" aria-label="Primary" data-i18n-aria="ui.navPrimary">
       <a href="index.html#how" data-i18n="nav.how">How it works</a>
       <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
@@ -127,9 +127,9 @@
       </div>
     </nav>
 
-    <nav class="mobile-nav-menu" id="mobileNavMenu" aria-label="Mobile" hidden>
+    <nav class="mobile-nav-menu" id="mobileNavMenu" aria-label="Mobile" data-i18n-aria="ui.navMobile" hidden>
       <div class="mobile-nav-menu-header">
-        <img src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark wm-on-light"><img src="assets/ridearrivo-wordmark-light.png" alt="" class="brand-wordmark wm-on-dark" aria-hidden="true">
+        <img width="1829" height="309" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark wm-on-light"><img width="1829" height="309" src="assets/ridearrivo-wordmark-light.png" alt="" class="brand-wordmark wm-on-dark" aria-hidden="true">
       </div>
       <a href="index.html#how" data-i18n="nav.how">How it works</a>
       <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
@@ -170,7 +170,7 @@
         <span id="accountNavLabel">Register or Login</span>
       </a>
       <a href="book.html" class="btn btn-primary btn-sm" data-i18n="nav.bookCta">Book a ride</a>
-      <button type="button" class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Menu" aria-expanded="false">
+      <button type="button" class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Menu" data-i18n-aria="ui.menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     </div>
@@ -196,12 +196,12 @@
   <!-- AUTH GATE: shown only if the visitor isn't logged in yet.
        Registration is mandatory before booking: no guest checkout anymore. -->
   <div class="booking-card" id="authGate" hidden style="text-align:center;">
-    <h2 style="font-size:19px;">Create a profile to book</h2>
+    <h2 style="font-size:19px;" data-i18n="bk.needProfile">Create a profile to book</h2>
     <p style="color:var(--text-muted); font-size:13.5px; margin-bottom:20px;">
-      For everyone's safety, every rider needs a registered profile before booking. It only takes a minute.
+      <span data-i18n="bk.needProfileBody">For everyone's safety, every rider needs a registered profile before booking. It only takes a minute.</span>
     </p>
-    <a href="signup.html?next=book.html" class="btn btn-primary" style="width:100%; margin-bottom:10px;">Create a profile</a>
-    <a href="login.html?next=book.html" class="btn btn-ghost" style="width:100%;">Already have a profile? Log in</a>
+    <a href="signup.html?next=book.html" class="btn btn-primary" style="width:100%; margin-bottom:10px;" data-i18n="auth.createProfile">Create a profile</a>
+    <a href="login.html?next=book.html" class="btn btn-ghost" style="width:100%;" data-i18n="bk.haveLogin">Already have a profile? Log in</a>
   </div>
 
   <div class="booking-card" id="bookingCard" hidden>
@@ -286,13 +286,13 @@
       <h2 style="margin-top:28px;" data-i18n="booking.pickupTitle">Where should we pick you up?</h2>
 
       <div class="location-permission-box" id="locationPermissionBox">
-        <p>Share your location to get better address suggestions nearby. We only use this for the search below, nothing is tracked in the background.</p>
+        <p data-i18n="bk.locAsk">Share your location to get better address suggestions nearby. We only use this for the search below, nothing is tracked in the background.</p>
         <div style="display:flex; gap:8px;">
-          <button type="button" class="btn btn-primary btn-sm" id="allowLocationBtn">Allow location</button>
+          <button type="button" class="btn btn-primary btn-sm" id="allowLocationBtn" data-i18n="bk.locAllow">Allow location</button>
           <button type="button" class="btn btn-ghost btn-sm" id="declineLocationBtn">Not now</button>
         </div>
       </div>
-      <p class="location-declined-note" id="locationDeclinedNote" hidden>You can still type any address below, search just won't be narrowed to where you are right now.</p>
+      <p class="location-declined-note" id="locationDeclinedNote" hidden data-i18n="bk.locDeclined">You can still type any address below, search just won't be narrowed to where you are right now.</p>
 
       <div class="route-builder">
         <div class="route-row">
@@ -311,15 +311,15 @@
       <button type="button" class="link-btn" id="addStopBtn" data-i18n="booking.addStop">+ Add another stop</button>
 
       <div id="routeMap" class="route-map"></div>
-      <p class="error-text" id="mapsError" hidden>Map search isn't available right now. You can still type an address directly.</p>
+      <p class="error-text" id="mapsError" hidden data-i18n="bk.mapsError">Map search isn't available right now. You can still type an address directly.</p>
       <p class="error-text" id="excludedAreaError" hidden></p>
 
       <div class="addon-section">
         <label class="checkbox-row">
           <input type="checkbox" id="fSecurityEscort">
-          <span>Add a personal security escort <strong>(priced at checkout)</strong></span>
+          <span data-i18n="bk.escort">Add a personal security escort <strong>(priced at checkout)</strong></span>
         </label>
-        <label class="field-label" style="margin-top:6px;">Fleet accompaniment</label>
+        <label class="field-label" style="margin-top:6px;" data-i18n="bk.fleetAcc">Fleet accompaniment</label>
         <div class="chip-row" id="fleetChips">
           <div class="chip selected" data-fleet="0">None</div>
           <div class="chip" data-fleet="2">2 vehicles <strong>(+NGN 70,000)</strong></div>
@@ -328,7 +328,7 @@
       </div>
 
       <div class="step-actions">
-        <button class="btn btn-primary" id="tripContinue" data-i18n="booking.continue">Continue</button>
+        <button type="button" class="btn btn-primary" id="tripContinue" data-i18n="booking.continue">Continue</button>
       </div>
     </section>
 
@@ -418,21 +418,21 @@
         <button type="button" class="vehicle-card" data-vehicle="sedan" data-price="8500" data-max-passengers="3">
           <span class="v-name" data-i18n="booking.vehicleSedan">Standard Sedan</span>
           <span class="v-price">NGN 8,500</span>
-          <span class="v-capacity">Fits up to 3 passengers</span>
+          <span class="v-capacity" data-i18n="bk.fits3">Fits up to 3 passengers</span>
           <span class="v-multi-note" hidden></span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
         <button type="button" class="vehicle-card" data-vehicle="suv" data-price="12500" data-max-passengers="5">
           <span class="v-name" data-i18n="booking.vehicleSuv">Premium SUV</span>
           <span class="v-price">NGN 12,500</span>
-          <span class="v-capacity">Fits up to 5 passengers</span>
+          <span class="v-capacity" data-i18n="bk.fits5">Fits up to 5 passengers</span>
           <span class="v-multi-note" hidden></span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
         <button type="button" class="vehicle-card" data-vehicle="truck" data-price="16000" data-max-passengers="5">
           <span class="v-name" data-i18n="booking.vehicleTruck">Executive Vehicle</span>
           <span class="v-price">NGN 16,000</span>
-          <span class="v-capacity">Fits up to 5 passengers</span>
+          <span class="v-capacity" data-i18n="bk.fits5">Fits up to 5 passengers</span>
           <span class="v-multi-note" hidden></span>
           <span class="v-badge" data-i18n="booking.recommended">Recommended for your luggage</span>
         </button>
@@ -472,16 +472,16 @@
       <div class="fare-estimate-box" id="fareEstimateBox" hidden>
         <div class="fare-estimate-row"><span data-i18n="booking.fareDistance">Estimated distance</span><span id="fareDistanceText"></span></div>
         <div class="fare-estimate-row"><span data-i18n="booking.fareBase">Base fare</span><span id="fareBaseText"></span></div>
-        <div class="fare-estimate-row" id="fareSecurityRow" hidden><span>Security escort</span><span>Priced at checkout</span></div>
-        <div class="fare-estimate-row" id="fareLuxuryRow" hidden><span>Luxury upgrade</span><span>Priced at checkout</span></div>
+        <div class="fare-estimate-row" id="fareSecurityRow" hidden><span data-i18n="bk.secEscort">Security escort</span><span data-i18n="bk.atCheckout">Priced at checkout</span></div>
+        <div class="fare-estimate-row" id="fareLuxuryRow" hidden><span data-i18n="bk.luxury">Luxury upgrade</span><span data-i18n="bk.atCheckout">Priced at checkout</span></div>
         <div class="fare-estimate-row" id="fareFleetRow" hidden><span id="fareFleetLabel">Fleet accompaniment</span><span id="fareFleetAmount"></span></div>
         <div class="fare-estimate-row fare-estimate-total"><span data-i18n="booking.fareTotal">Estimated total</span><span id="fareTotalText"></span></div>
       </div>
-      <p class="error-text" id="fareError" hidden>Couldn't calculate a distance-based fare for this route. You can still continue. We'll confirm the exact fare before you pay.</p>
+      <p class="error-text" id="fareError" hidden data-i18n="bk.fareError">Couldn't calculate a distance-based fare for this route. You can still continue. We'll confirm the exact fare before you pay.</p>
 
       <div class="step-actions">
-        <button class="btn btn-ghost" id="backToTrip" data-i18n="booking.back">Back</button>
-        <button class="btn btn-primary" id="rideContinue" data-i18n="booking.continue">Continue</button>
+        <button type="button" class="btn btn-ghost" id="backToTrip" data-i18n="booking.back">Back</button>
+        <button type="button" class="btn btn-primary" id="rideContinue" data-i18n="booking.continue">Continue</button>
       </div>
     </section>
 
@@ -489,7 +489,7 @@
     <section class="step" data-step="3" hidden>
       <h2 data-i18n="booking.reviewTitle">Review &amp; pay</h2>
 
-      <p id="quoteLoadingText">Calculating your exact fare…</p>
+      <p id="quoteLoadingText" data-i18n="bk.calculating">Calculating your exact fare…</p>
       <p class="error-text" id="quoteErrorText" hidden></p>
       <button type="button" class="btn btn-primary" id="quoteRetryBtn" style="display:none;">Retry</button>
 
@@ -505,13 +505,13 @@
 
         <p class="error-text" id="walletMinimumNote" hidden></p>
 
-        <label class="field-label">How would you like to pay?</label>
+        <label class="field-label" data-i18n="bk.howPay">How would you like to pay?</label>
         <div class="for-who-toggle" id="paymentMethodToggle" style="margin-bottom:14px;">
           <button type="button" class="for-who-opt is-active" data-method="card">Card</button>
           <button type="button" class="for-who-opt" data-method="wallet" id="walletPaymentOpt">Wallet <span id="walletBalanceHint" style="font-weight:400;"></span></button>
           <button type="button" class="for-who-opt" data-method="membership" id="membershipPaymentOpt" hidden>Membership</button>
         </div>
-        <p class="error-text" id="walletInsufficientNote" hidden>Your wallet balance isn't enough for this ride. Top up in My Account, or pay by card instead.</p>
+        <p class="error-text" id="walletInsufficientNote" hidden data-i18n="bk.walletLow">Your wallet balance isn't enough for this ride. Top up in My Account, or pay by card instead.</p>
       </div>
 
       <label class="checkbox-row">
@@ -522,8 +522,8 @@
       <p class="error-text" id="payError" hidden></p>
 
       <div class="step-actions">
-        <button class="btn btn-ghost" id="backToRide" data-i18n="booking.back">Back</button>
-        <button class="btn btn-primary" id="payBtn"><span data-i18n="booking.payNow">Pay</span> <span id="payAmount"></span></button>
+        <button type="button" class="btn btn-ghost" id="backToRide" data-i18n="booking.back">Back</button>
+        <button type="button" class="btn btn-primary" id="payBtn"><span data-i18n="booking.payNow">Pay</span> <span id="payAmount"></span></button>
       </div>
     </section>
 
@@ -570,12 +570,12 @@
 <div id="privacyModal" style="display:none; position:fixed; inset:0; background:rgba(18,18,59,0.6); z-index:100; align-items:center; justify-content:center; padding:20px;">
   <div style="background:#fff; border-radius:16px; max-width:560px; width:100%; max-height:80vh; display:flex; flex-direction:column;">
     <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 20px; border-bottom:1px solid var(--card-border);">
-      <strong style="font-family:'Space Grotesk',sans-serif;">Privacy Policy</strong>
-      <button id="closePrivacyModal" style="all:unset; cursor:pointer; font-size:18px; color:var(--text-muted); padding:4px 8px;">✕</button>
+      <strong style="font-family:'Space Grotesk',sans-serif;" data-i18n="bk.privacyTitle">Privacy Policy</strong>
+      <button type="button" id="closePrivacyModal" style="all:unset; cursor:pointer; font-size:18px; color:var(--text-muted); padding:4px 8px;">✕</button>
     </div>
     <iframe src="privacy.html" style="flex:1; border:none; min-height:400px;"></iframe>
     <div style="padding:16px 20px; border-top:1px solid var(--card-border);">
-      <button class="btn btn-primary" id="agreeInModalBtn" style="width:100%;">I've read this and agree</button>
+      <button type="button" class="btn btn-primary" id="agreeInModalBtn" style="width:100%;" data-i18n="bk.agreeRead">I've read this and agree</button>
     </div>
   </div>
 </div>
@@ -584,12 +584,12 @@
 <div id="cancellationModal" style="display:none; position:fixed; inset:0; background:rgba(18,18,59,0.6); z-index:100; align-items:center; justify-content:center; padding:20px;">
   <div style="background:#fff; border-radius:16px; max-width:560px; width:100%; max-height:80vh; display:flex; flex-direction:column;">
     <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 20px; border-bottom:1px solid var(--card-border);">
-      <strong style="font-family:'Space Grotesk',sans-serif;">Cancellation &amp; Refund Policy</strong>
-      <button id="closeCancellationModal" style="all:unset; cursor:pointer; font-size:18px; color:var(--text-muted); padding:4px 8px;">✕</button>
+      <strong style="font-family:'Space Grotesk',sans-serif;" data-i18n="bk.cancelTitle">Cancellation &amp; Refund Policy</strong>
+      <button type="button" id="closeCancellationModal" style="all:unset; cursor:pointer; font-size:18px; color:var(--text-muted); padding:4px 8px;">✕</button>
     </div>
     <iframe src="terms.html#cancellation" style="flex:1; border:none; min-height:400px;"></iframe>
     <div style="padding:16px 20px; border-top:1px solid var(--card-border);">
-      <button class="btn btn-primary" id="agreeCancellationModalBtn" style="width:100%;">I've read this and agree</button>
+      <button type="button" class="btn btn-primary" id="agreeCancellationModalBtn" style="width:100%;" data-i18n="bk.agreeRead">I've read this and agree</button>
     </div>
   </div>
 </div>
@@ -599,7 +599,7 @@
     <div class="footer-brand-col">
       <div class="footer-brand">
         <img src="assets/icon.png" alt="" width="22" height="22">
-        <img src="assets/ridearrivo-wordmark-light.png" alt="RideArrivo" class="footer-wordmark">
+        <img width="1829" height="309" src="assets/ridearrivo-wordmark-light.png" alt="RideArrivo" class="footer-wordmark">
       </div>
       <p class="footer-tagline" data-i18n="footer.tagline">Lagos airport pickups, done right.</p>
       <div class="footer-social-row">
@@ -640,14 +640,14 @@
     </div>
 
     <div class="footer-col">
-      <h4 data-i18n="footer.companyHeading">Company</h4>
+      <h3 data-i18n="footer.companyHeading">Company</h3>
       <a href="index.html#how" data-i18n="nav.how">How it works</a>
       <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
     </div>
 
     <div class="footer-col">
-      <h4 data-i18n="footer.getStartedHeading">Get Started</h4>
+      <h3 data-i18n="footer.getStartedHeading">Get Started</h3>
       <a href="https://express.ridearrivo.com/" data-i18n="nav.express">ArrivoExpress</a>
       <a href="https://move.ridearrivo.com" target="_blank" rel="noopener" data-i18n="nav.removals">ArrivoRemovals</a>
       <a href="https://boat.ridearrivo.com" target="_blank" rel="noopener">ArrivoBoat</a>
@@ -659,13 +659,13 @@
     </div>
 
     <div class="footer-col">
-      <h4 data-i18n="footer.legalHeading">Legal</h4>
+      <h3 data-i18n="footer.legalHeading">Legal</h3>
       <a href="privacy.html" data-i18n="footer.privacy">Privacy Policy</a>
       <a href="terms.html" data-i18n="footer.terms">Terms of Service</a>
     </div>
 
     <div class="footer-col">
-      <h4 data-i18n="footer.contactHeading">Contact</h4>
+      <h3 data-i18n="footer.contactHeading">Contact</h3>
       <a href="#" class="footer-contact-link" id="footerEmailLink" data-user="info" data-domain="ridearrivo.com">
         <svg class="footer-contact-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.6"/>
@@ -711,17 +711,17 @@
     <div class="footer-credit-row">
       <span class="footer-credit-label">Powered by</span>
       <a href="https://parasyte.cloud" target="_blank" rel="noopener" class="footer-parasyte-link">
-        <img src="assets/parasyte-logo.png" alt="Parasyte.cloud" class="footer-parasyte-logo">
+        <img width="3036" height="300" src="assets/parasyte-logo.png" alt="Parasyte.cloud" class="footer-parasyte-logo">
       </a>
     </div>
-    <img src="assets/ridearrivo-wordmark-light.png" alt="RideArrivo" class="footer-wordmark">
+    <img width="1829" height="309" src="assets/ridearrivo-wordmark-light.png" alt="RideArrivo" class="footer-wordmark">
   </div>
 </footer>
 
 <!-- Paystack's official inline checkout library -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script src="paystack-config.js?v=32"></script>
-<script src="i18n.js?v=39"></script>
+<script src="i18n.js?v=40"></script>
 <script src="phone-input.js?v=33"></script>
 <script src="booking.js?v=38"></script>
 <script src="clock.js?v=32"></script>
@@ -746,6 +746,7 @@
 <script src="pwa-register.js?v=32"></script>
 <script src="glass-effects.js?v=32"></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
+<script src="i18n-apply.js?v=1" defer></script>
 <script src="theme.js?v=3" defer></script>
 <script src="auth-header.js?v=2" defer></script>
 </body>

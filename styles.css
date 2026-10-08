@@ -1288,7 +1288,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
 }
 .safety-chip:hover .safety-chip-icon { transform: scale(1.1); }
 .safety-chip-icon svg { width: 19px; height: 19px; }
-.safety-chip h4 { font-size: 14.5px; margin-bottom: 6px; color: #fff; }
+.safety-chip h3 { font-size: 14.5px; margin-bottom: 6px; color: #fff; }
 .safety-chip p { color: rgba(255,255,255,0.72); font-size: 12.5px; margin: 0; line-height: 1.45; }
 
 @media (min-width: 560px) {
@@ -1402,7 +1402,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
 .footer-social-icon svg { width: 16px; height: 16px; }
 
 .footer-col { flex: 1 1 130px; }
-.footer-col h4 {
+.footer-col h3 {
   font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;
   color: #8a8ab0; margin: 0 0 14px; font-weight: 700;
 }
