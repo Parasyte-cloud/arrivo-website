@@ -28,16 +28,16 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json?v=2">
 <meta name="theme-color" content="#12123B">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RideArrivo">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=33">
+<link rel="stylesheet" href="styles.css?v=34">
 <link rel="stylesheet" href="booking.css?v=32">
-<link rel="stylesheet" href="home.css?v=15">
+<link rel="stylesheet" href="home.css?v=19">
 <link rel="stylesheet" href="auth.css?v=3">
 <link rel="stylesheet" href="pages.css?v=2">
 <style>
@@ -256,7 +256,7 @@
       </label>
       <label class="checkbox-row">
         <input type="checkbox" id="sTermsConsent">
-        <span>I agree to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>'s <a href="terms.html" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:underline;">terms of service</a> and independent contractor agreement.</span>
+        <span>I agree to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>'s <a href="terms.html" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:underline;">terms of service</a> and independent contractor agreement. I understand that the vehicle carries a listening device that the operations team activate only after the Emergency Button is pressed (<a href="terms.html#emergency-button" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:underline;">terms, section 10</a> and <a href="privacy.html#emergency-button" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:underline;">privacy policy, section 12</a>).</span>
       </label>
 
       <p class="error-text" id="safetyError" hidden></p>
@@ -281,7 +281,7 @@
     <h1>Dashboard</h1>
 
     <button type="button" id="panicBtn" class="panic-btn">
-      <span id="panicBtnLabel">🆘 Emergency SOS</span>
+      <span id="panicBtnLabel">🆘 Emergency Button</span>
     </button>
     <p id="panicCountdownRow" class="panic-countdown-row" hidden>
       <span id="panicCountdownText"></span>
@@ -292,7 +292,7 @@
       <strong>🆘 Emergency alert active.</strong>
       <p><span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> has been notified. This can only be cleared by our team, not from this device.</p>
     </div>
-    <button type="button" id="listeningDeviceBtn" class="listening-btn">🎙️ Listening device: off</button>
+    <div id="listeningDeviceBtn" class="listening-btn" role="status" hidden>🎙️ Our operations team may activate the in-vehicle listening device for this emergency.</div>
 
     <div class="toggle-row">
       <div>
@@ -485,11 +485,11 @@
 </footer>
 
 <script src="phone-input.js?v=33"></script>
-<script src="driver.js?v=33"></script>
+<script src="driver.js?v=34"></script>
 <script src="pwa-register.js?v=32"></script>
 <script src="glass-effects.js?v=32"></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
-<script src="i18n-apply.js?v=1" defer></script>
+<script src="i18n-apply.js?v=2" defer></script>
 <script src="theme.js?v=3" defer></script>
 <script src="auth-header.js?v=2" defer></script>
 </body>

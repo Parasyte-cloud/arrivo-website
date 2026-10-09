@@ -1512,7 +1512,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
 .panic-active-banner p { margin: 0; font-size: 12.5px; }
 .listening-btn {
   width: 100%;
-  background: #fff;
+  background: var(--glass-bg);
   border: 1.5px solid var(--card-border);
   border-radius: var(--radius);
   padding: 12px;
@@ -1520,9 +1520,12 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
   font-weight: 600;
   font-size: 13.5px;
   color: var(--ink);
-  cursor: pointer;
+  cursor: default;
+  text-align: left;
+  line-height: 1.4;
   margin-bottom: 16px;
 }
+.listening-btn[hidden] { display: none; }
 .listening-btn.is-active { border-color: var(--primary); background: var(--primary-tint); color: var(--primary); }
 
 .tracking-notice {
