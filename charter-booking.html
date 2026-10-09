@@ -31,7 +31,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=35">
 <link rel="stylesheet" href="booking.css?v=32">
-<link rel="stylesheet" href="home.css?v=21">
+<link rel="stylesheet" href="home.css?v=23">
 <link rel="stylesheet" href="auth.css?v=3">
 <link rel="stylesheet" href="pages.css?v=2">
 <style>
@@ -213,6 +213,15 @@
     // Lagos "today": the picker refuses past dates, and the check below
     // stops a past date and time slipping through.
     document.getElementById("chDate").min = ArrivoLate.lagosNow().date;
+    // Arriving from the homepage Chauffeur tab: carry over what was entered.
+    try {
+      var q = new URLSearchParams(window.location.search);
+      var fill = function (id, key, max) { var v = (q.get(key) || "").slice(0, max); if (v) document.getElementById(id).value = v; };
+      fill("chPickupAddress", "pickup", 300);
+      fill("chDate", "date", 10);
+      fill("chPickupTime", "time", 5);
+      fill("chDuration", "duration", 80);
+    } catch (e) { /* no prefill */ }
 
     btn.addEventListener("click", function () {
       var fields = {

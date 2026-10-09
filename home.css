@@ -320,7 +320,7 @@ html[data-theme="dark"] .skip-link { background: var(--amber); color: #12123B; }
 }
 .hf-tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 4px;
   padding: 4px;
   margin-bottom: 18px;
@@ -788,3 +788,15 @@ html[data-theme="dark"] .faq-item[open] { box-shadow: 0 14px 32px rgba(0,0,0,.45
   .site-header.is-side-left .nav-dropdown-menu { left: calc(100% + 12px); right: auto; }
   .site-header.is-side-right .nav-dropdown-menu { right: calc(100% + 12px); left: auto; }
 }
+
+/* Side dock, slimmer: drop the date and time (it made the pill twice as wide)
+   and shrink the language switch to a round icon-sized button. */
+.site-header.is-side .live-clock { display: none !important; }
+.site-header.is-side .lang-dropdown { display: flex; justify-content: center; }
+.site-header.is-side .lang-trigger { width: 44px; min-width: 0; padding: 0; justify-content: center; }
+.site-header.is-side .lang-trigger > svg { display: none; }
+
+/* Three tabs: tighter padding so longer translations still fit one row, and
+   [hidden] must win over the display set on labels and blocks above. */
+.hf-tab { padding: 11px 6px; font-size: 13.5px; }
+.hero-form [hidden] { display: none !important; }

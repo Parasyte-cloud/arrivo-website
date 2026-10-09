@@ -27,6 +27,10 @@
   var timeEl = document.getElementById("hfTime");
   var errEl = document.getElementById("hfError");
   var submitBtn = form.querySelector(".hf-submit");
+  var destLabel = document.getElementById("hfDestLabel");
+  var destField = document.getElementById("hfDestField");
+  var durationBlock = document.getElementById("hfDurationBlock");
+  var durationEl = document.getElementById("hfDuration");
   var mode = "one_way";
   var coords = { pickup: null, dest: null };
 
@@ -58,8 +62,17 @@
       t.classList.toggle("is-active", on);
       t.setAttribute("aria-pressed", on ? "true" : "false");
     });
-    when.hidden = next !== "dropoff";
-    if (next === "dropoff" && !dateEl.value) {
+    when.hidden = next !== "dropoff" && next !== "chauffeur";
+    // Chauffeur hire has a pickup, a start and a length, but no destination.
+    var chauffeur = next === "chauffeur";
+    if (destLabel) destLabel.hidden = chauffeur;
+    if (destField) destField.hidden = chauffeur;
+    if (durationBlock) durationBlock.hidden = !chauffeur;
+    if (submitBtn) {
+      if (chauffeur) submitBtn.textContent = tr("formSubmitChauffeur", "Request a chauffeur \u2192");
+      else submitBtn.textContent = tr("formSubmit", "See vehicles and price \u2192");
+    }
+    if ((next === "dropoff" || chauffeur) && !dateEl.value) {
       // Two days ahead, counted on the Lagos calendar.
       dateEl.value = window.ArrivoLate
         ? window.ArrivoLate.lagosNow(new Date(Date.now() + 2 * 86400000)).date
@@ -244,7 +257,26 @@
     var p = pickup.value.trim();
     var d = dest.value.trim();
     if (!p) { showError(tr("formErrPlaces", "Enter a pickup and a destination to continue."), pickup); return; }
-    if (!d) { showError(tr("formErrPlaces", "Enter a pickup and a destination to continue."), dest); return; }
+    if (!d && mode !== "chauffeur") { showError(tr("formErrPlaces", "Enter a pickup and a destination to continue."), dest); return; }
+
+    if (mode === "chauffeur") {
+      // Chauffeur hire is arranged with Support, so this hands the pickup,
+      // start and length to the request form instead of the priced booking.
+      var start = dateEl.value && timeEl.value ? new Date(dateEl.value + "T" + timeEl.value + ":00+01:00") : null;
+      if (!start || isNaN(start.getTime()) || start.getTime() <= Date.now()) {
+        showError(tr("formErrWhen", "Choose a pickup date and time at least 12 hours from now."), dateEl);
+        return;
+      }
+      var cp = new URLSearchParams();
+      cp.set("pickup", p);
+      cp.set("date", dateEl.value);
+      cp.set("time", timeEl.value);
+      cp.set("duration", durationEl ? durationEl.value : "Full day");
+      submitting = true;
+      if (submitBtn) submitBtn.disabled = true;
+      window.location.href = "charter-booking.html?" + cp.toString();
+      return;
+    }
 
     var params = new URLSearchParams();
     params.set("preset", "quick");
