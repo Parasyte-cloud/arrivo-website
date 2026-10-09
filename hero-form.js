@@ -68,6 +68,12 @@
     if (destLabel) destLabel.hidden = chauffeur;
     if (destField) destField.hidden = chauffeur;
     if (durationBlock) durationBlock.hidden = !chauffeur;
+    var noteEl = document.getElementById("hfNote");
+    if (noteEl) {
+      noteEl.textContent = chauffeur
+        ? tr("formNoteChauffeur", "We confirm the car and driver with you. Sending a request is free, no payment now.")
+        : tr("formNote", "Transparent pricing. No surprises at checkout.");
+    }
     if (submitBtn) {
       if (chauffeur) submitBtn.textContent = tr("formSubmitChauffeur", "Request a chauffeur \u2192");
       else submitBtn.textContent = tr("formSubmit", "See vehicles and price \u2192");
