@@ -60,9 +60,10 @@
     });
     when.hidden = next !== "dropoff";
     if (next === "dropoff" && !dateEl.value) {
-      var d = new Date();
-      d.setDate(d.getDate() + 2);
-      dateEl.value = isoDate(d);
+      // Two days ahead, counted on the Lagos calendar.
+      dateEl.value = window.ArrivoLate
+        ? window.ArrivoLate.lagosNow(new Date(Date.now() + 2 * 86400000)).date
+        : isoDate(new Date(Date.now() + 2 * 86400000));
       timeEl.value = "09:00";
     }
     clearError();
@@ -70,7 +71,7 @@
   tabs.forEach(function (t) {
     t.addEventListener("click", function () { setMode(t.getAttribute("data-mode")); });
   });
-  dateEl.min = isoDate(new Date());
+  dateEl.min = window.ArrivoLate ? window.ArrivoLate.lagosNow().date : isoDate(new Date());
 
   // ---- Address inputs with our own suggestion list ----
   // Google's ready-made Autocomplete widget takes over the text box and, when
@@ -254,7 +255,34 @@
     if (coords.dest) { params.set("destinationLat", coords.dest.lat); params.set("destinationLng", coords.dest.lng); }
 
     if (mode === "dropoff") {
-      var at = dateEl.value && timeEl.value ? new Date(dateEl.value + "T" + timeEl.value + ":00") : null;
+      // The time typed here is Lagos time, whatever timezone the device is in.
+      var at = dateEl.value && timeEl.value ? new Date(dateEl.value + "T" + timeEl.value + ":00+01:00") : null;
+      var tooSoon = at && !isNaN(at.getTime()) && at.getTime() > Date.now() && at.getTime() - Date.now() < MIN_HOURS * 3600 * 1000;
+      if (tooSoon && window.ArrivoLate) {
+        // In the future but inside the notice period: offer to change the
+        // time or send the trip to Support, instead of a dead-end message.
+        window.ArrivoLate.open({
+          when: at,
+          summary: [
+            { label: "Trip", value: "Airport drop-off" },
+            { label: "When", value: window.ArrivoLate.formatLagos(at) },
+            { label: "From", value: p },
+            { label: "To", value: d },
+          ],
+          intake: {
+            rental_date: dateEl.value, pickup_time: timeEl.value + " (Lagos time)",
+            pickup_address: p, dropoff_address: d, rental_duration: "Airport drop-off, late request",
+          },
+          onAdjust: function () { try { timeEl.focus(); } catch (e) { /* ignore */ } },
+          onUseEarliest: function (earliest) {
+            var lp = window.ArrivoLate.lagosNow(earliest);
+            dateEl.value = lp.date;
+            timeEl.value = lp.time;
+            try { timeEl.focus(); } catch (e) { /* ignore */ }
+          },
+        });
+        return;
+      }
       if (!at || isNaN(at.getTime()) || at.getTime() - Date.now() < MIN_HOURS * 3600 * 1000) {
         showError(tr("formErrWhen", "Choose a pickup date and time at least 12 hours from now."), dateEl);
         return;

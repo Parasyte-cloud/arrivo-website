@@ -129,7 +129,8 @@
     <input type="date" id="chDate" class="field">
 
     <label class="field-label" for="chPickupTime">Pick-up time</label>
-    <input type="text" id="chPickupTime" class="field" maxlength="40" placeholder="e.g. 9:00 AM">
+    <input type="time" id="chPickupTime" class="field" step="300">
+    <p class="field-hint" style="margin:-6px 0 12px;font-size:13px;opacity:.75;">Lagos time</p>
 
     <label class="field-label" for="chPickupAddress">Pick-up address</label>
     <input type="text" id="chPickupAddress" class="field" maxlength="300" placeholder="Pick-up address">
@@ -182,6 +183,7 @@
 </main>
 
 <script src="supabase-config.js?v=1"></script>
+<script src="late-request.js?v=1"></script>
 <script>
   // Talks directly to the `intake` Supabase edge function (reusable intake
   // platform, see RA-workspace supabase/functions/intake). This form's
@@ -208,6 +210,9 @@
   document.addEventListener("DOMContentLoaded", function () {
     var errEl = document.getElementById("charterError");
     var btn = document.getElementById("charterBtn");
+    // Lagos "today": the picker refuses past dates, and the check below
+    // stops a past date and time slipping through.
+    document.getElementById("chDate").min = ArrivoLate.lagosNow().date;
 
     btn.addEventListener("click", function () {
       var fields = {
@@ -235,6 +240,18 @@
         return;
       }
 
+      var when = ArrivoLate.lagosInstant(fields.rental_date, fields.pickup_time);
+      if (!when || when.getTime() <= Date.now()) {
+        errEl.hidden = false;
+        errEl.textContent = "That date and time has already passed. Please choose a time in the future (Lagos time).";
+        return;
+      }
+      // Sooner than usual notice is fine here, this form IS the request to
+      // Support. Say so, so nobody wonders whether it will be seen.
+      var rushNote = when.getTime() - Date.now() < ArrivoLate.MIN_HOURS * 3600 * 1000;
+      if (rushNote) fields.pickup_time = fields.pickup_time + " (Lagos time, short notice)";
+      else fields.pickup_time = fields.pickup_time + " (Lagos time)";
+
       btn.disabled = true;
       btn.textContent = "Submitting…";
 
@@ -252,6 +269,12 @@
 
         document.getElementById("charterForm").hidden = true;
         document.getElementById("charterSuccess").hidden = false;
+        if (rushNote) {
+          var note = document.createElement("p");
+          note.style.marginTop = "12px";
+          note.innerHTML = 'Because this is on short notice, please also message us on <a href="https://wa.me/2348162706078" target="_blank" rel="noopener">WhatsApp</a> or call +2348162706078 so we can confirm it quickly.';
+          document.getElementById("charterSuccess").appendChild(note);
+        }
       }).catch(function () {
         btn.disabled = false;
         btn.textContent = "Submit request";
