@@ -724,3 +724,67 @@ html[data-theme="dark"] .faq-item[open] { box-shadow: 0 14px 32px rgba(0,0,0,.45
             mask-image: linear-gradient(to bottom, #000 0, #000 58%, transparent 100%);
   }
 }
+
+/* ---------- Header: dock to a screen edge as a vertical pill ---------- */
+/* header-move.js adds .is-side (and -left / -right) when the floating header is
+   dragged to a window edge. Every control becomes an icon button; its label
+   shows on hover or keyboard focus, read from data-tip. */
+@media (min-width: 860px) {
+  .site-header.is-side { overflow: visible; width: max-content; }
+  .site-header.is-side .header-inner { flex-direction: column; align-items: center; gap: 8px; padding: 10px 8px 14px; width: auto; }
+  .site-header.is-side .header-inner::before { content: ""; width: 22px; height: 4px; border-radius: 4px; background: currentColor; opacity: .3; margin-bottom: 2px; }
+  .site-header.is-side .brand .brand-wordmark { display: none; }
+  .site-header.is-side .brand { gap: 0; }
+  .site-header.is-side .main-nav,
+  .site-header.is-side .header-actions { flex-direction: column; align-items: center; gap: 8px; margin: 0; padding: 0; }
+  .site-header.is-side .mobile-nav-toggle,
+  .site-header.is-side .mobile-nav-menu { display: none; }
+
+  /* One round button per control. */
+  .site-header.is-side .main-nav > a,
+  .site-header.is-side .nav-dropdown-trigger,
+  .site-header.is-side .nav-account-link,
+  .site-header.is-side .header-actions > .btn,
+  .site-header.is-side .header-actions > .theme-toggle {
+    position: relative; display: grid; place-items: center;
+    width: 44px; height: 44px; min-width: 0; padding: 0; margin: 0;
+    border-radius: 50%; font-size: 0; line-height: 0; overflow: visible;
+  }
+  .site-header.is-side .nav-dropdown-trigger > *,
+  .site-header.is-side .nav-account-link > span { display: none; }
+  .site-header.is-side .nav-account-link svg { width: 22px; height: 22px; }
+
+  /* Icons for the text-only controls. */
+  .site-header.is-side .main-nav > a::before,
+  .site-header.is-side .nav-dropdown-trigger::before,
+  .site-header.is-side .header-actions > .btn::before {
+    content: ""; display: block; width: 21px; height: 21px; background: currentColor;
+    -webkit-mask: var(--pill-ico) center / contain no-repeat; mask: var(--pill-ico) center / contain no-repeat;
+  }
+  .site-header.is-side .main-nav > a[href$="#how"] { --pill-ico: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='9'/><path d='M15.5 8.5l-2 5-5 2 2-5z'/></svg>"); }
+  .site-header.is-side .main-nav > a[href$="#audiences"] { --pill-ico: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><circle cx='9' cy='8' r='3'/><path d='M3 20c.8-3.4 3.2-5 6-5s5.2 1.6 6 5'/><path d='M16 5.2a3 3 0 010 5.6M18 15c1.8.7 3 2.2 3.5 5'/></svg>"); }
+  .site-header.is-side .main-nav > a[href$="#safety"] { --pill-ico: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M12 3l8 3v6c0 4.5-3.4 7.8-8 9-4.6-1.2-8-4.5-8-9V6z'/><path d='M9 12l2 2 4-4'/></svg>"); }
+  .site-header.is-side .nav-dropdown-trigger { --pill-ico: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'><rect x='4' y='4' width='6.5' height='6.5' rx='1.5'/><rect x='13.5' y='4' width='6.5' height='6.5' rx='1.5'/><rect x='4' y='13.5' width='6.5' height='6.5' rx='1.5'/><rect x='13.5' y='13.5' width='6.5' height='6.5' rx='1.5'/></svg>"); }
+  .site-header.is-side .header-actions > .btn { --pill-ico: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M4 16l1.6-5.2A2 2 0 017.5 9.4h9a2 2 0 011.9 1.4L20 16'/><path d='M3 16h18v3H3z'/><circle cx='7.5' cy='19.5' r='1'/><circle cx='16.5' cy='19.5' r='1'/></svg>"); }
+
+  /* Label on hover or keyboard focus, on the side facing the page. */
+  .site-header.is-side [data-tip]::after {
+    content: attr(data-tip); display: block; position: absolute; top: 50%; transform: translateY(-50%);
+    white-space: nowrap; padding: 7px 12px; border-radius: 999px;
+    background: #12123B; color: #fff; font: 600 12.5px/1 Inter, system-ui, sans-serif; letter-spacing: 0;
+    box-shadow: 0 8px 22px rgba(18,18,59,.3);
+    opacity: 0; pointer-events: none; transition: opacity .14s ease; z-index: 5;
+  }
+  html[data-theme="dark"] .site-header.is-side [data-tip]::after { background: #F7F4EC; color: #12123B; }
+  .site-header.is-side-left [data-tip]::after { left: calc(100% + 12px); }
+  .site-header.is-side-right [data-tip]::after { right: calc(100% + 12px); }
+  .site-header.is-side [data-tip]:hover::after,
+  .site-header.is-side [data-tip]:focus-visible::after { opacity: 1; }
+  .site-header.is-side.is-dragging [data-tip]::after { opacity: 0; }
+
+  /* The Services menu opens sideways, toward the page. */
+  .site-header.is-side .nav-dropdown { position: relative; }
+  .site-header.is-side .nav-dropdown-menu { top: 0; bottom: auto; min-width: 190px; }
+  .site-header.is-side-left .nav-dropdown-menu { left: calc(100% + 12px); right: auto; }
+  .site-header.is-side-right .nav-dropdown-menu { right: calc(100% + 12px); left: auto; }
+}
