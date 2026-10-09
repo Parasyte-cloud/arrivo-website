@@ -1,12 +1,20 @@
 /* Double-click the header's empty space to unpin it, then drag it anywhere on
    the page. Double-click again to dock it back. Desktop widths only (the phone
-   layout uses the hamburger menu). The spot is remembered for the tab session. */
+   layout uses the hamburger menu). The spot is remembered for the tab session.
+
+   Pages that load this script with data-default="floating" start with the
+   compact floating header (centred at the top). Double-clicking docks it, and
+   that choice is remembered for the tab session too. The homepage does not set
+   the attribute, so it keeps the full-width bar until the visitor moves it. */
 (function () {
   "use strict";
   var header = document.querySelector(".site-header");
   if (!header) return;
 
   var KEY = "arrivo_header_pos";
+  var DOCKED_KEY = "arrivo_header_docked";
+  var tag = document.querySelector('script[src^="header-move.js"]');
+  var DEFAULT_FLOAT = !!(tag && tag.getAttribute("data-default") === "floating");
   var MIN_W = 860;
   var spacer = null;
   var drag = null;
@@ -31,12 +39,19 @@
   function save(p) {
     try { sessionStorage.setItem(KEY, JSON.stringify(p)); } catch (e) { /* ignore */ }
   }
+  function userDocked() {
+    try { return sessionStorage.getItem(DOCKED_KEY) === "1"; } catch (e) { return false; }
+  }
+  function setDocked(on) {
+    try { if (on) sessionStorage.setItem(DOCKED_KEY, "1"); else sessionStorage.removeItem(DOCKED_KEY); } catch (e) { /* ignore */ }
+  }
   function load() {
     try { return JSON.parse(sessionStorage.getItem(KEY) || "null"); } catch (e) { return null; }
   }
 
   function float(x, y) {
     if (header.classList.contains("is-floating")) return;
+    setDocked(false);
     var r = header.getBoundingClientRect();
     // Keep the page layout where it is while the header leaves the flow.
     spacer = document.createElement("div");
@@ -49,8 +64,11 @@
     var r2 = header.getBoundingClientRect();
     return place(x == null ? r.left + (r.width - r2.width) / 2 : x, y == null ? r.top : y);
   }
-  function dock() {
+  function dock(auto) {
     if (!header.classList.contains("is-floating")) return;
+    // Only a deliberate double-click counts as "keep it docked"; docking
+    // because the window got narrow must not.
+    if (DEFAULT_FLOAT && !auto) setDocked(true);
     header.classList.remove("is-floating");
     header.style.left = header.style.top = "";
     if (spacer && spacer.parentNode) spacer.parentNode.removeChild(spacer);
@@ -86,11 +104,15 @@
   header.addEventListener("pointercancel", end);
 
   window.addEventListener("resize", function () {
-    if (!header.classList.contains("is-floating")) return;
-    if (!wide()) { dock(); return; }
+    if (!header.classList.contains("is-floating")) {
+      if (DEFAULT_FLOAT && wide() && !userDocked()) float(null, 12);
+      return;
+    }
+    if (!wide()) { dock(true); return; }
     place(parseFloat(header.style.left) || 0, parseFloat(header.style.top) || 0);
   });
 
   var saved = load();
   if (saved && wide()) float(saved.x, saved.y);
+  else if (DEFAULT_FLOAT && wide() && !userDocked()) float(null, 12);
 })();
