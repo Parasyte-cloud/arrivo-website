@@ -2,3 +2,12 @@
 # search results working with a permanent redirect.
 /express.html https://express.ridearrivo.com/ 301
 /express https://express.ridearrivo.com/ 301
+
+# Internal files that sit in the repo root but are not part of the site. Cloudflare
+# Pages serves every file in the repo, and _redirects cannot answer 404, so send
+# these paths to the home page instead of serving the file. The build script still
+# reads them from disk at build time; this only affects what visitors can fetch.
+/docs /  302
+/docs/* /  302
+/scripts /  302
+/scripts/* /  302
