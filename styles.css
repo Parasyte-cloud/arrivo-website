@@ -1180,7 +1180,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
   .services-cards { grid-template-columns: repeat(2, 1fr); }
 }
 @media (min-width: 1020px) {
-  .services-cards { grid-template-columns: repeat(4, 1fr); }
+  .services-cards { grid-template-columns: repeat(3, 1fr); }
 }
 .service-card { display: flex; flex-direction: column; }
 .service-card-cta {
