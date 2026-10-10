@@ -234,8 +234,9 @@ html[data-theme="dark"] .main-nav a.nav-driver-link:hover { color: var(--amber);
 
 /* Hero: one secondary action is enough ("See how it works" is in the menu). */
 .hero-ctas .btn-ghost { display: none; }
-.hero-ctas .btn-primary { background: transparent; color: #fff; border: 1.5px solid var(--amber); box-shadow: none; }
-.hero-ctas .btn-primary:hover { background: var(--amber); color: #12123B; }
+/* Membership stays a solid, readable button in light and dark. */
+.hero .hero-ctas a.btn.btn-primary { background: var(--amber); color: #12123B !important; border: 0; }
+.hero .hero-ctas a.btn.btn-primary:hover { background: #FFB627; color: #12123B !important; }
 .hero-ctas { margin-bottom: 18px; }
 
 /* Trust points: a quiet two-by-two on phones instead of four stacked rows. */
