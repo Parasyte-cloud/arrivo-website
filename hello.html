@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  // Theme first paint: ?theme=, shared cookie, saved choice, then the device setting.
+  (function () {
+    var t = "light";
+    try {
+      var q = location.search.match(/[?&]theme=(light|dark)(?:&|$)/);
+      var m = document.cookie.match(/(?:^|; )arrivo_theme=(light|dark)/);
+      var saved = q ? q[1] : (m ? m[1] : localStorage.getItem("arrivo_theme"));
+      if (saved === "light" || saved === "dark") t = saved;
+      else if (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches) t = "dark";
+    } catch (e) {}
+    document.documentElement.setAttribute("data-theme", t);
+  })();
+</script>
+<meta name="theme-color" content="#12123B">
+<meta name="robots" content="noindex">
+<title>Thanks for scanning | RideArrivo</title>
+<link rel="canonical" href="https://ridearrivo.com/hello">
+<meta name="description" content="Tell RideArrivo how we are doing in about a minute, or take a look around.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F6F5EE; --card: #FFFFFF; --text: #12123B; --muted: #5B5B78;
+    --line: rgba(18,18,59,.12); --amber: #F5A300; --amber-ink: #12123B;
+    --navy: #12123B; --chip: #ECEAE0; --shadow: 0 10px 30px rgba(18,18,59,.10);
+  }
+  html[data-theme="dark"] {
+    --bg: #0B0B24; --card: #16163F; --text: #F4F4FA; --muted: #B4B4CE;
+    --line: rgba(255,255,255,.14); --chip: #202055; --shadow: 0 10px 30px rgba(0,0,0,.45);
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; line-height: 1.5; min-height: 100vh; }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 22px 16px 48px; }
+  .wm { height: 34px; width: auto; display: block; margin: 0 auto 26px; }
+  .wm.on-dark { display: none; }
+  html[data-theme="dark"] .wm.on-light { display: none; }
+  html[data-theme="dark"] .wm.on-dark { display: block; }
+  .eyebrow { text-align: center; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #B87800; margin: 0 0 8px; }
+  html[data-theme="dark"] .eyebrow { color: var(--amber); }
+  h1 { font-family: Poppins, Inter, sans-serif; font-size: clamp(28px, 8vw, 38px); line-height: 1.12; text-align: center; margin: 0 0 12px; letter-spacing: -.01em; }
+  .lead { text-align: center; color: var(--muted); font-size: 16px; margin: 0 auto 26px; max-width: 420px; }
+  .opt { display: block; text-decoration: none; color: inherit; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px 18px 18px 20px; margin-bottom: 12px; box-shadow: var(--shadow); transition: transform .15s ease, border-color .15s ease; }
+  .opt:hover, .opt:focus-visible { transform: translateY(-2px); border-color: var(--amber); outline: none; }
+  .opt .row { display: flex; align-items: center; gap: 14px; }
+  .opt .ico { flex: none; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--chip); }
+  .opt .ico svg { width: 22px; height: 22px; }
+  .opt h2 { font-family: Poppins, Inter, sans-serif; font-size: 18px; margin: 0 0 2px; }
+  .opt p { margin: 0; color: var(--muted); font-size: 14px; }
+  .opt .go { margin-left: auto; font-size: 20px; font-weight: 700; }
+  .opt.primary { background: var(--amber); border-color: var(--amber); color: var(--amber-ink); }
+  .opt.primary p { color: rgba(18,18,59,.78); }
+  .opt.primary .ico { background: rgba(18,18,59,.12); }
+  .opt[hidden] { display: none; }
+  .sec { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 28px 0 10px; text-align: center; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .chip { text-decoration: none; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 10px 16px; font-size: 14px; font-weight: 600; }
+  .chip:hover, .chip:focus-visible { border-color: var(--amber); outline: none; }
+  .cta { display: block; text-align: center; margin: 22px auto 0; background: var(--navy); color: #fff; text-decoration: none; font-weight: 700; padding: 15px 22px; border-radius: 14px; max-width: 360px; }
+  html[data-theme="dark"] .cta { background: var(--amber); color: var(--amber-ink); }
+  .fine { text-align: center; color: var(--muted); font-size: 12.5px; margin: 26px auto 0; max-width: 380px; }
+  .fine a { color: inherit; }
+  @media (prefers-reduced-motion: reduce) { .opt { transition: none; } }
+</style>
+</head>
+<body>
+<main class="wrap" id="main">
+  <a href="/" aria-label="RideArrivo home">
+    <img class="wm on-light" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" height="34">
+    <img class="wm on-dark" src="assets/ridearrivo-wordmark-light.png" alt="" aria-hidden="true" height="34">
+  </a>
+
+  <p class="eyebrow">Thanks for scanning</p>
+  <h1>Got a minute? Tell us how we are doing.</h1>
+  <p class="lead">Pick whatever suits you. Every answer helps us make airport pickups better.</p>
+
+  <!-- Paste the survey form link here (Google Forms, Tally, etc). While this is
+       empty the survey card stays hidden, so the page never shows a dead button. -->
+  <a class="opt primary" id="surveyCard" data-go="survey" href="#" target="_blank" rel="noopener" hidden>
+    <div class="row">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 7-7"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></span>
+      <span><h2>Take the 1-minute survey</h2><p>A few quick questions. No sign-in.</p></span>
+      <span class="go" aria-hidden="true">&rarr;</span>
+    </div>
+  </a>
+
+  <a class="opt" data-go="comment" href="contact-us.html?src=hello">
+    <div class="row">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+      <span><h2>Leave a comment</h2><p>Say it in your own words. It goes straight to our team.</p></span>
+      <span class="go" aria-hidden="true">&rarr;</span>
+    </div>
+  </a>
+
+  <a class="opt" data-go="explore" href="/?src=hello">
+    <div class="row">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2.1 6.3-6.3 2.1 2.1-6.3z"/></svg></span>
+      <span><h2>See what RideArrivo is</h2><p>Verified drivers, live tracking, a trip you can share.</p></span>
+      <span class="go" aria-hidden="true">&rarr;</span>
+    </div>
+  </a>
+
+  <p class="sec">Five ways to RideArrivo</p>
+  <div class="chips">
+    <a class="chip" href="book.html?src=hello">RideArrivo</a>
+    <a class="chip" href="https://express.ridearrivo.com/?src=hello">ArrivoExpress</a>
+    <a class="chip" href="https://move.ridearrivo.com/?src=hello">ArrivoRemovals</a>
+    <a class="chip" href="charter-booking.html?src=hello">ArrivoChauffeur</a>
+    <a class="chip" href="https://boat.ridearrivo.com/?src=hello">ArrivoBoat</a>
+    <a class="chip" href="https://air.ridearrivo.com/?src=hello">ArrivoAir</a>
+  </div>
+
+  <a class="cta" data-go="book" href="book.html?src=hello">Book a ride</a>
+
+  <p class="fine">We only use what you send to improve RideArrivo. See our <a href="privacy.html">privacy policy</a>.</p>
+</main>
+<script>
+  // Survey link: paste it between the quotes. Empty keeps the survey card hidden.
+  var SURVEY_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdG_HeHmoG2wVnOOtKMQf2EmijXkw7mSYQEs0iko78RmnDunw/viewform";
+  (function () {
+    var card = document.getElementById("surveyCard");
+    if (SURVEY_URL) { card.href = SURVEY_URL; card.hidden = false; }
+  })();
+</script>
+</body>
+</html>
