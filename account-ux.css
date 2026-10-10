@@ -1,7 +1,7 @@
 /* Account page layout: compact header, quick actions up top, wallet and
    membership side by side, plans that scroll sideways on phones. Only layout
    and spacing change here; every id the page script uses is untouched. */
-.account-wrap { max-width: 980px; padding-top: 28px; }
+main.account-wrap { max-width: 980px; padding-top: 28px; }
 
 .acct-hero {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
@@ -37,16 +37,16 @@ html[data-theme] .acct-safety .panic-btn {
 #walletHistory { max-height: 220px; overflow-y: auto; }
 
 /* Plans: a calm grid on desktop, a swipeable row on phones. */
-.mp-grid { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-bottom: 28px; }
-.mp-card { display: flex; flex-direction: column; padding: 16px; }
-.mp-list { flex: 1 1 auto; font-size: 12.5px; }
-.mp-cta { margin-top: auto; }
+main .mp-grid { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-bottom: 28px; }
+main .mp-card { display: flex; flex-direction: column; padding: 16px; }
+main .mp-list { flex: 1 1 auto; font-size: 12.5px; }
+main .mp-cta { margin-top: auto; }
 @media (max-width: 759px) {
-  .mp-grid {
+  main .mp-grid {
     display: flex; overflow-x: auto; gap: 12px; padding: 2px 2px 14px;
     scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; margin-bottom: 18px;
   }
-  .mp-card { flex: 0 0 78%; scroll-snap-align: start; }
+  main .mp-card { flex: 0 0 78%; scroll-snap-align: start; }
   .acct-hero { padding: 16px; }
   .acct-safety { flex-basis: 100%; }
   .acct-quick .tile-grid { display: grid; grid-template-columns: 1fr 1fr; }
@@ -54,7 +54,7 @@ html[data-theme] .acct-safety .panic-btn {
 }
 
 /* Headings for the lower sections breathe a little less. */
-.account-wrap > h2 { margin-top: 6px; }
+main.account-wrap > h2 { margin-top: 6px; }
 @media (min-width: 760px) {
   .account-wrap > .booking-card { max-width: none; }
 }
