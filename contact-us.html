@@ -128,8 +128,8 @@
     <label class="field-label" for="cEmail">Email</label>
     <input type="email" id="cEmail" class="field" maxlength="200" autocomplete="email" placeholder="you@example.com">
 
-    <label class="field-label" for="cPhone">Contact number</label>
-    <input type="tel" id="cPhone" class="field" maxlength="40" autocomplete="tel" placeholder="e.g. 0801 234 5678">
+    <label class="field-label" for="cPhoneContainer">Contact number</label>
+    <div id="cPhoneContainer"></div>
 
     <label class="field-label" for="cMessage">Message</label>
     <textarea id="cMessage" class="field" maxlength="3000" placeholder="How can we help?"></textarea>
@@ -149,6 +149,7 @@
 </main>
 
 <script src="supabase-config.js?v=1"></script>
+<script src="phone-input.js?v=34"></script>
 <script>
   // Talks directly to the `intake` Supabase edge function (reusable intake
   // platform, see RA-workspace supabase/functions/intake). This form's
@@ -172,13 +173,13 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
+    var phoneField = arrivoBuildPhoneInput(document.getElementById("cPhoneContainer"), { placeholder: "Phone or WhatsApp number" });
     var errEl = document.getElementById("contactError");
     var btn = document.getElementById("contactBtn");
 
     btn.addEventListener("click", function () {
       var fullName = document.getElementById("cName").value.trim();
       var email = document.getElementById("cEmail").value.trim();
-      var phone = document.getElementById("cPhone").value.trim();
       var message = document.getElementById("cMessage").value.trim();
       var website = document.getElementById("cWebsite").value;
       // Honeypot: people never see this field, bots fill it. Stop here without
@@ -187,9 +188,17 @@
 
       errEl.hidden = true;
 
-      if (!fullName || !email || !phone || !message) {
+      var phoneResult = phoneField.getValue();
+      if (!phoneResult.valid) {
         errEl.hidden = false;
-        errEl.textContent = "Please fill in your name, email, contact number and message.";
+        errEl.textContent = phoneResult.message;
+        return;
+      }
+      var phone = phoneResult.full;
+
+      if (!fullName || !email || !message) {
+        errEl.hidden = false;
+        errEl.textContent = "Please fill in your name, email and message.";
         return;
       }
 
