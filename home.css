@@ -827,3 +827,53 @@ html[data-theme="dark"] .faq-item[open] { box-shadow: 0 14px 32px rgba(0,0,0,.45
 .inline-wm.wm-on-light { display: inline-block; }
 html[data-theme="dark"] .inline-wm.wm-on-light { display: none; }
 html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
+
+/* ---------- Hero service chips: icon first, name on hover ---------- */
+/* The five service links were five full-width pills competing with the
+   headline and the booking form. Collapsed to icons they read as one quiet
+   row, and the name appears on hover or keyboard focus.
+   Scoped to (hover: hover) and (pointer: fine) on purpose: a touch screen has
+   no hover, so on phones the names stay visible exactly as before. Most of our
+   traffic is a phone, so this is a desktop refinement, not the default.
+   The primary RideArrivo chip keeps its label at every size. Hiding the main
+   call to action behind a hover would be the wrong kind of tidy. */
+@media (hover: hover) and (pointer: fine) {
+  .hero-chips a:not(.chip-primary) {
+    width: 48px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    overflow: hidden;
+    transition: width .26s cubic-bezier(.4, 0, .2, 1),
+                padding .26s cubic-bezier(.4, 0, .2, 1),
+                background-color .15s ease, border-color .15s ease, color .15s ease;
+  }
+  /* The label stays in the document, just measured to nothing, so screen
+     readers still announce the link name. display:none would remove it. */
+  .hero-chips a:not(.chip-primary) span {
+    max-width: 0;
+    opacity: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: max-width .26s cubic-bezier(.4, 0, .2, 1),
+                opacity .16s ease,
+                margin-left .26s cubic-bezier(.4, 0, .2, 1);
+  }
+  .hero-chips a:not(.chip-primary):hover,
+  .hero-chips a:not(.chip-primary):focus-visible {
+    width: auto;
+    padding: 0 20px;
+  }
+  .hero-chips a:not(.chip-primary):hover span,
+  .hero-chips a:not(.chip-primary):focus-visible span,
+  .hero-chips a:not(.chip-primary):active span {
+    max-width: 220px;
+    opacity: 1;
+    margin-left: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-chips a,
+  .hero-chips a span { transition: none; }
+}
