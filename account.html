@@ -757,7 +757,9 @@
         : tx.type === "ride_charge" ? t("account.txRideCharge")
         : tx.type === "membership_charge" ? t("account.txMembership")
         : tx.type === "membership_cashback" ? t("account.txMembershipCashback")
-        : escapeHtml(tx.description || tx.type);
+        : tx.description || tx.type;
+      // label is escaped exactly once, here. It used to be escaped when chosen
+      // and again at output, so "Top up & fees" showed as "Top up &amp; fees".
       return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--card-border);font-size:12.5px;">' +
         '<div><div>' + escapeHtml(label) + '</div><div style="color:var(--text-muted);font-size:11px;">' + formatWalletDate(tx.created_at) + '</div></div>' +
         '<div style="color:' + (isCredit ? 'var(--teal, #0E7C7B)' : 'var(--coral, #E1523D)') + ';font-weight:700;">' + (isCredit ? "+" : "") + "NGN " + amt.toLocaleString() + '</div>' +

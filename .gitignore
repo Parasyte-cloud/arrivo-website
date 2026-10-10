@@ -5,3 +5,6 @@ dist/
 
 # local archives of the site are never committed
 *.zip
+*.tgz
+*.bundle
+*.patch
