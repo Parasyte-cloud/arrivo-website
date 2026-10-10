@@ -1,0 +1,60 @@
+/* Account page layout: compact header, quick actions up top, wallet and
+   membership side by side, plans that scroll sideways on phones. Only layout
+   and spacing change here; every id the page script uses is untouched. */
+.account-wrap { max-width: 980px; padding-top: 28px; }
+
+.acct-hero {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 16px 24px; margin-bottom: 14px; padding: 18px 20px;
+  background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 18px;
+}
+.acct-hero .avatar-row { margin: 0; flex: 1 1 280px; min-width: 0; }
+.acct-hero .avatar-circle { width: 64px; height: 64px; }
+.acct-hero .account-name { font-size: 18px; overflow-wrap: anywhere; }
+.acct-hero .account-email { overflow-wrap: anywhere; }
+.acct-hero #avatarError { flex-basis: 100%; margin: 0; }
+.acct-safety { flex: 0 1 280px; min-width: 220px; }
+html[data-theme] .acct-safety .panic-btn {
+  width: 100%; min-height: 48px; padding: 10px 16px; font-size: 14.5px; border-radius: 12px; margin: 0;
+}
+.acct-safety .panic-countdown-row, .acct-safety .panic-status-text,
+.acct-safety .panic-active-banner, .acct-safety .listening-btn { margin-top: 10px; margin-bottom: 0; font-size: 12.5px; }
+
+.acct-quick .tile-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
+.acct-quick .tile {
+  flex: 1 1 auto; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 16px; border-radius: 999px; font-size: 13px; text-align: center; white-space: nowrap;
+}
+
+.acct-cols { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 18px; }
+@media (min-width: 760px) { .acct-cols { grid-template-columns: 1fr 1fr; align-items: stretch; } }
+.acct-cols > section { display: flex; flex-direction: column; min-width: 0; }
+.acct-cols h2 { margin: 0 0 8px !important; }
+.acct-cols .booking-card { flex: 1 1 auto; margin: 0 !important; padding: 18px 20px; }
+.acct-wallet .booking-card > div:first-child { margin-bottom: 10px !important; }
+.acct-wallet #walletBalance { font-size: 26px !important; }
+.acct-wallet .booking-card > p { margin: 0 0 8px !important; }
+#walletHistory { max-height: 220px; overflow-y: auto; }
+
+/* Plans: a calm grid on desktop, a swipeable row on phones. */
+.mp-grid { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-bottom: 28px; }
+.mp-card { display: flex; flex-direction: column; padding: 16px; }
+.mp-list { flex: 1 1 auto; font-size: 12.5px; }
+.mp-cta { margin-top: auto; }
+@media (max-width: 759px) {
+  .mp-grid {
+    display: flex; overflow-x: auto; gap: 12px; padding: 2px 2px 14px;
+    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; margin-bottom: 18px;
+  }
+  .mp-card { flex: 0 0 78%; scroll-snap-align: start; }
+  .acct-hero { padding: 16px; }
+  .acct-safety { flex-basis: 100%; }
+  .acct-quick .tile-grid { display: grid; grid-template-columns: 1fr 1fr; }
+  .acct-quick .tile { white-space: normal; }
+}
+
+/* Headings for the lower sections breathe a little less. */
+.account-wrap > h2 { margin-top: 6px; }
+@media (min-width: 760px) {
+  .account-wrap > .booking-card { max-width: none; }
+}
