@@ -1,8 +1,12 @@
 {
+  "id": "/index.html",
   "name": "RideArrivo",
   "short_name": "RideArrivo",
   "description": "Lagos airport pickups and ride-hailing, done right.",
   "start_url": "/index.html",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#F7F4EC",

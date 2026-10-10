@@ -63,6 +63,11 @@
     if (!d) return;
     var signedIn = false;
     try { signedIn = !!localStorage.getItem("arrivo_rider_token"); } catch (e) {}
+    // Subdomain pages (ArrivoExpress) sign in with a cookie this script cannot read.
+    // They point the link at the account page once the server confirms the session,
+    // so trust that instead of overwriting the label with "Register or Login".
+    var link = document.getElementById("accountNavLink");
+    if (!signedIn && link && /(^|\/)account\.html(\?|$)/.test(link.getAttribute("href") || "")) signedIn = true;
     var label = get(d, signedIn ? "ui.myAccount" : "ui.register");
     if (label) ["accountNavLabel", "accountNavLabelMobile"].forEach(function (id) {
       var el = document.getElementById(id);

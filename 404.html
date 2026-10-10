@@ -28,12 +28,15 @@
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=33">
-<link rel="stylesheet" href="home.css?v=15">
+<link rel="stylesheet" href="styles.css?v=35">
+<link rel="stylesheet" href="home.css?v=23">
 <link rel="stylesheet" href="auth.css?v=3">
 <link rel="stylesheet" href="pages.css?v=2">
 <style>
-  .notfound-wrap { padding: 100px 0; text-align: center; }
+  /* Keep the side padding (the shorthand used to zero it, so text touched the screen
+     edges on phones) and let the footer sit at the bottom of short pages. */
+  body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+  .notfound-wrap { flex: 1 0 auto; width: 100%; box-sizing: border-box; padding: 100px 20px; text-align: center; }
   .notfound-pin { width: 64px; margin-bottom: 24px; opacity: 0.9; }
   .notfound-wrap h1 { font-size: 22px; margin-bottom: 10px; }
   .notfound-wrap p { color: var(--text-muted); max-width: 420px; margin: 0 auto 28px; }
@@ -61,6 +64,7 @@
         <ul class="nav-dropdown-menu" id="servicesMenu" role="menu" hidden>
           <li><a href="express.html" role="menuitem">ArrivoExpress</a></li>
           <li><a href="https://move.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoRemovals</a></li>
+          <li><a href="charter-booking.html" role="menuitem" data-i18n="nav.chauffeur">Chauffeur</a></li>
           <li><a href="https://boat.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoBoat</a></li>
           <li><a href="https://air.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoAir</a></li>
           <li><a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" role="menuitem" data-i18n="nav.membership">Membership</a></li>
@@ -78,6 +82,7 @@
       <span class="mobile-nav-menu-label" data-i18n="ui.services">Services</span>
       <a href="express.html">ArrivoExpress</a>
       <a href="https://move.ridearrivo.com" target="_blank" rel="noopener">ArrivoRemovals</a>
+      <a href="charter-booking.html" data-i18n="nav.chauffeur">Chauffeur</a>
       <a href="https://boat.ridearrivo.com" target="_blank" rel="noopener">ArrivoBoat</a>
       <a href="https://air.ridearrivo.com" target="_blank" rel="noopener">ArrivoAir</a>
       <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" data-i18n="nav.membership">Membership</a>
@@ -121,9 +126,10 @@
   </div>
 </footer>
 
-<script src="i18n-apply.js?v=1" defer></script>
+<script src="i18n-apply.js?v=2" defer></script>
 
 <script src="theme.js?v=3" defer></script>
 <script src="auth-header.js?v=2" defer></script>
+<script src="header-move.js?v=4" data-default="floating" defer></script>
 </body>
 </html>

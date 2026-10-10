@@ -27,6 +27,10 @@
   var timeEl = document.getElementById("hfTime");
   var errEl = document.getElementById("hfError");
   var submitBtn = form.querySelector(".hf-submit");
+  var destLabel = document.getElementById("hfDestLabel");
+  var destField = document.getElementById("hfDestField");
+  var durationBlock = document.getElementById("hfDurationBlock");
+  var durationEl = document.getElementById("hfDuration");
   var mode = "one_way";
   var coords = { pickup: null, dest: null };
 
@@ -58,11 +62,27 @@
       t.classList.toggle("is-active", on);
       t.setAttribute("aria-pressed", on ? "true" : "false");
     });
-    when.hidden = next !== "dropoff";
-    if (next === "dropoff" && !dateEl.value) {
-      var d = new Date();
-      d.setDate(d.getDate() + 2);
-      dateEl.value = isoDate(d);
+    when.hidden = next !== "dropoff" && next !== "chauffeur";
+    // Chauffeur hire has a pickup, a start and a length, but no destination.
+    var chauffeur = next === "chauffeur";
+    if (destLabel) destLabel.hidden = chauffeur;
+    if (destField) destField.hidden = chauffeur;
+    if (durationBlock) durationBlock.hidden = !chauffeur;
+    var noteEl = document.getElementById("hfNote");
+    if (noteEl) {
+      noteEl.textContent = chauffeur
+        ? tr("formNoteChauffeur", "We confirm the car and driver with you. Sending a request is free, no payment now.")
+        : tr("formNote", "Transparent pricing. No surprises at checkout.");
+    }
+    if (submitBtn) {
+      if (chauffeur) submitBtn.textContent = tr("formSubmitChauffeur", "Request a chauffeur \u2192");
+      else submitBtn.textContent = tr("formSubmit", "See vehicles and price \u2192");
+    }
+    if ((next === "dropoff" || chauffeur) && !dateEl.value) {
+      // Two days ahead, counted on the Lagos calendar.
+      dateEl.value = window.ArrivoLate
+        ? window.ArrivoLate.lagosNow(new Date(Date.now() + 2 * 86400000)).date
+        : isoDate(new Date(Date.now() + 2 * 86400000));
       timeEl.value = "09:00";
     }
     clearError();
@@ -70,7 +90,7 @@
   tabs.forEach(function (t) {
     t.addEventListener("click", function () { setMode(t.getAttribute("data-mode")); });
   });
-  dateEl.min = isoDate(new Date());
+  dateEl.min = window.ArrivoLate ? window.ArrivoLate.lagosNow().date : isoDate(new Date());
 
   // ---- Address inputs with our own suggestion list ----
   // Google's ready-made Autocomplete widget takes over the text box and, when
@@ -243,7 +263,26 @@
     var p = pickup.value.trim();
     var d = dest.value.trim();
     if (!p) { showError(tr("formErrPlaces", "Enter a pickup and a destination to continue."), pickup); return; }
-    if (!d) { showError(tr("formErrPlaces", "Enter a pickup and a destination to continue."), dest); return; }
+    if (!d && mode !== "chauffeur") { showError(tr("formErrPlaces", "Enter a pickup and a destination to continue."), dest); return; }
+
+    if (mode === "chauffeur") {
+      // Chauffeur hire is arranged with Support, so this hands the pickup,
+      // start and length to the request form instead of the priced booking.
+      var start = dateEl.value && timeEl.value ? new Date(dateEl.value + "T" + timeEl.value + ":00+01:00") : null;
+      if (!start || isNaN(start.getTime()) || start.getTime() <= Date.now()) {
+        showError(tr("formErrWhen", "Choose a pickup date and time at least 12 hours from now."), dateEl);
+        return;
+      }
+      var cp = new URLSearchParams();
+      cp.set("pickup", p);
+      cp.set("date", dateEl.value);
+      cp.set("time", timeEl.value);
+      cp.set("duration", durationEl ? durationEl.value : "Full day");
+      submitting = true;
+      if (submitBtn) submitBtn.disabled = true;
+      window.location.href = "charter-booking.html?" + cp.toString();
+      return;
+    }
 
     var params = new URLSearchParams();
     params.set("preset", "quick");
@@ -254,7 +293,34 @@
     if (coords.dest) { params.set("destinationLat", coords.dest.lat); params.set("destinationLng", coords.dest.lng); }
 
     if (mode === "dropoff") {
-      var at = dateEl.value && timeEl.value ? new Date(dateEl.value + "T" + timeEl.value + ":00") : null;
+      // The time typed here is Lagos time, whatever timezone the device is in.
+      var at = dateEl.value && timeEl.value ? new Date(dateEl.value + "T" + timeEl.value + ":00+01:00") : null;
+      var tooSoon = at && !isNaN(at.getTime()) && at.getTime() > Date.now() && at.getTime() - Date.now() < MIN_HOURS * 3600 * 1000;
+      if (tooSoon && window.ArrivoLate) {
+        // In the future but inside the notice period: offer to change the
+        // time or send the trip to Support, instead of a dead-end message.
+        window.ArrivoLate.open({
+          when: at,
+          summary: [
+            { label: "Trip", value: "Airport drop-off" },
+            { label: "When", value: window.ArrivoLate.formatLagos(at) },
+            { label: "From", value: p },
+            { label: "To", value: d },
+          ],
+          intake: {
+            rental_date: dateEl.value, pickup_time: timeEl.value + " (Lagos time)",
+            pickup_address: p, dropoff_address: d, rental_duration: "Airport drop-off, late request",
+          },
+          onAdjust: function () { try { timeEl.focus(); } catch (e) { /* ignore */ } },
+          onUseEarliest: function (earliest) {
+            var lp = window.ArrivoLate.lagosNow(earliest);
+            dateEl.value = lp.date;
+            timeEl.value = lp.time;
+            try { timeEl.focus(); } catch (e) { /* ignore */ }
+          },
+        });
+        return;
+      }
       if (!at || isNaN(at.getTime()) || at.getTime() - Date.now() < MIN_HOURS * 3600 * 1000) {
         showError(tr("formErrWhen", "Choose a pickup date and time at least 12 hours from now."), dateEl);
         return;

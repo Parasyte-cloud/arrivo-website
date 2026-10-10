@@ -736,7 +736,7 @@
       var secondsLeft = 3;
       btn.hidden = true;
       countdownRow.hidden = false;
-      countdownText.textContent = "Sending SOS in " + secondsLeft + "...";
+      countdownText.textContent = "Sending emergency alert in " + secondsLeft + "...";
 
       countdownTimer = setInterval(function () {
         secondsLeft--;
@@ -744,7 +744,7 @@
           clearInterval(countdownTimer);
           triggerAlert();
         } else {
-          countdownText.textContent = "Sending SOS in " + secondsLeft + "...";
+          countdownText.textContent = "Sending emergency alert in " + secondsLeft + "...";
         }
       }, 1000);
     });
@@ -761,7 +761,7 @@
           ? "https://maps.google.com/?q=" + position.coords.latitude + "," + position.coords.longitude
           : null;
 
-        activateListeningDevice(true); // bundled: one trigger, full response
+        activateListeningDevice(); // bundled: one trigger, full response
 
         var message = "SOS. I need help." + (mapsLink ? " My location: " + mapsLink : " Location unavailable.");
         var waUrl = "https://wa.me/" + ARRIVO_SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(message);
@@ -814,40 +814,17 @@
       }
     }
 
-    function activateListeningDevice(viaPanic) {
+    // The Emergency Button is the only way to trigger this. Pressing it alerts
+    // the operations team (POST /api/rides/:id/panic records the alert and the
+    // listening-device flag in one write); this just reveals the notice. There
+    // is no separate manual toggle and no microphone permission request here.
+    function activateListeningDevice() {
       if (listeningActive) return;
       listeningActive = true;
       if (listeningBtn) {
-        listeningBtn.textContent = "🎙️ Listening device: on";
+        listeningBtn.hidden = false;
         listeningBtn.classList.add("is-active");
       }
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ audio: true }).catch(function () {});
-      }
-      // Record it against the driver's current ride, the same endpoint the
-      // rider's account page uses. This used to POST to /api/listening-device,
-      // which has never existed: the button said "on" while the backend and
-      // the ops dashboard never heard about it. A panic already records the
-      // listening device server-side in the same write (POST /:id/panic), so
-      // this call only matters for the manual button.
-      var activeRideId = state.activeRide && state.activeRide.id;
-      if (!activeRideId) {
-        if (statusText) { statusText.hidden = false; } if (statusText) statusText.textContent = "No active trip, so this couldn't be logged with RideArrivo. If you're in danger, call 112 or message support on WhatsApp.";
-        return;
-      }
-      if (viaPanic) return;
-      fetch(apiBaseUrl + "/api/rides/" + activeRideId + "/listening-device", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + localStorage.getItem(tokenKey) },
-        body: "{}",
-      }).then(function (res) {
-        if (!res.ok) throw new Error("listening-device " + res.status);
-      }).catch(function () {
-        if (statusText) { statusText.hidden = false; } if (statusText) statusText.textContent = "Couldn't reach RideArrivo to log the listening device. Message support on WhatsApp if you need help.";
-      });
-    }
-    if (listeningBtn) {
-      listeningBtn.addEventListener("click", function () { activateListeningDevice(false); });
     }
   }
 

@@ -29,9 +29,9 @@
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=33">
+<link rel="stylesheet" href="styles.css?v=35">
 <link rel="stylesheet" href="booking.css?v=32">
-<link rel="stylesheet" href="home.css?v=15">
+<link rel="stylesheet" href="home.css?v=23">
 <link rel="stylesheet" href="auth.css?v=3">
 <link rel="stylesheet" href="pages.css?v=2">
 <style>
@@ -72,6 +72,7 @@
         <ul class="nav-dropdown-menu" id="servicesMenu" role="menu" hidden>
           <li><a href="express.html" role="menuitem">ArrivoExpress</a></li>
           <li><a href="https://move.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoRemovals</a></li>
+          <li><a href="charter-booking.html" role="menuitem" data-i18n="nav.chauffeur">Chauffeur</a></li>
           <li><a href="https://boat.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoBoat</a></li>
           <li><a href="https://air.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoAir</a></li>
           <li><a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" role="menuitem" data-i18n="nav.membership">Membership</a></li>
@@ -89,6 +90,7 @@
       <span class="mobile-nav-menu-label" data-i18n="ui.services">Services</span>
       <a href="express.html">ArrivoExpress</a>
       <a href="https://move.ridearrivo.com" target="_blank" rel="noopener">ArrivoRemovals</a>
+      <a href="charter-booking.html" data-i18n="nav.chauffeur">Chauffeur</a>
       <a href="https://boat.ridearrivo.com" target="_blank" rel="noopener">ArrivoBoat</a>
       <a href="https://air.ridearrivo.com" target="_blank" rel="noopener">ArrivoAir</a>
       <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" data-i18n="nav.membership">Membership</a>
@@ -127,20 +129,21 @@
     <input type="date" id="chDate" class="field">
 
     <label class="field-label" for="chPickupTime">Pick-up time</label>
-    <input type="text" id="chPickupTime" class="field" maxlength="40" placeholder="e.g. 9:00 AM">
+    <input type="time" id="chPickupTime" class="field" step="300">
+    <p class="field-hint" style="margin:-6px 0 12px;font-size:13px;opacity:.75;">Lagos time</p>
 
     <label class="field-label" for="chPickupAddress">Pick-up address</label>
     <input type="text" id="chPickupAddress" class="field" maxlength="300" placeholder="Pick-up address">
 
-    <label class="field-label" for="chArea">Area of use</label>
+    <label class="field-label" for="chArea">Area of use (optional)</label>
     <select id="chArea" class="field">
-      <option value="" disabled selected>Choose an area</option>
+      <option value="" disabled>Choose an area</option>
       <option value="Ajah">Ajah</option>
       <option value="Lekki-Epe">Lekki-Epe</option>
       <option value="Festac">Festac</option>
       <option value="Makoko">Makoko</option>
       <option value="Interstate">Interstate</option>
-      <option value="Other">Other</option>
+      <option value="Other" selected>Other / not sure yet</option>
     </select>
 
     <label class="field-label" for="chDropoffAddress">Drop-off address</label>
@@ -149,14 +152,14 @@
     <label class="field-label" for="chDuration">Rental duration</label>
     <input type="text" id="chDuration" class="field" maxlength="80" placeholder="e.g. 4 hours, Full day">
 
-    <label class="field-label" for="chCarPreference">Car preference</label>
+    <label class="field-label" for="chCarPreference">Car preference (optional)</label>
     <select id="chCarPreference" class="field">
-      <option value="" disabled selected>Choose a car type</option>
+      <option value="" disabled>Choose a car type</option>
       <option value="Standard Sedan">Standard Sedan</option>
       <option value="SUV">SUV</option>
       <option value="Luxury">Luxury</option>
       <option value="Van / Bus">Van / Bus</option>
-      <option value="No preference">No preference</option>
+      <option value="No preference" selected>No preference</option>
     </select>
 
     <label class="field-label" for="chName">Your name</label>
@@ -180,6 +183,7 @@
 </main>
 
 <script src="supabase-config.js?v=1"></script>
+<script src="late-request.js?v=1"></script>
 <script>
   // Talks directly to the `intake` Supabase edge function (reusable intake
   // platform, see RA-workspace supabase/functions/intake). This form's
@@ -206,6 +210,18 @@
   document.addEventListener("DOMContentLoaded", function () {
     var errEl = document.getElementById("charterError");
     var btn = document.getElementById("charterBtn");
+    // Lagos "today": the picker refuses past dates, and the check below
+    // stops a past date and time slipping through.
+    document.getElementById("chDate").min = ArrivoLate.lagosNow().date;
+    // Arriving from the homepage Chauffeur tab: carry over what was entered.
+    try {
+      var q = new URLSearchParams(window.location.search);
+      var fill = function (id, key, max) { var v = (q.get(key) || "").slice(0, max); if (v) document.getElementById(id).value = v; };
+      fill("chPickupAddress", "pickup", 300);
+      fill("chDate", "date", 10);
+      fill("chPickupTime", "time", 5);
+      fill("chDuration", "duration", 80);
+    } catch (e) { /* no prefill */ }
 
     btn.addEventListener("click", function () {
       var fields = {
@@ -233,6 +249,18 @@
         return;
       }
 
+      var when = ArrivoLate.lagosInstant(fields.rental_date, fields.pickup_time);
+      if (!when || when.getTime() <= Date.now()) {
+        errEl.hidden = false;
+        errEl.textContent = "That date and time has already passed. Please choose a time in the future (Lagos time).";
+        return;
+      }
+      // Sooner than usual notice is fine here, this form IS the request to
+      // Support. Say so, so nobody wonders whether it will be seen.
+      var rushNote = when.getTime() - Date.now() < ArrivoLate.MIN_HOURS * 3600 * 1000;
+      if (rushNote) fields.pickup_time = fields.pickup_time + " (Lagos time, short notice)";
+      else fields.pickup_time = fields.pickup_time + " (Lagos time)";
+
       btn.disabled = true;
       btn.textContent = "Submitting…";
 
@@ -250,6 +278,12 @@
 
         document.getElementById("charterForm").hidden = true;
         document.getElementById("charterSuccess").hidden = false;
+        if (rushNote) {
+          var note = document.createElement("p");
+          note.style.marginTop = "12px";
+          note.innerHTML = 'Because this is on short notice, please also message us on <a href="https://wa.me/2348162706078" target="_blank" rel="noopener">WhatsApp</a> or call +2348162706078 so we can confirm it quickly.';
+          document.getElementById("charterSuccess").appendChild(note);
+        }
       }).catch(function () {
         btn.disabled = false;
         btn.textContent = "Submit request";
@@ -260,8 +294,9 @@
   });
 </script>
 <script src="glass-effects.js?v=32"></script>
-<script src="i18n-apply.js?v=1" defer></script>
+<script src="i18n-apply.js?v=2" defer></script>
 <script src="theme.js?v=3" defer></script>
 <script src="auth-header.js?v=2" defer></script>
+<script src="header-move.js?v=4" data-default="floating" defer></script>
 </body>
 </html>

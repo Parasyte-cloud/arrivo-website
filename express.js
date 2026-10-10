@@ -1252,7 +1252,9 @@
           return null;
         }
 
-        setAccountNav(true);
+        // Only a real success proves a session. A network failure or a server error
+        // is not a sign-in, so the header keeps saying Register or Login.
+        if (statusResult.ok) setAccountNav(true);
 
         if (!statusResult.ok) {
           document.getElementById("loadErrorText").textContent = statusResult.data.error || t("arrivoExpress.loadError");

@@ -430,8 +430,9 @@
     // here instead, so the date picker itself refuses a past date (immediate
     // feedback) rather than only learning it's invalid after hitting Continue.
     if (dateInput) {
-      var todayStr = new Date().toISOString().slice(0, 10);
-      dateInput.min = todayStr;
+      // Lagos "today", not the UTC date (wrong for the first hour after
+      // midnight in Lagos) and not the device's date (wrong abroad).
+      dateInput.min = window.ArrivoLate ? window.ArrivoLate.lagosNow().date : new Date().toISOString().slice(0, 10);
     }
     var bookingChips = Array.prototype.slice.call(document.querySelectorAll("#bookingTypeOptions .booking-type-chip"));
     var fullDayCountSection = document.getElementById("fullDayCountSection");
@@ -576,8 +577,14 @@
 
       if (state.bookingType === "dropoff") {
         var dateVal = dateInput.value;
-        var timeVal = timeInput.value || "09:00";
-        var scheduled = dateVal ? new Date(dateVal + "T" + timeVal + ":00") : null;
+        // No silent default time: the rider has to choose one, otherwise a
+        // booking could be made for 09:00 that they never picked.
+        var timeVal = timeInput.value;
+        // The rider types a Lagos wall-clock time. Build the real instant
+        // explicitly so a device in another timezone sends the right one.
+        var scheduled = dateVal && timeVal
+          ? (window.ArrivoLate ? window.ArrivoLate.lagosInstant(dateVal, timeVal) : new Date(dateVal + "T" + timeVal + ":00+01:00"))
+          : null;
         if (scheduledErrorBox.dataset.defaultText == null) scheduledErrorBox.dataset.defaultText = scheduledErrorBox.textContent;
         scheduledErrorBox.textContent = scheduledErrorBox.dataset.defaultText;
         if (!scheduled || isNaN(scheduled.getTime()) || scheduled.getTime() <= Date.now()) {
@@ -586,11 +593,11 @@
         }
         // Mirrors arrivo-backend/services/bookingWindow.js ON_THE_GO_ONLY_HOURS.
         // Caught here so the rider fixes the time now, not after filling in
-        // the rest of the form.
+        // the rest of the form. Instead of a dead-end error, open the
+        // dialog: change the time, or send what they filled in to Support.
         if (scheduled.getTime() - Date.now() < MIN_STANDARD_BOOKING_HOURS * 60 * 60 * 1000) {
-          scheduledErrorBox.hidden = false;
-          scheduledErrorBox.textContent = "Drop-offs need to be booked at least " + MIN_STANDARD_BOOKING_HOURS +
-            " hours ahead. Please pick a later time, or message us on WhatsApp at +2348162706078 for a pickup sooner than that.";
+          scheduledErrorBox.hidden = true;
+          openLateRequest(scheduled, null);
           return false;
         }
         scheduledErrorBox.hidden = true;
@@ -1820,6 +1827,60 @@
     });
   }
 
+  // Opens the late-booking dialog with everything the rider has filled in so
+  // far. The form itself is left exactly as it is.
+  function openLateRequest(when, reference) {
+    if (!window.ArrivoLate) return false;
+    var pickupEl = document.getElementById("fPickup");
+    var dropEl = document.getElementById("fDropoff");
+    var pickup = (state.pickup || (pickupEl && pickupEl.value) || "").trim();
+    var drop = (state.stops && state.stops.length ? state.stops[state.stops.length - 1] : (dropEl && dropEl.value) || "").trim();
+    var vehicle = state.vehicle ? state.vehicle.charAt(0).toUpperCase() + state.vehicle.slice(1) : "";
+    var typeLabels = { one_way: "Airport pickup", dropoff: "Airport drop-off", full_day: "Chauffeur, full day", full_week: "Chauffeur, full week", full_month: "Chauffeur, full month" };
+    var lp = window.ArrivoLate.lagosNow(when);
+    var carMap = { sedan: "Standard Sedan", suv: "SUV", truck: "Van / Bus" };
+    window.ArrivoLate.open({
+      when: when,
+      reference: reference || null,
+      name: state.name, phone: state.phone || state.whatsapp,
+      summary: [
+        { label: "Trip", value: typeLabels[state.bookingType] || "" },
+        { label: "When", value: window.ArrivoLate.formatLagos(when) },
+        { label: "From", value: pickup },
+        { label: "To", value: drop },
+        { label: "Car", value: vehicle },
+      ],
+      intake: {
+        rental_date: lp.date, pickup_time: lp.time + " (Lagos time)",
+        pickup_address: pickup, dropoff_address: drop,
+        car_preference: carMap[state.vehicle] || "No preference",
+        rental_duration: (typeLabels[state.bookingType] || "Ride") + ", late request",
+      },
+      onAdjust: function () {
+        var t = document.getElementById("fScheduledTime") || document.getElementById("fScheduledDate");
+        if (t && t.focus) t.focus();
+      },
+      onUseEarliest: function (d) {
+        var dEl = document.getElementById("fScheduledDate");
+        var tEl = document.getElementById("fScheduledTime");
+        var parts = window.ArrivoLate.lagosNow(d);
+        if (dEl) dEl.value = parts.date;
+        if (tEl) tEl.value = parts.time;
+        if (tEl && tEl.focus) tEl.focus();
+      },
+    });
+    return true;
+  }
+
+  // If the server refused because of the booking window, show the dialog
+  // instead of a line of text. Returns true when it did.
+  function handleWindowBlock(data, reference) {
+    if (!data || !data.blockedByBookingWindow || !state.scheduledPickupAt) return false;
+    var when = new Date(state.scheduledPickupAt);
+    if (isNaN(when.getTime())) return false;
+    return openLateRequest(when, reference || null);
+  }
+
   // Turns a backend error body into what the rider should read. The
   // 12-hour booking-window refusal also carries the On the Go / WhatsApp
   // route, so point them at it instead of leaving a dead end.
@@ -2039,6 +2100,9 @@
           // The card may already have been charged. Say what the server said
           // and always show the reference, so the rider does not pay twice and
           // support can find the payment.
+          if (handleWindowBlock(rideResult.data, reference)) {
+            throw new Error(t("booking.paymentFailed") + " (" + reference + ")");
+          }
           var serverReason = rideResult.data && rideResult.data.error ? rideResult.data.error + " " : "";
           throw new Error(serverReason + t("booking.paymentFailed") + " (" + reference + ")");
         }
@@ -2184,6 +2248,7 @@
         if (!check.ok || !check.data || !check.data.ok || !(check.data.fareNaira > 0)) {
           payBtn.disabled = false;
           payError.hidden = false;
+          if (handleWindowBlock(check.data, null)) { payError.hidden = true; return; }
           payError.textContent = bookingErrorText(check.data) || t("booking.paymentFailed");
           return;
         }

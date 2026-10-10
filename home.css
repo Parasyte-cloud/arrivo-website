@@ -320,7 +320,7 @@ html[data-theme="dark"] .skip-link { background: var(--amber); color: #12123B; }
 }
 .hf-tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 4px;
   padding: 4px;
   margin-bottom: 18px;
@@ -434,8 +434,8 @@ html[data-theme="dark"] .site-header.is-floating {
 
 /* ---------- Audit fixes ---------- */
 /* Hero photo: a 960px file for phones and tablets, the full one on desktop. */
-.hero-bg { background-image: url("assets/hero-night-960.jpg"); }
-@media (min-width: 1000px) { .hero-bg { background-image: url("assets/hero-night-1672.jpg"); } }
+.hero-bg { background-image: url("assets/hero/slide-1-960.webp"); }
+@media (min-width: 1000px) { .hero-bg { background-image: url("assets/hero/slide-1-1672.webp"); } }
 
 /* iOS zooms the page when a field under 16px gets focus. */
 @media (max-width: 979px) {
@@ -656,3 +656,147 @@ html[data-theme="dark"] .faq-item[open] { box-shadow: 0 14px 32px rgba(0,0,0,.45
 @media (prefers-reduced-motion: reduce) {
   .hero-intro .hero-copy h1, .hero-intro .hero-copy h1 * { animation: none !important; }
 }
+
+/* ---- Hero background slideshow (hero-slides.js) -------------------------------
+   Every slide is a .hero-bg stacked in the hero. The active one fades in on top,
+   the one leaving stays underneath until the fade has finished, and each drifts
+   with a slow zoom. --hero-fade must match FADE in hero-slides.js. */
+.hero { --hero-fade: 1400ms; --hero-drift: 10000ms; }
+.hero-slide {
+  opacity: 0;
+  z-index: -3;
+  transition: opacity var(--hero-fade) ease-in-out;
+  will-change: opacity;
+}
+.hero-slide.is-leaving { opacity: 1; z-index: -3; }
+.hero-slide.is-active { opacity: 1; z-index: -2; }
+.hero-slide.is-active,
+.hero-slide.is-leaving { animation: hero-drift var(--hero-drift) ease-out both; }
+.hero-slide[data-kb="1"] { transform-origin: 70% 45%; }
+.hero-slide[data-kb="2"] { transform-origin: 40% 65%; }
+.hero-slide[data-kb="0"] { transform-origin: 30% 40%; }
+@keyframes hero-drift {
+  from { transform: scale(1); }
+  to   { transform: scale(1.09); }
+}
+.hero-still .hero-slide { transition: none; animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide { transition: none; animation: none !important; }
+}
+
+/* Controls: a pause button and one dot per picture. */
+.hero-slider-ui {
+  position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 2px; z-index: 3;
+  padding: 2px 8px; border-radius: 999px;
+  background: rgba(10,12,28,.45); border: 1px solid rgba(255,255,255,.14);
+}
+.hero-pause, .hero-dot {
+  appearance: none; background: none; border: 0; padding: 0; cursor: pointer;
+  width: 28px; height: 28px; display: grid; place-items: center; color: #fff; border-radius: 50%;
+}
+.hero-pause[hidden] { display: none; }
+.hero-pause svg { width: 14px; height: 14px; fill: currentColor; }
+.hero-pause .ic-play { display: none; }
+.hero-pause.is-paused .ic-play { display: block; }
+.hero-pause.is-paused .ic-pause { display: none; }
+.hero-dot span {
+  width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.5);
+  transition: background .2s ease, transform .2s ease;
+}
+.hero-dot.is-on span { background: var(--amber); transform: scale(1.35); }
+.hero-pause:hover, .hero-dot:hover span { background-color: rgba(255,255,255,.18); }
+.hero-dot:hover span { background: #fff; }
+.hero-pause:focus-visible, .hero-dot:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+@media (max-width: 779px) { .hero-slider-ui { bottom: 10px; } }
+
+/* Phones and tablets: the hero is tall (headline, form and trust strip stack), so a
+   wide photo set to "cover" would be blown up and blurry. Show it instead as a band
+   behind the headline at about its natural size, focused on --pos (set per photo in
+   hero-slides.js), and fade the bottom of the band into the dark hero colour. */
+@media (max-width: 999px) {
+  .hero { background-color: #0b0d1c; }
+  .hero-slide {
+    bottom: auto;
+    height: 620px;
+    background-position: var(--pos, 50% 50%);
+    -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 58%, transparent 100%);
+            mask-image: linear-gradient(to bottom, #000 0, #000 58%, transparent 100%);
+  }
+}
+
+/* ---------- Header: dock to a screen edge as a vertical pill ---------- */
+/* header-move.js adds .is-side (and -left / -right) when the floating header is
+   dragged to a window edge. Every control becomes an icon button; its label
+   shows on hover or keyboard focus, read from data-tip. */
+@media (min-width: 860px) {
+  .site-header.is-side { overflow: visible; width: max-content; }
+  .site-header.is-side .header-inner { flex-direction: column; align-items: center; gap: 8px; padding: 10px 8px 14px; width: auto; }
+  .site-header.is-side .header-inner::before { content: ""; width: 22px; height: 4px; border-radius: 4px; background: currentColor; opacity: .3; margin-bottom: 2px; }
+  .site-header.is-side .brand .brand-wordmark { display: none; }
+  .site-header.is-side .brand { gap: 0; }
+  .site-header.is-side .main-nav,
+  .site-header.is-side .header-actions { flex-direction: column; align-items: center; gap: 8px; margin: 0; padding: 0; }
+  .site-header.is-side .mobile-nav-toggle,
+  .site-header.is-side .mobile-nav-menu { display: none; }
+
+  /* One round button per control. */
+  .site-header.is-side .main-nav > a,
+  .site-header.is-side .nav-dropdown-trigger,
+  .site-header.is-side .nav-account-link,
+  .site-header.is-side .header-actions > .btn,
+  .site-header.is-side .header-actions > .theme-toggle {
+    position: relative; display: grid; place-items: center;
+    width: 44px; height: 44px; min-width: 0; padding: 0; margin: 0;
+    border-radius: 50%; font-size: 0; line-height: 0; overflow: visible;
+  }
+  .site-header.is-side .nav-dropdown-trigger > *,
+  .site-header.is-side .nav-account-link > span { display: none; }
+  .site-header.is-side .nav-account-link svg { width: 22px; height: 22px; }
+
+  /* Icons for the text-only controls. */
+  .site-header.is-side .main-nav > a::before,
+  .site-header.is-side .nav-dropdown-trigger::before,
+  .site-header.is-side .header-actions > .btn::before {
+    content: ""; display: block; width: 21px; height: 21px; background: currentColor;
+    -webkit-mask: var(--pill-ico) center / contain no-repeat; mask: var(--pill-ico) center / contain no-repeat;
+  }
+  .site-header.is-side .main-nav > a[href$="#how"] { --pill-ico: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='9'/><path d='M15.5 8.5l-2 5-5 2 2-5z'/></svg>"); }
+  .site-header.is-side .main-nav > a[href$="#audiences"] { --pill-ico: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><circle cx='9' cy='8' r='3'/><path d='M3 20c.8-3.4 3.2-5 6-5s5.2 1.6 6 5'/><path d='M16 5.2a3 3 0 010 5.6M18 15c1.8.7 3 2.2 3.5 5'/></svg>"); }
+  .site-header.is-side .main-nav > a[href$="#safety"] { --pill-ico: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M12 3l8 3v6c0 4.5-3.4 7.8-8 9-4.6-1.2-8-4.5-8-9V6z'/><path d='M9 12l2 2 4-4'/></svg>"); }
+  .site-header.is-side .nav-dropdown-trigger { --pill-ico: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'><rect x='4' y='4' width='6.5' height='6.5' rx='1.5'/><rect x='13.5' y='4' width='6.5' height='6.5' rx='1.5'/><rect x='4' y='13.5' width='6.5' height='6.5' rx='1.5'/><rect x='13.5' y='13.5' width='6.5' height='6.5' rx='1.5'/></svg>"); }
+  .site-header.is-side .header-actions > .btn { --pill-ico: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M4 16l1.6-5.2A2 2 0 017.5 9.4h9a2 2 0 011.9 1.4L20 16'/><path d='M3 16h18v3H3z'/><circle cx='7.5' cy='19.5' r='1'/><circle cx='16.5' cy='19.5' r='1'/></svg>"); }
+
+  /* Label on hover or keyboard focus, on the side facing the page. */
+  .site-header.is-side [data-tip]::after {
+    content: attr(data-tip); display: block; position: absolute; top: 50%; transform: translateY(-50%);
+    white-space: nowrap; padding: 7px 12px; border-radius: 999px;
+    background: #12123B; color: #fff; font: 600 12.5px/1 Inter, system-ui, sans-serif; letter-spacing: 0;
+    box-shadow: 0 8px 22px rgba(18,18,59,.3);
+    opacity: 0; pointer-events: none; transition: opacity .14s ease; z-index: 5;
+  }
+  html[data-theme="dark"] .site-header.is-side [data-tip]::after { background: #F7F4EC; color: #12123B; }
+  .site-header.is-side-left [data-tip]::after { left: calc(100% + 12px); }
+  .site-header.is-side-right [data-tip]::after { right: calc(100% + 12px); }
+  .site-header.is-side [data-tip]:hover::after,
+  .site-header.is-side [data-tip]:focus-visible::after { opacity: 1; }
+  .site-header.is-side.is-dragging [data-tip]::after { opacity: 0; }
+
+  /* The Services menu opens sideways, toward the page. */
+  .site-header.is-side .nav-dropdown { position: relative; }
+  .site-header.is-side .nav-dropdown-menu { top: 0; bottom: auto; min-width: 190px; }
+  .site-header.is-side-left .nav-dropdown-menu { left: calc(100% + 12px); right: auto; }
+  .site-header.is-side-right .nav-dropdown-menu { right: calc(100% + 12px); left: auto; }
+}
+
+/* Side dock, slimmer: drop the date and time (it made the pill twice as wide)
+   and shrink the language switch to a round icon-sized button. */
+.site-header.is-side .live-clock { display: none !important; }
+.site-header.is-side .lang-dropdown { display: flex; justify-content: center; }
+.site-header.is-side .lang-trigger { width: 44px; min-width: 0; padding: 0; justify-content: center; }
+.site-header.is-side .lang-trigger > svg { display: none; }
+
+/* Three tabs: tighter padding so longer translations still fit one row, and
+   [hidden] must win over the display set on labels and blocks above. */
+.hf-tab { padding: 11px 6px; font-size: 13.5px; }
+.hero-form [hidden] { display: none !important; }
