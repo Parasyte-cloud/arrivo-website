@@ -144,7 +144,8 @@
 
 <main id="main" class="wrap booking-wrap" style="max-width: 460px;">
   <h1 data-i18n="track.pageTitle">Your ride</h1>
-  <p id="sharedViewNote" hidden style="font-size:12.5px; color:var(--text-muted); margin-top:-8px; margin-bottom:16px;">You're viewing a live trip shared with you. Some rider-only actions (rating, tipping, alerting support) aren't available from this view.</p>
+  <p id="sharedViewNote" hidden style="font-size:12.5px; color:var(--text-muted); margin-top:-8px; margin-bottom:16px;" data-i18n="track.sharedNote">You are viewing a live trip shared with you. The link stops working a few hours after pickup or soon after the trip ends.</p>
+  <p id="tripEndedNote" hidden style="font-size:13px; color:var(--text-muted); margin-bottom:12px;" data-i18n="track.tripEnded">This trip has ended. Live location is no longer shared.</p>
   <div class="booking-card" id="loadingCard">
     <p style="color:var(--text-muted); text-align:center;" data-i18n="track.loadingText">Loading your ride details…</p>
   </div>
@@ -183,6 +184,31 @@
 
     <button type="button" class="panic-btn" id="panicBtn" data-i18n="track.panicBtn">🚨 Emergency Button: I don't feel safe</button>
     <div class="panic-active" id="panicActiveMsg" hidden data-i18n="track.panicActiveMsg">🚨 Support has been alerted about this ride.</div>
+  </div>
+
+  <!-- Pickup PIN: only shown to the signed-in rider while the driver is on the way and the server hands out a PIN. -->
+  <div class="booking-card" id="pinCard" hidden style="text-align:center;">
+    <h2 style="font-size:16px; margin-bottom:6px;" data-i18n="track.pinTitle">Your pickup PIN</h2>
+    <div id="pinValue" style="font-size:40px; font-weight:800; letter-spacing:8px; color:var(--amber, #F4A300); margin:8px 0;"></div>
+    <p style="font-size:12.5px; color:var(--text-muted);" data-i18n="track.pinHelp">Tell your driver this PIN when you meet. They need it to start the trip. Do not share it before you are with your driver.</p>
+  </div>
+
+  <!-- Stop sharing and report the driver: signed-in rider only, once a driver is assigned. -->
+  <div class="booking-card" id="safetyActionsCard" hidden>
+    <button type="button" class="btn btn-ghost" id="stopShareBtn" style="width:100%;" data-i18n="track.stopSharing">Stop sharing</button>
+    <p id="stopShareMsg" hidden style="font-size:12.5px; color:var(--text-muted); margin-top:8px;"></p>
+    <button type="button" class="btn btn-ghost" id="reportOpenBtn" style="width:100%; margin-top:10px;" data-i18n="track.reportBtn">Report the driver</button>
+    <div id="reportForm" hidden style="margin-top:12px;">
+      <h2 style="font-size:16px; margin-bottom:6px;" data-i18n="track.reportTitle">Report a problem</h2>
+      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:10px;" data-i18n="track.reportHelp">Tell us what happened. The driver will not see your report. If you are in danger, use the panic button.</p>
+      <p style="font-size:12.5px; font-weight:700; margin-bottom:6px;" data-i18n="track.reportPick">What happened?</p>
+      <div id="reportCats" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;"></div>
+      <textarea id="reportText" class="field" rows="3" maxlength="1000" placeholder="Describe it (at least 10 characters)" data-i18n-placeholder="track.reportDescribe" style="margin-bottom:10px;"></textarea>
+      <p id="reportErr" hidden style="font-size:12.5px; color:#c0392b; margin-bottom:8px;"></p>
+      <button type="button" class="btn btn-primary" id="reportSendBtn" style="width:100%;" data-i18n="track.reportSend">Send report</button>
+      <button type="button" class="btn btn-ghost" id="reportCancelBtn" style="width:100%; margin-top:8px;" data-i18n="track.reportCancel">Cancel</button>
+    </div>
+    <p id="reportDone" hidden style="font-size:13px; color:var(--text-muted); margin-top:10px;" data-i18n="track.reportSent">Thank you. We received your report and will look into it.</p>
   </div>
 
   <!-- Flight cancelled/rescheduled (services/scheduler.js on the backend
@@ -484,15 +510,20 @@
       document.getElementById(id).hidden = true;
     });
 
+    var publicTimer = null;
     function refreshPublic() {
       fetch(API_BASE_URL + "/api/rides/track/" + shareToken)
         .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
         .then(function (result) {
           if (!result.ok) {
-            showError(result.data.error || t("track.couldntLoadRide"));
+            // Expired, stopped or invalid links get a plain message in the viewer's language, and polling stops.
+            var reasonKey = { expired: "track.linkExpired", ended: "track.linkExpired", revoked: "track.linkRevoked", invalid: "track.linkInvalid" }[result.data.reason];
+            if (reasonKey && publicTimer) { clearInterval(publicTimer); publicTimer = null; }
+            showError(reasonKey ? t(reasonKey) : t("track.couldntLoadRide"));
             return;
           }
           var ride = result.data.ride;
+          document.getElementById("tripEndedNote").hidden = !result.data.ended;
           document.getElementById("loadingCard").hidden = true;
           document.getElementById("rideCard").hidden = false;
 
@@ -507,24 +538,28 @@
 
           document.getElementById("pickupText").textContent = [ride.pickup_address].concat(ride.stops || []).join(" → ");
 
+          // The driver's phone number is never part of a shared view; show the car instead.
           if (ride.driver_name) {
             document.getElementById("driverRow").hidden = false;
             document.getElementById("driverInitials").textContent = initials(ride.driver_name);
             document.getElementById("driverName").textContent = ride.driver_name;
-            document.getElementById("driverVehicle").textContent = ride.driver_phone || "";
+            document.getElementById("driverVehicle").textContent = [ride.make_model, ride.plate_number].filter(Boolean).join(" · ");
           }
 
           var mapLink = document.getElementById("mapLink");
-          if (ride.current_lat && ride.current_lng) {
+          if (result.data.live && ride.current_lat && ride.current_lng) {
+            mapLink.style.display = "block";
             mapLink.setAttribute("href", "https://www.google.com/maps?q=" + ride.current_lat + "," + ride.current_lng);
             updateRideMap(Number(ride.current_lat), Number(ride.current_lng));
+          } else {
+            mapLink.style.display = "none";
           }
         })
         .catch(function () { /* transient -- next poll will retry */ });
     }
 
     refreshPublic();
-    setInterval(refreshPublic, POLL_INTERVAL_MS);
+    publicTimer = setInterval(refreshPublic, POLL_INTERVAL_MS);
   } else if (!rideId) {
     showError(t("track.noRideSpecified"));
   } else {
@@ -589,6 +624,7 @@
           refreshRateCard();
           refreshFlightIssueCard();
           refreshFleetConvoy();
+          refreshSafety();
         })
         .catch(function () { /* transient -- next poll will retry */ });
     }
@@ -623,6 +659,86 @@
         })
         .catch(function () { /* best-effort -- leave whatever was last shown */ });
     }
+
+    // ───────────────────────── Trip safety: PIN, stop sharing, report ─────────────────────────
+    var REPORT_CATS = ["unsafe_driving", "harassment", "felt_unsafe", "wrong_route", "overcharge", "vehicle_mismatch", "rude", "other"];
+    var reportCategory = null;
+
+    function authedJson(path, method, body) {
+      return fetch(API_BASE_URL + path, {
+        method: method,
+        headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+        body: body ? JSON.stringify(body) : undefined,
+      }).then(function (res) { return res.json().catch(function () { return {}; }).then(function (data) { return { ok: res.ok, data: data }; }); });
+    }
+
+    function refreshSafety() {
+      if (!currentRide) return;
+      document.getElementById("safetyActionsCard").hidden = !currentRide.driver_user_id;
+      var pinCard = document.getElementById("pinCard");
+      if (currentRide.ride_status !== "accepted" || !currentRide.driver_user_id) { pinCard.hidden = true; return; }
+      authedJson("/api/safety/rides/" + rideId + "/pin", "GET")
+        .then(function (r) {
+          if (r.ok && r.data.required && r.data.pin) {
+            document.getElementById("pinValue").textContent = String(r.data.pin).split("").join(" ");
+            pinCard.hidden = false;
+          } else {
+            pinCard.hidden = true;
+          }
+        })
+        .catch(function () { /* never block the page over the PIN */ });
+    }
+
+    function renderReportCats() {
+      var box = document.getElementById("reportCats");
+      box.innerHTML = "";
+      REPORT_CATS.forEach(function (c) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "for-who-opt" + (reportCategory === c ? " is-active" : "");
+        b.textContent = t("track.cat_" + c);
+        b.addEventListener("click", function () { reportCategory = c; renderReportCats(); });
+        box.appendChild(b);
+      });
+    }
+
+    document.getElementById("stopShareBtn").addEventListener("click", function () {
+      var msg = document.getElementById("stopShareMsg");
+      authedJson("/api/safety/rides/" + rideId + "/share", "DELETE")
+        .then(function (r) { msg.textContent = r.ok ? t("track.stopSharingDone") : t("track.stopSharingFailed"); msg.hidden = false; })
+        .catch(function () { msg.textContent = t("track.stopSharingFailed"); msg.hidden = false; });
+    });
+
+    document.getElementById("reportOpenBtn").addEventListener("click", function () {
+      document.getElementById("reportForm").hidden = false;
+      this.hidden = true;
+      renderReportCats();
+    });
+    document.getElementById("reportCancelBtn").addEventListener("click", function () {
+      document.getElementById("reportForm").hidden = true;
+      document.getElementById("reportOpenBtn").hidden = false;
+    });
+    document.getElementById("reportSendBtn").addEventListener("click", function () {
+      var btn = this;
+      var err = document.getElementById("reportErr");
+      var text = document.getElementById("reportText").value.replace(/\s+/g, " ").trim();
+      err.hidden = true;
+      if (!reportCategory || text.length < 10) { err.textContent = t("track.reportDescribe"); err.hidden = false; return; }
+      btn.disabled = true;
+      authedJson("/api/safety/complaints", "POST", { rideId: Number(rideId), category: reportCategory, description: text })
+        .then(function (r) {
+          if (r.ok) {
+            document.getElementById("reportForm").hidden = true;
+            document.getElementById("reportDone").hidden = false;
+          } else {
+            // Server messages for 4xx are plain English (for example "You already reported this ride for that reason.").
+            err.textContent = r.data && r.data.error ? r.data.error : t("track.reportFailed");
+            err.hidden = false;
+            btn.disabled = false;
+          }
+        })
+        .catch(function () { err.textContent = t("track.reportFailed"); err.hidden = false; btn.disabled = false; });
+    });
 
     // ───────────────────────── Rate & Relax (post-trip) ─────────────────────────
     function renderStars() {
