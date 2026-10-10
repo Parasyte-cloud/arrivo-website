@@ -207,10 +207,15 @@
     if (!next) return "account.html";
     try {
       var resolved = new URL(next, window.location.href);
+      if (resolved.username || resolved.password) return "account.html";
+      // Return the fully resolved href, never pathname+search+hash: a path
+      // like "//evil.example/x" (e.g. a normalised double-slash pathname) would be
+      // re-read by the browser as a different host when assigned later.
       if (resolved.origin === window.location.origin) {
-        return resolved.pathname + resolved.search + resolved.hash;
+        return resolved.href;
       }
-      if (resolved.protocol === "https:" && !resolved.username && !resolved.password &&
+      // Exact origin match (scheme + host + default port), not just hostname.
+      if (resolved.protocol === "https:" && resolved.port === "" &&
           SSO_RETURN_HOSTS.indexOf(resolved.hostname) !== -1) {
         return resolved.href;
       }

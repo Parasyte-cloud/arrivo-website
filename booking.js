@@ -195,7 +195,12 @@
   // ───────────────────────── API helpers ─────────────────────────
   function api(path, options) {
     options = options || {};
+    // credentials:"include" sends the shared single sign-on cookie (set by the
+    // API for .ridearrivo.com). The API answers with an exact-origin CORS
+    // allowlist plus Access-Control-Allow-Credentials, so this is safe; a
+    // Bearer token, when present, still takes precedence server-side.
     return fetch(API_BASE_URL + path, {
+      credentials: "include",
       ...options,
       headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     }).then(function (res) {
@@ -216,7 +221,9 @@
   }
 
   function authHeader() {
-    return { Authorization: "Bearer " + state.token };
+    // A cookie-only session has no token. Never send "Bearer null": the API
+    // gives a Bearer header priority over the cookie and would reject it.
+    return state.token ? { Authorization: "Bearer " + state.token } : {};
   }
 
   // ───────────────────────── Step navigation ─────────────────────────
@@ -298,11 +305,18 @@
             .find(function (c) { return eStored.indexOf(c.dial) === 0; });
           if (eMatch) emergencyPhoneField.setRaw(eMatch.dial, eStored.slice(eMatch.dial.length));
         }
-      } else {
+      } else if (result.status === 401 || result.status === 403) {
         // Token expired or invalid -- send them back to log in properly.
         localStorage.removeItem("arrivo_rider_token");
         window.location.href = "login.html?next=book.html";
+      } else {
+        // 429/5xx or other transient failure: keep the session and the trip.
+        // The rider can still continue; profile prefill just didn't load.
+        console.warn("[arrivo booking] profile check failed with status", result.status);
       }
+    }).catch(function (err) {
+      // Offline / DNS / timeout: never treat as a logout.
+      console.warn("[arrivo booking] profile check unreachable:", err);
     });
 
     // Was the "contactContinue" click handler, back when Contact was its own
@@ -817,7 +831,8 @@
 
   // Google calls this when it rejects the key or the page's address. Without
   // it the address boxes keep Google's "Sorry! Something went wrong" artwork
-  // and look frozen. Clear it, and say plainly that typing still works.
+  // and look frozen. Clear it, and say plainly that we can't price a trip until
+  // addresses can be confirmed (typed text alone has no coordinates).
   window.gm_authFailure = function () {
     Array.prototype.forEach.call(document.querySelectorAll(".gm-err-autocomplete"), function (el) {
       el.classList.remove("gm-err-autocomplete");
@@ -1519,24 +1534,27 @@
       scheduledPickupAt: state.scheduledPickupAt || null,
     };
     if (isOneWayStyle(state.bookingType)) {
-      if (!state.pickupLatLng || !state.dropoffLatLng) {
+      // The API prices a one-way trip from the pickup/destination TEXT
+      // (a flat per-area fare, see arrivo-backend/services/fare.js). Map
+      // coordinates only add a distance/duration estimate, so they are sent
+      // when we have them and the quote still works from typed addresses when
+      // Google suggestions are unavailable. The server stays the authority
+      // on the fare either way.
+      var destinationText = state.stops.length ? state.stops[state.stops.length - 1] : "";
+      if (!state.pickup || !destinationText) {
         return Promise.resolve({
           ok: false,
-          data: { error: "Please select a suggested pickup and drop-off address (from the dropdown) on the previous step so we can calculate your exact fare." },
+          data: { error: "Please enter your pickup and drop-off addresses on the Trip step so we can work out your fare." },
         });
       }
-      // pickupAddress/destinationAddress are what actually price a one-way
-      // trip now -- a flat per-location fare (see
-      // arrivo-backend/services/fare.js), same formula the apps use.
-      // lat/lng are sent too, but only used server-side for an
-      // informational distance/duration display, never for the fare
-      // itself.
       body.pickupAddress = state.pickup;
-      body.destinationAddress = state.stops.length ? state.stops[state.stops.length - 1] : "";
-      body.pickupLat = typeof state.pickupLatLng.lat === "function" ? state.pickupLatLng.lat() : state.pickupLatLng.lat;
-      body.pickupLng = typeof state.pickupLatLng.lng === "function" ? state.pickupLatLng.lng() : state.pickupLatLng.lng;
-      body.destinationLat = typeof state.dropoffLatLng.lat === "function" ? state.dropoffLatLng.lat() : state.dropoffLatLng.lat;
-      body.destinationLng = typeof state.dropoffLatLng.lng === "function" ? state.dropoffLatLng.lng() : state.dropoffLatLng.lng;
+      body.destinationAddress = destinationText;
+      if (state.pickupLatLng && state.dropoffLatLng) {
+        body.pickupLat = typeof state.pickupLatLng.lat === "function" ? state.pickupLatLng.lat() : state.pickupLatLng.lat;
+        body.pickupLng = typeof state.pickupLatLng.lng === "function" ? state.pickupLatLng.lng() : state.pickupLatLng.lng;
+        body.destinationLat = typeof state.dropoffLatLng.lat === "function" ? state.dropoffLatLng.lat() : state.dropoffLatLng.lat;
+        body.destinationLng = typeof state.dropoffLatLng.lng === "function" ? state.dropoffLatLng.lng() : state.dropoffLatLng.lng;
+      }
     }
     return api("/api/rides/quote", { method: "POST", headers: authHeader(), body: JSON.stringify(body) });
   }
@@ -2077,17 +2095,54 @@
     }
   }
 
-  function handlePaymentSuccess(reference) {
+  // Pending card payment: written just before Paystack opens, cleared once
+  // the ride is confirmed. If the rider pays and then reloads or closes the
+  // tab, the next visit to /book finishes the booking from this record. The
+  // POST /api/rides retry is safe: the backend hands the same rider back the
+  // ride a spent reference already paid for instead of creating a second one.
+  var PENDING_KEY = "arrivo_pending_card_payment";
+  var PENDING_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+  function savePendingPayment(reference, payload) {
+    try {
+      localStorage.setItem(PENDING_KEY, JSON.stringify({ reference: reference, payload: payload, savedAt: Date.now() }));
+    } catch (e) { /* storage unavailable: recovery just won't be offered */ }
+  }
+  function clearPendingPayment() {
+    try { localStorage.removeItem(PENDING_KEY); } catch (e) { /* ignore */ }
+  }
+  function readPendingPayment() {
+    try {
+      var rec = JSON.parse(localStorage.getItem(PENDING_KEY) || "null");
+      if (!rec || typeof rec.reference !== "string" || !rec.payload || typeof rec.savedAt !== "number") return null;
+      if (Date.now() - rec.savedAt > PENDING_MAX_AGE_MS) { clearPendingPayment(); return null; }
+      return rec;
+    } catch (e) { return null; }
+  }
+  function newPaymentReference() {
+    var bytes = "";
+    try {
+      var a = new Uint8Array(9);
+      crypto.getRandomValues(a);
+      bytes = Array.prototype.map.call(a, function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+    } catch (e) { bytes = String(Math.random()).slice(2, 14); }
+    return "arrivo_" + Date.now().toString(36) + "_" + bytes;
+  }
+
+  // skipVerify is for recovery, which has just asked Paystack itself.
+  function handlePaymentSuccess(reference, storedPayload, skipVerify) {
     var payError = document.getElementById("payError");
     payError.hidden = true;
     var createdRide = null;
 
-    return api("/api/payments/verify/" + encodeURIComponent(reference))
+    var verifyStep = skipVerify
+      ? Promise.resolve({ ok: true, data: { success: true } })
+      : api("/api/payments/verify/" + encodeURIComponent(reference), { headers: authHeader() });
+    return verifyStep
       .then(function (verifyResult) {
         if (!verifyResult.ok || !verifyResult.data.success) {
           throw new Error(t("booking.paymentFailed") + " (" + reference + ")");
         }
-        var payload = buildRidePayload({ paymentMethod: "card", paymentReference: reference });
+        var payload = storedPayload || buildRidePayload({ paymentMethod: "card", paymentReference: reference });
 
         return api("/api/rides", {
           method: "POST",
@@ -2104,9 +2159,14 @@
             throw new Error(t("booking.paymentFailed") + " (" + reference + ")");
           }
           var serverReason = rideResult.data && rideResult.data.error ? rideResult.data.error + " " : "";
+          // A definite refusal will not change on retry, so stop re-offering
+          // recovery on every page load (the message below carries the
+          // reference for support). A 5xx or network failure keeps the record.
+          if (rideResult.status >= 400 && rideResult.status < 500) clearPendingPayment();
           throw new Error(serverReason + t("booking.paymentFailed") + " (" + reference + ")");
         }
         createdRide = rideResult.data.ride;
+        clearPendingPayment();
         // The ride exists and the rider was charged, so this attempt is over
         // whatever happens to the payment-sync call below. Clear the key now,
         // not after that call, or a failed sync would leave it in
@@ -2144,7 +2204,7 @@
           barcodeEl.textContent = createdRide.barcode;
           barcodeBox.hidden = false;
         }
-        if (state.bookingType === "one_way" && createdRide) showReturnDropoffPrompt(createdRide.id);
+        if ((storedPayload ? storedPayload.bookingType : state.bookingType) === "one_way" && createdRide) showReturnDropoffPrompt(createdRide.id);
         goToStep(4);
       })
       .catch(function (err) {
@@ -2156,14 +2216,29 @@
   function initStep5() {
     document.getElementById("backToRide").addEventListener("click", function () { goToStep(2); });
 
-    // Privacy policy popup (step 1's link)
-    var privacyLink = document.getElementById("openPrivacyModalBooking");
-    if (privacyLink) {
-      privacyLink.addEventListener("click", function (e) {
+    // Policy popups use delegated clicks on document: applyLanguage() swaps
+    // translated innerHTML, which discards the original <a> nodes and any
+    // listener bound directly to them.
+    document.addEventListener("click", function (e) {
+      var priv = e.target.closest && e.target.closest("#openPrivacyModalBooking");
+      if (priv) {
         e.preventDefault();
         document.getElementById("privacyModal").style.display = "flex";
+        return;
+      }
+      var canc = e.target.closest && e.target.closest("#openCancellationModal");
+      if (canc) {
+        e.preventDefault();
+        document.getElementById("cancellationModal").style.display = "flex";
+      }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      ["privacyModal", "cancellationModal"].forEach(function (id) {
+        var m = document.getElementById(id);
+        if (m && m.style.display !== "none") m.style.display = "none";
       });
-    }
+    });
     document.getElementById("closePrivacyModal").addEventListener("click", function () {
       document.getElementById("privacyModal").style.display = "none";
     });
@@ -2173,10 +2248,6 @@
     });
 
     // Cancellation & Refund Policy popup (step 5, before payment)
-    document.getElementById("openCancellationModal").addEventListener("click", function (e) {
-      e.preventDefault();
-      document.getElementById("cancellationModal").style.display = "flex";
-    });
     document.getElementById("closeCancellationModal").addEventListener("click", function () {
       document.getElementById("cancellationModal").style.display = "none";
     });
@@ -2264,18 +2335,30 @@
           payError.textContent = "Your fare has been updated to NGN " + check.data.fareNaira.toLocaleString() + ". Please review and press Pay again.";
           return;
         }
-        var handler = PaystackPop.setup({
-          key: PAYSTACK_PUBLIC_KEY,
-          email: state.email,
-          amount: Math.round(check.data.fareNaira * 100),
-          currency: "NGN",
-          metadata: { name: state.name, phone: state.phone },
-          callback: function (response) { handlePaymentSuccess(response.reference); },
-          // The rider closed the popup without paying -- let them press Pay
-          // again rather than leaving payBtn stuck disabled forever.
-          onClose: function () { payBtn.disabled = false; },
-        });
-        handler.openIframe();
+        try {
+          var payReference = newPaymentReference();
+          savePendingPayment(payReference, buildRidePayload({ paymentMethod: "card", paymentReference: payReference }));
+          var handler = PaystackPop.setup({
+            key: PAYSTACK_PUBLIC_KEY,
+            email: state.email,
+            ref: payReference,
+            amount: Math.round(check.data.fareNaira * 100),
+            currency: "NGN",
+            metadata: { name: state.name, phone: state.phone },
+            callback: function (response) { handlePaymentSuccess(response.reference || payReference); },
+            // The rider closed the popup without paying -- let them press Pay
+            // again rather than leaving payBtn stuck disabled forever.
+            onClose: function () { payBtn.disabled = false; },
+          });
+          handler.openIframe();
+        } catch (err) {
+          // Checkout failed to open before any charge: safe to retry.
+          console.error("[arrivo booking] checkout failed to open:", err);
+          clearPendingPayment();
+          payBtn.disabled = false;
+          payError.hidden = false;
+          payError.textContent = t("booking.checkoutOpenFailed");
+        }
       });
     });
   }
@@ -2289,37 +2372,80 @@
     safeRun(initLanguage, "initLanguage");
     safeRun(initServicesDropdown, "initServicesDropdown");
 
-    // Registration is mandatory before booking -- check for a saved rider
-    // session before revealing the booking wizard at all.
-    var savedToken = localStorage.getItem("arrivo_rider_token");
-    if (!savedToken) {
+    // Registration is mandatory before booking. A rider may be signed in by a
+    // saved token (this site) OR by the shared cookie set on another
+    // *.ridearrivo.com site, so ask the API before showing the sign-up gate.
+    function showGate() {
       document.getElementById("authGate").hidden = false;
       document.getElementById("bookingCard").hidden = true;
-      return; // don't initialize any of the booking steps -- nothing to do yet
+    }
+    function startBooking() {
+      document.getElementById("authGate").hidden = true;
+      document.getElementById("bookingCard").hidden = false;
+
+      safeRun(loadFxRate, "loadFxRate");
+      safeRun(initStep1, "initStep1");
+      safeRun(initStep2, "initStep2");
+      safeRun(initStep3, "initStep3");
+      safeRun(initStep4, "initStep4");
+      // The Pickup/route section used to only become visible after a step
+      // transition, which is when this used to run (from inside the removed
+      // flightContinue handler). "Trip" (Step 1) is now the first thing the
+      // rider sees, so the map needs its real dimensions from page load
+      // instead. Function name predates the reorder.
+      safeRun(setupPlacesForStep4, "setupPlacesForStep4");
+      safeRun(initLocationPermission, "initLocationPermission");
+      safeRun(initStep5, "initStep5");
+      // Must run after initStep2 (it simulates a click on the "dropoff" chip,
+      // which only has its listener bound once initStep2 has run).
+      safeRun(initReturnDropoffPreset, "initReturnDropoffPreset");
     }
 
-    state.token = savedToken;
-    document.getElementById("authGate").hidden = true;
-    document.getElementById("bookingCard").hidden = false;
+    // Finish a booking whose card payment completed but whose page was lost
+    // before confirmation. Runs after startBooking so step 4 and its fields
+    // exist. A payment Paystack does not report as successful is dropped.
+    function recoverPendingPayment() {
+      var rec = readPendingPayment();
+      if (!rec) return;
+      var payError = document.getElementById("payError");
+      api("/api/payments/verify/" + encodeURIComponent(rec.reference), { headers: authHeader() }).then(function (v) {
+        if (v.ok && v.data && v.data.success) {
+          goToStep(5);
+          payError.hidden = false;
+          payError.textContent = t("booking.recovering");
+          return handlePaymentSuccess(rec.reference, rec.payload, true);
+        }
+        // Definite answer from Paystack that nothing was charged: forget it.
+        // Network or server trouble keeps the record for the next visit.
+        var st = v.ok && v.data ? String(v.data.status || "") : "";
+        var dead = st === "abandoned" || st === "failed" || st === "reversed";
+        // "abandoned" is also what a payment looks like before the card is
+        // entered, so give a just-opened checkout a couple of hours first.
+        var old = Date.now() - rec.savedAt > 2 * 60 * 60 * 1000;
+        if (v.status === 400 || (dead && old)) clearPendingPayment();
+      });
+    }
 
-    safeRun(loadFxRate, "loadFxRate");
-    safeRun(initStep1, "initStep1");
-    safeRun(initStep2, "initStep2");
-    safeRun(initStep3, "initStep3");
-    safeRun(initStep4, "initStep4");
-    // The Pickup/route section used to only become visible after a step
-    // transition, which is when this used to run (from inside the removed
-    // flightContinue handler). "Trip" (Step 1) is now the first thing the
-    // rider sees, so the map needs its real dimensions from page load
-    // instead. Function name predates the reorder.
-    safeRun(setupPlacesForStep4, "setupPlacesForStep4");
-    safeRun(initLocationPermission, "initLocationPermission");
-    safeRun(initStep5, "initStep5");
-    // Must run after initStep2 (it simulates a click on the "dropoff" chip,
-    // which only has its listener bound once initStep2 has run).
-    safeRun(initReturnDropoffPreset, "initReturnDropoffPreset");
+    var savedToken = localStorage.getItem("arrivo_rider_token");
+    if (savedToken) {
+      state.token = savedToken;
+      startBooking();
+      recoverPendingPayment();
+      return;
+    }
+    // No saved token. Only a definite 401/403 means "not signed in"; an
+    // outage or timeout also shows the gate, but never discards anything.
+    api("/api/auth/me").then(function (result) {
+      if (result.ok && result.data && result.data.user) {
+        state.token = null; // cookie session; authHeader() sends nothing
+        startBooking();
+        recoverPendingPayment();
+      } else {
+        showGate();
+      }
+    });
   });
 
   // Exposed for automated testing only.
-  window.__arrivoBookingTestHooks = { state: state, handlePaymentSuccess: handlePaymentSuccess, goToStep: goToStep };
+  window.__arrivoBookingTestHooks = { state: state, PENDING_KEY: PENDING_KEY, handlePaymentSuccess: handlePaymentSuccess, goToStep: goToStep, renderReview: renderReview };
 })();

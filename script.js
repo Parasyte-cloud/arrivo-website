@@ -230,6 +230,14 @@
           closeMenu();
         }
       });
+
+      // Keyboard: Escape closes the menu and returns focus to its toggle.
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !menu.hidden) {
+          closeMenu();
+          toggle.focus();
+        }
+      });
     }
 
     function safeRun(fn, label) {

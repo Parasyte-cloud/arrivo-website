@@ -4,7 +4,7 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(self), camera=(), microphone=(), payment=(self), usb=(), fullscreen=(self)
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://js.paystack.co https://maps.googleapis.com https://accounts.google.com https://appleid.cdn-apple.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://fkkxcivxnwshahnbatnp.supabase.co https://arrivo-backend-g1ku.onrender.com https://api.ridearrivo.com https://maps.googleapis.com https://api.paystack.co https://accounts.google.com https://cloudflareinsights.com; frame-src https://js.paystack.co https://checkout.paystack.com https://accounts.google.com https://appleid.cdn-apple.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://js.paystack.co https://maps.googleapis.com https://accounts.google.com https://appleid.cdn-apple.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://fkkxcivxnwshahnbatnp.supabase.co https://arrivo-backend-g1ku.onrender.com https://api.ridearrivo.com https://maps.googleapis.com https://api.paystack.co https://accounts.google.com https://cloudflareinsights.com; frame-src 'self' https://js.paystack.co https://checkout.paystack.com https://accounts.google.com https://appleid.cdn-apple.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
 
 /
   Cache-Control: no-store, no-cache, must-revalidate
@@ -23,3 +23,33 @@
 
 /sw.js
   Cache-Control: no-cache, must-revalidate
+
+# Private or one-time pages: keep them out of search results. robots.txt alone
+# only asks crawlers not to fetch them; this header also stops a linked URL
+# from being indexed.
+/account
+  X-Robots-Tag: noindex, nofollow
+/account.html
+  X-Robots-Tag: noindex, nofollow
+/driver
+  X-Robots-Tag: noindex, nofollow
+/driver.html
+  X-Robots-Tag: noindex, nofollow
+/track
+  X-Robots-Tag: noindex, nofollow
+/track.html
+  X-Robots-Tag: noindex, nofollow
+/scan
+  X-Robots-Tag: noindex, nofollow
+/scan.html
+  X-Robots-Tag: noindex, nofollow
+/reset-password
+  X-Robots-Tag: noindex, nofollow
+/reset-password.html
+  X-Robots-Tag: noindex, nofollow
+/verify-email
+  X-Robots-Tag: noindex, nofollow
+/verify-email.html
+  X-Robots-Tag: noindex, nofollow
+/payment/*
+  X-Robots-Tag: noindex, nofollow

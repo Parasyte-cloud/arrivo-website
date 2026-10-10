@@ -1,5 +1,11 @@
 User-agent: *
 Allow: /
-Disallow: /driver.html
+Disallow: /account
+Disallow: /driver
+Disallow: /track
+Disallow: /scan
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /payment/
 
 Sitemap: https://ridearrivo.com/sitemap.xml
