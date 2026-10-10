@@ -70,13 +70,15 @@ html[data-theme="dark"] .mobile-nav-menu .wm-on-light { display: none !important
 }
 
 /* ---------- Hero: five tiers, bold ---------- */
+/* Was uppercase, bold and bright, which made a caption compete with the
+   headline. It is a caption. */
 .hero-family-label {
   margin: 4px 0 12px;
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.82);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: .01em;
+  text-transform: none;
+  color: rgba(255,255,255,.60);
 }
 .hero-chips { gap: 10px; margin: 0 0 24px; }
 .hero-chips a {
@@ -86,12 +88,35 @@ html[data-theme="dark"] .mobile-nav-menu .wm-on-light { display: none !important
   font-weight: 700;
   border-width: 1.5px;
 }
-.hero-chips a.chip-primary {
-  background: var(--amber);
-  border-color: var(--amber);
-  color: #12123B;
+/* Membership is a secondary product, not a call to action. As a second ghost
+   pill it was an identical twin of "See how it works", which is hierarchy by
+   accident: two things that look the same are read as the same kind of thing.
+   A text link says "there is more over here" without competing. */
+.hero-ctas { align-items: center; }
+.hero-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255,255,255,.88);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1.5px solid rgba(255,255,255,.35);
+  padding-bottom: 2px;
+  transition: color .15s ease, border-color .15s ease;
 }
-.hero-chips a.chip-primary:hover { background: #FFB627; border-color: #FFB627; }
+.hero-link:hover { color: var(--amber); border-color: var(--amber); }
+.hero-link:focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
+
+/* The RideArrivo chip keeps its label, because it names the product the form
+   books, but it is no longer amber. The form's submit is the one amber action
+   in this viewport; a second amber target 200px away was splitting the eye. */
+.hero-chips a.chip-primary {
+  background: rgba(255,255,255,.20);
+  border-color: rgba(255,255,255,.72);
+  color: #fff;
+}
+.hero-chips a.chip-primary:hover { background: var(--amber); border-color: var(--amber); color: #12123B; }
 
 /* ---------- How it works: image steps ---------- */
 .how-section { padding-top: 88px; }
