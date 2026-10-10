@@ -222,3 +222,41 @@ html[data-theme="dark"] .download-login { color: #A9C0F5; }
 }
 .footer-col a.footer-contact-btn { white-space: nowrap; }
 .footer-col:has(.footer-contact-btn) { flex: 1 1 200px; }
+
+/* ==========================================================================
+   Declutter pass: fewer things competing above the fold.
+   ========================================================================== */
+/* Header: the decorative clock goes; Become a driver is a plain link, not a second pill. */
+.live-clock { display: none !important; }
+.main-nav a.nav-driver-link { border: 0; border-radius: 0; padding: 8px 10px; font-weight: 600; }
+.main-nav a.nav-driver-link:hover, .main-nav a.nav-driver-link:focus-visible { background: transparent; color: var(--amber-text); text-decoration: underline; text-underline-offset: 4px; }
+html[data-theme="dark"] .main-nav a.nav-driver-link:hover { color: var(--amber); }
+
+/* Hero: one secondary action is enough ("See how it works" is in the menu). */
+.hero-ctas .btn-ghost { display: none; }
+.hero-ctas .btn-primary { background: transparent; color: #fff; border: 1.5px solid var(--amber); box-shadow: none; }
+.hero-ctas .btn-primary:hover { background: var(--amber); color: #12123B; }
+.hero-ctas { margin-bottom: 18px; }
+
+/* Trust points: a quiet two-by-two on phones instead of four stacked rows. */
+@media (max-width: 719px) {
+  .hero-trust { display: grid !important; grid-template-columns: 1fr 1fr; gap: 12px 10px; padding: 14px 16px; }
+  .hero-trust li { font-size: 12.5px; gap: 7px; }
+  .hero-trust .ico { width: 18px; height: 18px; }
+}
+
+/* Cards: calm navy buttons so amber stays reserved for the main booking actions. */
+.service-card-cta { background: var(--ink); color: #fff; box-shadow: none; }
+.service-card:hover .service-card-cta, .service-card:focus-visible .service-card-cta { background: var(--amber); color: #12123B; box-shadow: 0 8px 18px rgba(244,163,0,.35); }
+html[data-theme="dark"] .service-card-cta { background: rgba(255,255,255,.12); color: #fff; }
+html[data-theme="dark"] .service-card:hover .service-card-cta { background: var(--amber); color: #12123B; }
+
+/* Footer contact: outlined, not a second amber block. */
+.footer-col a.footer-contact-btn { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.4); }
+.footer-col a.footer-contact-btn:hover, .footer-col a.footer-contact-btn:focus-visible { background: var(--amber); border-color: var(--amber); color: #12123B; }
+
+/* Phone hero: tighter vertical rhythm. */
+@media (max-width: 979px) {
+  .hero-split-inner { gap: 16px; }
+  .hero-copy .hero-sub { font-size: 14.5px; }
+}
