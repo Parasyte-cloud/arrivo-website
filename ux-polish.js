@@ -29,6 +29,8 @@
       var v = d[nodes[i].getAttribute("data-ux")];
       if (v != null) nodes[i].textContent = v;
     }
+    var tb = document.getElementById("acctTrigger");
+    if (tb) tb.setAttribute("aria-label", signedIn() ? d.account : d.signIn);
     var trig = document.getElementById("acctTriggerText");
     if (trig && signedIn()) trig.textContent = d.account;
   }
@@ -39,12 +41,19 @@
     var menu = document.getElementById("acctMenu");
     if (!dd || !btn || !menu) return;
     function close() { menu.hidden = true; btn.setAttribute("aria-expanded", "false"); }
-    function open() { menu.hidden = false; btn.setAttribute("aria-expanded", "true"); }
+    function open() {
+      // Only one header menu open at a time.
+      ["servicesMenu", "langMenu", "mobileNavMenu"].forEach(function (id) {
+        var el = document.getElementById(id); if (el) el.hidden = true;
+      });
+      var mb = document.getElementById("mobileNavBackdrop"); if (mb) mb.hidden = true;
+      menu.hidden = false; btn.setAttribute("aria-expanded", "true");
+    }
     btn.addEventListener("click", function (e) {
       e.stopPropagation();
       if (menu.hidden) open(); else close();
     });
-    document.addEventListener("click", function (e) { if (!dd.contains(e.target)) close(); });
+    document.addEventListener("click", function (e) { if (!dd.contains(e.target)) close(); }, true);
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && !menu.hidden) { close(); btn.focus(); }
     });

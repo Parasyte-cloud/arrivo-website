@@ -261,3 +261,9 @@ html[data-theme="dark"] .service-card:hover .service-card-cta { background: var(
   .hero-split-inner { gap: 16px; }
   .hero-copy .hero-sub { font-size: 14.5px; }
 }
+
+/* Long translations (fr/es/pt) must not push the header past the viewport */
+@media (max-width: 640px) {
+  .header-inner, .header-actions { min-width: 0; }
+  .header-actions > a.btn { max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
