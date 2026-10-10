@@ -125,7 +125,7 @@ const I18N = {
       cta: "Get notified",
       express: "ArrivoExpress",
       removals: "ArrivoRemovals",
-      chauffeur: "Chauffeur",
+      chauffeur: "ArrivoChauffeur",
       membership: "Membership",
     },
     services: {
@@ -782,7 +782,7 @@ const I18N = {
       cta: "Être prévenu",
       express: "ArrivoExpress",
       removals: "ArrivoRemovals",
-      chauffeur: "Chauffeur",
+      chauffeur: "ArrivoChauffeur",
       membership: "Abonnement",
     },
     services: {
@@ -1434,7 +1434,7 @@ I18N.zh = {
     cta: "获取通知",
     express: "ArrivoExpress",
     removals: "ArrivoRemovals",
-    chauffeur: "专职司机",
+    chauffeur: "ArrivoChauffeur",
     membership: "会员",
   },
   services: {
@@ -2087,7 +2087,7 @@ I18N.de = {
     cta: "Benachrichtigen",
     express: "ArrivoExpress",
     removals: "ArrivoRemovals",
-    chauffeur: "Chauffeur",
+    chauffeur: "ArrivoChauffeur",
     membership: "Mitgliedschaft",
   },
   services: {
@@ -2738,7 +2738,7 @@ I18N.hi = {
     cta: "सूचित करें",
     express: "ArrivoExpress",
     removals: "ArrivoRemovals",
-    chauffeur: "शोफ़र",
+    chauffeur: "ArrivoChauffeur",
     membership: "सदस्यता",
   },
   services: {
@@ -3389,7 +3389,7 @@ I18N.es = {
     cta: "Notificarme",
     express: "ArrivoExpress",
     removals: "ArrivoRemovals",
-    chauffeur: "Chófer",
+    chauffeur: "ArrivoChauffeur",
     membership: "Membresía",
   },
   services: {
@@ -4040,7 +4040,7 @@ I18N.pt = {
     cta: "Notificar-me",
     express: "ArrivoExpress",
     removals: "ArrivoRemovals",
-    chauffeur: "Motorista",
+    chauffeur: "ArrivoChauffeur",
     membership: "Assinatura",
   },
   services: {
