@@ -285,6 +285,11 @@ html[data-theme="dark"] .skip-link { background: var(--amber); color: #12123B; }
   letter-spacing: -.02em;
   margin: 10px 0 18px;
 }
+.hero-copy h1 {
+  font-family: 'Poppins', 'Space Grotesk', sans-serif;
+  font-style: italic;
+  font-weight: 700;
+}
 .hero-copy h1 .brand-ride { color: #fff; }
 .hero-copy h1 .brand-arrivo { color: var(--amber); }
 .hero-copy .hero-sub { max-width: 520px; font-size: 16.5px; line-height: 1.55; }
@@ -596,4 +601,58 @@ html[data-theme="dark"] .faq-item[open] { box-shadow: 0 14px 32px rgba(0,0,0,.45
 @media (prefers-reduced-motion: reduce) {
   .faq-item, .faq-icon, .faq-icon::before, .faq-icon::after { transition: none; }
   .faq-item:hover { transform: none; }
+}
+
+/* Hero icons (Font Awesome Free, CC BY 4.0). Sized in em so they follow the text,
+   coloured with currentColor so hover and focus states carry over. */
+.ico { width: 1.15em; height: 1.15em; flex: none; }
+.hero-chips a { gap: 9px; }
+.hero-chips a .ico { width: 1.2em; height: 1.2em; }
+.hero-trust li { gap: 12px; }
+.hero-trust .ico { width: 1.7em; height: 1.7em; color: var(--amber); }
+
+/* Logo lettering as the last line of the English headline. */
+.hero-copy h1 .hero-wm { display: block; position: relative; width: fit-content; margin-top: .12em; }
+.hero-copy h1 .hero-wordmark { display: block; height: 1.02em; width: auto; }
+/* A second copy of the lettering that carries the glow. It is cut off just before
+   the A, so only "Arrivo" lights up. The cut uses negative insets so the glow can
+   spill past the top, bottom and right edges (a filter is applied before the clip). */
+.hero-copy h1 .hero-wordmark-glow {
+  position: absolute; left: 0; top: 0; height: 100%; width: auto;
+  clip-path: inset(-40% -12% -40% 47%);
+  filter: drop-shadow(0 0 14px rgba(255,150,10,.85));
+  opacity: 0; pointer-events: none;
+}
+
+/* Play icon on the secondary hero button. */
+.btn-ghost .ico-play { width: 1.5em; height: 1.5em; margin-left: 10px; vertical-align: -0.38em; }
+
+/* Pin inside the pickup and destination fields. */
+.hf-field .hf-pin { position: absolute; left: 14px; top: 24px; transform: translateY(-50%); width: 1em; height: 1em; color: #fff; pointer-events: none; }
+.hf-field .hf-input { padding-left: 42px; }
+
+/* Headline intro, "touchdown": each line glides in from the left with extra slant
+   and settles into the normal italic; the logo lettering lands last and gives
+   one soft glow. Runs only while html has .hero-intro (set in the page head, and
+   never set when the visitor prefers reduced motion). Transform, opacity and
+   filter only, so it stays on the compositor. */
+.hero-copy h1 .hl-line { display: block; }
+@keyframes hl-touchdown {
+  from { opacity: 0; transform: translateX(-46px) skewX(-12deg); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes hl-logo-in {
+  from { opacity: 0; transform: translateX(-34px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes hl-glow { 0%, 100% { opacity: 0; } 45% { opacity: 1; } }
+@keyframes hl-fade { from { opacity: 0; } to { opacity: 1; } }
+.hero-intro .hero-copy h1 .hl-line { animation: hl-touchdown .85s cubic-bezier(.16,1,.3,1) both; }
+.hero-intro .hero-copy h1 .hl-line:nth-child(2) { animation-delay: .16s; }
+.hero-intro .hero-copy h1 .hero-wm { animation: hl-logo-in .8s cubic-bezier(.16,1,.3,1) .42s both; }
+.hero-intro .hero-copy h1 .hero-wordmark-glow { animation: hl-glow 1.3s ease-in-out 1.15s 1 both; }
+/* Other languages have no split lines: a plain fade of the whole headline. */
+.hero-intro .hero-copy h1:not(:has(.hl-line)) { animation: hl-fade .7s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-intro .hero-copy h1, .hero-intro .hero-copy h1 * { animation: none !important; }
 }
