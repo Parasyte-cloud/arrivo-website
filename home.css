@@ -817,3 +817,13 @@ html[data-theme="dark"] .faq-item[open] { box-shadow: 0 14px 32px rgba(0,0,0,.45
   .hero-copy .hero-family-label { order: 6; margin: 4px 0 -8px; }
   .hero-copy .hero-chips { order: 7; margin: 0; }
 }
+
+
+/* The written logo inside a heading ("One app. Five ways to [RideArrivo]").
+   Sized from the heading's own font size so it scales with the text. The light
+   and dark artwork swap with the theme, like the header logo. */
+.inline-wm { height: .86em; width: auto; vertical-align: -.14em; margin-left: .04em; }
+.inline-wm.wm-on-dark { display: none; }
+.inline-wm.wm-on-light { display: inline-block; }
+html[data-theme="dark"] .inline-wm.wm-on-light { display: none; }
+html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }

@@ -98,7 +98,7 @@
         <ul class="nav-dropdown-menu" id="servicesMenu" role="menu" hidden>
           <li><a href="express.html" role="menuitem">ArrivoExpress</a></li>
           <li><a href="https://move.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoRemovals</a></li>
-          <li><a href="charter-booking.html" role="menuitem" data-i18n="nav.chauffeur">Chauffeur</a></li>
+          <li><a href="charter-booking.html" role="menuitem" data-i18n="nav.chauffeur">ArrivoChauffeur</a></li>
           <li><a href="https://boat.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoBoat</a></li>
           <li><a href="https://air.ridearrivo.com" target="_blank" rel="noopener" role="menuitem">ArrivoAir</a></li>
           <li><a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" role="menuitem" data-i18n="nav.membership">Membership</a></li>
@@ -116,7 +116,7 @@
       <span class="mobile-nav-menu-label" data-i18n="ui.services">Services</span>
       <a href="express.html">ArrivoExpress</a>
       <a href="https://move.ridearrivo.com" target="_blank" rel="noopener">ArrivoRemovals</a>
-      <a href="charter-booking.html" data-i18n="nav.chauffeur">Chauffeur</a>
+      <a href="charter-booking.html" data-i18n="nav.chauffeur">ArrivoChauffeur</a>
       <a href="https://boat.ridearrivo.com" target="_blank" rel="noopener">ArrivoBoat</a>
       <a href="https://air.ridearrivo.com" target="_blank" rel="noopener">ArrivoAir</a>
       <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" data-i18n="nav.membership">Membership</a>
@@ -342,10 +342,11 @@
     // purpose: the button simply won't render until that's set up, so
     // nothing breaks in the meantime. Once you have it:
     //   1. Fill in APPLE_WEB_SERVICES_ID below with the Services ID string.
-    //   2. Add that same string to APPLE_BUNDLE_IDS on Render (comma-separated
-    //      alongside com.arrivo.app,com.arrivo.driver) -- the backend checks
-    //      the token's audience against that list.
-    var APPLE_WEB_SERVICES_ID = "";
+    //   2. Set APPLE_ADDITIONAL_CLIENT_IDS=com.ridearrivo.web on Render. The
+    //      backend checks the token's audience against its trusted list; the
+    //      two native iOS apps are built in, a web Services ID is added only
+    //      through this variable. (APPLE_BUNDLE_IDS is deprecated and ignored.)
+    var APPLE_WEB_SERVICES_ID = "com.ridearrivo.web";
 
     function handleAppleCredential(idToken) {
       submitOAuth("/api/auth/apple", { identityToken: idToken, role: "rider", agreedToTerms: true });
