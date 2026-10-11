@@ -6,7 +6,7 @@ const I18N = {
   en: {
     ui: {
       skip: "Skip to content",
-      register: "Register or Login",
+      register: "Log in",
       myAccount: "My Account",
       navPrimary: "Primary",
       navMobile: "Mobile",
@@ -665,7 +665,7 @@ const I18N = {
   fr: {
     ui: {
       skip: "Aller au contenu",
-      register: "S'inscrire ou se connecter",
+      register: "Se connecter",
       myAccount: "Mon compte",
       navPrimary: "Principale",
       navMobile: "Mobile",
@@ -1319,7 +1319,7 @@ const I18N = {
 I18N.zh = {
   ui: {
     skip: "跳到主要内容",
-    register: "注册或登录",
+    register: "登录",
     myAccount: "我的账户",
     navPrimary: "主导航",
     navMobile: "移动端导航",
@@ -1974,7 +1974,7 @@ if (typeof module !== "undefined") module.exports = I18N;
 I18N.de = {
   ui: {
     skip: "Zum Inhalt springen",
-    register: "Registrieren oder anmelden",
+    register: "Anmelden",
     myAccount: "Mein Konto",
     navPrimary: "Hauptnavigation",
     navMobile: "Mobil",
@@ -2627,7 +2627,7 @@ I18N.de = {
 I18N.hi = {
   ui: {
     skip: "मुख्य सामग्री पर जाएं",
-    register: "रजिस्टर या लॉग इन करें",
+    register: "लॉग इन करें",
     myAccount: "मेरा खाता",
     navPrimary: "मुख्य",
     navMobile: "मोबाइल",
@@ -3280,7 +3280,7 @@ I18N.hi = {
 I18N.es = {
   ui: {
     skip: "Saltar al contenido",
-    register: "Registrarse o iniciar sesión",
+    register: "Iniciar sesión",
     myAccount: "Mi cuenta",
     navPrimary: "Principal",
     navMobile: "Móvil",
@@ -3933,7 +3933,7 @@ I18N.es = {
 I18N.pt = {
   ui: {
     skip: "Ir para o conteúdo",
-    register: "Registar ou iniciar sessão",
+    register: "Iniciar sessão",
     myAccount: "A minha conta",
     navPrimary: "Principal",
     navMobile: "Móvel",

@@ -176,13 +176,13 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    // Homepage account link: shows "Register or Login" for a first-time
+    // Homepage account link: shows "Log in" for a first-time
     // visitor, or routes straight to their profile if they're already
     // signed in -- checked fresh on every load, not cached in the markup.
     function initAccountNav() {
       var isLoggedIn = !!localStorage.getItem("arrivo_rider_token");
       var dest = isLoggedIn ? "account.html" : "login.html";
-      var label = isLoggedIn ? "My Account" : "Register or Login";
+      var label = isLoggedIn ? "My Account" : "Log in";
 
       [
         { link: "accountNavLink", text: "accountNavLabel" },

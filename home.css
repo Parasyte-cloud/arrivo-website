@@ -845,48 +845,63 @@ html[data-theme="dark"] .inline-wm.wm-on-light { display: none; }
 html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
 
 /* ---------- Hero service chips: icon first, name on hover ---------- */
-/* All five collapse to a true circle: min-width matches the 48px min-height
-   and the padding is zero, so border-radius 999px gives a circle rather than
-   the slightly tall oval a horizontal padding left behind.
+/* Five circles, each showing its name on hover or keyboard focus.
 
-   Only the label's max-width animates. An earlier version moved the chip
-   width, the chip padding, the label max-width and a margin together, which
-   reflowed the whole flex row every frame and stuttered. The chip grows
-   because its content does, so there is no width to animate; the gap either
-   side of the label is the label's own padding, clipped at max-width 0 by
-   border-box.
+   The icon never moves. The chip's side padding is fixed so that, at rest,
+   padding + 18px icon + padding + 1.5px borders comes to exactly 48px, which
+   is the circle. On hover only the label grows, to the right of the icon,
+   so the icon stays where it was instead of being pushed to the left edge.
 
-   Scoped to (hover: hover) and (pointer: fine): a touch screen has no hover,
-   so on phones every name stays visible exactly as before. */
+   The label animates with grid-template-columns 0fr -> 1fr rather than a
+   max-width guess. A max-width of 220px animates towards 220px whatever the
+   real label width, so the visible motion ends early on the way out and
+   starts late on the way back, which reads as a jolt. The grid track
+   animates to the label's actual width, so the motion is the same length
+   in both directions.
+
+   Expanding is .65s, collapsing .45s. The curve starts moving at once, so the
+   hover never feels like it lagged, but spreads the motion out instead of
+   snapping most of the way open and then drifting the rest: slow and soft when you arrive, quicker
+   to get out of the way when you leave.
+
+   Scoped to (hover: hover) and (pointer: fine). On a phone there is no
+   hover, so every name stays visible exactly as before. */
 @media (hover: hover) and (pointer: fine) {
   .hero-chips a {
     min-width: 48px;
-    padding: 0;
+    padding: 0 calc((48px - 18px - 3px) / 2);
     gap: 0;
-    justify-content: center;
+    justify-content: flex-start;
   }
-  /* The label stays in the document, just measured to nothing, so screen
-     readers still announce the link name. display:none would remove it. */
-  /* Padding is zero at rest. Under border-box, padding cannot shrink below
-     its own size, so a 9px + 13px padding on a max-width 0 label still took
-     22px and pushed the icon off centre. It only opens on hover. */
-  .hero-chips a span {
-    display: inline-block;
-    box-sizing: border-box;
-    padding: 0;
-    max-width: 0;
+  .hero-chips a .ico {
+    width: 18px;
+    height: 18px;
+    flex: none;
+  }
+  /* The name stays in the document, measured to nothing, so screen readers
+     still announce it. display:none would remove it. */
+  .hero-chips a .chip-lab {
+    display: grid;
+    grid-template-columns: 0fr;
+    padding-left: 0;
     opacity: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    transition: max-width .42s cubic-bezier(.22, .61, .36, 1),
-                padding .42s cubic-bezier(.22, .61, .36, 1),
-                opacity .28s ease .08s;
+    transition: grid-template-columns .45s cubic-bezier(.25, .6, .3, 1),
+                padding-left .45s cubic-bezier(.25, .6, .3, 1),
+                opacity .2s ease;
   }
-  .hero-chips a:hover span,
-  .hero-chips a:focus-visible span {
-    max-width: 220px;
-    padding: 0 16px 0 9px;
+  .hero-chips a .chip-lab > span {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .hero-chips a:hover .chip-lab,
+  .hero-chips a:focus-visible .chip-lab {
+    grid-template-columns: 1fr;
+    padding-left: 10px;
     opacity: 1;
+    transition: grid-template-columns .65s cubic-bezier(.25, .6, .3, 1),
+                padding-left .65s cubic-bezier(.25, .6, .3, 1),
+                opacity .4s ease .1s;
   }
 }
 
@@ -914,7 +929,30 @@ html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
 
 @media (prefers-reduced-motion: reduce) {
   .hero-chips a,
-  .hero-chips a span,
+  .hero-chips a .chip-lab,
   .hero-ctas .btn-ghost::before { transition: none; }
 }
 
+
+/* ---------- Header: quieter utility controls ---------- */
+/* The theme button and the language picker were outlined, which made two
+   settings louder than "Log in" and the nav links beside them. They now sit
+   flat and take a soft fill on hover, so the eye goes to the actions that
+   matter. currentColor keeps the fill right in both themes. The floating
+   side header (.is-side) is left alone: it uses the outlines as its round
+   buttons. */
+.site-header:not(.is-side) .header-actions .theme-toggle,
+.site-header:not(.is-side) .header-actions .lang-trigger {
+  border-color: transparent;
+  transition: background-color .2s ease, border-color .2s ease;
+}
+.site-header:not(.is-side) .header-actions .theme-toggle:hover,
+.site-header:not(.is-side) .header-actions .lang-trigger:hover,
+.site-header:not(.is-side) .header-actions .lang-trigger[aria-expanded="true"] {
+  background-color: color-mix(in srgb, currentColor 12%, transparent);
+}
+.site-header .header-actions .theme-toggle:focus-visible,
+.site-header .header-actions .lang-trigger:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
