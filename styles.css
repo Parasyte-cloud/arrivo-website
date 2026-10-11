@@ -1730,3 +1730,10 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
 @media (max-width: 640px) {
   .page-banner { border-radius: 14px; aspect-ratio: 3 / 2; margin-bottom: 16px; }
 }
+
+/* Long translations (fr, pt) must not push the header past a 360px screen.
+   Also lives in ux-polish.css; here so pages that do not load it are covered. */
+@media (max-width: 640px) {
+  .header-inner, .header-actions { min-width: 0; }
+  .header-actions > a.btn { max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
