@@ -53,7 +53,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,600;0,700;1,700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,600;0,700;1,700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="styles.css?v=35">
-<link rel="stylesheet" href="home.css?v=32">
+<link rel="stylesheet" href="home.css?v=38">
   <script>
     // The launch gate only matters before launch day ends. After that, do not
     // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
@@ -305,27 +305,29 @@
           <button type="button" class="hf-tab" data-mode="dropoff" aria-pressed="false" data-i18n="home.formTabSchedule">Schedule</button>
           <button type="button" class="hf-tab" data-mode="chauffeur" aria-pressed="false" data-i18n="home.formTabChauffeur">Chauffeur</button>
         </div>
-        <label class="hf-label" for="hfPickup" data-i18n="home.formPickup">Pickup</label>
-        <div class="hf-field"><svg class="ico hf-pin" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg><input class="hf-input" id="hfPickup" name="pickup" type="text" autocomplete="off" maxlength="200" data-i18n-placeholder="home.formPickupPh" placeholder="Airport, hotel or address"></div>
-        <label class="hf-label" id="hfDestLabel" for="hfDest" data-i18n="home.formDest">Destination</label>
-        <div class="hf-field" id="hfDestField"><svg class="ico hf-pin" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg><input class="hf-input" id="hfDest" name="destination" type="text" autocomplete="off" maxlength="200" data-i18n-placeholder="home.formDestPh" placeholder="Where to?"></div>
-        <div class="hf-when" id="hfWhen" hidden>
-          <div>
-            <label class="hf-label" for="hfDate" data-i18n="home.formDate">Date</label>
-            <input class="hf-input" id="hfDate" name="date" type="date">
+        <div class="hf-body" id="hfBody">
+          <label class="hf-label" for="hfPickup" data-i18n="home.formPickup">Pickup</label>
+          <div class="hf-field"><svg class="ico hf-pin" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg><input class="hf-input" id="hfPickup" name="pickup" type="text" autocomplete="off" maxlength="200" data-i18n-placeholder="home.formPickupPh" placeholder="Airport, hotel or address"></div>
+          <label class="hf-label" id="hfDestLabel" for="hfDest" data-i18n="home.formDest">Destination</label>
+          <div class="hf-field" id="hfDestField"><svg class="ico hf-pin" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg><input class="hf-input" id="hfDest" name="destination" type="text" autocomplete="off" maxlength="200" data-i18n-placeholder="home.formDestPh" placeholder="Where to?"></div>
+          <div class="hf-when" id="hfWhen" hidden>
+            <div>
+              <label class="hf-label" for="hfDate" data-i18n="home.formDate">Date</label>
+              <input class="hf-input" id="hfDate" name="date" type="date">
+            </div>
+            <div>
+              <label class="hf-label" for="hfTime" data-i18n="home.formTime">Time</label>
+              <input class="hf-input" id="hfTime" name="time" type="time">
+            </div>
           </div>
-          <div>
-            <label class="hf-label" for="hfTime" data-i18n="home.formTime">Time</label>
-            <input class="hf-input" id="hfTime" name="time" type="time">
+          <div id="hfDurationBlock" hidden>
+            <label class="hf-label" for="hfDuration" data-i18n="home.formDuration">Hire for</label>
+            <select class="hf-input" id="hfDuration" name="duration">
+              <option value="Full day" data-i18n="home.formDurDay">Full day</option>
+              <option value="Full week" data-i18n="home.formDurWeek">Full week</option>
+              <option value="Full month" data-i18n="home.formDurMonth">Full month</option>
+            </select>
           </div>
-        </div>
-        <div id="hfDurationBlock" hidden>
-          <label class="hf-label" for="hfDuration" data-i18n="home.formDuration">Hire for</label>
-          <select class="hf-input" id="hfDuration" name="duration">
-            <option value="Full day" data-i18n="home.formDurDay">Full day</option>
-            <option value="Full week" data-i18n="home.formDurWeek">Full week</option>
-            <option value="Full month" data-i18n="home.formDurMonth">Full month</option>
-          </select>
         </div>
         <p class="hf-error" id="hfError" role="alert" hidden></p>
         <button type="submit" class="btn btn-primary hf-submit" data-i18n="home.formSubmit">See vehicles and price →</button>
@@ -857,7 +859,7 @@
   <script src="maps-config.js"></script>
   <script src="supabase-config.js?v=1" defer></script>
   <script src="late-request.js?v=1" defer></script>
-  <script src="hero-form.js?v=10" defer></script>
+  <script src="hero-form.js?v=12" defer></script>
   <script src="hero-slides.js?v=3" defer></script>
   <script src="header-move.js?v=4" defer></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
