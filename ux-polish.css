@@ -128,36 +128,81 @@ html[data-theme="dark"] .mobile-nav-tag { color: #B4B9D6; border-color: rgba(255
 .hero-ctas .btn-ghost:hover { background: rgba(255,255,255,.14); border-color: #fff; }
 .hero-ctas .btn-ghost .ico-play { color: #fff; }
 
-/* ---------- Hero: five ways as tappable action tiles ---------- */
-.hero-family-label { text-transform: none; letter-spacing: .01em; font-size: 14px; font-weight: 700; color: #fff; }
-.ways { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 24px; }
-.way {
-  display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 14px;
-  border-radius: 16px; text-decoration: none; color: #fff;
-  background: rgba(10,12,40,.62); border: 1.5px solid rgba(255,255,255,.34);
-  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-  transition: transform .15s ease, border-color .15s ease, background .15s ease;
+/* ---------- Hero: five services as icons that open on hover ---------- */
+/* Same as the service chips on the hero branch: just the icon, the name slides
+   out on hover or focus. Phones always show the names (no hover there). */
+@media (hover: hover) and (pointer: fine) {
+  .hero-chips a {
+    min-width: 48px;
+    padding: 0 calc((48px - 18px - 3px) / 2);
+    gap: 0;
+    justify-content: flex-start;
+  }
+  .hero-chips a .ico {
+    width: 18px;
+    height: 18px;
+    flex: none;
+  }
+  /* grid 0fr -> 1fr animates to the real label width. max-width made it
+     jumpy. Don't use display:none, screen readers still need the name. */
+  .hero-chips a .chip-lab {
+    display: grid;
+    grid-template-columns: 0fr;
+    padding-left: 0;
+    opacity: 0;
+    transition: grid-template-columns .45s cubic-bezier(.25, .6, .3, 1),
+                padding-left .45s cubic-bezier(.25, .6, .3, 1),
+                opacity .2s ease;
+  }
+  .hero-chips a .chip-lab > span {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .hero-chips a:hover .chip-lab,
+  .hero-chips a:focus-visible .chip-lab {
+    grid-template-columns: 1fr;
+    padding-left: 10px;
+    opacity: 1;
+    transition: grid-template-columns .65s cubic-bezier(.25, .6, .3, 1),
+                padding-left .65s cubic-bezier(.25, .6, .3, 1),
+                opacity .4s ease .1s;
+  }
 }
-.way:hover, .way:focus-visible { transform: translateY(-2px); border-color: var(--amber); background: rgba(10,12,40,.82); outline: none; }
-.way:focus-visible { box-shadow: 0 0 0 3px rgba(244,163,0,.55); }
-.way-ico { flex: none; width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: rgba(255,255,255,.14); }
-.way-ico .ico { width: 20px; height: 20px; }
-.way-txt { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
-.way-txt b { font-size: 15px; font-weight: 700; }
-.way-txt small { font-size: 12.5px; color: rgba(255,255,255,.82); font-weight: 500; }
-.way-go { margin-left: auto; font-size: 18px; font-weight: 700; color: var(--amber); transition: transform .15s ease; }
-.way:hover .way-go { transform: translateX(3px); }
-.way-primary { grid-column: 1 / -1; background: var(--amber); border-color: var(--amber); color: #12123B; }
-.way-primary:hover, .way-primary:focus-visible { background: #FFB627; border-color: #FFB627; }
-.way-primary .way-ico { background: rgba(18,18,59,.14); }
-.way-primary .way-txt small { color: rgba(18,18,59,.82); }
-.way-primary .way-go { color: #12123B; }
-@media (max-width: 979px) { .hero-copy .ways { order: 7; margin: 0; } }
-@media (max-width: 479px) {
-  .way { flex-wrap: wrap; align-content: center; gap: 8px 10px; padding: 12px; }
-  .way:not(.way-primary) .way-go { display: none; }
-  .way:not(.way-primary) .way-txt { flex-basis: 100%; }
-  .way:not(.way-primary) { min-height: 96px; align-items: flex-start; }
+
+/* No amber on this one, that's the form button's job. */
+.hero-chips a.chip-primary {
+  background: rgba(255,255,255,.20);
+  border-color: rgba(255,255,255,.72);
+  color: #fff;
+}
+.hero-chips a.chip-primary:hover { background: var(--amber); border-color: var(--amber); color: #12123B; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-chips a, .hero-chips a .chip-lab { transition: none; }
+}
+
+@media (max-width: 640px) {
+  /* Services in one swipeable row instead of three rows of big pills. */
+  .hero-chips {
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+    -webkit-mask-image: linear-gradient(to right, #000 85%, transparent);
+    mask-image: linear-gradient(to right, #000 85%, transparent);
+  }
+  .hero-chips::-webkit-scrollbar { display: none; }
+  .hero-chips a {
+    flex: none;
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: 14px;
+    scroll-snap-align: start;
+  }
+  .hero-chips a:last-child { margin-right: 40px; }
 }
 
 /* ---------- Five ways cards: obvious, tappable, with a real button ---------- */
@@ -213,7 +258,7 @@ html[data-theme="dark"] .download-login { color: #A9C0F5; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .way, .service-card, .way-go, .acct-chev { transition: none; }
+  .service-card, .acct-chev { transition: none; }
 }
 
 /* ---------- Narrow phones: ride tabs stay on one line; footer contact column fits its button ---------- */
