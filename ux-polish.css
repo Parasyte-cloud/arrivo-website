@@ -1,0 +1,269 @@
+/* ==========================================================================
+   UX polish layer. Loaded after home.css so it only refines what is already
+   there: clearer actions, a real account menu, a readable mobile header, a
+   footer whose links look like links. No existing rule is deleted.
+   ========================================================================== */
+
+/* ---------- Header: Become a driver link (desktop) ---------- */
+.main-nav a.nav-driver-link {
+  border: 1.5px solid var(--amber);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background .15s ease, color .15s ease;
+}
+.main-nav a.nav-driver-link:hover,
+.main-nav a.nav-driver-link:focus-visible { background: var(--amber); color: #12123B; }
+
+/* ---------- Header: account dropdown ---------- */
+.acct-dd { position: relative; }
+.acct-trigger {
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 40px; padding: 0 12px;
+  border: 1px solid var(--card-border); border-radius: 999px;
+  background: transparent; color: var(--ink);
+  font: inherit; font-size: 13px; font-weight: 600; white-space: nowrap;
+  cursor: pointer; transition: border-color .15s ease, background .15s ease;
+}
+.acct-trigger:hover, .acct-trigger[aria-expanded="true"] { border-color: var(--amber); background: rgba(244,163,0,.10); }
+.acct-trigger:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+.acct-trigger > svg:first-child { width: 18px; height: 18px; flex-shrink: 0; }
+.acct-chev { transition: transform .15s ease; flex-shrink: 0; }
+.acct-trigger[aria-expanded="true"] .acct-chev { transform: rotate(180deg); }
+.acct-menu {
+  position: absolute; right: 0; top: calc(100% + 10px); z-index: 70;
+  width: 300px; max-width: calc(100vw - 24px);
+  margin: 0; padding: 8px; list-style: none;
+  background: #fff; color: var(--ink);
+  border: 1px solid var(--card-border); border-radius: 18px;
+  box-shadow: 0 18px 40px rgba(18,18,59,.22);
+}
+.acct-menu[hidden] { display: none; }
+.acct-menu-head {
+  padding: 8px 12px 6px; font-size: 11px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted);
+}
+.acct-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 12px; border-radius: 12px;
+  color: inherit; text-decoration: none; min-height: 52px;
+}
+.acct-item:hover, .acct-item:focus-visible { background: var(--primary-tint); outline: none; }
+.acct-item-ico {
+  flex: none; width: 36px; height: 36px; border-radius: 10px;
+  display: grid; place-items: center; background: var(--primary-tint); color: var(--primary);
+}
+.acct-item-ico svg { width: 20px; height: 20px; }
+.acct-item-txt { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.acct-item-txt strong { font-size: 14px; font-weight: 700; }
+.acct-item-txt small { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+.acct-item-apply { margin-top: 4px; border-top: 1px solid var(--card-border); border-radius: 0 0 12px 12px; }
+.acct-item-apply .acct-item-ico { background: rgba(244,163,0,.18); color: var(--amber-text); }
+html[data-theme="dark"] .acct-menu { background: #14173F; color: #F3F3FA; border-color: rgba(255,255,255,.14); }
+html[data-theme="dark"] .acct-item:hover, html[data-theme="dark"] .acct-item:focus-visible { background: rgba(255,255,255,.08); }
+html[data-theme="dark"] .acct-item-ico { background: rgba(255,255,255,.08); color: #A9C0F5; }
+html[data-theme="dark"] .acct-item-apply .acct-item-ico { color: var(--amber); }
+html[data-theme="dark"] .acct-menu-head, html[data-theme="dark"] .acct-item-txt small { color: #B4B9D6; }
+
+/* ---------- Header on phones: room for the wordmark ---------- */
+@media (max-width: 859px), (min-width: 860px) and (max-width: 1139px) {
+  /* The same link lives in the Sign in menu, so drop it where the header is tight. */
+  .main-nav a.nav-driver-link { display: none; }
+}
+@media (min-width: 860px) and (max-width: 1139px) {
+  .acct-trigger-text { display: none; }
+  .acct-trigger { padding: 0 10px; gap: 5px; }
+}
+@media (max-width: 640px) {
+  .header-actions > .lang-dropdown { display: none; }
+  .acct-trigger { padding: 0 10px; gap: 5px; min-height: 40px; }
+  .acct-trigger-text { display: none; }
+  .acct-menu { position: fixed; left: 12px; right: 12px; top: 64px; width: auto; max-width: none; }
+}
+@media (max-width: 400px) {
+  html:not([data-theme="dark"]) .site-header .brand-wordmark.wm-on-light { display: block; height: 15px; }
+  html[data-theme="dark"] .site-header .brand-wordmark.wm-on-dark { display: block; height: 15px; }
+}
+@media (max-width: 380px) {
+  .site-header .logo-wrap { display: none; }
+  .header-actions { gap: 6px; }
+  .btn-sm { padding-left: 11px; padding-right: 11px; }
+}
+
+/* ---------- Mobile menu: scrolls, groups, clear driver and contact actions ---------- */
+.mobile-nav-menu {
+  max-height: calc(100vh - 92px);
+  max-height: calc(100dvh - 92px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.mobile-nav-menu a { min-height: 44px; display: flex; align-items: center; justify-content: space-between; font-size: 15px; }
+.mobile-nav-tag {
+  font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--text-muted); border: 1px solid var(--card-border); border-radius: 999px; padding: 3px 9px;
+}
+.mobile-nav-menu a.mobile-nav-cta {
+  margin: 10px 0 4px; justify-content: center; border: 0;
+  background: var(--amber); color: #12123B; border-radius: 14px; font-weight: 800;
+}
+.mobile-nav-menu a.mobile-nav-cta:hover, .mobile-nav-menu a.mobile-nav-cta:active { color: #12123B; background: #FFB627; }
+.mobile-nav-menu a.mobile-nav-contact { border-bottom: 1px solid var(--card-border); }
+.mobile-lang-row { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0 6px; }
+.mobile-lang-row .lang-opt {
+  min-height: 40px; min-width: 48px; padding: 0 12px; border-radius: 999px;
+  border: 1px solid var(--card-border); background: transparent; color: var(--ink);
+  font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.mobile-lang-row .lang-opt:hover, .mobile-lang-row .lang-opt:focus-visible { border-color: var(--amber); outline: none; }
+html[data-theme="dark"] .mobile-lang-row .lang-opt { color: #F3F3FA; border-color: rgba(255,255,255,.2); }
+html[data-theme="dark"] .mobile-nav-tag { color: #B4B9D6; border-color: rgba(255,255,255,.2); }
+@media (min-width: 860px) { .mobile-lang-row { display: none; } }
+
+/* ---------- Hero: membership button and secondary button ---------- */
+.hero-ctas .btn-ghost {
+  background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.75);
+}
+.hero-ctas .btn-ghost::before { display: none; }
+.hero-ctas .btn-ghost:hover { background: rgba(255,255,255,.14); border-color: #fff; }
+.hero-ctas .btn-ghost .ico-play { color: #fff; }
+
+/* ---------- Hero: five ways as tappable action tiles ---------- */
+.hero-family-label { text-transform: none; letter-spacing: .01em; font-size: 14px; font-weight: 700; color: #fff; }
+.ways { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 24px; }
+.way {
+  display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 14px;
+  border-radius: 16px; text-decoration: none; color: #fff;
+  background: rgba(10,12,40,.62); border: 1.5px solid rgba(255,255,255,.34);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  transition: transform .15s ease, border-color .15s ease, background .15s ease;
+}
+.way:hover, .way:focus-visible { transform: translateY(-2px); border-color: var(--amber); background: rgba(10,12,40,.82); outline: none; }
+.way:focus-visible { box-shadow: 0 0 0 3px rgba(244,163,0,.55); }
+.way-ico { flex: none; width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: rgba(255,255,255,.14); }
+.way-ico .ico { width: 20px; height: 20px; }
+.way-txt { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.way-txt b { font-size: 15px; font-weight: 700; }
+.way-txt small { font-size: 12.5px; color: rgba(255,255,255,.82); font-weight: 500; }
+.way-go { margin-left: auto; font-size: 18px; font-weight: 700; color: var(--amber); transition: transform .15s ease; }
+.way:hover .way-go { transform: translateX(3px); }
+.way-primary { grid-column: 1 / -1; background: var(--amber); border-color: var(--amber); color: #12123B; }
+.way-primary:hover, .way-primary:focus-visible { background: #FFB627; border-color: #FFB627; }
+.way-primary .way-ico { background: rgba(18,18,59,.14); }
+.way-primary .way-txt small { color: rgba(18,18,59,.82); }
+.way-primary .way-go { color: #12123B; }
+@media (max-width: 979px) { .hero-copy .ways { order: 7; margin: 0; } }
+@media (max-width: 479px) {
+  .way { flex-wrap: wrap; align-content: center; gap: 8px 10px; padding: 12px; }
+  .way:not(.way-primary) .way-go { display: none; }
+  .way:not(.way-primary) .way-txt { flex-basis: 100%; }
+  .way:not(.way-primary) { min-height: 96px; align-items: flex-start; }
+}
+
+/* ---------- Five ways cards: obvious, tappable, with a real button ---------- */
+.service-card { position: relative; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; text-decoration: none; color: inherit; }
+.service-card:hover, .service-card:focus-visible { transform: translateY(-4px); border-color: var(--amber); box-shadow: 0 18px 36px rgba(18,18,59,.14); outline: none; }
+.service-card:focus-visible { box-shadow: 0 0 0 3px var(--amber), 0 18px 36px rgba(18,18,59,.14); }
+.service-card p { flex: 1 1 auto; }
+.service-card-cta {
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  margin-top: 18px; min-height: 48px; padding: 12px 18px; border-radius: 12px;
+  background: var(--amber); color: #12123B; font-weight: 800; font-size: 15px;
+  box-shadow: 0 6px 16px rgba(244,163,0,.30);
+  transition: background .15s ease, box-shadow .15s ease;
+}
+.service-card:hover .service-card-cta, .service-card:focus-visible .service-card-cta { background: #FFB627; box-shadow: 0 10px 22px rgba(244,163,0,.42); }
+@media (max-width: 719px) {
+  .service-card-photo { aspect-ratio: 16 / 9; }
+}
+
+/* ---------- Audience cards ---------- */
+.card .audience-cta { margin-top: 18px; align-self: flex-start; }
+.cards > .card:has(.audience-cta) { display: flex; flex-direction: column; }
+.cards > .card:has(.audience-cta) p { flex: 1 1 auto; }
+
+/* ---------- Driver band ---------- */
+.download-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin: 0 0 22px; }
+.download-login { font-size: 14px; font-weight: 700; color: var(--primary); text-decoration: underline; text-underline-offset: 3px; padding: 10px 0; }
+.download-login:hover { color: var(--amber-text); }
+html[data-theme="dark"] .download-login { color: #A9C0F5; }
+
+/* ---------- Footer: links that look like links, easier to tap ---------- */
+.footer-col a { padding: 4px 0; transition: color .15s ease; }
+.footer-col a:hover, .footer-col a:focus-visible { color: var(--amber); text-decoration: underline; text-underline-offset: 3px; }
+.footer-col a.footer-contact-btn {
+  display: inline-flex; align-items: center; gap: 9px; margin: 0 0 14px;
+  padding: 11px 16px; border-radius: 12px; font-weight: 700; font-size: 14px;
+  background: var(--amber); color: #12123B; text-decoration: none;
+}
+.footer-col a.footer-contact-btn:hover, .footer-col a.footer-contact-btn:focus-visible { background: #FFB627; color: #12123B; text-decoration: none; }
+.footer-contact-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+@media (max-width: 780px) {
+  .footer-top { gap: 28px 20px; }
+  .footer-brand-col { flex-basis: 100%; }
+  .footer-col { flex: 1 1 calc(50% - 20px); }
+  .footer-col a { padding: 8px 0; margin-bottom: 2px; font-size: 14.5px; }
+  .footer-col a.footer-contact-btn { padding: 12px 16px; margin-bottom: 10px; }
+}
+
+/* ---------- How it works strip: snap so cards settle ---------- */
+@media (max-width: 719px) {
+  .how-steps { scroll-snap-type: x mandatory; scroll-padding-left: 24px; }
+  .how-step { scroll-snap-align: start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .way, .service-card, .way-go, .acct-chev { transition: none; }
+}
+
+/* ---------- Narrow phones: ride tabs stay on one line; footer contact column fits its button ---------- */
+@media (max-width: 400px) {
+  .hf-tab { white-space: nowrap; padding-left: 8px; padding-right: 8px; font-size: 13px; }
+}
+.footer-col a.footer-contact-btn { white-space: nowrap; }
+.footer-col:has(.footer-contact-btn) { flex: 1 1 200px; }
+
+/* ==========================================================================
+   Declutter pass: fewer things competing above the fold.
+   ========================================================================== */
+/* Header: the decorative clock goes; Become a driver is a plain link, not a second pill. */
+.live-clock { display: none !important; }
+.main-nav a.nav-driver-link { border: 0; border-radius: 0; padding: 8px 10px; font-weight: 600; }
+.main-nav a.nav-driver-link:hover, .main-nav a.nav-driver-link:focus-visible { background: transparent; color: var(--amber-text); text-decoration: underline; text-underline-offset: 4px; }
+html[data-theme="dark"] .main-nav a.nav-driver-link:hover { color: var(--amber); }
+
+/* Hero: one secondary action is enough ("See how it works" is in the menu). */
+.hero-ctas .btn-ghost { display: none; }
+/* Membership stays a solid, readable button in light and dark. */
+.hero .hero-ctas a.btn.btn-primary { background: var(--amber); color: #12123B !important; border: 0; }
+.hero .hero-ctas a.btn.btn-primary:hover { background: #FFB627; color: #12123B !important; }
+.hero-ctas { margin-bottom: 18px; }
+
+/* Trust points: a quiet two-by-two on phones instead of four stacked rows. */
+@media (max-width: 719px) {
+  .hero-trust { display: grid !important; grid-template-columns: 1fr 1fr; gap: 12px 10px; padding: 14px 16px; }
+  .hero-trust li { font-size: 12.5px; gap: 7px; }
+  .hero-trust .ico { width: 18px; height: 18px; }
+}
+
+/* Cards: calm navy buttons so amber stays reserved for the main booking actions. */
+.service-card-cta { background: var(--ink); color: #fff; box-shadow: none; }
+.service-card:hover .service-card-cta, .service-card:focus-visible .service-card-cta { background: var(--amber); color: #12123B; box-shadow: 0 8px 18px rgba(244,163,0,.35); }
+html[data-theme="dark"] .service-card-cta { background: rgba(255,255,255,.12); color: #fff; }
+html[data-theme="dark"] .service-card:hover .service-card-cta { background: var(--amber); color: #12123B; }
+
+/* Footer contact: outlined, not a second amber block. */
+.footer-col a.footer-contact-btn { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.4); }
+.footer-col a.footer-contact-btn:hover, .footer-col a.footer-contact-btn:focus-visible { background: var(--amber); border-color: var(--amber); color: #12123B; }
+
+/* Phone hero: tighter vertical rhythm. */
+@media (max-width: 979px) {
+  .hero-split-inner { gap: 16px; }
+  .hero-copy .hero-sub { font-size: 14.5px; }
+}
+
+/* Long translations (fr/es/pt) must not push the header past the viewport */
+@media (max-width: 640px) {
+  .header-inner, .header-actions { min-width: 0; }
+  .header-actions > a.btn { max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}

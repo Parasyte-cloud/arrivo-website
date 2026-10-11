@@ -839,9 +839,12 @@
           checkProfile();
         } else {
           localStorage.removeItem(TOKEN_KEY);
-          showSection("loginSection");
+          showSection(location.hash === "#apply" ? "signupAccountSection" : "loginSection");
         }
       });
+    } else if (location.hash === "#apply") {
+      // "Become a driver" links land straight on the application, not the login.
+      showSection("signupAccountSection");
     }
   });
 })();
