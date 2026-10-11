@@ -70,13 +70,15 @@ html[data-theme="dark"] .mobile-nav-menu .wm-on-light { display: none !important
 }
 
 /* ---------- Hero: five tiers, bold ---------- */
+/* Was uppercase, bold and bright, which made a caption compete with the
+   headline. It is a caption. */
 .hero-family-label {
   margin: 4px 0 12px;
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.82);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: .01em;
+  text-transform: none;
+  color: rgba(255,255,255,.60);
 }
 .hero-chips { gap: 10px; margin: 0 0 24px; }
 .hero-chips a {
@@ -86,12 +88,26 @@ html[data-theme="dark"] .mobile-nav-menu .wm-on-light { display: none !important
   font-weight: 700;
   border-width: 1.5px;
 }
-.hero-chips a.chip-primary {
-  background: var(--amber);
-  border-color: var(--amber);
-  color: #12123B;
+/* Membership is a secondary product, not a call to action. As a second ghost
+   pill it was an identical twin of "See how it works", which is hierarchy by
+   accident: two things that look the same are read as the same kind of thing.
+   A text link says "there is more over here" without competing. */
+.hero-ctas { align-items: center; }
+.hero-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255,255,255,.88);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1.5px solid rgba(255,255,255,.35);
+  padding-bottom: 2px;
+  transition: color .15s ease, border-color .15s ease;
 }
-.hero-chips a.chip-primary:hover { background: #FFB627; border-color: #FFB627; }
+.hero-link:hover { color: var(--amber); border-color: var(--amber); }
+.hero-link:focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
+
 
 /* ---------- How it works: image steps ---------- */
 .how-section { padding-top: 88px; }
@@ -827,3 +843,78 @@ html[data-theme="dark"] .faq-item[open] { box-shadow: 0 14px 32px rgba(0,0,0,.45
 .inline-wm.wm-on-light { display: inline-block; }
 html[data-theme="dark"] .inline-wm.wm-on-light { display: none; }
 html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
+
+/* ---------- Hero service chips: icon first, name on hover ---------- */
+/* All five collapse to a true circle: min-width matches the 48px min-height
+   and the padding is zero, so border-radius 999px gives a circle rather than
+   the slightly tall oval a horizontal padding left behind.
+
+   Only the label's max-width animates. An earlier version moved the chip
+   width, the chip padding, the label max-width and a margin together, which
+   reflowed the whole flex row every frame and stuttered. The chip grows
+   because its content does, so there is no width to animate; the gap either
+   side of the label is the label's own padding, clipped at max-width 0 by
+   border-box.
+
+   Scoped to (hover: hover) and (pointer: fine): a touch screen has no hover,
+   so on phones every name stays visible exactly as before. */
+@media (hover: hover) and (pointer: fine) {
+  .hero-chips a {
+    min-width: 48px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+  }
+  /* The label stays in the document, just measured to nothing, so screen
+     readers still announce the link name. display:none would remove it. */
+  /* Padding is zero at rest. Under border-box, padding cannot shrink below
+     its own size, so a 9px + 13px padding on a max-width 0 label still took
+     22px and pushed the icon off centre. It only opens on hover. */
+  .hero-chips a span {
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 0;
+    max-width: 0;
+    opacity: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: max-width .42s cubic-bezier(.22, .61, .36, 1),
+                padding .42s cubic-bezier(.22, .61, .36, 1),
+                opacity .28s ease .08s;
+  }
+  .hero-chips a:hover span,
+  .hero-chips a:focus-visible span {
+    max-width: 220px;
+    padding: 0 16px 0 9px;
+    opacity: 1;
+  }
+}
+
+/* RideArrivo reads as the lead service without taking amber, which belongs to
+   the one action in this viewport, the form's submit. */
+.hero-chips a.chip-primary {
+  background: rgba(255,255,255,.20);
+  border-color: rgba(255,255,255,.72);
+  color: #fff;
+}
+.hero-chips a.chip-primary:hover { background: var(--amber); border-color: var(--amber); color: #12123B; }
+
+/* The ghost button carried a permanent specular highlight (.btn-ghost::before,
+   a white radial gradient). At rest that reads as a light left switched on.
+   It now fades in on hover instead. Scoped to the hero so other pages keep
+   the button they have. */
+.hero-ctas .btn-ghost::before {
+  opacity: 0;
+  transition: opacity .32s ease, background .4s ease;
+}
+.hero-ctas .btn-ghost:hover::before,
+.hero-ctas .btn-ghost:focus-visible::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-chips a,
+  .hero-chips a span,
+  .hero-ctas .btn-ghost::before { transition: none; }
+}
+
