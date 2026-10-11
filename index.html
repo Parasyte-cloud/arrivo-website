@@ -56,6 +56,7 @@
 <link rel="stylesheet" href="home.css?v=24">
 <link rel="stylesheet" href="ux-polish.css?v=4">
 <link rel="stylesheet" href="gallery.css?v=1">
+<link rel="stylesheet" href="journey.css?v=1">
   <script>
     // The launch gate only matters before launch day ends. After that, do not
     // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
@@ -401,6 +402,36 @@
         <button type="button" class="gal-nav gal-prev"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
         <button type="button" class="gal-nav gal-next"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
         <ul class="gal-progress"></ul>
+      </div>
+    </div>
+    <div class="wrap jp-wrap" id="journey" role="group" aria-label="Your RideArrivo journey in pictures">
+      <div class="jp-stage" data-mode="all">
+        <figure class="jp" style="--pos:50% 50%">
+          <img class="jp-img" src="assets/journey/journey-1.webp" width="1200" height="1500" alt="A RideArrivo fleet vehicle" loading="lazy" decoding="async">
+          <figcaption class="jp-label"><span class="jp-num">01</span><span class="jp-word" data-i18n="idx.fleetEyebrow">Our fleet</span></figcaption>
+          <span class="jp-bar"></span>
+        </figure>
+        <figure class="jp" style="--pos:50% 50%">
+          <img class="jp-img" src="assets/journey/journey-2.webp" width="1200" height="1500" alt="A driver meeting a traveller at the airport" loading="lazy" decoding="async">
+          <figcaption class="jp-label"><span class="jp-num">02</span><span class="jp-word" data-jp>Meet</span></figcaption>
+          <span class="jp-bar"></span>
+        </figure>
+        <figure class="jp" style="--pos:50% 50%">
+          <img class="jp-img" src="assets/journey/journey-3.webp" width="1200" height="1500" alt="A passenger getting into a RideArrivo car" loading="lazy" decoding="async">
+          <figcaption class="jp-label"><span class="jp-num">03</span><span class="jp-word" data-jp>Ride</span></figcaption>
+          <span class="jp-bar"></span>
+        </figure>
+        <figure class="jp" style="--pos:50% 50%">
+          <img class="jp-img" src="assets/journey/journey-4.webp" width="1200" height="1500" alt="A rider following the trip live on the RideArrivo app" loading="lazy" decoding="async">
+          <figcaption class="jp-label"><span class="jp-num">04</span><span class="jp-word" data-jp>Track</span></figcaption>
+          <span class="jp-bar"></span>
+        </figure>
+        <figure class="jp" style="--pos:50% 50%">
+          <img class="jp-img" src="assets/journey/journey-5.webp" width="1200" height="1500" alt="A traveller arriving at a hotel in a RideArrivo car" loading="lazy" decoding="async">
+          <figcaption class="jp-label"><span class="jp-num">05</span><span class="jp-word" data-jp>Arrive</span></figcaption>
+          <span class="jp-bar"></span>
+        </figure>
+        <button type="button" class="jp-toggle" aria-pressed="false"><svg class="ico-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg><svg class="ico-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg></button>
       </div>
     </div>
   </section>
@@ -920,6 +951,7 @@
   <script src="hero-form.js?v=10" defer></script>
   <script src="hero-slides.js?v=3" defer></script>
   <script src="gallery.js?v=1" defer></script>
+  <script src="journey.js?v=1" defer></script>
   <script src="header-move.js?v=4" defer></script>
   <script src="ux-polish.js?v=3" defer></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
