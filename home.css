@@ -108,15 +108,6 @@ html[data-theme="dark"] .mobile-nav-menu .wm-on-light { display: none !important
 .hero-link:hover { color: var(--amber); border-color: var(--amber); }
 .hero-link:focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
 
-/* The RideArrivo chip keeps its label, because it names the product the form
-   books, but it is no longer amber. The form's submit is the one amber action
-   in this viewport; a second amber target 200px away was splitting the eye. */
-.hero-chips a.chip-primary {
-  background: rgba(255,255,255,.20);
-  border-color: rgba(255,255,255,.72);
-  color: #fff;
-}
-.hero-chips a.chip-primary:hover { background: var(--amber); border-color: var(--amber); color: #12123B; }
 
 /* ---------- How it works: image steps ---------- */
 .how-section { padding-top: 88px; }
@@ -854,32 +845,33 @@ html[data-theme="dark"] .inline-wm.wm-on-light { display: none; }
 html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
 
 /* ---------- Hero service chips: icon first, name on hover ---------- */
-/* The five service links read as five competing pills next to the headline
-   and the booking form. They collapse to icons on pointer devices and show
-   the name on hover or keyboard focus.
+/* All five collapse to a true circle: min-width matches the 48px min-height
+   and the padding is zero, so border-radius 999px gives a circle rather than
+   the slightly tall oval a horizontal padding left behind.
 
-   Only the label animates, and only its max-width. An earlier version moved
-   the chip width, the chip padding, the label max-width and a margin all at
-   once, which reflowed the whole flex row on every frame and stuttered. The
-   gap between icon and label is the label's own padding-left, clipped at
-   max-width 0 by border-box, so there is no margin to animate either.
+   Only the label's max-width animates. An earlier version moved the chip
+   width, the chip padding, the label max-width and a margin together, which
+   reflowed the whole flex row every frame and stuttered. The chip grows
+   because its content does, so there is no width to animate; the gap either
+   side of the label is the label's own padding, clipped at max-width 0 by
+   border-box.
 
    Scoped to (hover: hover) and (pointer: fine): a touch screen has no hover,
-   so on phones the names stay visible exactly as before. Most of our traffic
-   is a phone, so this is a desktop refinement, not the default.
-   The primary RideArrivo chip keeps its label at every size. Hiding the main
-   call to action behind a hover would be the wrong kind of tidy. */
+   so on phones every name stays visible exactly as before. */
 @media (hover: hover) and (pointer: fine) {
-  .hero-chips a:not(.chip-primary) {
-    padding: 0 13px;
+  .hero-chips a {
+    min-width: 48px;
+    padding: 0;
     gap: 0;
+    justify-content: center;
   }
   /* The label stays in the document, just measured to nothing, so screen
      readers still announce the link name. display:none would remove it. */
-  .hero-chips a:not(.chip-primary) span {
+  .hero-chips a span {
     display: inline-block;
     box-sizing: border-box;
     padding-left: 9px;
+    padding-right: 13px;
     max-width: 0;
     opacity: 0;
     white-space: nowrap;
@@ -887,14 +879,38 @@ html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
     transition: max-width .42s cubic-bezier(.22, .61, .36, 1),
                 opacity .28s ease .08s;
   }
-  .hero-chips a:not(.chip-primary):hover span,
-  .hero-chips a:not(.chip-primary):focus-visible span {
+  .hero-chips a:hover span,
+  .hero-chips a:focus-visible span {
     max-width: 220px;
     opacity: 1;
   }
 }
 
+/* RideArrivo reads as the lead service without taking amber, which belongs to
+   the one action in this viewport, the form's submit. */
+.hero-chips a.chip-primary {
+  background: rgba(255,255,255,.20);
+  border-color: rgba(255,255,255,.72);
+  color: #fff;
+}
+.hero-chips a.chip-primary:hover { background: var(--amber); border-color: var(--amber); color: #12123B; }
+
+/* The ghost button carried a permanent specular highlight (.btn-ghost::before,
+   a white radial gradient). At rest that reads as a light left switched on.
+   It now fades in on hover instead. Scoped to the hero so other pages keep
+   the button they have. */
+.hero-ctas .btn-ghost::before {
+  opacity: 0;
+  transition: opacity .32s ease, background .4s ease;
+}
+.hero-ctas .btn-ghost:hover::before,
+.hero-ctas .btn-ghost:focus-visible::before {
+  opacity: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-chips a,
-  .hero-chips a span { transition: none; }
+  .hero-chips a span,
+  .hero-ctas .btn-ghost::before { transition: none; }
 }
+
