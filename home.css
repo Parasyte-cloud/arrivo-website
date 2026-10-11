@@ -70,8 +70,6 @@ html[data-theme="dark"] .mobile-nav-menu .wm-on-light { display: none !important
 }
 
 /* ---------- Hero: five tiers, bold ---------- */
-/* Was uppercase, bold and bright, which made a caption compete with the
-   headline. It is a caption. */
 .hero-family-label {
   margin: 4px 0 12px;
   font-size: 12.5px;
@@ -88,10 +86,6 @@ html[data-theme="dark"] .mobile-nav-menu .wm-on-light { display: none !important
   font-weight: 700;
   border-width: 1.5px;
 }
-/* Membership is a secondary product, not a call to action. As a second ghost
-   pill it was an identical twin of "See how it works", which is hierarchy by
-   accident: two things that look the same are read as the same kind of thing.
-   A text link says "there is more over here" without competing. */
 .hero-ctas { align-items: center; }
 .hero-link {
   display: inline-flex;
@@ -844,28 +838,10 @@ html[data-theme="dark"] .faq-item[open] { box-shadow: 0 14px 32px rgba(0,0,0,.45
 html[data-theme="dark"] .inline-wm.wm-on-light { display: none; }
 html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
 
-/* ---------- Hero service chips: icon first, name on hover ---------- */
-/* Five circles, each showing its name on hover or keyboard focus.
-
-   The icon never moves. The chip's side padding is fixed so that, at rest,
-   padding + 18px icon + padding + 1.5px borders comes to exactly 48px, which
-   is the circle. On hover only the label grows, to the right of the icon,
-   so the icon stays where it was instead of being pushed to the left edge.
-
-   The label animates with grid-template-columns 0fr -> 1fr rather than a
-   max-width guess. A max-width of 220px animates towards 220px whatever the
-   real label width, so the visible motion ends early on the way out and
-   starts late on the way back, which reads as a jolt. The grid track
-   animates to the label's actual width, so the motion is the same length
-   in both directions.
-
-   Expanding is .65s, collapsing .45s. The curve starts moving at once, so the
-   hover never feels like it lagged, but spreads the motion out instead of
-   snapping most of the way open and then drifting the rest: slow and soft when you arrive, quicker
-   to get out of the way when you leave.
-
-   Scoped to (hover: hover) and (pointer: fine). On a phone there is no
-   hover, so every name stays visible exactly as before. */
+/* ---------- Hero service chips ---------- */
+/* Padding is set so the icon sits dead centre in the 48px circle and
+   stays put when the name slides out. Mouse only, phones always show
+   the names since there's no hover. */
 @media (hover: hover) and (pointer: fine) {
   .hero-chips a {
     min-width: 48px;
@@ -878,8 +854,8 @@ html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
     height: 18px;
     flex: none;
   }
-  /* The name stays in the document, measured to nothing, so screen readers
-     still announce it. display:none would remove it. */
+  /* grid 0fr -> 1fr animates to the real label width. max-width made it
+     jumpy. Don't use display:none, screen readers still need the name. */
   .hero-chips a .chip-lab {
     display: grid;
     grid-template-columns: 0fr;
@@ -905,8 +881,7 @@ html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
   }
 }
 
-/* RideArrivo reads as the lead service without taking amber, which belongs to
-   the one action in this viewport, the form's submit. */
+/* No amber on this one, that's the form button's job. */
 .hero-chips a.chip-primary {
   background: rgba(255,255,255,.20);
   border-color: rgba(255,255,255,.72);
@@ -914,10 +889,8 @@ html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
 }
 .hero-chips a.chip-primary:hover { background: var(--amber); border-color: var(--amber); color: #12123B; }
 
-/* The ghost button carried a permanent specular highlight (.btn-ghost::before,
-   a white radial gradient). At rest that reads as a light left switched on.
-   It now fades in on hover instead. Scoped to the hero so other pages keep
-   the button they have. */
+/* This glow used to be on all the time. Now it only shows on hover.
+   Hero only, other pages keep theirs. */
 .hero-ctas .btn-ghost::before {
   opacity: 0;
   transition: opacity .32s ease, background .4s ease;
@@ -934,13 +907,9 @@ html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
 }
 
 
-/* ---------- Header: quieter utility controls ---------- */
-/* The theme button and the language picker were outlined, which made two
-   settings louder than "Log in" and the nav links beside them. They now sit
-   flat and take a soft fill on hover, so the eye goes to the actions that
-   matter. currentColor keeps the fill right in both themes. The floating
-   side header (.is-side) is left alone: it uses the outlines as its round
-   buttons. */
+/* ---------- Header ---------- */
+/* No outline on the theme and language buttons, just a light fill on
+   hover. Side header still needs the outlines for its round buttons. */
 .site-header:not(.is-side) .header-actions .theme-toggle,
 .site-header:not(.is-side) .header-actions .lang-trigger {
   border-color: transparent;
