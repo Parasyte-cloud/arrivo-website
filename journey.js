@@ -24,6 +24,15 @@
     es: ["Recibimiento", "Viaje", "Seguimiento", "Llegada"],
     pt: ["Recepção", "Viagem", "Acompanhe", "Chegada"]
   };
+  var DESC = {
+    en: ["Clean, well-kept SUVs, ready when you are", "Met at arrivals by a driver with your name in hand", "Sit back and enjoy the city lights", "Watch your car arrive on the live map", "Right to the hotel door, with the door opened for you"],
+    fr: ["Des SUV propres et soignés, prêts à votre arrivée", "Votre chauffeur vous attend aux arrivées, pancarte en main", "Installez-vous et profitez des lumières de la ville", "Voyez votre voiture arriver sur la carte en direct", "Déposé à l'entrée de l'hôtel, portière ouverte"],
+    zh: ["整洁保养良好的 SUV，随时待命", "司机在到达厅举牌迎接", "放松靠坐，欣赏城市灯火", "在实时地图上查看爱车到来", "直达酒店门口，有人为您开门"],
+    hi: ["साफ़-सुथरी, अच्छी तरह रखी गई SUV, हर वक़्त तैयार", "आपका ड्राइवर अराइवल पर नेम बोर्ड लेकर इंतज़ार करता है", "आराम से बैठिए और शहर की रोशनी देखिए", "लाइव मैप पर अपनी कार को आते देखिए", "सीधे होटल के दरवाज़े तक, दरवाज़ा खुला हुआ"],
+    de: ["Gepflegte, saubere SUVs, bereit, wenn Sie es sind", "Ihr Fahrer empfängt Sie in der Ankunftshalle mit Namensschild", "Zurücklehnen und die Lichter der Stadt genießen", "Sehen Sie Ihr Auto live auf der Karte näherkommen", "Direkt vor dem Hotel, die Tür wird für Sie geöffnet"],
+    es: ["SUV limpias y bien cuidadas, listas cuando tú lo estés", "Tu conductor te espera en llegadas con tu nombre en mano", "Relájate y disfruta de las luces de la ciudad", "Mira cómo llega tu auto en el mapa en vivo", "Hasta la puerta del hotel, con la puerta abierta para ti"],
+    pt: ["SUVs limpos e bem cuidados, prontos quando você estiver", "Seu motorista espera no desembarque com a placa com seu nome", "Relaxe e aproveite as luzes da cidade", "Veja seu carro chegando no mapa ao vivo", "Até a porta do hotel, com a porta aberta para você"]
+  };
   var UI = {
     en: { label: "Your RideArrivo journey in pictures", pause: "Pause animation", play: "Play animation" },
     fr: { label: "Votre trajet RideArrivo en images", pause: "Mettre l'animation en pause", play: "Lancer l'animation" },
@@ -62,6 +71,11 @@
     panels.forEach(function (p, i) {
       var el = p.querySelector(".jp-word[data-jp]");
       if (el && w[i - 1]) el.textContent = w[i - 1];
+    });
+    var dd = DESC[l] || DESC.en;
+    panels.forEach(function (p, i) {
+      var el = p.querySelector(".jp-desc");
+      if (el && dd[i]) el.textContent = dd[i];
     });
     var paused = userPaused;
     tog.setAttribute("aria-label", paused ? u.play : u.pause);

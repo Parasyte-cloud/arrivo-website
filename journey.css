@@ -26,7 +26,7 @@
 .jp-stage[data-mode="tour"] .jp.is-active { flex-grow: 3.4; filter: none; }
 .jp-stage[data-mode="tour"] .jp.is-active .jp-img { transform: scale(1.1); }
 
-.jp-label { position: absolute; left: clamp(14px, 1.6vw, 28px); right: 12px; bottom: 16px; z-index: 4; display: flex; align-items: baseline; gap: 10px; color: #fff; pointer-events: none; }
+.jp-label { flex-wrap: wrap; position: absolute; left: clamp(14px, 1.6vw, 28px); right: 12px; bottom: 16px; z-index: 4; display: flex; align-items: baseline; gap: 10px; color: #fff; pointer-events: none; }
 .jp-num { font-variant-numeric: tabular-nums; font-size: 12px; letter-spacing: .14em; color: var(--amber, #F4A300); font-weight: 700; }
 .jp-word { font-size: clamp(15px, 1.7vw, 20px); font-weight: 700; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
 .jp-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; z-index: 4; background: var(--amber, #F4A300); transform: scaleX(0); transform-origin: left; }
@@ -81,3 +81,8 @@
 /* reduced motion: all five stay on show, hover or focus widens one */
 .jp-root.is-static .jp-stage .jp:hover, .jp-root.is-static .jp-stage .jp:focus-within { flex-grow: 2.4; }
 .jp-root.is-static .jp-toggle { display: none; }
+
+/* one short line about the picture, shown on the panel in the spotlight (or hovered when still) */
+.jp-desc { flex-basis: 100%; order: 3; margin: 0; font-size: clamp(12px, 1.05vw, 15px); line-height: 1.35; font-weight: 500; color: rgba(255,255,255,.88); max-height: 0; opacity: 0; overflow: hidden; text-shadow: 0 2px 12px rgba(0,0,0,.55); transition: max-height .7s ease .25s, opacity .6s ease .35s, margin .5s ease; }
+.jp.is-active .jp-desc, .jp-root.is-static .jp:hover .jp-desc, .jp-root.is-static .jp:focus-within .jp-desc { max-height: 80px; opacity: 1; margin-top: 8px; }
+@media (prefers-reduced-motion: reduce) { .jp-desc { transition: none; } }
