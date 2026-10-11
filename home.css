@@ -984,10 +984,11 @@ html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
 .hf-when > div { min-width: 0; }
 .hf-when .hf-input { width: 100%; min-width: 0; }
 
-/* Card keeps its top and grows or shrinks to fit the tab. Desktop only,
-   on phones align-self would stop the card stretching full width. */
+/* Card stays centred in the hero and grows or shrinks from the middle, so
+   the top and bottom both move. Desktop only, on phones align-self would
+   stop the card stretching full width. */
 @media (min-width: 980px) {
-  .hero-split-inner > .hero-form { align-self: start; }
+  .hero-split-inner > .hero-form { align-self: center; }
 }
 .hero-form.hf-resizing {
   overflow: hidden;
@@ -1024,4 +1025,80 @@ html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
   .hero-form .hf-submit,
   .hero-form .hf-note { transition: none; }
   .hf-body > .hf-in { animation: none; }
+}
+
+/* ---------- Phones ---------- */
+@media (max-width: 779px) {
+  /* Less dead space between the header and the headline. */
+  .hero { padding-top: calc(var(--hdr-h) + 36px); }
+}
+
+@media (max-width: 640px) {
+  /* Header: Log in is already in the menu, so drop the icon here and give
+     the room back to the brand name. */
+  .header-actions .nav-account-link { display: none; }
+  /* The 8px ring round the logo poked past the page edge and the menu
+     button's padding pushed its lines inside it. Line both up with the
+     content edge. */
+  .brand-mark { box-shadow: 0 2px 12px rgba(244, 163, 0, .3); }
+  .mobile-nav-toggle { margin-right: -9px; }
+
+  /* Date and time stacked. Side by side they were too narrow, the time got
+     cut off by the clock icon, and the text has to stay 16px or iPhones
+     zoom in when you tap the field. */
+  .hf-when { grid-template-columns: 1fr; gap: 0; }
+
+  /* Services in one swipeable row instead of three rows of big pills. */
+  .hero-chips {
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+    -webkit-mask-image: linear-gradient(to right, #000 85%, transparent);
+    mask-image: linear-gradient(to right, #000 85%, transparent);
+  }
+  .hero-chips::-webkit-scrollbar { display: none; }
+  .hero-chips a {
+    flex: none;
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: 14px;
+    scroll-snap-align: start;
+  }
+  .hero-chips a:last-child { margin-right: 40px; }
+
+  /* Trust points as a 2 x 2 grid instead of four stacked rows. */
+  .hero-trust {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 12px;
+    padding: 14px 16px;
+  }
+  .hero-trust li { font-size: 12.5px; gap: 8px; line-height: 1.25; }
+  .hero-trust .ico { width: 1.4em; height: 1.4em; }
+}
+
+@media (max-width: 640px) {
+  .header-inner { gap: 10px; }
+}
+
+/* Room for the brand name from 390px up now the account icon is gone.
+   Narrower than that it doesn't fit, so it's just the logo. */
+@media (min-width: 390px) and (max-width: 400px) {
+  /* Only the version for the current theme, there are two images. */
+  .site-header .brand-wordmark.wm-on-light,
+  html[data-theme="dark"] .site-header .brand-wordmark.wm-on-dark { display: block; height: 15px; }
+}
+@media (max-width: 389px) {
+  .site-header .brand-wordmark { display: none; }
+}
+
+@media (max-width: 400px) {
+  /* "Book a ride" wrapped to two lines on narrow phones. */
+  .hf-tab { white-space: nowrap; font-size: 13px; padding-left: 4px; padding-right: 4px; }
+  .hero-trust { gap: 12px 8px; padding: 12px 14px; }
+  .hero-trust li { font-size: 12px; gap: 7px; }
+  .hero-trust .ico { width: 1.3em; height: 1.3em; }
 }
