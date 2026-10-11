@@ -1,0 +1,112 @@
+/* Home gallery slideshow. Sits under the hero and borrows its look: same deep
+   navy, amber accents, slow cross-fade with a gentle zoom, glass caption.
+   Timing: --gal-int here must match INTERVAL in gallery.js. */
+.gal {
+  --gal-int: 6500ms;
+  --gal-fade: 1200ms;
+  position: relative;
+  --gal-page: #F7F4EC; /* page colour the band melts into at the bottom */
+  padding: 28px 0 96px;
+  margin-top: -20px; /* closes the gap the hero leaves under itself */
+  background: linear-gradient(180deg, #0b0b26 0, #12123B 90px, #12123B calc(100% - 110px), var(--gal-page) 100%);
+  color: #fff;
+}
+html[data-theme="dark"] .gal { --gal-page: #0A0C24; }
+/* top seam: fade the bottom edge of the hero photo into the band */
+.gal::before {
+  content: ""; position: absolute; left: 0; right: 0; top: -64px; height: 64px; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(11,11,38,0), #0b0b26);
+}
+.gal .wrap { position: relative; z-index: 1; }
+
+.gal-counter { position: absolute; left: 22px; top: 18px; z-index: 4; font-variant-numeric: tabular-nums; font-size: 13px; letter-spacing: .12em; color: rgba(255,255,255,.7); white-space: nowrap; }
+.gal-counter b { color: var(--amber, #F4A300); font-weight: 700; }
+
+.gal-stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #0b0b26;
+  box-shadow: 0 24px 60px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.08);
+  touch-action: pan-y;
+  outline-offset: 4px;
+  isolation: isolate;
+}
+.gal-slide { position: absolute; inset: 0; margin: 0; opacity: 0; visibility: hidden; transition: opacity var(--gal-fade) ease, visibility 0s linear var(--gal-fade); }
+.gal-slide img { width: 100%; height: 100%; object-fit: cover; object-position: var(--pos, 50% 50%); display: block; transform: scale(1.12); transition: transform 0s; }
+.gal-slide.is-active { opacity: 1; visibility: visible; z-index: 1; transition: opacity var(--gal-fade) ease, visibility 0s; }
+.gal-slide.is-active img { transform: scale(1); transition: transform calc(var(--gal-int) + var(--gal-fade) * 2) cubic-bezier(.2,.6,.2,1); }
+.gal-slide.is-leaving { opacity: 0; visibility: visible; z-index: 0; }
+.gal-slide.is-leaving img { transform: scale(1); }
+
+/* darken the edges so the caption and controls always read, and so the
+   picture sits in the same dark mood as the hero */
+.gal-stage::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(11,11,38,.55) 0%, rgba(11,11,38,0) 28%),
+    linear-gradient(0deg, rgba(11,11,38,.78) 0%, rgba(11,11,38,0) 46%);
+}
+
+.gal-caption {
+  position: absolute; left: 22px; bottom: 54px; z-index: 3; max-width: min(560px, calc(100% - 44px));
+  padding: 14px 20px; border-radius: 16px;
+  background: rgba(18,18,59,.5);
+  -webkit-backdrop-filter: blur(16px) saturate(170%); backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255,255,255,.16);
+}
+.gal-caption .eyebrow { display: block; color: var(--amber, #F4A300); font-size: 11px; letter-spacing: .16em; margin: 0 0 4px; }
+.gal-caption h3 { margin: 0; color: #fff; font-size: clamp(16px, 2vw, 21px); line-height: 1.25; }
+.gal-slide .gal-caption > * { opacity: 0; transform: translateY(12px); }
+.gal-slide.is-active .gal-caption > * { opacity: 1; transform: none; transition: opacity .7s ease .45s, transform .7s cubic-bezier(.2,.7,.2,1) .45s; }
+.gal-slide.is-active .gal-caption > h3 { transition-delay: .6s; }
+.gal-slide .gal-caption { opacity: 0; transform: translateY(16px); }
+.gal-slide.is-active .gal-caption { opacity: 1; transform: none; transition: opacity .8s ease .35s, transform .8s cubic-bezier(.2,.7,.2,1) .35s; }
+
+/* story-style progress: one segment per picture, the active one fills */
+.gal-progress { position: absolute; left: 22px; right: 22px; bottom: 22px; z-index: 4; display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.gal-progress button {
+  position: relative; display: block; width: 100%; height: 22px; padding: 0; border: 0; background: transparent; cursor: pointer;
+}
+.gal-progress button::before { content: ""; position: absolute; left: 0; right: 0; top: 9px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.28); }
+.gal-progress button::after { content: ""; position: absolute; left: 0; top: 9px; height: 4px; width: 0; border-radius: 4px; background: var(--amber, #F4A300); }
+.gal-progress button.is-done::after { width: 100%; }
+.gal-progress button.is-active::after { width: 100%; animation: gal-fill var(--gal-int) linear forwards; }
+.gal.is-paused .gal-progress button.is-active::after { animation-play-state: paused; }
+.gal.is-static .gal-progress button.is-active::after { animation: none; width: 100%; }
+@keyframes gal-fill { from { width: 0; } to { width: 100%; } }
+.gal-progress button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; border-radius: 6px; }
+
+.gal-nav, .gal-toggle {
+  position: absolute; z-index: 4; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.28);
+  background: rgba(18,18,59,.45); color: #fff; cursor: pointer; display: grid; place-items: center;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  transition: background .2s ease, transform .2s ease, opacity .25s ease;
+}
+.gal-nav:hover, .gal-toggle:hover { background: var(--amber, #F4A300); color: #12123B; border-color: transparent; }
+.gal-nav:focus-visible, .gal-toggle:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.gal-nav svg, .gal-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.gal-toggle .ico-play { display: none; fill: currentColor; stroke: none; }
+.gal.is-paused .gal-toggle .ico-pause { display: none; }
+.gal.is-paused .gal-toggle .ico-play { display: block; }
+.gal-prev { left: 16px; top: 50%; margin-top: -22px; }
+.gal-next { right: 16px; top: 50%; margin-top: -22px; }
+.gal-toggle { right: 16px; top: 16px; width: 38px; height: 38px; }
+@media (hover: hover) { .gal-nav { opacity: 0; } .gal-stage:hover .gal-nav, .gal-stage:focus-within .gal-nav { opacity: 1; } }
+
+@media (max-width: 760px) {
+  .gal { padding: 20px 0 72px; }
+  .gal-stage { aspect-ratio: 1 / 1; border-radius: 20px; }
+  .gal-caption { left: 14px; right: 14px; bottom: 44px; max-width: none; padding: 12px 16px; }
+  .gal-progress { left: 14px; right: 14px; bottom: 14px; gap: 6px; }
+  .gal-nav { display: none; }
+  .gal-toggle { right: 12px; top: 12px; }
+  .gal-counter { left: 14px; top: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gal-slide, .gal-slide.is-active { transition: opacity .01s; }
+  .gal-slide img, .gal-slide.is-active img { transform: none; transition: none; }
+  .gal-slide .gal-caption, .gal-slide .gal-caption > * { opacity: 1; transform: none; transition: none; }
+}

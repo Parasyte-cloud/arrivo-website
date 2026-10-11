@@ -67,7 +67,7 @@
      the hover tip. Read them at the moment the pill turns vertical so they
      follow the page language. */
   function labelControls() {
-    var sel = ".main-nav > a, .nav-dropdown-trigger, .nav-account-link, .header-actions > .btn, .header-actions > .theme-toggle, .brand";
+    var sel = ".main-nav > a, .nav-dropdown-trigger, .nav-account-link, .acct-trigger, .header-actions > .btn, .header-actions > .theme-toggle, .brand";
     Array.prototype.forEach.call(header.querySelectorAll(sel), function (el) {
       var text = (el.getAttribute("aria-label") || el.textContent || "").replace(/\s+/g, " ").trim();
       var acct = el.querySelector && el.querySelector("[id^='accountNavLabel']");

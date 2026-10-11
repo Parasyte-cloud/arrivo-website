@@ -496,7 +496,11 @@
     var isAccepted = r.ride_status === "accepted";
     box.innerHTML = '<div class="ride-card">' +
       '<div style="display:flex;justify-content:space-between;"><strong>' + escapeHtml(r.pickup_address) + '</strong><span class="fare">NGN ' + Number(r.fare_naira).toLocaleString() + '</span></div>' +
-      '<div style="font-size:12px;color:var(--text-muted);">Rider: ' + escapeHtml(r.rider_name) + (r.rider_phone ? " · " + escapeHtml(r.rider_phone) : "") + '</div>' +
+      '<div style="font-size:12px;color:var(--text-muted);">Rider: ' + escapeHtml(r.rider_name) + '</div>' +
+      '<div style="margin-top:8px;padding:10px 12px;border-radius:12px;background:rgba(244,163,0,.12);border:1px solid rgba(244,163,0,.45);font-size:12.5px;">' +
+        'Call or message your rider in the RideArrivo app. Phone numbers are never shared.' +
+        '<a href="https://wa.me/2348162706078" target="_blank" rel="noopener" style="display:block;margin-top:8px;text-align:center;padding:12px;border-radius:10px;background:#F4A300;color:#12123B;font-weight:800;text-decoration:none;">Talk to support <span style="font-weight:600;">· We\'ll take care of you.</span></a>' +
+      '</div>' +
       '<div style="font-size:12px;color:var(--teal);font-weight:700;margin-top:6px;">' + escapeHtml(r.ride_status.replace("_", " ").toUpperCase()) + '</div>' +
       '<button class="btn btn-primary" style="width:100%;margin-top:10px;" id="advanceBtn">' + (isAccepted ? "Start Trip" : "Complete Trip") + '</button>' +
       '</div>';
@@ -839,9 +843,12 @@
           checkProfile();
         } else {
           localStorage.removeItem(TOKEN_KEY);
-          showSection("loginSection");
+          showSection(location.hash === "#apply" ? "signupAccountSection" : "loginSection");
         }
       });
+    } else if (location.hash === "#apply") {
+      // "Become a driver" links land straight on the application, not the login.
+      showSection("signupAccountSection");
     }
   });
 })();

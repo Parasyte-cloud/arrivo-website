@@ -155,7 +155,7 @@
         .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
         .then(function (result) {
           if (note) {
-            note.textContent = result.ok ? I18N[lang].download.thanks : (result.data.error || "Something went wrong.");
+            note.textContent = result.ok ? I18N[lang].download.thanks : ((I18N[lang].auth && I18N[lang].auth.errServer) || "Something went wrong.");
             note.style.color = result.ok ? "var(--teal)" : "var(--coral)";
             note.style.fontWeight = "600";
           }
@@ -163,7 +163,7 @@
         })
         .catch(function () {
           if (note) {
-            note.textContent = "Couldn't reach the server. Please try again in a moment.";
+            note.textContent = (I18N[lang].auth && I18N[lang].auth.errServer) || "Couldn't reach the server. Please try again in a moment.";
             note.style.color = "var(--coral)";
             note.style.fontWeight = "600";
           }
