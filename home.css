@@ -867,21 +867,25 @@ html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
   }
   /* The label stays in the document, just measured to nothing, so screen
      readers still announce the link name. display:none would remove it. */
+  /* Padding is zero at rest. Under border-box, padding cannot shrink below
+     its own size, so a 9px + 13px padding on a max-width 0 label still took
+     22px and pushed the icon off centre. It only opens on hover. */
   .hero-chips a span {
     display: inline-block;
     box-sizing: border-box;
-    padding-left: 9px;
-    padding-right: 13px;
+    padding: 0;
     max-width: 0;
     opacity: 0;
     white-space: nowrap;
     overflow: hidden;
     transition: max-width .42s cubic-bezier(.22, .61, .36, 1),
+                padding .42s cubic-bezier(.22, .61, .36, 1),
                 opacity .28s ease .08s;
   }
   .hero-chips a:hover span,
   .hero-chips a:focus-visible span {
     max-width: 220px;
+    padding: 0 16px 0 9px;
     opacity: 1;
   }
 }
