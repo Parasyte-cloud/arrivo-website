@@ -54,20 +54,26 @@
     [pickup, dest, dateEl, timeEl].forEach(function (el) { if (el) el.removeAttribute("aria-invalid"); });
   }
 
-  // ---- Mode toggle (Book a ride / Schedule) ----
-  function setMode(next) {
-    mode = next;
+  // ---- Mode toggle (Book a ride / Schedule / Chauffeur) ----
+  // Which fields each tab hides.
+  function hiddenIn(el, m) {
+    if (el === destLabel || el === destField) return m === "chauffeur";
+    if (el === when) return m === "one_way";
+    if (el === durationBlock) return m !== "chauffeur";
+    return false;
+  }
+  var blocks = [destLabel, destField, when, durationBlock].filter(Boolean);
+
+  // Just the visible stuff, no side effects. lockHeight() calls this for
+  // every tab to measure, so it can't touch dates or errors.
+  function showMode(next) {
     tabs.forEach(function (t) {
       var on = t.getAttribute("data-mode") === next;
       t.classList.toggle("is-active", on);
       t.setAttribute("aria-pressed", on ? "true" : "false");
     });
-    when.hidden = next !== "dropoff" && next !== "chauffeur";
-    // Chauffeur hire has a pickup, a start and a length, but no destination.
+    blocks.forEach(function (b) { b.hidden = hiddenIn(b, next); });
     var chauffeur = next === "chauffeur";
-    if (destLabel) destLabel.hidden = chauffeur;
-    if (destField) destField.hidden = chauffeur;
-    if (durationBlock) durationBlock.hidden = !chauffeur;
     var noteEl = document.getElementById("hfNote");
     if (noteEl) {
       noteEl.textContent = chauffeur
@@ -75,10 +81,15 @@
         : tr("formNote", "Transparent pricing. No surprises at checkout.");
     }
     if (submitBtn) {
-      if (chauffeur) submitBtn.textContent = tr("formSubmitChauffeur", "Request a chauffeur \u2192");
-      else submitBtn.textContent = tr("formSubmit", "See vehicles and price \u2192");
+      if (chauffeur) submitBtn.textContent = tr("formSubmitChauffeur", "Request a chauffeur →");
+      else submitBtn.textContent = tr("formSubmit", "See vehicles and price →");
     }
-    if ((next === "dropoff" || chauffeur) && !dateEl.value) {
+  }
+
+  function setMode(next) {
+    mode = next;
+    showMode(next);
+    if ((next === "dropoff" || next === "chauffeur") && !dateEl.value) {
       // Two days ahead, counted on the Lagos calendar.
       dateEl.value = window.ArrivoLate
         ? window.ArrivoLate.lagosNow(new Date(Date.now() + 2 * 86400000)).date
@@ -87,9 +98,130 @@
     }
     clearError();
   }
-  tabs.forEach(function (t) {
-    t.addEventListener("click", function () { setMode(t.getAttribute("data-mode")); });
+
+  // ---- Smooth tab switching ----
+  var bodyEl = document.getElementById("hfBody");
+  var tabsWrap = form.querySelector(".hf-tabs");
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // White pill that slides between tabs instead of jumping.
+  var pill = document.createElement("span");
+  pill.className = "hf-pill";
+  pill.setAttribute("aria-hidden", "true");
+  if (tabsWrap) {
+    tabsWrap.insertBefore(pill, tabsWrap.firstChild);
+    tabsWrap.classList.add("has-pill");
+  }
+  function placePill() {
+    var on = tabsWrap && tabsWrap.querySelector(".hf-tab.is-active");
+    if (!on) return;
+    pill.style.width = on.offsetWidth + "px";
+    pill.style.transform = "translateX(" + on.offsetLeft + "px)";
+  }
+
+  // Lock the hero row to the tallest tab so nothing outside the card moves.
+  // The card keeps its top and its height animates to fit each tab.
+  var heroRow = form.closest(".hero-split-inner");
+  function lockHeight() {
+    form.style.height = "";
+    var tallest = 0;
+    ["one_way", "dropoff", "chauffeur"].forEach(function (m) {
+      showMode(m);
+      tallest = Math.max(tallest, form.offsetHeight);
+    });
+    showMode(mode);
+    if (heroRow) {
+      heroRow.style.gridTemplateRows = getComputedStyle(heroRow).display === "grid"
+        ? "minmax(" + tallest + "px, auto)" : "";
+    }
+  }
+
+  // from = the card's height before the fields changed.
+  function animateHeight(from) {
+    var to = form.offsetHeight;
+    if (Math.abs(to - from) < 1) { form.style.height = ""; return; }
+    form.classList.add("hf-resizing");
+    form.style.height = from + "px";
+    form.getBoundingClientRect();
+    form.style.height = to + "px";
+  }
+  form.addEventListener("transitionend", function (e) {
+    if (e.target !== form || e.propertyName !== "height") return;
+    form.style.height = "";
+    form.classList.remove("hf-resizing");
   });
+
+  var swapTimer = null;
+  function switchMode(next) {
+    if (reduceMotion || !bodyEl) { setMode(next); placePill(); return; }
+    // The tab answers straight away, the fields follow.
+    tabs.forEach(function (t) { t.classList.toggle("is-active", t.getAttribute("data-mode") === next); });
+    placePill();
+    if (swapTimer) { clearTimeout(swapTimer); swapTimer = null; }
+    blocks.forEach(function (b) { b.classList.remove("hf-out"); });
+    form.classList.remove("hf-swapping");
+    if (next === mode) { showMode(mode); return; }
+
+    var leaving = blocks.filter(function (b) { return !b.hidden && hiddenIn(b, next); });
+    var textChanges = (mode === "chauffeur") !== (next === "chauffeur");
+    leaving.forEach(function (b) { b.classList.add("hf-out"); });
+    if (textChanges) form.classList.add("hf-swapping");
+    swapTimer = setTimeout(function () {
+      swapTimer = null;
+      // Fields that stay glide to their new spot instead of jumping.
+      var stay = blocks.filter(function (b) { return !b.hidden && !hiddenIn(b, next); });
+      var before = stay.map(function (b) { return b.getBoundingClientRect().top; });
+      var wasHidden = blocks.map(function (b) { return b.hidden; });
+      var fromH = form.getBoundingClientRect().height;
+      form.style.height = "";
+      setMode(next);
+      animateHeight(fromH);
+      leaving.forEach(function (b) { b.classList.remove("hf-out"); });
+      stay.forEach(function (b, i) {
+        var dy = before[i] - b.getBoundingClientRect().top;
+        if (!dy) return;
+        b.style.transition = "none";
+        b.style.transform = "translateY(" + dy + "px)";
+        b.getBoundingClientRect();
+        b.style.transition = "";
+        b.style.transform = "";
+      });
+      blocks.forEach(function (b, i) {
+        if (wasHidden[i] && !b.hidden) {
+          b.classList.remove("hf-in");
+          void b.offsetWidth;
+          b.classList.add("hf-in");
+        }
+      });
+      form.classList.remove("hf-swapping");
+    }, leaving.length || textChanges ? 160 : 0);
+  }
+
+  tabs.forEach(function (t) {
+    t.addEventListener("click", function () { switchMode(t.getAttribute("data-mode")); });
+  });
+  blocks.forEach(function (b) {
+    b.addEventListener("animationend", function () { b.classList.remove("hf-in"); });
+  });
+
+  // Re-measure when the width, fonts or language change.
+  function relayout() { lockHeight(); placePill(); }
+  relayout();
+  requestAnimationFrame(function () { requestAnimationFrame(function () { pill.classList.add("is-ready"); }); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+  window.addEventListener("load", relayout);
+  var lastWidth = form.offsetWidth;
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () {
+      if (form.offsetWidth === lastWidth) return;
+      lastWidth = form.offsetWidth;
+      relayout();
+    }).observe(form);
+  }
+  if (window.MutationObserver) {
+    new MutationObserver(relayout).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
+  }
+
   dateEl.min = window.ArrivoLate ? window.ArrivoLate.lagosNow().date : isoDate(new Date());
 
   // ---- Address inputs with our own suggestion list ----
