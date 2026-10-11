@@ -827,3 +827,22 @@ html[data-theme="dark"] .faq-item[open] { box-shadow: 0 14px 32px rgba(0,0,0,.45
 .inline-wm.wm-on-light { display: inline-block; }
 html[data-theme="dark"] .inline-wm.wm-on-light { display: none; }
 html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
+
+/* ---------- Ported from the service-chips PR (#67): quieter header ---------- */
+/* No outline on the theme and language buttons, just a light fill on hover.
+   The side header keeps its outlines because its buttons are round. */
+.site-header:not(.is-side) .header-actions .theme-toggle,
+.site-header:not(.is-side) .header-actions .lang-trigger {
+  border-color: transparent;
+  transition: background-color .2s ease, border-color .2s ease;
+}
+.site-header:not(.is-side) .header-actions .theme-toggle:hover,
+.site-header:not(.is-side) .header-actions .lang-trigger:hover,
+.site-header:not(.is-side) .header-actions .lang-trigger[aria-expanded="true"] {
+  background-color: color-mix(in srgb, currentColor 12%, transparent);
+}
+.site-header .header-actions .theme-toggle:focus-visible,
+.site-header .header-actions .lang-trigger:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
