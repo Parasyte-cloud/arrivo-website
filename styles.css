@@ -422,6 +422,16 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
   z-index: 48;
 }
 .mobile-nav-backdrop:not([hidden]) { display: block; }
+/* Page stays put while the menu is open, and a long menu scrolls by itself */
+html.nav-locked { overflow: hidden; }
+.mobile-nav-menu {
+  max-height: calc(100vh - 90px);
+  max-height: calc(100dvh - 90px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.mobile-nav-backdrop { touch-action: none; }
 .mobile-nav-menu-header {
   display: flex;
   align-items: center;

@@ -982,7 +982,11 @@ html[data-theme="dark"] .inline-wm.wm-on-dark { display: inline-block; }
 /* Native date and time inputs won't shrink below their own width, so on a
    phone the time box stuck out past the card. Let the columns shrink. */
 .hf-when > div { min-width: 0; }
-.hf-when .hf-input { width: 100%; min-width: 0; }
+.hf-when .hf-input { width: 100%; min-width: 0; max-width: 100%; display: block; }
+/* iPhone Safari ignores the width above unless the native look is off */
+.hf-when .hf-input { -webkit-appearance: none; appearance: none; }
+@media (max-width: 979px) { .hf-when .hf-input { line-height: 46px; } }
+.hf-when .hf-input::-webkit-date-and-time-value { text-align: left; margin: 0; }
 
 /* Card stays centred in the hero and grows or shrinks from the middle, so
    the top and bottom both move. Desktop only, on phones align-self would
