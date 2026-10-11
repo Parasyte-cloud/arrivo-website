@@ -55,6 +55,7 @@
 <link rel="stylesheet" href="styles.css?v=35">
 <link rel="stylesheet" href="home.css?v=24">
 <link rel="stylesheet" href="ux-polish.css?v=4">
+<link rel="stylesheet" href="gallery.css?v=1">
   <script>
     // The launch gate only matters before launch day ends. After that, do not
     // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
@@ -371,15 +372,35 @@
     </div>
   </section>
 
-  <!-- ============ FLEET SHOWCASE ============ -->
-  <section class="section" style="padding-top:0;">
+  <!-- ============ GALLERY SLIDESHOW ============ -->
+  <section class="gal" id="gallery" role="region" aria-roledescription="carousel" aria-label="Photo gallery">
     <div class="wrap">
-      <div class="fleet-photo-frame">
-        <img src="assets/fleet-vehicle.jpg" srcset="assets/fleet-vehicle-640.webp 640w, assets/fleet-vehicle-1000.webp 1000w" sizes="(min-width: 1100px) 1072px, 100vw" width="1800" height="1200" alt="A RideArrivo fleet vehicle" class="fleet-photo" loading="lazy" decoding="async">
-        <div class="fleet-caption">
-          <span class="eyebrow eyebrow-light" data-i18n="idx.fleetEyebrow">Our fleet</span>
-          <h3 data-i18n="idx.fleetTitle">Real vehicles. Real drivers. Real Lagos.</h3>
-        </div>
+      <div class="gal-stage" tabindex="0">
+        <figure class="gal-slide is-active" style="--pos:50% 60%">
+          <img src="assets/fleet-vehicle-1000.webp" srcset="assets/fleet-vehicle-640.webp 640w, assets/fleet-vehicle-1000.webp 1200w" sizes="(min-width: 1100px) 1072px, 100vw" width="1000" height="667" alt="A RideArrivo fleet vehicle" loading="lazy" decoding="async">
+          <figcaption class="gal-caption"><span class="eyebrow" data-i18n="idx.fleetEyebrow">Our fleet</span><h3 data-i18n="idx.fleetTitle">Real vehicles. Real drivers. Real Lagos.</h3></figcaption>
+        </figure>
+        <figure class="gal-slide" style="--pos:40% 55%">
+          <img src="assets/gallery/airport-1200.webp" srcset="assets/gallery/airport-640.webp 640w, assets/gallery/airport-1200.webp 1200w" sizes="(min-width: 1100px) 1072px, 100vw" width="1200" height="900" alt="A RideArrivo driver meeting a traveller with luggage at the airport kerb" loading="lazy" decoding="async">
+          <figcaption class="gal-caption"><span class="eyebrow" data-i18n="idx.fleetEyebrow">Our fleet</span><h3 data-gal></h3></figcaption>
+        </figure>
+        <figure class="gal-slide" style="--pos:60% 60%">
+          <img src="assets/gallery/door-1200.webp" srcset="assets/gallery/door-640.webp 640w, assets/gallery/door-1200.webp 1200w" sizes="(min-width: 1100px) 1072px, 100vw" width="1200" height="900" alt="A passenger stepping into a RideArrivo car" loading="lazy" decoding="async">
+          <figcaption class="gal-caption"><span class="eyebrow" data-i18n="idx.fleetEyebrow">Our fleet</span><h3 data-gal></h3></figcaption>
+        </figure>
+        <figure class="gal-slide" style="--pos:50% 40%">
+          <img src="assets/gallery/app-1200.webp" srcset="assets/gallery/app-640.webp 640w, assets/gallery/app-1200.webp 1200w" sizes="(min-width: 1100px) 1072px, 100vw" width="1200" height="900" alt="A rider following their trip live in the RideArrivo app" loading="lazy" decoding="async">
+          <figcaption class="gal-caption"><span class="eyebrow" data-i18n="idx.fleetEyebrow">Our fleet</span><h3 data-gal></h3></figcaption>
+        </figure>
+        <figure class="gal-slide" style="--pos:45% 55%">
+          <img src="assets/gallery/hotel-1200.webp" srcset="assets/gallery/hotel-640.webp 640w, assets/gallery/hotel-1200.webp 1200w" sizes="(min-width: 1100px) 1072px, 100vw" width="1200" height="900" alt="A traveller with luggage beside a RideArrivo car outside a hotel at dusk" loading="lazy" decoding="async">
+          <figcaption class="gal-caption"><span class="eyebrow" data-i18n="idx.fleetEyebrow">Our fleet</span><h3 data-gal></h3></figcaption>
+        </figure>
+        <span class="gal-counter" aria-hidden="true"></span>
+        <button type="button" class="gal-toggle" aria-pressed="false"><svg class="ico-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg><svg class="ico-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg></button>
+        <button type="button" class="gal-nav gal-prev"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <button type="button" class="gal-nav gal-next"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+        <ul class="gal-progress"></ul>
       </div>
     </div>
   </section>
@@ -898,6 +919,7 @@
   <script src="late-request.js?v=1" defer></script>
   <script src="hero-form.js?v=10" defer></script>
   <script src="hero-slides.js?v=3" defer></script>
+  <script src="gallery.js?v=1" defer></script>
   <script src="header-move.js?v=4" defer></script>
   <script src="ux-polish.js?v=3" defer></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
