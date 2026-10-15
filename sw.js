@@ -20,7 +20,7 @@
 // and JSON only); this file does it for every page and script, so the two
 // should not both exist. The dated name below is newer than v2, and the
 // activate handler deletes every cache that is not it, including v2.
-const VERSION = "2026-10-08";
+const VERSION = "2026-10-15-meta-consent";
 const CACHE_NAME = "arrivo-shell-" + VERSION;
 
 // Precached on install so a first-time offline visit has something to show.
@@ -34,6 +34,8 @@ const SHELL_FILES = [
   "/signup.html",
   "/forgot-password.html",
   "/styles.css",
+  "/marketing-consent.js",
+  "/marketing-consent.css",
   "/booking.css",
   "/i18n.js",
   "/script.js",

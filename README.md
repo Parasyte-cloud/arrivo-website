@@ -36,3 +36,17 @@ Set your Paystack public key in `paystack-config.js` before payments will work f
 
 - `i18n.js` holds all translations -- it's a big file because it covers every language the site supports, not because it's doing anything complicated.
 - Website and mobile apps are separate codebases. A feature shipped here doesn't exist on mobile until it's built there too.
+
+## Main-site Meta Pixel
+
+The main website includes consent-gated Meta Pixel PageView measurement on
+approved public pages. Authentication, booking, tracking and payment flows are
+excluded. See [the deployment and verification runbook](docs/META-PIXEL.md)
+for consent behavior, Meta account settings, test coverage and release checks.
+
+```bash
+node --test tests/*.test.js
+node scripts/build-site.js
+```
+
+Deploy the main-site build output `dist/site`, not the full repository.
