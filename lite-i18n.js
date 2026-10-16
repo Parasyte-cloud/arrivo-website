@@ -43,7 +43,10 @@
   "d4": "Earn money",
   "drvCta": "Become a driver",
   "drvNote": "Driver app coming soon. Leave your email and we will tell you when it is live.",
-  "drvNav": "Drive"
+  "drvNav": "Drive",
+  "prev": "Back",
+  "next": "Next",
+  "close": "Close"
  },
  "fr": {
   "soon": "Bientôt",
@@ -86,7 +89,10 @@
   "d4": "Gagnez de l'argent",
   "drvCta": "Devenir chauffeur",
   "drvNote": "Appli chauffeur bientôt disponible. Laissez votre e-mail, nous vous prévenons.",
-  "drvNav": "Conduire"
+  "drvNav": "Conduire",
+  "prev": "Retour",
+  "next": "Suivant",
+  "close": "Fermer"
  },
  "zh": {
   "soon": "即将上线",
@@ -129,7 +135,10 @@
   "d4": "赚钱",
   "drvCta": "成为司机",
   "drvNote": "司机应用即将上线。留下邮箱，上线时我们通知您。",
-  "drvNav": "开车"
+  "drvNav": "开车",
+  "prev": "上一步",
+  "next": "下一步",
+  "close": "关闭"
  },
  "de": {
   "soon": "Bald",
@@ -172,7 +181,10 @@
   "d4": "Geld verdienen",
   "drvCta": "Fahrer werden",
   "drvNote": "Fahrer-App bald verfügbar. Hinterlassen Sie Ihre E-Mail, wir melden uns.",
-  "drvNav": "Fahren"
+  "drvNav": "Fahren",
+  "prev": "Zurück",
+  "next": "Weiter",
+  "close": "Schließen"
  },
  "hi": {
   "soon": "जल्द",
@@ -215,7 +227,10 @@
   "d4": "कमाई करें",
   "drvCta": "ड्राइवर बनें",
   "drvNote": "ड्राइवर ऐप जल्द आ रहा है। अपना ईमेल दें, शुरू होते ही बताएँगे।",
-  "drvNav": "चलाएँ"
+  "drvNav": "चलाएँ",
+  "prev": "पीछे",
+  "next": "आगे",
+  "close": "बंद करें"
  },
  "es": {
   "soon": "Pronto",
@@ -258,7 +273,10 @@
   "d4": "Gana dinero",
   "drvCta": "Ser conductor",
   "drvNote": "App de conductores muy pronto. Deja tu correo y te avisamos.",
-  "drvNav": "Conducir"
+  "drvNav": "Conducir",
+  "prev": "Atrás",
+  "next": "Siguiente",
+  "close": "Cerrar"
  },
  "pt": {
   "soon": "Em breve",
@@ -301,7 +319,10 @@
   "d4": "Ganhe dinheiro",
   "drvCta": "Ser motorista",
   "drvNote": "App de motoristas em breve. Deixe seu e-mail e avisamos.",
-  "drvNav": "Dirigir"
+  "drvNav": "Dirigir",
+  "prev": "Voltar",
+  "next": "Próximo",
+  "close": "Fechar"
  }
 };
   Object.keys(L).forEach(function(k){ if (I18N[k]) I18N[k].lite = L[k]; });

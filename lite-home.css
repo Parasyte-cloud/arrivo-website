@@ -58,3 +58,22 @@ html[data-theme="dark"] .lt-pill-ico .ico{color:#A9C0F5}
   .lt-step .lt-pill{font-size:11.5px;padding:3px 6px;max-width:100%;white-space:nowrap}
   .lt-step .lt-pill b{display:none}
 }
+
+/* step pictures open bigger */
+.lt-step-btn{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:inherit;cursor:zoom-in;width:100%}
+.lt-step-btn:focus-visible{outline:3px solid var(--amber);outline-offset:4px;border-radius:12px}
+.lt-step-btn:hover img{opacity:1}
+html.lt-lock{overflow:hidden}
+.lt-dlg{box-sizing:border-box;width:min(92vw,420px);max-height:92vh;padding:0;border:0;border-radius:20px;overflow:auto;background:#fff;color:#12123B;box-shadow:0 24px 70px rgba(0,0,0,.5)}
+html[data-theme="dark"] .lt-dlg{background:#14173d;color:#F3F3FA}
+.lt-dlg::backdrop{background:rgba(5,8,25,.72)}
+.lt-dlg img{display:block;width:100%;height:auto;max-height:52vh;object-fit:cover}
+.lt-dlg-body{padding:16px 20px 20px}
+.lt-dlg-body h3{margin:0 0 6px;font-size:22px}
+.lt-dlg-body p{margin:0;font-size:16px;line-height:1.5}
+.lt-dlg-n{font-size:13px!important;font-weight:700;color:var(--amber-text);margin-bottom:4px!important}
+html[data-theme="dark"] .lt-dlg-n{color:#F4A300}
+.lt-dlg-nav{display:flex;gap:10px;margin-top:16px}
+.lt-dlg-nav .btn{flex:1}
+.lt-dlg-nav .btn:disabled{opacity:.4}
+.lt-dlg-x{position:absolute;top:10px;right:10px;z-index:2;width:40px;height:40px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:26px;line-height:1;cursor:pointer}
