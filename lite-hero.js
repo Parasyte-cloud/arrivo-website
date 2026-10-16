@@ -14,17 +14,3 @@
     }
   });
 })();
-
-// Services: "Five ways to RideArrivo" shows the five cards; tap again to hide.
-(function () {
-  "use strict";
-  var b = document.getElementById("ltWaysBtn"), p = document.getElementById("ltWays");
-  if (!b || !p) return;
-  function set(open) {
-    p.hidden = !open;
-    b.setAttribute("aria-expanded", open ? "true" : "false");
-    if (open) { try { p.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (e) {} }
-  }
-  b.addEventListener("click", function () { set(p.hidden); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !p.hidden) { set(false); b.focus(); } });
-})();

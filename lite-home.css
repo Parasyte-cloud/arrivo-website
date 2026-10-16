@@ -122,12 +122,3 @@ html.lt-svc-open:not(.hp-on) .lt-chips{display:flex}
 #heroSvcBtn .ico-play{transition:transform .2s}
 #heroSvcBtn[aria-expanded="true"] .ico-play{transform:rotate(90deg)}
 @media (prefers-reduced-motion:reduce){#heroSvcBtn .ico-play{transition:none}}
-
-/* "Five ways to RideArrivo": tap to show the cards, tap again to hide */
-.lt-more{margin:30px 0 0}
-.lt-morebtn{display:inline-flex;align-items:center;gap:10px;cursor:pointer}
-.lt-morebtn .lt-go{width:14px;height:14px;color:currentColor;transform:rotate(90deg);transition:transform .2s}
-.lt-morebtn[aria-expanded="true"] .lt-go{transform:rotate(-90deg)}
-#ltWays{margin-top:24px}
-#ltWays[hidden]{display:none}
-@media (prefers-reduced-motion:reduce){.lt-morebtn .lt-go{transition:none}}
