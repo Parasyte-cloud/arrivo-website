@@ -54,6 +54,8 @@
 <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,600;0,700;1,700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="styles.css?v=36">
 <link rel="stylesheet" href="home.css?v=44">
+<link rel="stylesheet" href="journey.css?v=2">
+<link rel="stylesheet" href="final-home-composite.css?v=1">
   <script>
     // The launch gate only matters before launch day ends. After that, do not
     // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
@@ -345,15 +347,69 @@
     </div>
   </section>
 
-  <!-- ============ FLEET SHOWCASE ============ -->
-  <section class="section" style="padding-top:0;">
-    <div class="wrap">
-      <div class="fleet-photo-frame">
-        <img src="assets/fleet-vehicle.jpg" srcset="assets/fleet-vehicle-640.webp 640w, assets/fleet-vehicle-1000.webp 1000w" sizes="(min-width: 1100px) 1072px, 100vw" width="1800" height="1200" alt="A RideArrivo fleet vehicle" class="fleet-photo" loading="lazy" decoding="async">
-        <div class="fleet-caption">
-          <span class="eyebrow eyebrow-light" data-i18n="idx.fleetEyebrow">Our fleet</span>
-          <h3 data-i18n="idx.fleetTitle">Real vehicles. Real drivers. Real Lagos.</h3>
-        </div>
+  <!-- ============ RIDEARRIVO JOURNEY ============ -->
+  <section class="journey-section" aria-labelledby="journeyTitle">
+    <div class="wrap journey-head">
+      <span class="eyebrow" data-i18n="idx.fleetEyebrow">Our fleet</span>
+      <h2 id="journeyTitle" data-i18n="idx.fleetTitle">Real vehicles. Real drivers. Real Lagos.</h2>
+    </div>
+    <div class="jp-wrap" id="journey" role="region" aria-roledescription="carousel" aria-label="Your RideArrivo journey in pictures">
+      <div class="jp-stage" data-mode="all">
+
+        <figure class="jp" style="--pos:50% 50%">
+          <img class="jp-img" src="assets/journey/journey-1.webp" width="1200" height="1500" alt="Navy RideArrivo SUV with an orange stripe parked on a Lagos waterfront street at dusk" loading="lazy" decoding="async">
+          <figcaption class="jp-label">
+            <span class="jp-num">01</span>
+            <span class="jp-word" data-i18n="idx.fleetEyebrow">Our fleet</span>
+            <span class="jp-desc">Clean, well-kept SUVs, ready when you are</span>
+          </figcaption>
+          <span class="jp-bar"></span>
+        </figure>
+
+        <figure class="jp" style="--pos:38% 50%">
+          <img class="jp-img" src="assets/journey/journey-2.webp" width="1200" height="1500" alt="RideArrivo driver meeting a traveller at airport arrivals" loading="lazy" decoding="async">
+          <figcaption class="jp-label">
+            <span class="jp-num">02</span>
+            <span class="jp-word" data-jp>Meet</span>
+            <span class="jp-desc">Met at arrivals by a driver with your name in hand</span>
+          </figcaption>
+          <span class="jp-bar"></span>
+        </figure>
+
+        <figure class="jp" style="--pos:84% 50%">
+          <img class="jp-img" src="assets/journey/journey-3.webp" width="1200" height="1500" alt="Passenger relaxing inside a RideArrivo vehicle at night" loading="lazy" decoding="async">
+          <figcaption class="jp-label">
+            <span class="jp-num">03</span>
+            <span class="jp-word" data-jp>Ride</span>
+            <span class="jp-desc">Sit back and enjoy the city lights</span>
+          </figcaption>
+          <span class="jp-bar"></span>
+        </figure>
+
+        <figure class="jp" style="--pos:28% 50%">
+          <img class="jp-img" src="assets/journey/journey-4.webp" width="1200" height="1500" alt="Phone displaying live RideArrivo trip tracking" loading="lazy" decoding="async">
+          <figcaption class="jp-label">
+            <span class="jp-num">04</span>
+            <span class="jp-word" data-jp>Track</span>
+            <span class="jp-desc">Watch your car arrive on the live map</span>
+          </figcaption>
+          <span class="jp-bar"></span>
+        </figure>
+
+        <figure class="jp" style="--pos:72% 50%">
+          <img class="jp-img" src="assets/journey/journey-5.webp" width="1200" height="1500" alt="Traveller arriving at a hotel in a RideArrivo vehicle" loading="lazy" decoding="async">
+          <figcaption class="jp-label">
+            <span class="jp-num">05</span>
+            <span class="jp-word" data-jp>Arrive</span>
+            <span class="jp-desc">Right to the hotel door, with the door opened for you</span>
+          </figcaption>
+          <span class="jp-bar"></span>
+        </figure>
+
+        <button type="button" class="jp-toggle" aria-pressed="false" aria-label="Pause or play the journey">
+          <svg class="ico-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
+          <svg class="ico-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg>
+        </button>
       </div>
     </div>
   </section>
@@ -571,6 +627,7 @@
           </div>
           <h3 data-i18n="audiences.riderTitle">Riders &amp; travellers</h3>
           <p data-i18n="audiences.riderBody">Airport pickups, everyday rides, multi-stop trips, and on-demand chauffeur booking, matched to a vehicle sized for your luggage, in the language you're most comfortable in.</p>
+          <a class="btn btn-primary audience-cta" href="book.html" data-audience-cta="rider">Book a ride →</a>
         </article>
         <article class="card">
           <div class="icon-badge">
@@ -583,6 +640,7 @@
           </div>
           <h3 data-i18n="audiences.driverTitle">Drivers</h3>
           <p data-i18n="audiences.driverBody">Flexible, app-based work with transparent earnings. Get verified once, then accept the rides that fit your schedule.</p>
+          <a class="btn btn-primary audience-cta" href="driver.html" data-audience-cta="driver">Become a driver →</a>
         </article>
       </div>
     </div>
@@ -861,6 +919,8 @@
   <script src="late-request.js?v=1" defer></script>
   <script src="hero-form.js?v=12" defer></script>
   <script src="hero-slides.js?v=3" defer></script>
+  <script src="journey.js?v=2" defer></script>
+  <script src="audience-cta.js?v=1" defer></script>
   <script src="header-move.js?v=4" defer></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
 </body>
