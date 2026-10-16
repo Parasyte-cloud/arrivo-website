@@ -1,0 +1,40 @@
+/* Short, direct homepage sections: services, steps, safety, FAQ. */
+.lt-section{padding:44px 0}
+.lt-tint{background:#FBF9F3}
+html[data-theme="dark"] .lt-tint{background:#0E1131}
+.lt-h{margin:0 0 18px;font-size:clamp(24px,3.6vw,34px);line-height:1.15;letter-spacing:-.015em}
+
+/* services: six compact tiles */
+.lt-svcs{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:560px){.lt-svcs{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:900px){.lt-svcs{grid-template-columns:repeat(3,1fr)}}
+.lt-svc{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--card-border);border-radius:16px;background:var(--glass-bg,#fff);text-decoration:none;color:inherit;min-height:64px;transition:border-color .2s,transform .2s}
+.lt-svc:hover{border-color:var(--amber);transform:translateY(-2px)}
+.lt-svc:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+.lt-svc .ico{flex:0 0 auto;width:26px;height:26px;color:var(--primary)}
+html[data-theme="dark"] .lt-svc .ico{color:#A9C0F5}
+.lt-svc-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lt-svc-txt strong{font-size:16px;color:var(--title)}
+.lt-svc-txt span{font-size:14px;color:var(--text-muted);line-height:1.3}
+.lt-soon{margin-left:auto;font-style:normal;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:99px;background:var(--primary-tint);color:var(--primary)}
+html[data-theme="dark"] .lt-soon{background:rgba(169,192,245,.16);color:#A9C0F5}
+
+/* small pills */
+.lt-how{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.lt-pills{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.lt-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border:1px solid var(--card-border);border-radius:99px;background:var(--glass-bg,#fff);font-size:14px;font-weight:600;color:var(--title)}
+.lt-pill b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--amber);color:#12123B;font-size:12px}
+.lt-pill-ico{padding:6px 14px}
+.lt-pill-ico .ico{width:16px;height:16px;color:var(--primary)}
+html[data-theme="dark"] .lt-pill-ico .ico{color:#A9C0F5}
+
+.lt-member{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px}
+.lt-member p{margin:0;color:var(--text-muted)}
+.lt-member .lt-h{margin-bottom:6px}
+
+.faq-section{padding-top:44px}
+.faq-item summary{padding:16px 20px;font-size:17px}
+.faq-body{padding:0 20px 16px}
+
+.lt-drv{display:inline-block;margin:6px 0 16px}
+.download-wrap p{margin:0 0 12px}

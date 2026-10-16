@@ -54,9 +54,9 @@
 <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,600;0,700;1,700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="styles.css?v=36">
 <link rel="stylesheet" href="home.css?v=44">
-<link rel="stylesheet" href="journey.css?v=2">
 <link rel="stylesheet" href="final-home-composite.css?v=1">
 <link rel="stylesheet" href="hero-products.css?v=2">
+<link rel="stylesheet" href="lite-home.css?v=1">
   <script>
     // The launch gate only matters before launch day ends. After that, do not
     // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
@@ -120,10 +120,10 @@
  "mainEntity": [
   {
    "@type": "Question",
-   "name": "What if my flight is delayed?",
+   "name": "Flight delayed?",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "We track your flight number, so your driver is there when you actually land, not when the schedule said you would. If a flight is cancelled or badly delayed, contact us and we will sort it out with you."
+    "text": "We track your flight, so your driver meets you when you land."
    }
   },
   {
@@ -131,39 +131,23 @@
    "name": "How do I pay?",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "At checkout by card through Paystack, from your RideArrivo wallet balance, or with a membership. The fare is shown before you confirm anything."
+    "text": "Card, wallet or membership. You see the fare first."
    }
   },
   {
    "@type": "Question",
-   "name": "Can I cancel a booking?",
+   "name": "Can I cancel?",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "Yes. Cancel at least 48 hours before pickup for a full refund. Later than that, you get 50% back. Refunds are processed within 7 business days."
+    "text": "Free up to 48 hours before pickup. After that, 50% back."
    }
   },
   {
    "@type": "Question",
-   "name": "How far ahead should I book?",
+   "name": "How far ahead?",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "Airport pickups work best booked ahead, so a driver is lined up for your flight. Need a ride sooner than that? Book on demand with ArrivoExpress."
-   }
-  },
-  {
-   "@type": "Question",
-   "name": "Are the drivers verified?",
-   "acceptedAnswer": {
-    "@type": "Answer",
-    "text": "Every driver completes identity and licence verification before accepting rides, and you can share your trip live with someone who wants to know you arrived safely."
-   }
-  },
-  {
-   "@type": "Question",
-   "name": "Is RideArrivo available in my language?",
-   "acceptedAnswer": {
-    "@type": "Answer",
-    "text": "Yes. The website and booking are available in English, French, Chinese, Hindi, German, Spanish and Portuguese."
+    "text": "Airport trips: book ahead. Need a ride now? Use ArrivoExpress."
    }
   }
  ]
@@ -231,7 +215,6 @@
         <img width="1829" height="309" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark wm-on-light"><img width="1829" height="309" src="assets/ridearrivo-wordmark-light.png" alt="" class="brand-wordmark wm-on-dark" aria-hidden="true">
       </div>
       <a href="#how" data-i18n="nav.how">How it works</a>
-      <a href="#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="#safety" data-i18n="nav.safety">Safety</a>
       <span class="mobile-nav-menu-label" data-i18n="ui.services">Services</span>
       <a href="https://express.ridearrivo.com/" target="_blank" rel="noopener" data-i18n="nav.express">ArrivoExpress</a>
@@ -348,382 +331,98 @@
     </div>
   </section>
 
-  <!-- ============ RIDEARRIVO JOURNEY ============ -->
-  <section class="journey-section" aria-labelledby="journeyTitle">
-    <div class="wrap journey-head">
-      <span class="eyebrow" data-i18n="idx.fleetEyebrow">Our fleet</span>
-      <h2 id="journeyTitle" data-i18n="idx.fleetTitle">Real vehicles. Real drivers. Real Lagos.</h2>
-    </div>
-    <div class="jp-wrap" id="journey" role="region" aria-roledescription="carousel" aria-label="Your RideArrivo journey in pictures">
-      <div class="jp-stage" data-mode="all">
-
-        <figure class="jp" style="--pos:50% 50%">
-          <img class="jp-img" src="assets/journey/journey-1.webp" width="1200" height="1500" alt="Navy RideArrivo SUV with an orange stripe parked on a Lagos waterfront street at dusk" loading="lazy" decoding="async">
-          <figcaption class="jp-label">
-            <span class="jp-num">01</span>
-            <span class="jp-word" data-i18n="idx.fleetEyebrow">Our fleet</span>
-            <span class="jp-desc">Clean, well-kept SUVs, ready when you are</span>
-          </figcaption>
-          <span class="jp-bar"></span>
-        </figure>
-
-        <figure class="jp" style="--pos:38% 50%">
-          <img class="jp-img" src="assets/journey/journey-2.webp" width="1200" height="1500" alt="RideArrivo driver meeting a traveller at airport arrivals" loading="lazy" decoding="async">
-          <figcaption class="jp-label">
-            <span class="jp-num">02</span>
-            <span class="jp-word" data-jp>Meet</span>
-            <span class="jp-desc">Met at arrivals by a driver with your name in hand</span>
-          </figcaption>
-          <span class="jp-bar"></span>
-        </figure>
-
-        <figure class="jp" style="--pos:84% 50%">
-          <img class="jp-img" src="assets/journey/journey-3.webp" width="1200" height="1500" alt="Passenger relaxing inside a RideArrivo vehicle at night" loading="lazy" decoding="async">
-          <figcaption class="jp-label">
-            <span class="jp-num">03</span>
-            <span class="jp-word" data-jp>Ride</span>
-            <span class="jp-desc">Sit back and enjoy the city lights</span>
-          </figcaption>
-          <span class="jp-bar"></span>
-        </figure>
-
-        <figure class="jp" style="--pos:28% 50%">
-          <img class="jp-img" src="assets/journey/journey-4.webp" width="1200" height="1500" alt="Phone displaying live RideArrivo trip tracking" loading="lazy" decoding="async">
-          <figcaption class="jp-label">
-            <span class="jp-num">04</span>
-            <span class="jp-word" data-jp>Track</span>
-            <span class="jp-desc">Watch your car arrive on the live map</span>
-          </figcaption>
-          <span class="jp-bar"></span>
-        </figure>
-
-        <figure class="jp" style="--pos:72% 50%">
-          <img class="jp-img" src="assets/journey/journey-5.webp" width="1200" height="1500" alt="Traveller arriving at a hotel in a RideArrivo vehicle" loading="lazy" decoding="async">
-          <figcaption class="jp-label">
-            <span class="jp-num">05</span>
-            <span class="jp-word" data-jp>Arrive</span>
-            <span class="jp-desc">Right to the hotel door, with the door opened for you</span>
-          </figcaption>
-          <span class="jp-bar"></span>
-        </figure>
-
-        <button type="button" class="jp-toggle" aria-pressed="false" aria-label="Pause or play the journey">
-          <svg class="ico-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
-          <svg class="ico-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg>
-        </button>
+  <!-- ============ SERVICES ============ -->
+  <section class="section lt-section" id="services">
+    <div class="wrap">
+      <h2 class="lt-h" data-i18n="lite.svcTitle">What do you need?</h2>
+      <div class="lt-svcs">
+        <a class="lt-svc" href="book.html">
+          <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-car"/></svg>
+          <span class="lt-svc-txt"><strong>RideArrivo</strong><span data-i18n="lite.ride">Airport and city rides</span></span>
+        </a>
+        <a class="lt-svc" href="https://express.ridearrivo.com/" target="_blank" rel="noopener">
+          <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-bolt"/></svg>
+          <span class="lt-svc-txt"><strong data-i18n="nav.express">ArrivoExpress</strong><span data-i18n="lite.express">Ride now across Lagos</span></span>
+        </a>
+        <a class="lt-svc" href="charter-booking.html">
+          <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg>
+          <span class="lt-svc-txt"><strong data-i18n="nav.chauffeur">ArrivoChauffeur</strong><span data-i18n="lite.chauffeur">A driver by the day, week or month</span></span>
+        </a>
+        <a class="lt-svc" href="https://move.ridearrivo.com" target="_blank" rel="noopener">
+          <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-truck"/></svg>
+          <span class="lt-svc-txt"><strong data-i18n="nav.removals">ArrivoRemovals</strong><span data-i18n="lite.removals">Move home or office</span></span><em class="lt-soon" data-i18n="lite.soon">Soon</em>
+        </a>
+        <a class="lt-svc" href="https://boat.ridearrivo.com" target="_blank" rel="noopener">
+          <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-ship"/></svg>
+          <span class="lt-svc-txt"><strong>ArrivoBoat</strong><span data-i18n="lite.boat">Boat charters</span></span><em class="lt-soon" data-i18n="lite.soon">Soon</em>
+        </a>
+        <a class="lt-svc" href="https://air.ridearrivo.com" target="_blank" rel="noopener">
+          <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-plane"/></svg>
+          <span class="lt-svc-txt"><strong>ArrivoAir</strong><span data-i18n="lite.air">Private jets</span></span><em class="lt-soon" data-i18n="lite.soon">Soon</em>
+        </a>
       </div>
     </div>
   </section>
 
   <!-- ============ HOW IT WORKS ============ -->
-  <section class="section how-section" id="how">
-    <div class="wrap">
-      <div class="how-head">
-        <div>
-          <span class="eyebrow" data-i18n="home.howEyebrow">How it works</span>
-          <h2 data-i18n="home.howHeadline">From landing to destination, in 5 simple steps.</h2>
-        </div>
-        <p data-i18n="how.subtitle">Booking shouldn't be complicated. Here's the whole process, start to finish.</p>
-      </div>
-
-      <ol class="how-steps">
-        <li class="how-step">
-          <img src="assets/how/how-step1-860.webp" srcset="assets/how/how-step1-560.webp 560w, assets/how/how-step1-860.webp 860w" sizes="(min-width: 1020px) 380px, (min-width: 720px) 31vw, 290px" width="860" height="1075" alt="" loading="lazy" decoding="async">
-          <span class="how-num" aria-hidden="true">1</span>
-          <h3 class="how-cap-title" data-i18n="home.step1Title">Share Your Details</h3>
-          <p class="how-cap-body" data-i18n="home.step1Body">Flight number, pickup point, and destination. Done in under a minute.</p>
-        </li>
-        <li class="how-step">
-          <img src="assets/how/how-step2-860.webp" srcset="assets/how/how-step2-560.webp 560w, assets/how/how-step2-860.webp 860w" sizes="(min-width: 1020px) 380px, (min-width: 720px) 31vw, 290px" width="860" height="1075" alt="" loading="lazy" decoding="async">
-          <span class="how-num" aria-hidden="true">2</span>
-          <h3 class="how-cap-title" data-i18n="home.step2Title">Pick Your Vehicle</h3>
-          <p class="how-cap-body" data-i18n="home.step2Body">Transparent pricing for Sedan, SUV, or Executive. No surprises at checkout.</p>
-        </li>
-        <li class="how-step">
-          <img src="assets/how/how-step3-860.webp" srcset="assets/how/how-step3-560.webp 560w, assets/how/how-step3-860.webp 860w" sizes="(min-width: 1020px) 380px, (min-width: 720px) 31vw, 290px" width="860" height="1075" alt="" loading="lazy" decoding="async">
-          <span class="how-num" aria-hidden="true">3</span>
-          <h3 class="how-cap-title" data-i18n="home.step3Title">Choose How to Pay</h3>
-          <p class="how-cap-body" data-i18n="home.step3Body">Card, wallet balance, or membership. Whatever's easiest for you.</p>
-        </li>
-        <li class="how-step">
-          <img src="assets/how/how-step4-860.webp" srcset="assets/how/how-step4-560.webp 560w, assets/how/how-step4-860.webp 860w" sizes="(min-width: 1020px) 380px, (min-width: 720px) 31vw, 290px" width="860" height="1075" alt="" loading="lazy" decoding="async">
-          <span class="how-num" aria-hidden="true">4</span>
-          <h3 class="how-cap-title" data-i18n="home.step4Title">Track in Real Time</h3>
-          <p class="how-cap-body" data-i18n="home.step4Body">Watch your driver's exact location from booking all the way to arrival.</p>
-        </li>
-        <li class="how-step">
-          <img src="assets/how/how-step5-860.webp" srcset="assets/how/how-step5-560.webp 560w, assets/how/how-step5-860.webp 860w" sizes="(min-width: 1020px) 380px, (min-width: 720px) 31vw, 290px" width="860" height="1075" alt="" loading="lazy" decoding="async">
-          <span class="how-num" aria-hidden="true">5</span>
-          <h3 class="how-cap-title" data-i18n="home.step5Title">Rate &amp; Relax</h3>
-          <p class="how-cap-body" data-i18n="home.step5Body">Tell us how we did. Every rating shapes who drives for us next.</p>
-        </li>
-        <li class="how-step how-step-cta">
-          <span class="eyebrow" data-i18n="home.howCtaEyebrow">Ready when you land</span>
-          <h3 data-i18n="how.footerTagline">Simple booking. Transparent pricing. Every time.</h3>
-          <p data-i18n="home.howCtaBody">Five steps from landing to destination, in the language you are most comfortable in.</p>
-          <a href="book.html" class="btn btn-primary" data-i18n="hero.ctaPrimary">Book a ride now</a>
-        </li>
-      </ol>
-    </div>
-  </section>
-
-  <!-- ============ FAQ ============ -->
-  <section class="section faq-section" id="faq">
-    <div class="wrap">
-      <div class="faq-head">
-        <span class="eyebrow" data-i18n="home.faqEyebrow">Questions</span>
-        <h2 data-i18n="home.faqHeadline">Before you book, answered.</h2>
-      </div>
-      <div class="faq-list">
-        <details class="faq-item">
-          <summary><span data-i18n="home.faqQ1">What if my flight is delayed?</span><span class="faq-icon" aria-hidden="true"></span></summary>
-          <div class="faq-body">
-            <p data-i18n="home.faqA1">We track your flight number, so your driver is there when you actually land, not when the schedule said you would. If a flight is cancelled or badly delayed, contact us and we will sort it out with you.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary><span data-i18n="home.faqQ2">How do I pay?</span><span class="faq-icon" aria-hidden="true"></span></summary>
-          <div class="faq-body">
-            <p data-i18n="home.faqA2">At checkout by card through Paystack, from your RideArrivo wallet balance, or with a membership. The fare is shown before you confirm anything.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary><span data-i18n="home.faqQ3">Can I cancel a booking?</span><span class="faq-icon" aria-hidden="true"></span></summary>
-          <div class="faq-body">
-            <p data-i18n="home.faqA3">Yes. Cancel at least 48 hours before pickup for a full refund. Later than that, you get 50% back. Refunds are processed within 7 business days.</p>
-            <p><a href="terms.html#cancellation" data-i18n="home.faqTermsLink">Read the full cancellation policy</a></p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary><span data-i18n="home.faqQ4">How far ahead should I book?</span><span class="faq-icon" aria-hidden="true"></span></summary>
-          <div class="faq-body">
-            <p data-i18n="home.faqA4">Airport pickups work best booked ahead, so a driver is lined up for your flight. Need a ride sooner than that? Book on demand with ArrivoExpress.</p>
-            <p><a href="express.html" data-i18n="home.faqExpressLink">Go to ArrivoExpress</a></p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary><span data-i18n="home.faqQ5">Are the drivers verified?</span><span class="faq-icon" aria-hidden="true"></span></summary>
-          <div class="faq-body">
-            <p data-i18n="home.faqA5">Every driver completes identity and licence verification before accepting rides, and you can share your trip live with someone who wants to know you arrived safely.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary><span data-i18n="home.faqQ6">Is RideArrivo available in my language?</span><span class="faq-icon" aria-hidden="true"></span></summary>
-          <div class="faq-body">
-            <p data-i18n="home.faqA6">Yes. The website and booking are available in English, French, Chinese, Hindi, German, Spanish and Portuguese.</p>
-          </div>
-        </details>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ SERVICES ============ -->
-  <section class="section" id="services">
-    <div class="wrap">
-      <span class="eyebrow" data-i18n="idx.moreEyebrow">More ways to move</span>
-      <h2 data-i18n="idx.moreTitle">One app. Five ways to <img class="inline-wm wm-on-light" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" width="1829" height="309"><img class="inline-wm wm-on-dark" src="assets/ridearrivo-wordmark-light.png" alt="" aria-hidden="true" width="1829" height="309">.</h2>
-
-      <div class="cards services-cards">
-        <a class="card service-card" href="https://express.ridearrivo.com/">
-          <img class="service-card-photo" src="assets/services/express.webp" width="560" height="373" alt="A rider booking a car on her phone while a chauffeur waits" loading="lazy" decoding="async">
-          <div class="icon-badge">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M5 16l1.4-4.8A2 2 0 0 1 8.3 9.7h7.4a2 2 0 0 1 1.9 1.5L19 16" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-              <rect x="3.5" y="16" width="17" height="4" rx="1.4" stroke="var(--primary)" stroke-width="1.7"/>
-              <circle cx="7.5" cy="20" r="1.4" stroke="var(--primary)" stroke-width="1.7"/>
-              <circle cx="16.5" cy="20" r="1.4" stroke="var(--primary)" stroke-width="1.7"/>
-            </svg>
-          </div>
-          <h3>ArrivoExpress</h3>
-          <p data-i18n="idx.expressBody">On-demand rides across Lagos. Choose Economy, Comfort, XL or Premium and get matched with a nearby verified driver in minutes, with live tracking.</p>
-          <span class="service-card-cta" data-i18n="idx.expressCta">Book a ride &rarr;</span>
-        </a>
-        <a class="card service-card" href="charter-booking.html">
-          <img class="service-card-photo" src="assets/services/chauffeur.webp" width="560" height="373" alt="A chauffeur opening the car door for a passenger at an airport" loading="lazy" decoding="async">
-          <div class="icon-badge">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="8.5" stroke="var(--primary)" stroke-width="1.7"/>
-              <circle cx="12" cy="12" r="2.2" stroke="var(--primary)" stroke-width="1.7"/>
-              <path d="M12 9.8V3.6M10 13.1l-5.4 3M14 13.1l5.4 3" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <h3 data-i18n="nav.chauffeur">ArrivoChauffeur</h3>
-          <p data-i18n="idx.chauffeurBody">A professional chauffeur for the day, week or month. Tell us where you are going and our Support team arranges the car and driver with you.</p>
-          <span class="service-card-cta" data-i18n="idx.chauffeurCta">Request a chauffeur &rarr;</span>
-        </a>
-        <a class="card service-card" href="https://move.ridearrivo.com" target="_blank" rel="noopener">
-          <img class="service-card-photo" src="assets/services/move.webp" width="560" height="373" alt="A removal crew carrying wrapped furniture from a truck to a new home at sunset" loading="lazy" decoding="async">
-          <div class="icon-badge">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="3" y="8" width="11" height="9" rx="1.4" stroke="var(--primary)" stroke-width="1.7"/>
-              <path d="M14 11h3.6a1.4 1.4 0 0 1 1.2.65L21 15v2h-3" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="7" cy="17.5" r="1.6" stroke="var(--primary)" stroke-width="1.7"/>
-              <circle cx="17" cy="17.5" r="1.6" stroke="var(--primary)" stroke-width="1.7"/>
-            </svg>
-          </div>
-          <h3 data-i18n="nav.removals">ArrivoRemovals</h3>
-          <p data-i18n="services.removalsBody">Moving home or office? A vetted crew, a truck and one booking for loading, transport and unloading. See a starting price before you commit.</p>
-          <span class="service-card-cta" data-i18n="services.removalsCta">Get my removals quote →</span>
-        </a>
-        <a class="card service-card" href="https://boat.ridearrivo.com" target="_blank" rel="noopener">
-          <img class="service-card-photo" src="assets/services/boat.webp" width="560" height="373" alt="A passenger being helped aboard a boat at a marina at sunset" loading="lazy" decoding="async">
-          <div class="icon-badge">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 15.5h18l-1.8 3.1a3 3 0 0 1-2.6 1.5H7.4a3 3 0 0 1-2.6-1.5L3 15.5z" stroke="var(--primary)" stroke-width="1.7" stroke-linejoin="round"/>
-              <path d="M5.5 15.5V9.8a1.5 1.5 0 0 1 1.5-1.5h3l6 4.6" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M6 8.3V5" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <h3>ArrivoBoat</h3>
-          <p data-i18n="idx.boatBody">Speedboat, yacht and water-taxi charters for point-to-point transfers, day trips and events, booked like a ride.</p>
-          <span class="service-card-cta" data-i18n="idx.boatCta">Request a charter &rarr;</span>
-        </a>
-        <a class="card service-card" href="https://air.ridearrivo.com" target="_blank" rel="noopener">
-          <img class="service-card-photo" src="assets/services/air.webp" width="560" height="373" alt="A passenger being welcomed aboard a private jet at sunset" loading="lazy" decoding="async">
-          <div class="icon-badge">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10.8 3.5l2 6.2 5.7 1.5a1.4 1.4 0 0 1 .3 2.6l-5.4 2.4-1.6 5.8a1.4 1.4 0 0 1-2.6.2l-2.4-5.4-6-1.2a1.4 1.4 0 0 1-.2-2.6l5.6-2.5 1.5-5.8a1.4 1.4 0 0 1 2.6-.2z" stroke="var(--primary)" stroke-width="1.5" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <h3>ArrivoAir</h3>
-          <p data-i18n="idx.airBody">Private jet charters, one-way or round-trip, matched to the right aircraft class and priced on request.</p>
-          <span class="service-card-cta" data-i18n="idx.airCta">Request a jet &rarr;</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ MEMBERSHIP BAND ============ -->
-  <section class="section section-tint" id="membership">
-    <div class="wrap">
-      <div class="promo-band">
-        <div class="promo-band-copy">
-          <span class="eyebrow" data-i18n="idx.memEyebrow">RideArrivo Membership</span>
-          <h2 data-i18n="idx.memTitle">Ride more, pay less, every single trip.</h2>
-          <p data-i18n="idx.memBody">Priority rides, cashback to your wallet on every trip, and perks built for how you actually move. Pick a plan and join the list.</p>
-          <div class="promo-band-ctas">
-            <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" class="btn btn-primary" data-i18n="idx.memJoin">Join membership</a>
-            <a href="#services" class="btn btn-ghost" data-i18n="idx.memAll">See all services</a>
-          </div>
-        </div>
-        <img class="promo-band-photo" src="assets/services/membership.webp" width="560" height="373" alt="A member in a hotel lounge holding a membership card and a phone" loading="lazy" decoding="async">
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ AUDIENCES ============ -->
-  <section class="section section-tint" id="audiences">
-    <div class="wrap">
-      <span class="eyebrow" data-i18n="audiences.eyebrow">Built for two kinds of people</span>
-      <h2 data-i18n="audiences.title">Who <img class="inline-wm wm-on-light" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" width="1829" height="309"><img class="inline-wm wm-on-dark" src="assets/ridearrivo-wordmark-light.png" alt="" aria-hidden="true" width="1829" height="309"> is for</h2>
-
-      <div class="cards">
-        <article class="card">
-          <div class="icon-badge">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="3" y="8" width="18" height="12" rx="2" stroke="var(--primary)" stroke-width="1.7"/>
-              <path d="M9 8V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" stroke="var(--primary)" stroke-width="1.7"/>
-              <path d="M3 13h18" stroke="var(--primary)" stroke-width="1.7"/>
-            </svg>
-          </div>
-          <h3 data-i18n="audiences.riderTitle">Riders &amp; travellers</h3>
-          <p data-i18n="audiences.riderBody">Airport pickups, everyday rides, multi-stop trips, and on-demand chauffeur booking, matched to a vehicle sized for your luggage, in the language you're most comfortable in.</p>
-          <a class="btn btn-primary audience-cta" href="book.html" data-audience-cta="rider">Book a ride →</a>
-        </article>
-        <article class="card">
-          <div class="icon-badge">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="4" y="4" width="16" height="16" rx="2.5" stroke="var(--primary)" stroke-width="1.7"/>
-              <circle cx="9.5" cy="10.5" r="2" stroke="var(--primary)" stroke-width="1.7"/>
-              <path d="M6.5 16c.5-1.8 1.8-2.7 3-2.7s2.5.9 3 2.7" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round"/>
-              <path d="M14.5 9h3M14.5 12h3" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <h3 data-i18n="audiences.driverTitle">Drivers</h3>
-          <p data-i18n="audiences.driverBody">Flexible, app-based work with transparent earnings. Get verified once, then accept the rides that fit your schedule.</p>
-          <a class="btn btn-primary audience-cta" href="driver.html" data-audience-cta="driver">Become a driver →</a>
-        </article>
-      </div>
+  <section class="section lt-section lt-tint" id="how">
+    <div class="wrap lt-how">
+      <h2 class="lt-h" data-i18n="lite.howTitle">Book in 5 steps</h2>
+      <ol class="lt-pills"><li class="lt-pill"><b aria-hidden="true">1</b><span data-i18n="lite.s1">Details</span></li><li class="lt-pill"><b aria-hidden="true">2</b><span data-i18n="lite.s2">Vehicle</span></li><li class="lt-pill"><b aria-hidden="true">3</b><span data-i18n="lite.s3">Pay</span></li><li class="lt-pill"><b aria-hidden="true">4</b><span data-i18n="lite.s4">Track</span></li><li class="lt-pill"><b aria-hidden="true">5</b><span data-i18n="lite.s5">Rate</span></li></ol>
+      <a href="book.html" class="btn btn-primary" data-i18n="lite.howCta">Book a ride</a>
     </div>
   </section>
 
   <!-- ============ SAFETY ============ -->
-  <section class="safety-hero" id="safety">
-    <div class="safety-hero-bg"></div>
-    <div class="safety-hero-overlay"></div>
-    <div class="wrap safety-hero-content">
-      <div class="safety-glass-panel">
-        <span class="eyebrow eyebrow-light" data-i18n="safety.eyebrow">Trust, built in. Not bolted on.</span>
-        <h2 data-i18n="safety.title">Safety isn't a feature.<br>It's the whole design.</h2>
-        <p class="safety-sub" data-i18n="safety.sub">Every part of <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> was built around one question: would you feel comfortable if this were someone you love landing alone at night?</p>
+  <section class="section lt-section" id="safety">
+    <div class="wrap lt-how">
+      <h2 class="lt-h" data-i18n="lite.safeTitle">Safe by design</h2>
+      <ul class="lt-pills"><li class="lt-pill lt-pill-ico"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg><span data-i18n="lite.sf1">Verified drivers</span></li><li class="lt-pill lt-pill-ico"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg><span data-i18n="lite.sf2">Live tracking</span></li><li class="lt-pill lt-pill-ico"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-globe"/></svg><span data-i18n="lite.sf3">Share your ride</span></li><li class="lt-pill lt-pill-ico"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-car"/></svg><span data-i18n="lite.sf4">Vetted vehicles</span></li></ul>
+    </div>
+  </section>
 
-        <ul class="safety-chip-list">
-          <li class="safety-chip">
-            <div class="safety-chip-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-                <path d="M9 12l2 2 4-4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <h3 data-i18n="safety.item1Title">Verified identity, every time</h3>
-            <p data-i18n="safety.item1Body">See your driver's name, photo, and verification status before they even arrive.</p>
-          </li>
-          <li class="safety-chip">
-            <div class="safety-chip-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 21s-6.5-5.4-6.5-11A6.5 6.5 0 0 1 12 3.5 6.5 6.5 0 0 1 18.5 10c0 5.6-6.5 11-6.5 11z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-                <circle cx="12" cy="10" r="2.3" stroke="currentColor" stroke-width="1.7"/>
-              </svg>
-            </div>
-            <h3 data-i18n="safety.item2Title">Live tracking, not a promise but a fact</h3>
-            <p data-i18n="safety.item2Body">Watch the actual route on a live map from pickup to drop-off.</p>
-          </li>
-          <li class="safety-chip">
-            <div class="safety-chip-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="6" cy="12" r="2.3" stroke="currentColor" stroke-width="1.7"/>
-                <circle cx="17.5" cy="6" r="2.3" stroke="currentColor" stroke-width="1.7"/>
-                <circle cx="17.5" cy="18" r="2.3" stroke="currentColor" stroke-width="1.7"/>
-                <path d="M8 11l7.5-3.7M8 13l7.5 3.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <h3 data-i18n="safety.item3Title">Share your ride</h3>
-            <p data-i18n="safety.item3Body">Send live trip details to someone you trust, in one tap.</p>
-          </li>
-          <li class="safety-chip">
-            <div class="safety-chip-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 16h16M5 16l1.4-4.7A2 2 0 0 1 8.3 10h7.4a2 2 0 0 1 1.9 1.3L19 16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M5 16v2.3a.7.7 0 0 0 .7.7H7a.7.7 0 0 0 .7-.7V16M19 16v2.3a.7.7 0 0 1-.7.7H17a.7.7 0 0 1-.7-.7V16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-                <path d="M15.5 3.5l1.6 1.6-4 4-2.2-.6-.6-2.2 4-4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <h3 data-i18n="safety.item4Title">Vetted vehicles &amp; owners</h3>
-            <p data-i18n="safety.item4Body">Every vehicle in the network is tied to a documented, agreed vehicle-owner relationship, not an anonymous car.</p>
-          </li>
-        </ul>
+  <!-- ============ MEMBERSHIP ============ -->
+  <section class="section lt-section lt-tint" id="membership">
+    <div class="wrap lt-member">
+      <div>
+        <h2 class="lt-h" data-i18n="lite.memTitle">Ride more, pay less</h2>
+        <p data-i18n="lite.memBody">Cashback on every trip and priority rides.</p>
+      </div>
+      <a href="https://membership.ridearrivo.com" target="_blank" rel="noopener" class="btn btn-primary" data-i18n="idx.memJoin">Join membership</a>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="section lt-section faq-section" id="faq">
+    <div class="wrap">
+      <h2 class="lt-h" data-i18n="lite.faqTitle">FAQ</h2>
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary><span data-i18n="lite.q1">Flight delayed?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+          <div class="faq-body"><p data-i18n="lite.a1">We track your flight, so your driver meets you when you land.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary><span data-i18n="lite.q2">How do I pay?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+          <div class="faq-body"><p data-i18n="lite.a2">Card, wallet or membership. You see the fare first.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary><span data-i18n="lite.q3">Can I cancel?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+          <div class="faq-body"><p data-i18n="lite.a3">Free up to 48 hours before pickup. After that, 50% back.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary><span data-i18n="lite.q4">How far ahead?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+          <div class="faq-body"><p data-i18n="lite.a4">Airport trips: book ahead. Need a ride now? Use ArrivoExpress.</p></div>
+        </details>
       </div>
     </div>
   </section>
 
-  <!-- ============ LANGUAGE / TOURIST CALLOUT ============ -->
-  <section class="section section-dark">
-    <div class="wrap lang-callout">
-      <span class="eyebrow eyebrow-light" data-i18n="lang.eyebrow">Built for everyone landing here</span>
-      <h2 data-i18n="lang.title">Fluent in Lagos.<br>Fluent in seven languages.</h2>
-      <p data-i18n="lang.body">Visitors arriving in Lagos come from all over: French-speaking neighbours like Niger and Benin, plus travellers from China, India, Europe, and beyond. <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> speaks all of these languages natively, so getting a safe ride here never depends on getting the words right.</p>
-    </div>
-  </section>
-
-  <!-- ============ DOWNLOAD / WAITLIST ============ -->
-  <section class="section" id="download">
+  <!-- ============ DRIVERS / WAITLIST ============ -->
+  <section class="section lt-section lt-tint" id="download">
     <div class="wrap download-wrap">
-      <span class="eyebrow" data-i18n="download.eyebrow">Driving for RideArrivo?</span>
-      <h2 data-i18n="download.title">Be there on day one</h2>
-      <p data-i18n="download.body">Riders can book on the web right now. If you're a driver, leave your email and we'll let you know the moment the mobile apps are live.</p>
-
-      <a href="driver.html" class="btn btn-primary" style="display:inline-block;margin-bottom:20px;" data-i18n="idx.driverBtn">Driver Portal →</a>
-
+      <h2 class="lt-h" data-i18n="lite.drvTitle">Drive with us</h2>
+      <p data-i18n="lite.drvBody">Get an email when the driver app is live.</p>
+      <a href="driver.html" class="btn btn-primary lt-drv" data-i18n="idx.driverBtn">Driver Portal →</a>
       <form class="waitlist-form" id="waitlistForm">
         <label for="waitlistEmail" class="sr-only" data-i18n="download.emailLabel">Email address</label>
         <input type="email" id="waitlistEmail" name="email" required placeholder="you@example.com" data-i18n-placeholder="download.placeholder">
@@ -731,7 +430,6 @@
         <button type="submit" class="btn btn-primary" data-i18n="download.submit">Notify me</button>
       </form>
       <p class="form-note" id="formNote" data-i18n="download.note">We'll only email you about the <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span> launch. Nothing else.</p>
-
       <div class="store-badges" id="storeBadges" aria-hidden="true">
         <span class="store-badge" id="iosStoreBadge">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17.05 12.536c-.03-2.79 2.28-4.14 2.38-4.2-1.3-1.9-3.32-2.16-4.04-2.19-1.72-.17-3.36 1.01-4.23 1.01-.87 0-2.21-.99-3.64-.96-1.87.03-3.6 1.09-4.56 2.76-1.95 3.38-.5 8.38 1.4 11.12.93 1.34 2.03 2.85 3.48 2.8 1.4-.06 1.93-.9 3.62-.9 1.69 0 2.17.9 3.65.87 1.51-.02 2.46-1.36 3.38-2.71 1.07-1.55 1.51-3.05 1.53-3.13-.03-.01-2.94-1.13-2.97-4.47Z"/><path d="M14.55 4.24c.77-.94 1.29-2.24 1.15-3.54-1.11.05-2.46.75-3.26 1.68-.71.82-1.34 2.15-1.17 3.42 1.24.1 2.5-.63 3.28-1.56Z"/></svg>
@@ -830,7 +528,6 @@
     <div class="footer-col">
       <h3 data-i18n="footer.companyHeading">Company</h3>
       <a href="#how" data-i18n="nav.how">How it works</a>
-      <a href="#audiences" data-i18n="nav.audiences">Who it's for</a>
       <a href="#safety" data-i18n="nav.safety">Safety</a>
     </div>
 
@@ -909,6 +606,7 @@
 </footer>
 
 <script src="i18n.js?v=53"></script>
+<script src="lite-i18n.js?v=1"></script>
 <script src="script.js?v=34"></script>
 <script src="clock.js?v=32"></script>
 <script src="pwa-register.js?v=32"></script>
@@ -920,8 +618,6 @@
   <script src="late-request.js?v=1" defer></script>
   <script src="hero-form.js?v=12" defer></script>
   <script src="hero-slides.js?v=3" defer></script>
-  <script src="journey.js?v=2" defer></script>
-  <script src="audience-cta.js?v=1" defer></script>
   <script src="hero-products.js?v=1" defer></script>
   <script src="header-move.js?v=4" defer></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
