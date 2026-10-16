@@ -114,10 +114,11 @@ html[data-theme="dark"] .lt-dlg-n{color:#F4A300}
 .lt-band .btn-ghost{background:rgba(255,255,255,.08)!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 .lt-band .btn-ghost::before,.lt-band .btn-ghost::after{display:none!important}
 
-/* hero: play button reveals the service chips, they fade away after a while */
-.hero-chips[hidden]{display:none}
-.lt-chips{margin:14px 0 0;opacity:0;transform:translateY(6px);transition:opacity .25s ease,transform .25s ease}
-.lt-chips.is-in{opacity:1;transform:none}
-#heroSvcBtn[aria-expanded="true"] .ico-play{transform:rotate(90deg)}
+/* hero: the play button shows the service ticker; tap again to hide it */
+.hp{display:none}
+html.lt-svc-open .hp{display:block}
+.lt-chips{display:none;margin:14px 0 0}
+html.lt-svc-open:not(.hp-on) .lt-chips{display:flex}
 #heroSvcBtn .ico-play{transition:transform .2s}
-@media (prefers-reduced-motion:reduce){.lt-chips,#heroSvcBtn .ico-play{transition:none}}
+#heroSvcBtn[aria-expanded="true"] .ico-play{transform:rotate(90deg)}
+@media (prefers-reduced-motion:reduce){#heroSvcBtn .ico-play{transition:none}}
