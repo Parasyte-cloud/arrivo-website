@@ -43,3 +43,18 @@ html[data-theme="dark"] .lt-pill-ico .ico{color:#A9C0F5}
 .lt-drive .lt-lead{font-size:clamp(17px,2.4vw,20px);max-width:560px;color:var(--title);margin:0 0 18px}
 .lt-sub{margin:0 0 10px;font-size:15px;font-weight:600;color:var(--text-muted)}
 .lt-note{font-size:14px;color:var(--text-muted);margin:6px 0 12px}
+
+/* five steps: small pictures, each with its pill */
+.lt-steps{list-style:none;margin:0 0 20px;padding:0;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;width:100%;padding-bottom:6px}
+.lt-step{flex:0 0 auto;width:104px;display:flex;flex-direction:column;align-items:center;gap:8px;scroll-snap-align:start}
+.lt-step img{width:104px;height:130px;object-fit:cover;border-radius:14px;opacity:.92}
+.lt-step .lt-pill{font-size:13px;padding:4px 12px 4px 4px}
+.lt-step .lt-pill b{width:20px;height:20px;font-size:11px}
+@media (min-width:760px){.lt-steps{overflow:visible;gap:18px}.lt-step{width:120px}.lt-step img{width:120px;height:150px}}
+@media (max-width:759px){
+  .lt-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;overflow:visible}
+  .lt-step{width:auto;gap:6px}
+  .lt-step img{width:100%;height:auto;aspect-ratio:4/5;border-radius:10px}
+  .lt-step .lt-pill{font-size:11.5px;padding:3px 6px;max-width:100%;white-space:nowrap}
+  .lt-step .lt-pill b{display:none}
+}
