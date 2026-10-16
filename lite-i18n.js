@@ -65,6 +65,7 @@
   "ctaBody": "Book your ride today.",
   "haveCar": "Have a car? Earn with us",
   "svcBtn": "Our services",
+  "ways": "Five ways to RideArrivo",
   "close": "Close"
  },
  "fr": {
@@ -130,6 +131,7 @@
   "ctaBody": "Réservez votre course dès aujourd'hui.",
   "haveCar": "Vous avez une voiture ? Gagnez avec nous",
   "svcBtn": "Nos services",
+  "ways": "Cinq façons de rouler avec RideArrivo",
   "close": "Fermer"
  },
  "zh": {
@@ -195,6 +197,7 @@
   "ctaBody": "今天就预订您的行程。",
   "haveCar": "有车？和我们一起赚钱",
   "svcBtn": "我们的服务",
+  "ways": "RideArrivo 的五种出行方式",
   "close": "关闭"
  },
  "de": {
@@ -260,6 +263,7 @@
   "ctaBody": "Buchen Sie Ihre Fahrt noch heute.",
   "haveCar": "Auto vorhanden? Verdienen Sie mit uns",
   "svcBtn": "Unsere Services",
+  "ways": "Fünf Wege mit RideArrivo",
   "close": "Schließen"
  },
  "hi": {
@@ -325,6 +329,7 @@
   "ctaBody": "आज ही अपनी राइड बुक करें।",
   "haveCar": "गाड़ी है? हमारे साथ कमाएं",
   "svcBtn": "हमारी सेवाएं",
+  "ways": "RideArrivo के पांच तरीके",
   "close": "बंद करें"
  },
  "es": {
@@ -390,6 +395,7 @@
   "ctaBody": "Reserva tu viaje hoy.",
   "haveCar": "¿Tienes un auto? Gana con nosotros",
   "svcBtn": "Nuestros servicios",
+  "ways": "Cinco formas de viajar con RideArrivo",
   "close": "Cerrar"
  },
  "pt": {
@@ -455,6 +461,7 @@
   "ctaBody": "Reserve sua corrida hoje.",
   "haveCar": "Tem um carro? Ganhe com a gente",
   "svcBtn": "Nossos serviços",
+  "ways": "Cinco formas de viajar com RideArrivo",
   "close": "Fechar"
  }
 };
