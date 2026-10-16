@@ -77,3 +77,8 @@ html.hp-lock{overflow:hidden}
   .hp-lead{font-size:13.5px}
 }
 @media (prefers-reduced-motion:reduce){.hp-sheet[open],.hp-sheet[open]::backdrop{animation:none}}
+
+/* the site styles h3 and p with a light colour; the card is white, so pin ours */
+.hp-sheet .hp-sheet-name{color:#12123b;font-family:inherit}
+.hp-sheet .hp-sheet-tag{color:#12123b}
+.hp-sheet .hp-sheet-desc{color:#3b3b63}
