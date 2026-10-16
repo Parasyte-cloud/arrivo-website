@@ -64,6 +64,7 @@
   "ctaTitle": "Ready to land in Lagos?",
   "ctaBody": "Book your ride today.",
   "haveCar": "Have a car? Earn with us",
+  "svcBtn": "Our services",
   "close": "Close"
  },
  "fr": {
@@ -128,6 +129,7 @@
   "ctaTitle": "Prêt à atterrir à Lagos ?",
   "ctaBody": "Réservez votre course dès aujourd'hui.",
   "haveCar": "Vous avez une voiture ? Gagnez avec nous",
+  "svcBtn": "Nos services",
   "close": "Fermer"
  },
  "zh": {
@@ -192,6 +194,7 @@
   "ctaTitle": "准备好降落拉各斯了吗？",
   "ctaBody": "今天就预订您的行程。",
   "haveCar": "有车？和我们一起赚钱",
+  "svcBtn": "我们的服务",
   "close": "关闭"
  },
  "de": {
@@ -256,6 +259,7 @@
   "ctaTitle": "Bereit für die Landung in Lagos?",
   "ctaBody": "Buchen Sie Ihre Fahrt noch heute.",
   "haveCar": "Auto vorhanden? Verdienen Sie mit uns",
+  "svcBtn": "Unsere Services",
   "close": "Schließen"
  },
  "hi": {
@@ -320,6 +324,7 @@
   "ctaTitle": "लागोस में उतरने के लिए तैयार?",
   "ctaBody": "आज ही अपनी राइड बुक करें।",
   "haveCar": "गाड़ी है? हमारे साथ कमाएं",
+  "svcBtn": "हमारी सेवाएं",
   "close": "बंद करें"
  },
  "es": {
@@ -384,6 +389,7 @@
   "ctaTitle": "¿Listo para aterrizar en Lagos?",
   "ctaBody": "Reserva tu viaje hoy.",
   "haveCar": "¿Tienes un auto? Gana con nosotros",
+  "svcBtn": "Nuestros servicios",
   "close": "Cerrar"
  },
  "pt": {
@@ -448,6 +454,7 @@
   "ctaTitle": "Pronto para pousar em Lagos?",
   "ctaBody": "Reserve sua corrida hoje.",
   "haveCar": "Tem um carro? Ganhe com a gente",
+  "svcBtn": "Nossos serviços",
   "close": "Fechar"
  }
 };

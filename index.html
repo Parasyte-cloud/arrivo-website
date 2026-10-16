@@ -56,7 +56,7 @@
 <link rel="stylesheet" href="home.css?v=44">
 <link rel="stylesheet" href="final-home-composite.css?v=1">
 <link rel="stylesheet" href="hero-products.css?v=2">
-<link rel="stylesheet" href="lite-home.css?v=6">
+<link rel="stylesheet" href="lite-home.css?v=7">
   <script>
     // The launch gate only matters before launch day ends. After that, do not
     // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
@@ -276,8 +276,16 @@
         <p class="hero-sub" data-i18n="hero.sub">A verified driver, a live-tracked ride, and a trip you can share with someone who cares about your safe arrival.</p>
         <div class="hero-ctas">
           <a href="#drive" class="hero-link" data-i18n="lite.haveCar">Have a car? Earn with us</a>
-          <a href="#how" class="btn btn-ghost"><span data-i18n="hero.ctaSecondary">See how it works</span><svg class="ico ico-play" aria-hidden="true" focusable="false"><use href="#i-play"/></svg></a>
+          <button type="button" class="btn btn-ghost" id="heroSvcBtn" aria-expanded="false" aria-controls="heroSvcChips"><span data-i18n="lite.svcBtn">Our services</span><svg class="ico ico-play" aria-hidden="true" focusable="false"><use href="#i-play"/></svg></button>
         </div>
+        <nav class="hero-chips lt-chips" id="heroSvcChips" aria-label="RideArrivo services" data-i18n-aria="ui.servicesAria" hidden>
+          <a href="book.html" class="chip-primary"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-car"/></svg><span class="chip-lab"><span>RideArrivo</span></span></a>
+          <a href="https://express.ridearrivo.com/" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-bolt"/></svg><span class="chip-lab"><span data-i18n="nav.express">ArrivoExpress</span></span></a>
+          <a href="charter-booking.html"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg><span class="chip-lab"><span data-i18n="nav.chauffeur">ArrivoChauffeur</span></span></a>
+          <a href="https://move.ridearrivo.com" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-truck"/></svg><span class="chip-lab"><span data-i18n="nav.removals">ArrivoRemovals</span></span></a>
+          <a href="https://boat.ridearrivo.com" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-ship"/></svg><span class="chip-lab"><span>ArrivoBoat</span></span></a>
+          <a href="https://air.ridearrivo.com" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-plane"/></svg><span class="chip-lab"><span>ArrivoAir</span></span></a>
+        </nav>
       </div>
 
       <form class="hero-form" id="heroQuoteForm" novalidate aria-labelledby="heroFormTitle">
@@ -621,7 +629,7 @@
 </dialog>
 
 <script src="i18n.js?v=53"></script>
-<script src="lite-i18n.js?v=4"></script>
+<script src="lite-i18n.js?v=5"></script>
 <script src="script.js?v=34"></script>
 <script src="clock.js?v=32"></script>
 <script src="pwa-register.js?v=32"></script>
@@ -635,6 +643,7 @@
   <script src="hero-slides.js?v=3" defer></script>
   <script src="hero-products.js?v=1" defer></script>
   <script src="lite-steps.js?v=1" defer></script>
+<script src="lite-hero.js?v=1" defer></script>
   <script src="header-move.js?v=4" defer></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
 </body>

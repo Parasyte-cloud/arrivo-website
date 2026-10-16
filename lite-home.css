@@ -113,3 +113,11 @@ html[data-theme="dark"] .lt-dlg-n{color:#F4A300}
 /* plain ghost button on dark bands (no glass glare) */
 .lt-band .btn-ghost{background:rgba(255,255,255,.08)!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 .lt-band .btn-ghost::before,.lt-band .btn-ghost::after{display:none!important}
+
+/* hero: play button reveals the service chips, they fade away after a while */
+.hero-chips[hidden]{display:none}
+.lt-chips{margin:14px 0 0;opacity:0;transform:translateY(6px);transition:opacity .25s ease,transform .25s ease}
+.lt-chips.is-in{opacity:1;transform:none}
+#heroSvcBtn[aria-expanded="true"] .ico-play{transform:rotate(90deg)}
+#heroSvcBtn .ico-play{transition:transform .2s}
+@media (prefers-reduced-motion:reduce){.lt-chips,#heroSvcBtn .ico-play{transition:none}}
