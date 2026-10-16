@@ -45,7 +45,7 @@
     var signedIn = false;
     try { signedIn = !!localStorage.getItem("arrivo_rider_token"); } catch (e) {}
     var dest = signedIn ? "account.html" : "login.html";
-    var label = signedIn ? "My Account" : "Register or Login";
+    var label = signedIn ? "My Account" : "Log in";
     [["accountNavLink", "accountNavLabel"], ["accountNavLinkMobile", "accountNavLabelMobile"]].forEach(function (ids) {
       var a = document.getElementById(ids[0]);
       var t = document.getElementById(ids[1]);
