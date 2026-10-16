@@ -93,7 +93,9 @@ fs.mkdirSync(OUT, { recursive: true });
 
 // ---- pages ---------------------------------------------------------------
 for (const rel of PAGES) {
-  let html = mainSiteLinks(stripLaunchGate(read(rel)));
+  let html = mainSiteLinks(stripLaunchGate(read(rel)))
+    .replace("assets/pwa/ride/apple-touch-icon.png", "assets/pwa/express/apple-touch-icon.png")
+    .replace(/(apple-mobile-web-app-title" content=")[^"]*"/, '$1ArrivoExpress"');
   if (rel === "express.html") {
     html = html
       .replace('<link rel="canonical" href="https://ridearrivo.com/express.html">', '<link rel="canonical" href="' + SELF + '/">')
@@ -114,6 +116,10 @@ for (const rel of PAGES) {
 }
 for (const rel of FILES) write(rel, read(rel));
 copyDir(path.join(ROOT, "assets"), path.join(OUT, "assets"));
+// Only Express\'s own app icons belong on this host.
+for (const k of fs.readdirSync(path.join(OUT, "assets", "pwa"))) {
+  if (k !== "express") fs.rmSync(path.join(OUT, "assets", "pwa", k), { recursive: true, force: true });
+}
 
 // ---- host-specific files ---------------------------------------------------
 write("express-config.js",
@@ -129,7 +135,9 @@ window.ARRIVO_EXPRESS_CONFIG = {
 
 const manifest = JSON.parse(read("manifest.json"));
 manifest.name = "ArrivoExpress";
-manifest.short_name = "Express";
+manifest.short_name = "ArrivoExpress";
+manifest.icons = ["192x192", "512x512"].map((s) => ({ src: "assets/pwa/express/icon-" + s.split("x")[0] + ".png", sizes: s, type: "image/png", purpose: "any" }))
+  .concat([{ src: "assets/pwa/express/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }]);
 manifest.description = "On-demand rides in Lagos. Tap to book, no schedule needed.";
 manifest.start_url = "/express.html";
 manifest.scope = "/";
