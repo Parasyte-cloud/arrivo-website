@@ -34,8 +34,16 @@
   "a3": "Free up to 48 hours before pickup. After that, 50% back.",
   "q4": "How far ahead?",
   "a4": "Airport trips: book ahead. Need a ride now? Use ArrivoExpress.",
-  "drvTitle": "Drive with us",
-  "drvBody": "Get an email when the driver app is live."
+  "drvTitle": "You've got a car?",
+  "drvBody": "Earn good money putting your car to work. Join our professional drivers and start earning.",
+  "drvSteps": "What you need to do",
+  "d1": "Register",
+  "d2": "Verify your vehicle",
+  "d3": "Get trips",
+  "d4": "Earn money",
+  "drvCta": "Become a driver",
+  "drvNote": "Driver app coming soon. Leave your email and we will tell you when it is live.",
+  "drvNav": "Drive"
  },
  "fr": {
   "soon": "Bientôt",
@@ -69,8 +77,16 @@
   "a3": "Gratuit jusqu'à 48 h avant la prise en charge. Ensuite, 50 % remboursés.",
   "q4": "Réserver combien de temps avant ?",
   "a4": "Aéroport : réservez à l'avance. Besoin d'un trajet maintenant ? ArrivoExpress.",
-  "drvTitle": "Devenez chauffeur",
-  "drvBody": "Recevez un e-mail quand l'appli chauffeur sera disponible."
+  "drvTitle": "Vous avez une voiture ?",
+  "drvBody": "Gagnez de l'argent avec votre voiture. Rejoignez nos chauffeurs professionnels.",
+  "drvSteps": "Ce qu'il faut faire",
+  "d1": "Inscription",
+  "d2": "Vérifiez votre véhicule",
+  "d3": "Recevez des courses",
+  "d4": "Gagnez de l'argent",
+  "drvCta": "Devenir chauffeur",
+  "drvNote": "Appli chauffeur bientôt disponible. Laissez votre e-mail, nous vous prévenons.",
+  "drvNav": "Conduire"
  },
  "zh": {
   "soon": "即将上线",
@@ -104,8 +120,16 @@
   "a3": "接送前48小时以上可免费取消，之后退还50%。",
   "q4": "要提前多久预订？",
   "a4": "机场接送请提前预订。现在要用车？选择ArrivoExpress。",
-  "drvTitle": "加入我们开车",
-  "drvBody": "司机应用上线时，我们会发邮件通知您。"
+  "drvTitle": "您有车吗？",
+  "drvBody": "让您的车为您赚钱。加入我们的专业司机，开始赚取收入。",
+  "drvSteps": "您需要做什么",
+  "d1": "注册",
+  "d2": "验证车辆",
+  "d3": "接单",
+  "d4": "赚钱",
+  "drvCta": "成为司机",
+  "drvNote": "司机应用即将上线。留下邮箱，上线时我们通知您。",
+  "drvNav": "开车"
  },
  "de": {
   "soon": "Bald",
@@ -139,8 +163,16 @@
   "a3": "Kostenlos bis 48 Stunden vor Abholung. Danach 50 % zurück.",
   "q4": "Wie früh buchen?",
   "a4": "Flughafen: vorab buchen. Jetzt ein Auto? ArrivoExpress.",
-  "drvTitle": "Fahren Sie mit uns",
-  "drvBody": "Wir mailen Ihnen, sobald die Fahrer-App live ist."
+  "drvTitle": "Sie haben ein Auto?",
+  "drvBody": "Verdienen Sie gutes Geld mit Ihrem Auto. Werden Sie Teil unserer professionellen Fahrer.",
+  "drvSteps": "So geht es",
+  "d1": "Registrieren",
+  "d2": "Fahrzeug prüfen lassen",
+  "d3": "Fahrten erhalten",
+  "d4": "Geld verdienen",
+  "drvCta": "Fahrer werden",
+  "drvNote": "Fahrer-App bald verfügbar. Hinterlassen Sie Ihre E-Mail, wir melden uns.",
+  "drvNav": "Fahren"
  },
  "hi": {
   "soon": "जल्द",
@@ -174,8 +206,16 @@
   "a3": "पिकअप से 48 घंटे पहले तक मुफ़्त। उसके बाद 50% वापस।",
   "q4": "कितना पहले बुक करें?",
   "a4": "एयरपोर्ट के लिए पहले बुक करें। अभी चाहिए? ArrivoExpress।",
-  "drvTitle": "हमारे साथ चलाएँ",
-  "drvBody": "ड्राइवर ऐप शुरू होते ही हम ईमेल करेंगे।"
+  "drvTitle": "आपके पास कार है?",
+  "drvBody": "अपनी कार से अच्छी कमाई करें। हमारे पेशेवर ड्राइवरों से जुड़ें और कमाना शुरू करें।",
+  "drvSteps": "आपको क्या करना है",
+  "d1": "रजिस्टर करें",
+  "d2": "गाड़ी सत्यापित करें",
+  "d3": "ट्रिप पाएँ",
+  "d4": "कमाई करें",
+  "drvCta": "ड्राइवर बनें",
+  "drvNote": "ड्राइवर ऐप जल्द आ रहा है। अपना ईमेल दें, शुरू होते ही बताएँगे।",
+  "drvNav": "चलाएँ"
  },
  "es": {
   "soon": "Pronto",
@@ -209,8 +249,16 @@
   "a3": "Gratis hasta 48 horas antes. Después, 50 % de reembolso.",
   "q4": "¿Con cuánta antelación?",
   "a4": "Aeropuerto: reserva antes. ¿Lo necesitas ya? ArrivoExpress.",
-  "drvTitle": "Conduce con nosotros",
-  "drvBody": "Te avisaremos por correo cuando la app de conductores esté lista."
+  "drvTitle": "¿Tienes un coche?",
+  "drvBody": "Gana buen dinero con tu coche. Únete a nuestros conductores profesionales y empieza a ganar.",
+  "drvSteps": "Qué tienes que hacer",
+  "d1": "Regístrate",
+  "d2": "Verifica tu vehículo",
+  "d3": "Recibe viajes",
+  "d4": "Gana dinero",
+  "drvCta": "Ser conductor",
+  "drvNote": "App de conductores muy pronto. Deja tu correo y te avisamos.",
+  "drvNav": "Conducir"
  },
  "pt": {
   "soon": "Em breve",
@@ -244,8 +292,16 @@
   "a3": "Grátis até 48 horas antes. Depois, 50% de volta.",
   "q4": "Com quanta antecedência?",
   "a4": "Aeroporto: reserve antes. Precisa agora? ArrivoExpress.",
-  "drvTitle": "Dirija conosco",
-  "drvBody": "Avisaremos por e-mail quando o app de motoristas estiver no ar."
+  "drvTitle": "Você tem um carro?",
+  "drvBody": "Ganhe bem usando seu carro. Junte-se aos nossos motoristas profissionais e comece a ganhar.",
+  "drvSteps": "O que você precisa fazer",
+  "d1": "Cadastre-se",
+  "d2": "Verifique seu veículo",
+  "d3": "Receba corridas",
+  "d4": "Ganhe dinheiro",
+  "drvCta": "Ser motorista",
+  "drvNote": "App de motoristas em breve. Deixe seu e-mail e avisamos.",
+  "drvNav": "Dirigir"
  }
 };
   Object.keys(L).forEach(function(k){ if (I18N[k]) I18N[k].lite = L[k]; });

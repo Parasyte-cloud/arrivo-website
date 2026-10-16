@@ -38,3 +38,8 @@ html[data-theme="dark"] .lt-pill-ico .ico{color:#A9C0F5}
 
 .lt-drv{display:inline-block;margin:6px 0 16px}
 .download-wrap p{margin:0 0 12px}
+
+/* drive with us: aimed at people with a car */
+.lt-drive .lt-lead{font-size:clamp(17px,2.4vw,20px);max-width:560px;color:var(--title);margin:0 0 18px}
+.lt-sub{margin:0 0 10px;font-size:15px;font-weight:600;color:var(--text-muted)}
+.lt-note{font-size:14px;color:var(--text-muted);margin:6px 0 12px}
