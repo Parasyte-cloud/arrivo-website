@@ -56,7 +56,7 @@
 <link rel="stylesheet" href="home.css?v=44">
 <link rel="stylesheet" href="final-home-composite.css?v=1">
 <link rel="stylesheet" href="hero-products.css?v=2">
-<link rel="stylesheet" href="lite-home.css?v=10">
+<link rel="stylesheet" href="lite-home.css?v=12">
   <script>
     // The launch gate only matters before launch day ends. After that, do not
     // hide the page at all. (Kept for ?launchTest=1 rehearsals.)
@@ -276,16 +276,8 @@
         <p class="hero-sub" data-i18n="hero.sub">A verified driver, a live-tracked ride, and a trip you can share with someone who cares about your safe arrival.</p>
         <div class="hero-ctas">
           <a href="#drive" class="hero-link" data-i18n="lite.haveCar">Have a car? Earn with us</a>
-          <button type="button" class="btn btn-ghost" id="heroSvcBtn" aria-expanded="false" aria-controls="heroSvcChips"><span data-i18n="lite.svcBtn">Our services</span><svg class="ico ico-play" aria-hidden="true" focusable="false"><use href="#i-play"/></svg></button>
+          <button type="button" class="btn btn-ghost" id="heroSvcBtn" aria-expanded="false" aria-controls="ways"><span data-i18n="lite.svcBtn">Our services</span><svg class="ico ico-play" aria-hidden="true" focusable="false"><use href="#i-play"/></svg></button>
         </div>
-        <nav class="hero-chips lt-chips" id="heroSvcChips" aria-label="RideArrivo services" data-i18n-aria="ui.servicesAria">
-          <a href="book.html" class="chip-primary"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-car"/></svg><span class="chip-lab"><span>RideArrivo</span></span></a>
-          <a href="https://express.ridearrivo.com/" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-bolt"/></svg><span class="chip-lab"><span data-i18n="nav.express">ArrivoExpress</span></span></a>
-          <a href="charter-booking.html"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg><span class="chip-lab"><span data-i18n="nav.chauffeur">ArrivoChauffeur</span></span></a>
-          <a href="https://move.ridearrivo.com" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-truck"/></svg><span class="chip-lab"><span data-i18n="nav.removals">ArrivoRemovals</span></span></a>
-          <a href="https://boat.ridearrivo.com" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-ship"/></svg><span class="chip-lab"><span>ArrivoBoat</span></span></a>
-          <a href="https://air.ridearrivo.com" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-plane"/></svg><span class="chip-lab"><span>ArrivoAir</span></span></a>
-        </nav>
       </div>
 
       <form class="hero-form" id="heroQuoteForm" novalidate aria-labelledby="heroFormTitle">
@@ -335,24 +327,11 @@
     </div>
   </section>
 
-  <!-- ============ SERVICES ============ -->
-  <section class="section lt-section" id="services">
+  <!-- ============ FIVE WAYS (opens from the hero button) ============ -->
+  <section class="section lt-section lt-tint" id="ways" hidden>
     <div class="wrap">
-      <header class="lt-head"><p class="lt-eyebrow" data-i18n="lite.eyeSvc">Services</p><h2 class="lt-h" data-i18n="lite.svcTitle">What do you need?</h2><p class="lt-lede" data-i18n="lite.svcLead">Six services, one trusted name.</p></header>
-      <h3 class="lt-grp" data-i18n="lite.grpCity">Get around Lagos</h3>
-      <div class="lt-svcs">
-        <a class="lt-svc" href="book.html"><span class="lt-ic"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-car"/></svg></span><span class="lt-svc-txt"><strong>RideArrivo</strong><span data-i18n="lite.ride">Airport and city rides</span></span><svg class="ico lt-go" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
-        <a class="lt-svc" href="https://express.ridearrivo.com/" target="_blank" rel="noopener"><span class="lt-ic"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-bolt"/></svg></span><span class="lt-svc-txt"><strong data-i18n="nav.express">ArrivoExpress</strong><span data-i18n="lite.express">Ride now across Lagos</span></span><svg class="ico lt-go" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
-        <a class="lt-svc" href="charter-booking.html"><span class="lt-ic"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg></span><span class="lt-svc-txt"><strong data-i18n="nav.chauffeur">ArrivoChauffeur</strong><span data-i18n="lite.chauffeur">A driver by the day, week or month</span></span><svg class="ico lt-go" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
-      </div>
-      <h3 class="lt-grp" data-i18n="lite.grpMore">Move and charter</h3>
-      <div class="lt-svcs">
-        <a class="lt-svc" href="https://move.ridearrivo.com" target="_blank" rel="noopener"><span class="lt-ic"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-truck"/></svg></span><span class="lt-svc-txt"><strong data-i18n="nav.removals">ArrivoRemovals</strong><span data-i18n="lite.removals">Move home or office</span></span><svg class="ico lt-go" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
-        <a class="lt-svc" href="https://boat.ridearrivo.com" target="_blank" rel="noopener"><span class="lt-ic"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-ship"/></svg></span><span class="lt-svc-txt"><strong>ArrivoBoat</strong><span data-i18n="lite.boat">Boat charters</span></span><svg class="ico lt-go" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
-        <a class="lt-svc" href="https://air.ridearrivo.com" target="_blank" rel="noopener"><span class="lt-ic"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-plane"/></svg></span><span class="lt-svc-txt"><strong>ArrivoAir</strong><span data-i18n="lite.air">Private jets</span></span><svg class="ico lt-go" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
-      </div>
-      <p class="lt-cta lt-more"><button type="button" class="btn lt-morebtn" id="ltWaysBtn" aria-expanded="false" aria-controls="ltWays"><span data-i18n="lite.ways">Five ways to RideArrivo</span><svg class="ico lt-go" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></button></p>
-      <div class="cards services-cards" id="ltWays" hidden>
+      <header class="lt-head"><p class="lt-eyebrow" data-i18n="lite.eyeSvc">Services</p><h2 class="lt-h" data-i18n="lite.ways">Five ways to RideArrivo</h2></header>
+      <div class="cards services-cards">
         <a class="card service-card" href="https://express.ridearrivo.com/">
           <img class="service-card-photo" src="assets/services/express.webp" width="560" height="373" alt="A rider booking a car on her phone while a chauffeur waits" loading="lazy" decoding="async">
           <div class="icon-badge">
@@ -419,6 +398,26 @@
           <span class="service-card-cta" data-i18n="idx.airCta">Request a jet &rarr;</span>
         </a>
       </div>
+    </div>
+  </section>
+
+  <!-- ============ SERVICES ============ -->
+  <section class="section lt-section" id="services">
+    <div class="wrap">
+      <header class="lt-head"><p class="lt-eyebrow" data-i18n="lite.eyeSvc">Services</p><h2 class="lt-h" data-i18n="lite.svcTitle">What do you need?</h2><p class="lt-lede" data-i18n="lite.svcLead">Six services, one trusted name.</p></header>
+      <h3 class="lt-grp" data-i18n="lite.grpCity">Get around Lagos</h3>
+      <div class="lt-svcs">
+        <a class="lt-svc" href="book.html"><span class="lt-ic"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-car"/></svg></span><span class="lt-svc-txt"><strong>RideArrivo</strong><span data-i18n="lite.ride">Airport and city rides</span></span><svg class="ico lt-go" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
+        <a class="lt-svc" href="https://express.ridearrivo.com/" target="_blank" rel="noopener"><span class="lt-ic"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-bolt"/></svg></span><span class="lt-svc-txt"><strong data-i18n="nav.express">ArrivoExpress</strong><span data-i18n="lite.express">Ride now across Lagos</span></span><svg class="ico lt-go" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
+        <a class="lt-svc" href="charter-booking.html"><span class="lt-ic"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg></span><span class="lt-svc-txt"><strong data-i18n="nav.chauffeur">ArrivoChauffeur</strong><span data-i18n="lite.chauffeur">A driver by the day, week or month</span></span><svg class="ico lt-go" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
+      </div>
+      <h3 class="lt-grp" data-i18n="lite.grpMore">Move and charter</h3>
+      <div class="lt-svcs">
+        <a class="lt-svc" href="https://move.ridearrivo.com" target="_blank" rel="noopener"><span class="lt-ic"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-truck"/></svg></span><span class="lt-svc-txt"><strong data-i18n="nav.removals">ArrivoRemovals</strong><span data-i18n="lite.removals">Move home or office</span></span><svg class="ico lt-go" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
+        <a class="lt-svc" href="https://boat.ridearrivo.com" target="_blank" rel="noopener"><span class="lt-ic"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-ship"/></svg></span><span class="lt-svc-txt"><strong>ArrivoBoat</strong><span data-i18n="lite.boat">Boat charters</span></span><svg class="ico lt-go" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
+        <a class="lt-svc" href="https://air.ridearrivo.com" target="_blank" rel="noopener"><span class="lt-ic"><svg class="ico" aria-hidden="true" focusable="false"><use href="#i-plane"/></svg></span><span class="lt-svc-txt"><strong>ArrivoAir</strong><span data-i18n="lite.air">Private jets</span></span><svg class="ico lt-go" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
+      </div>
+      
     </div>
   </section>
 
@@ -711,7 +710,7 @@
   <script src="hero-slides.js?v=3" defer></script>
   <script src="hero-products.js?v=1" defer></script>
   <script src="lite-steps.js?v=1" defer></script>
-<script src="lite-hero.js?v=4" defer></script>
+<script src="lite-hero.js?v=6" defer></script>
   <script src="header-move.js?v=4" defer></script>
   <script src="/launch-countdown.js?v=20260912-02" defer></script>
 </body>
