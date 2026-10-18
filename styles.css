@@ -1750,3 +1750,45 @@ html.nav-locked { overflow: hidden; }
 @media (max-width: 640px) {
   .page-banner { border-radius: 14px; aspect-ratio: 3 / 2; margin-bottom: 16px; }
 }
+
+/* ── Phone navbar: the same springy "island" feel as the RideArrivo workspace ──
+   Phones and small tablets only (below 860px, where the hamburger layout is used). The header already
+   becomes a floating pill once scrolled; here it also tightens up with a spring, and the logo and
+   buttons take a small staggered bounce each time it shrinks or grows. The bounces are one-shot
+   animations with no fill mode, so no transform is left behind. */
+@media (max-width: 859px) {
+  .site-header {
+    transition: top .55s cubic-bezier(.34,1.56,.64,1), margin .55s cubic-bezier(.34,1.56,.64,1),
+                border-radius .45s ease, background .3s ease, box-shadow .3s ease, border-color .3s ease;
+  }
+  .header-inner { transition: padding .5s cubic-bezier(.34,1.56,.64,1), gap .4s ease; }
+  .site-header.is-scrolled .header-inner { padding-top: 7px; padding-bottom: 7px; }
+  .logo-wrap, .brand-wordmark { transition: transform .5s cubic-bezier(.34,1.7,.5,1); transform-origin: left center; }
+  .site-header.is-scrolled .logo-wrap { transform: scale(.88); }
+  .site-header.is-scrolled .brand-wordmark { transform: scale(.9); }
+
+  .site-header .brand,
+  .site-header .header-actions .theme-toggle,
+  .site-header .header-actions .lang-trigger,
+  .site-header .header-actions .nav-account-link,
+  .site-header .header-actions > .btn,
+  .site-header .mobile-nav-toggle { animation: arIslandRelax .6s cubic-bezier(.34,1.7,.5,1); }
+  .site-header.is-scrolled .brand,
+  .site-header.is-scrolled .header-actions .theme-toggle,
+  .site-header.is-scrolled .header-actions .lang-trigger,
+  .site-header.is-scrolled .header-actions .nav-account-link,
+  .site-header.is-scrolled .header-actions > .btn,
+  .site-header.is-scrolled .mobile-nav-toggle { animation-name: arIslandSqueeze; }
+  .site-header .header-actions > *:nth-child(2) .lang-trigger,
+  .site-header .header-actions .nav-account-link { animation-delay: .04s; }
+  .site-header .header-actions > .btn { animation-delay: .08s; }
+  .site-header .mobile-nav-toggle { animation-delay: .12s; }
+}
+@keyframes arIslandSqueeze { 0% { transform: scale(1.22); } 55% { transform: scale(.9); } 100% { transform: none; } }
+@keyframes arIslandRelax { 0% { transform: scale(.8); } 55% { transform: scale(1.1); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .site-header, .header-inner, .logo-wrap, .brand-wordmark { transition: none !important; }
+  .site-header .brand, .site-header .header-actions .theme-toggle, .site-header .header-actions .lang-trigger,
+  .site-header .header-actions .nav-account-link, .site-header .header-actions > .btn,
+  .site-header .mobile-nav-toggle { animation: none !important; }
+}
