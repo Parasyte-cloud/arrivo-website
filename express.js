@@ -1172,7 +1172,7 @@
   function setAccountNav(signedIn) {
     var next = CFG.selfPath || "express.html";
     var href = signedIn ? ACCOUNT_PATH : LOGIN_PATH + "?next=" + encodeURIComponent(next);
-    var label = signedIn ? t("footer.myAccount") : "Register or Login";
+    var label = signedIn ? t("footer.myAccount") : "Log in";
     [["accountNavLink", "accountNavLabel"], ["accountNavLinkMobile", "accountNavLabelMobile"]].forEach(function (ids) {
       var a = document.getElementById(ids[0]);
       var l = document.getElementById(ids[1]);
@@ -1253,7 +1253,7 @@
         }
 
         // Only a real success proves a session. A network failure or a server error
-        // is not a sign-in, so the header keeps saying Register or Login.
+        // is not a sign-in, so the header keeps saying Log in.
         if (statusResult.ok) setAccountNav(true);
 
         if (!statusResult.ok) {

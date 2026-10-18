@@ -6,7 +6,7 @@ const I18N = {
   en: {
     ui: {
       skip: "Skip to content",
-      register: "Register or Login",
+      register: "Log in",
       myAccount: "My Account",
       navPrimary: "Primary",
       navMobile: "Mobile",
@@ -119,6 +119,7 @@ const I18N = {
       how: "How it works",
       audiences: "Who it's for",
       safety: "Safety",
+      blog: "Blog",
       download: "Get notified",
       book: "Book a ride",
       bookCta: "Book a ride",
@@ -202,8 +203,8 @@ const I18N = {
     },
     hero: {
       eyebrow: "Lagos airport pickups, done right",
-      headline: "<span class=\"hl-line\">Land in Lagos.</span><span class=\"hl-line\">Arrive. Relax.</span><span class=\"hero-wm\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"RideArrivo\" class=\"hero-wordmark\" width=\"1829\" height=\"309\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"\" aria-hidden=\"true\" class=\"hero-wordmark-glow\" width=\"1829\" height=\"309\"></span>",
-      sub: "A verified driver, a live-tracked ride, and a trip you can share with someone who cares about your safe arrival. Available in 7 languages, including English, Français, and 中文.",
+      headline: "<span class=\"hl-line\">Land in Lagos.</span><span class=\"hl-line\">Arrive. Relax.</span>",
+      sub: "A verified driver, a live-tracked ride, and a trip you can share with someone who cares about your safe arrival.",
       ctaPrimary: "Book a ride now",
       ctaSecondary: "See how it works",
     },
@@ -665,7 +666,7 @@ const I18N = {
   fr: {
     ui: {
       skip: "Aller au contenu",
-      register: "S'inscrire ou se connecter",
+      register: "Se connecter",
       myAccount: "Mon compte",
       navPrimary: "Principale",
       navMobile: "Mobile",
@@ -778,6 +779,7 @@ const I18N = {
       how: "Comment ça marche",
       audiences: "Pour qui",
       safety: "Sécurité",
+      blog: "Blog",
       download: "Être prévenu",
       book: "Réserver une course",
       bookCta: "Réserver une course",
@@ -848,8 +850,8 @@ const I18N = {
     },
     hero: {
       eyebrow: "L'arrivée à Lagos, bien faite",
-      headline: "<span class=\"hl-line\">Atterrissez à Lagos.</span><span class=\"hl-line\">Quelqu'un vous attend déjà.</span><span class=\"hero-wm\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"RideArrivo\" class=\"hero-wordmark\" width=\"1829\" height=\"309\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"\" aria-hidden=\"true\" class=\"hero-wordmark-glow\" width=\"1829\" height=\"309\"></span>",
-      sub: "Un chauffeur vérifié, un trajet suivi en direct, et un voyage que vous pouvez partager avec un proche qui se soucie de votre arrivée en toute sécurité. Disponible en 7 langues, dont l'anglais, le français et le chinois.",
+      headline: "<span class=\"hl-line\">Atterrissez à Lagos.</span><span class=\"hl-line\">Quelqu'un vous attend déjà.</span>",
+      sub: "Un chauffeur vérifié, un trajet suivi en direct, et un voyage que vous pouvez partager avec un proche qui se soucie de votre arrivée en toute sécurité.",
       ctaPrimary: "Réserver une course",
       ctaSecondary: "Voir comment ça marche",
     },
@@ -1319,7 +1321,7 @@ const I18N = {
 I18N.zh = {
   ui: {
     skip: "跳到主要内容",
-    register: "注册或登录",
+    register: "登录",
     myAccount: "我的账户",
     navPrimary: "主导航",
     navMobile: "移动端导航",
@@ -1432,6 +1434,7 @@ I18N.zh = {
     how: "运作方式",
     audiences: "适用对象",
     safety: "安全保障",
+    blog: "博客",
     download: "获取通知",
     book: "预订行程",
     bookCta: "预订行程",
@@ -1502,8 +1505,8 @@ I18N.zh = {
   },
   hero: {
     eyebrow: "拉各斯机场接送，值得信赖",
-    headline: "<span class=\"hl-line\">抵达拉各斯。</span><span class=\"hl-line\">已有人在等您。</span><span class=\"hero-wm\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"RideArrivo\" class=\"hero-wordmark\" width=\"1829\" height=\"309\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"\" aria-hidden=\"true\" class=\"hero-wordmark-glow\" width=\"1829\" height=\"309\"></span>",
-    sub: "经过身份验证的司机、实时追踪的行程，还能与关心您平安抵达的人分享行程。支持7种语言，包括英语、法语和中文。",
+    headline: "<span class=\"hl-line\">抵达拉各斯。</span><span class=\"hl-line\">已有人在等您。</span>",
+    sub: "经过身份验证的司机、实时追踪的行程，还能与关心您平安抵达的人分享行程。",
     ctaPrimary: "立即预订行程",
     ctaSecondary: "了解运作方式",
   },
@@ -1974,7 +1977,7 @@ if (typeof module !== "undefined") module.exports = I18N;
 I18N.de = {
   ui: {
     skip: "Zum Inhalt springen",
-    register: "Registrieren oder anmelden",
+    register: "Anmelden",
     myAccount: "Mein Konto",
     navPrimary: "Hauptnavigation",
     navMobile: "Mobil",
@@ -2087,6 +2090,7 @@ I18N.de = {
     how: "So funktioniert's",
     audiences: "Für wen",
     safety: "Sicherheit",
+    blog: "Blog",
     download: "Benachrichtigen",
     book: "Fahrt buchen",
     bookCta: "Fahrt buchen",
@@ -2157,8 +2161,8 @@ I18N.de = {
   },
   hero: {
     eyebrow: "Flughafenabholung in Lagos, richtig gemacht",
-    headline: "<span class=\"hl-line\">Landung in Lagos.</span><span class=\"hl-line\">Jemand wartet bereits.</span><span class=\"hero-wm\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"RideArrivo\" class=\"hero-wordmark\" width=\"1829\" height=\"309\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"\" aria-hidden=\"true\" class=\"hero-wordmark-glow\" width=\"1829\" height=\"309\"></span>",
-    sub: "Ein verifizierter Fahrer, eine live verfolgte Fahrt und eine Reise, die Sie mit jemandem teilen können, dem Ihre sichere Ankunft am Herzen liegt. Verfügbar in 7 Sprachen, darunter Englisch, Französisch und Chinesisch.",
+    headline: "<span class=\"hl-line\">Landung in Lagos.</span><span class=\"hl-line\">Jemand wartet bereits.</span>",
+    sub: "Ein verifizierter Fahrer, eine live verfolgte Fahrt und eine Reise, die Sie mit jemandem teilen können, dem Ihre sichere Ankunft am Herzen liegt.",
     ctaPrimary: "Jetzt Fahrt buchen",
     ctaSecondary: "So funktioniert's",
   },
@@ -2627,7 +2631,7 @@ I18N.de = {
 I18N.hi = {
   ui: {
     skip: "मुख्य सामग्री पर जाएं",
-    register: "रजिस्टर या लॉग इन करें",
+    register: "लॉग इन करें",
     myAccount: "मेरा खाता",
     navPrimary: "मुख्य",
     navMobile: "मोबाइल",
@@ -2740,6 +2744,7 @@ I18N.hi = {
     how: "यह कैसे काम करता है",
     audiences: "किनके लिए है",
     safety: "सुरक्षा",
+    blog: "ब्लॉग",
     download: "सूचित करें",
     book: "राइड बुक करें",
     bookCta: "राइड बुक करें",
@@ -2810,8 +2815,8 @@ I18N.hi = {
   },
   hero: {
     eyebrow: "लागोस एयरपोर्ट पिकअप, सही तरीके से",
-    headline: "<span class=\"hl-line\">लागोस पहुँचें।</span><span class=\"hl-line\">कोई पहले से इंतज़ार कर रहा है।</span><span class=\"hero-wm\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"RideArrivo\" class=\"hero-wordmark\" width=\"1829\" height=\"309\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"\" aria-hidden=\"true\" class=\"hero-wordmark-glow\" width=\"1829\" height=\"309\"></span>",
-    sub: "एक सत्यापित ड्राइवर, लाइव-ट्रैक की गई राइड, और एक यात्रा जिसे आप किसी ऐसे व्यक्ति के साथ साझा कर सकते हैं जो आपकी सुरक्षित पहुंच की परवाह करता है। 7 भाषाओं में उपलब्ध, जिनमें अंग्रेज़ी, फ़्रेंच और चीनी शामिल हैं।",
+    headline: "<span class=\"hl-line\">लागोस पहुँचें।</span><span class=\"hl-line\">कोई पहले से इंतज़ार कर रहा है।</span>",
+    sub: "एक सत्यापित ड्राइवर, लाइव-ट्रैक की गई राइड, और एक यात्रा जिसे आप किसी ऐसे व्यक्ति के साथ साझा कर सकते हैं जो आपकी सुरक्षित पहुंच की परवाह करता है।",
     ctaPrimary: "अभी राइड बुक करें",
     ctaSecondary: "देखें यह कैसे काम करता है",
   },
@@ -3280,7 +3285,7 @@ I18N.hi = {
 I18N.es = {
   ui: {
     skip: "Saltar al contenido",
-    register: "Registrarse o iniciar sesión",
+    register: "Iniciar sesión",
     myAccount: "Mi cuenta",
     navPrimary: "Principal",
     navMobile: "Móvil",
@@ -3393,6 +3398,7 @@ I18N.es = {
     how: "Cómo funciona",
     audiences: "Para quién",
     safety: "Seguridad",
+    blog: "Blog",
     download: "Notificarme",
     book: "Reservar un viaje",
     bookCta: "Reservar un viaje",
@@ -3463,8 +3469,8 @@ I18N.es = {
   },
   hero: {
     eyebrow: "Recogidas en el aeropuerto de Lagos, bien hechas",
-    headline: "<span class=\"hl-line\">Aterriza en Lagos.</span><span class=\"hl-line\">Alguien ya te espera.</span><span class=\"hero-wm\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"RideArrivo\" class=\"hero-wordmark\" width=\"1829\" height=\"309\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"\" aria-hidden=\"true\" class=\"hero-wordmark-glow\" width=\"1829\" height=\"309\"></span>",
-    sub: "Un conductor verificado, un viaje rastreado en vivo, y un trayecto que puedes compartir con alguien a quien le importa que llegues seguro. Disponible en 7 idiomas, incluyendo inglés, francés y chino.",
+    headline: "<span class=\"hl-line\">Aterriza en Lagos.</span><span class=\"hl-line\">Alguien ya te espera.</span>",
+    sub: "Un conductor verificado, un viaje rastreado en vivo, y un trayecto que puedes compartir con alguien a quien le importa que llegues seguro.",
     ctaPrimary: "Reservar un viaje ahora",
     ctaSecondary: "Ver cómo funciona",
   },
@@ -3933,7 +3939,7 @@ I18N.es = {
 I18N.pt = {
   ui: {
     skip: "Ir para o conteúdo",
-    register: "Registar ou iniciar sessão",
+    register: "Iniciar sessão",
     myAccount: "A minha conta",
     navPrimary: "Principal",
     navMobile: "Móvel",
@@ -4046,6 +4052,7 @@ I18N.pt = {
     how: "Como funciona",
     audiences: "Para quem",
     safety: "Segurança",
+    blog: "Blog",
     download: "Notificar-me",
     book: "Reservar uma corrida",
     bookCta: "Reservar uma corrida",
@@ -4116,8 +4123,8 @@ I18N.pt = {
   },
   hero: {
     eyebrow: "Buscas no aeroporto de Lagos, bem feitas",
-    headline: "<span class=\"hl-line\">Chegue a Lagos.</span><span class=\"hl-line\">Alguém já está à sua espera.</span><span class=\"hero-wm\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"RideArrivo\" class=\"hero-wordmark\" width=\"1829\" height=\"309\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"\" aria-hidden=\"true\" class=\"hero-wordmark-glow\" width=\"1829\" height=\"309\"></span>",
-    sub: "Um motorista verificado, uma viagem rastreada ao vivo, e um trajeto que você pode compartilhar com alguém que se importa com sua chegada segura. Disponível em 7 idiomas, incluindo inglês, francês e chinês.",
+    headline: "<span class=\"hl-line\">Chegue a Lagos.</span><span class=\"hl-line\">Alguém já está à sua espera.</span>",
+    sub: "Um motorista verificado, uma viagem rastreada ao vivo, e um trajeto que você pode compartilhar com alguém que se importa com sua chegada segura.",
     ctaPrimary: "Reservar agora",
     ctaSecondary: "Ver como funciona",
   },

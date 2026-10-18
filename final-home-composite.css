@@ -1,0 +1,30 @@
+/* Final homepage composition. PR #67 stays the foundation; this file owns only the journey and audience buttons. */
+.journey-section{padding-top:clamp(52px,7vw,90px);overflow:hidden}
+.journey-head{padding-bottom:4px}
+.journey-head .eyebrow{margin-bottom:10px}
+.journey-head h2{max-width:760px;margin:0;font-size:clamp(30px,4.6vw,48px);line-height:1.08;letter-spacing:-.02em}
+.journey-section .jp-wrap{margin-top:clamp(24px,3.4vw,42px)}
+#audiences .cards{align-items:stretch}
+#audiences .card{display:flex;flex-direction:column}
+#audiences .audience-cta{align-self:flex-start;margin-top:auto;padding-top:11px;padding-bottom:11px}
+.journey-section .jp-toggle:focus-visible,#audiences .audience-cta:focus-visible{outline:3px solid #f6a11a;outline-offset:3px}
+
+/* Phones: a swipeable row of cards instead of the desktop build/spotlight sequence. */
+@media (max-width:760px){
+  .journey-section{padding-top:52px}
+  .journey-section .jp-wrap{margin-top:22px;overflow:visible}
+  .journey-section .jp-stage{height:min(126vw,560px);overflow-x:auto;overflow-y:hidden;gap:10px;
+    padding:0 max(16px,env(safe-area-inset-right)) 8px max(16px,env(safe-area-inset-left));
+    scroll-snap-type:x mandatory;scroll-padding-inline:16px;overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .journey-section .jp-stage::-webkit-scrollbar{display:none}
+  .journey-section .jp{flex:0 0 min(82vw,390px)!important;min-width:min(82vw,390px);scroll-snap-align:center;filter:none!important;border-radius:24px}
+  .journey-section .jp-img{transform:none!important}
+  .journey-section .jp-word{display:block!important;font-size:19px}
+  .journey-section .jp-desc{max-height:90px!important;opacity:1!important;margin-top:8px!important}
+  .journey-section .jp-toggle{display:none}
+  #audiences .audience-cta{width:100%;justify-content:center}
+}
+@media (prefers-reduced-motion:reduce){
+  .journey-section .jp,.journey-section .jp-img,.journey-section .jp-desc{transition:none!important;animation:none!important}
+}

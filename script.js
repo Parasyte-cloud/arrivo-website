@@ -176,13 +176,13 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    // Homepage account link: shows "Register or Login" for a first-time
+    // Homepage account link: shows "Log in" for a first-time
     // visitor, or routes straight to their profile if they're already
     // signed in -- checked fresh on every load, not cached in the markup.
     function initAccountNav() {
       var isLoggedIn = !!localStorage.getItem("arrivo_rider_token");
       var dest = isLoggedIn ? "account.html" : "login.html";
-      var label = isLoggedIn ? "My Account" : "Register or Login";
+      var label = isLoggedIn ? "My Account" : "Log in";
 
       [
         { link: "accountNavLink", text: "accountNavLabel" },
@@ -201,17 +201,26 @@
       var backdrop = document.getElementById("mobileNavBackdrop");
       if (!toggle || !menu) return;
 
+      // Older iPhones still scroll the page under overflow:hidden, so
+      // swallow any swipe the menu can't use itself
+      function blockSwipe(e) {
+        if (!menu.contains(e.target) || menu.scrollHeight <= menu.clientHeight) e.preventDefault();
+      }
       function openMenu() {
         menu.hidden = false;
         if (backdrop) backdrop.hidden = false;
         toggle.classList.add("is-open");
         toggle.setAttribute("aria-expanded", "true");
+        document.documentElement.classList.add("nav-locked");
+        document.addEventListener("touchmove", blockSwipe, { passive: false });
       }
       function closeMenu() {
         menu.hidden = true;
         if (backdrop) backdrop.hidden = true;
         toggle.classList.remove("is-open");
         toggle.setAttribute("aria-expanded", "false");
+        document.documentElement.classList.remove("nav-locked");
+        document.removeEventListener("touchmove", blockSwipe, { passive: false });
       }
 
       toggle.addEventListener("click", function () {
