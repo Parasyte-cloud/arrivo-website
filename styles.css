@@ -519,14 +519,24 @@ html.nav-locked { overflow: hidden; }
 .footer-parasyte-link {
   display: inline-flex;
   align-items: center;
-  opacity: 0.75;
+  opacity: 0.9;
   transition: opacity 0.15s ease;
+  animation: parasyteSwell 4.2s ease-in-out infinite;
 }
-.footer-parasyte-link:hover { opacity: 1; }
+.footer-parasyte-link:hover { opacity: 1; animation-play-state: paused; }
 .footer-parasyte-logo {
-  height: 18px;
+  height: 22px;
   width: auto;
   display: block;
+  /* embossed look: light edge above, soft shadow below */
+  filter: drop-shadow(0 -1px 0 rgba(255,255,255,.35)) drop-shadow(0 1px 1px rgba(0,0,0,.55));
+}
+@keyframes parasyteSwell {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .footer-parasyte-link { animation: none; }
 }
 .footer-wordmark {
   height: 20px;
