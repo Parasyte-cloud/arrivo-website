@@ -3,7 +3,7 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(self), camera=(), microphone=(), payment=(self), usb=(), fullscreen=(self)
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://js.paystack.co https://maps.googleapis.com https://accounts.google.com https://appleid.cdn-apple.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://fkkxcivxnwshahnbatnp.supabase.co https://arrivo-backend-g1ku.onrender.com https://api.ridearrivo.com https://maps.googleapis.com https://api.paystack.co https://accounts.google.com https://cloudflareinsights.com; frame-src 'self' https://js.paystack.co https://checkout.paystack.com https://accounts.google.com https://appleid.cdn-apple.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self' https://intranet.ridearrivo.com https://ra-workspace.pages.dev https://*.ra-workspace.pages.dev
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://js.paystack.co https://maps.googleapis.com https://accounts.google.com https://appleid.cdn-apple.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://fkkxcivxnwshahnbatnp.supabase.co https://arrivo-backend-g1ku.onrender.com https://api.ridearrivo.com https://maps.googleapis.com https://api.paystack.co https://accounts.google.com https://cloudflareinsights.com; frame-src 'self' https://js.paystack.co https://checkout.paystack.com https://accounts.google.com https://appleid.cdn-apple.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self' https://intranet.ridearrivo.com
 
 /
   Cache-Control: no-store, no-cache, must-revalidate
@@ -52,3 +52,37 @@
   X-Robots-Tag: noindex, nofollow
 /payment/*
   X-Robots-Tag: noindex, nofollow
+
+# Sign-in, account, driver and payment pages can only be framed by the site itself.
+# The global policy above also lets the intranet frame public pages. Browsers enforce
+# every Content-Security-Policy they receive, so this extra line wins on these paths.
+/login
+  Content-Security-Policy: frame-ancestors 'self'
+/login.html
+  Content-Security-Policy: frame-ancestors 'self'
+/signup
+  Content-Security-Policy: frame-ancestors 'self'
+/signup.html
+  Content-Security-Policy: frame-ancestors 'self'
+/forgot-password
+  Content-Security-Policy: frame-ancestors 'self'
+/forgot-password.html
+  Content-Security-Policy: frame-ancestors 'self'
+/account
+  Content-Security-Policy: frame-ancestors 'self'
+/account.html
+  Content-Security-Policy: frame-ancestors 'self'
+/reset-password
+  Content-Security-Policy: frame-ancestors 'self'
+/reset-password.html
+  Content-Security-Policy: frame-ancestors 'self'
+/verify-email
+  Content-Security-Policy: frame-ancestors 'self'
+/verify-email.html
+  Content-Security-Policy: frame-ancestors 'self'
+/driver
+  Content-Security-Policy: frame-ancestors 'self'
+/driver.html
+  Content-Security-Policy: frame-ancestors 'self'
+/payment/*
+  Content-Security-Policy: frame-ancestors 'self'
