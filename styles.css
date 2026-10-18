@@ -1766,29 +1766,32 @@ html.nav-locked { overflow: hidden; }
   .logo-wrap, .brand-wordmark { transition: transform .5s cubic-bezier(.34,1.7,.5,1); transform-origin: left center; }
   .site-header.is-scrolled .logo-wrap { transform: scale(.88); }
   .site-header.is-scrolled .brand-wordmark { transform: scale(.9); }
-
-  .site-header .brand,
-  .site-header .header-actions .theme-toggle,
-  .site-header .header-actions .lang-trigger,
-  .site-header .header-actions .nav-account-link,
-  .site-header .header-actions > .btn,
-  .site-header .mobile-nav-toggle { animation: arIslandRelax .6s cubic-bezier(.34,1.7,.5,1); }
-  .site-header.is-scrolled .brand,
-  .site-header.is-scrolled .header-actions .theme-toggle,
-  .site-header.is-scrolled .header-actions .lang-trigger,
-  .site-header.is-scrolled .header-actions .nav-account-link,
-  .site-header.is-scrolled .header-actions > .btn,
-  .site-header.is-scrolled .mobile-nav-toggle { animation-name: arIslandSqueeze; }
-  .site-header .header-actions > *:nth-child(2) .lang-trigger,
-  .site-header .header-actions .nav-account-link { animation-delay: .04s; }
-  .site-header .header-actions > .btn { animation-delay: .08s; }
-  .site-header .mobile-nav-toggle { animation-delay: .12s; }
 }
-@keyframes arIslandSqueeze { 0% { transform: scale(1.22); } 55% { transform: scale(.9); } 100% { transform: none; } }
-@keyframes arIslandRelax { 0% { transform: scale(.8); } 55% { transform: scale(1.1); } 100% { transform: none; } }
 @media (prefers-reduced-motion: reduce) {
   .site-header, .header-inner, .logo-wrap, .brand-wordmark { transition: none !important; }
-  .site-header .brand, .site-header .header-actions .theme-toggle, .site-header .header-actions .lang-trigger,
-  .site-header .header-actions .nav-account-link, .site-header .header-actions > .btn,
-  .site-header .mobile-nav-toggle { animation: none !important; }
 }
+
+/* Liquid glow inside the phone navbar: a soft amber and blue light that drifts and morphs behind the
+   logo and buttons. The span is added by glass-effects.js and only exists on phones with motion on. */
+.ar-glow { display: none; }
+@media (max-width: 859px) {
+  html[data-ar-fun="on"] .ar-glow {
+    display: block; position: absolute; inset: 0; border-radius: inherit; overflow: hidden;
+    pointer-events: none; z-index: 0;
+  }
+  html[data-ar-fun="on"] .ar-glow::before, html[data-ar-fun="on"] .ar-glow::after {
+    content: ""; position: absolute; top: -90%; height: 280%; width: 60%; filter: blur(16px);
+    will-change: transform, border-radius;
+  }
+  html[data-ar-fun="on"] .ar-glow::before {
+    left: -20%; background: radial-gradient(closest-side, rgba(244,163,0,.5), rgba(244,163,0,0));
+    animation: arGlowA 7.5s ease-in-out infinite alternate, arGlowMorph 5.5s ease-in-out infinite alternate;
+  }
+  html[data-ar-fun="on"] .ar-glow::after {
+    right: -20%; background: radial-gradient(closest-side, rgba(90,140,255,.38), rgba(90,140,255,0));
+    animation: arGlowB 9.5s ease-in-out infinite alternate, arGlowMorph 6.5s ease-in-out -2s infinite alternate;
+  }
+}
+@keyframes arGlowA { 0% { transform: translate(0,0) scale(1); } 50% { transform: translate(90%,12%) scale(1.25); } 100% { transform: translate(170%,-6%) scale(.9); } }
+@keyframes arGlowB { 0% { transform: translate(0,0) scale(1.1); } 50% { transform: translate(-80%,-10%) scale(.9); } 100% { transform: translate(-160%,8%) scale(1.2); } }
+@keyframes arGlowMorph { 0% { border-radius: 42% 58% 61% 39% / 48% 41% 59% 52%; } 100% { border-radius: 63% 37% 41% 59% / 56% 62% 38% 44%; } }
