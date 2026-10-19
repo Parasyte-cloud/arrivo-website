@@ -94,16 +94,13 @@ fs.mkdirSync(OUT, { recursive: true });
 // ---- pages ---------------------------------------------------------------
 for (const rel of PAGES) {
   let html = mainSiteLinks(stripLaunchGate(read(rel)))
-<<<<<<< HEAD
     // Meta consent is for the main website, not this separate deployment.
     .replace(/<!-- Main-site consent controls;[^>]*-->\s*/g, "")
     .replace(/<link rel="stylesheet" href="\/marketing-consent\.css[^"]*">\s*/g, "")
     .replace(/<script src="\/marketing-consent\.js[^"]*" defer><\/script>\s*/g, "")
-    .replace(/href="privacy\.html#cookie-preferences"/g, 'href="' + MAIN + '/privacy.html#cookie-preferences"');
-=======
+    .replace(/href="privacy\.html#cookie-preferences"/g, 'href="' + MAIN + '/privacy.html#cookie-preferences"')
     .replace("assets/pwa/ride/apple-touch-icon.png", "assets/pwa/express/apple-touch-icon.png")
     .replace(/(apple-mobile-web-app-title" content=")[^"]*"/, '$1ArrivoExpress"');
->>>>>>> origin/main
   if (rel === "express.html") {
     html = html
       .replace('<link rel="canonical" href="https://ridearrivo.com/express.html">', '<link rel="canonical" href="' + SELF + '/">')
