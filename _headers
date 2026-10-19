@@ -3,11 +3,7 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(self), camera=(), microphone=(), payment=(self), usb=(), fullscreen=(self)
-<<<<<<< HEAD
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://js.paystack.co https://maps.googleapis.com https://accounts.google.com https://appleid.cdn-apple.com https://static.cloudflareinsights.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://fkkxcivxnwshahnbatnp.supabase.co https://arrivo-backend-g1ku.onrender.com https://api.ridearrivo.com https://maps.googleapis.com https://api.paystack.co https://accounts.google.com https://cloudflareinsights.com https://connect.facebook.net https://www.facebook.com; frame-src 'self' https://js.paystack.co https://checkout.paystack.com https://accounts.google.com https://appleid.cdn-apple.com https://www.facebook.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
-=======
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://js.paystack.co https://maps.googleapis.com https://accounts.google.com https://appleid.cdn-apple.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://fkkxcivxnwshahnbatnp.supabase.co https://arrivo-backend-g1ku.onrender.com https://api.ridearrivo.com https://maps.googleapis.com https://api.paystack.co https://accounts.google.com https://cloudflareinsights.com; frame-src 'self' https://js.paystack.co https://checkout.paystack.com https://accounts.google.com https://appleid.cdn-apple.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self' https://intranet.ridearrivo.com
->>>>>>> origin/main
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://js.paystack.co https://maps.googleapis.com https://accounts.google.com https://appleid.cdn-apple.com https://static.cloudflareinsights.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://fkkxcivxnwshahnbatnp.supabase.co https://arrivo-backend-g1ku.onrender.com https://api.ridearrivo.com https://maps.googleapis.com https://api.paystack.co https://accounts.google.com https://cloudflareinsights.com https://connect.facebook.net https://www.facebook.com; frame-src 'self' https://js.paystack.co https://checkout.paystack.com https://accounts.google.com https://appleid.cdn-apple.com https://www.facebook.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self' https://intranet.ridearrivo.com
 
 /
   Cache-Control: no-store, no-cache, must-revalidate
@@ -57,13 +53,12 @@
 /payment/*
   X-Robots-Tag: noindex, nofollow
 
-<<<<<<< HEAD
 /marketing-consent.js
   Cache-Control: no-store, no-cache, must-revalidate
 
 /marketing-consent.css
   Cache-Control: no-cache, must-revalidate
-=======
+
 # Sign-in, account, driver and payment pages can only be framed by the site itself.
 # The global policy above also lets the intranet frame public pages. Browsers enforce
 # every Content-Security-Policy they receive, so this extra line wins on these paths.
@@ -97,4 +92,3 @@
   Content-Security-Policy: frame-ancestors 'self'
 /payment/*
   Content-Security-Policy: frame-ancestors 'self'
->>>>>>> origin/main
