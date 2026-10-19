@@ -1,0 +1,84 @@
+/* Hero product row: slow ticker + tap-to-open product card. */
+html.hp-on .hero-chips{display:none}
+
+.hp{margin:18px 0 24px;min-width:0}
+@media (max-width:979px){.hero-copy .hp{order:7;margin:0 0 24px}}
+
+.hp-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.hp-lead{margin:0;font-size:14px;font-weight:600;line-height:1.35;color:rgba(255,255,255,.88)}
+.hp-toggle{flex:0 0 auto;width:40px;height:40px;display:grid;place-items:center;border:1.5px solid rgba(255,255,255,.45);border-radius:50%;background:rgba(255,255,255,.1);color:#fff;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.hp-toggle svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;grid-area:1/1}
+.hp-toggle .hp-i-play{display:none;fill:currentColor}
+.hp-toggle[aria-pressed="true"] .hp-i-pause{display:none}
+.hp-toggle[aria-pressed="true"] .hp-i-play{display:block}
+.hp-toggle:hover{background:var(--amber,#F4A300);border-color:var(--amber,#F4A300);color:#12123b}
+.hp-toggle:focus-visible,.hp-chip:focus-visible,.hp-go:focus-visible,.hp-close:focus-visible{outline:3px solid #fff;outline-offset:3px}
+
+.hp-view{overflow:hidden;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 24px,#000 calc(100% - 40px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 24px,#000 calc(100% - 40px),transparent 100%);padding:4px 0}
+.hp-track{display:flex;gap:10px;width:max-content;animation:hpScroll 60s linear infinite;will-change:transform}
+@keyframes hpScroll{to{transform:translateX(calc(-50% - 5px))}}
+
+/* stop whenever the visitor is interacting, or asked us to */
+.hp[data-paused="true"] .hp-track,
+.hp.hp-touch .hp-track,
+.hp:has(.hp-chip:focus-visible) .hp-track{animation-play-state:paused}
+@media (hover:hover) and (pointer:fine){.hp-view:hover .hp-track{animation-play-state:paused}}
+
+.hp-chip{flex:0 0 auto;display:inline-flex;align-items:center;gap:10px;min-height:56px;padding:8px 14px 8px 14px;border:1.5px solid rgba(255,255,255,.5);border-radius:999px;background:rgba(255,255,255,.12);color:#fff;font:inherit;text-align:left;cursor:pointer;transition:background .15s,border-color .15s,color .15s,transform .15s}
+.hp-chip .ico{width:22px;height:22px;flex:0 0 auto}
+.hp-chip-text{display:grid;gap:1px;min-width:0}
+.hp-chip-name{font-size:15px;font-weight:700;line-height:1.2;white-space:nowrap}
+.hp-chip-tag{font-size:12px;font-weight:500;line-height:1.25;white-space:nowrap;opacity:.82}
+.hp-chev{width:16px;height:16px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;opacity:.75;transition:transform .15s}
+.hp-chip:hover{background:var(--amber,#F4A300);border-color:var(--amber,#F4A300);color:#12123b}
+.hp-chip:hover .hp-chip-tag{opacity:.9}
+.hp-chip:hover .hp-chev{transform:translateX(3px);opacity:1}
+.hp-chip:active{transform:scale(.98)}
+
+/* people who asked for less motion get a still row they can swipe */
+@media (prefers-reduced-motion:reduce){
+  .hp-track{animation:none;transform:none}
+  .hp-view{overflow-x:auto;-webkit-mask-image:none;mask-image:none;scrollbar-width:none;scroll-snap-type:x proximity}
+  .hp-view::-webkit-scrollbar{display:none}
+  .hp-chip{scroll-snap-align:start}
+  .hp-clone,.hp-toggle{display:none}
+  .hp-chip,.hp-chev,.hp-toggle{transition:none}
+}
+
+/* ---------- product card ---------- */
+html.hp-lock{overflow:hidden}
+.hp-sheet{box-sizing:border-box;width:min(440px,calc(100vw - 32px));max-height:calc(100vh - 48px);padding:22px;border:0;border-radius:22px;background:#fff;color:#12123b;box-shadow:0 30px 80px rgba(8,8,40,.5);overflow:auto}
+.hp-sheet::backdrop{background:rgba(10,10,40,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.hp-sheet[open]{animation:hpPop .22s ease-out}
+.hp-sheet[open]::backdrop{animation:hpFade .22s ease-out}
+@keyframes hpPop{from{opacity:0;transform:translateY(10px) scale(.98)}}
+@keyframes hpFade{from{opacity:0}}
+.hp-sheet-top{display:flex;align-items:center;gap:14px}
+.hp-sheet-icon{flex:0 0 auto;width:52px;height:52px;display:grid;place-items:center;border-radius:16px;background:#F4A300;color:#12123b}
+.hp-sheet-icon .ico{width:26px;height:26px}
+.hp-sheet-title{display:grid;gap:5px;justify-items:start;min-width:0}
+.hp-sheet-name{margin:0;font-size:22px;line-height:1.15;letter-spacing:-.01em}
+.hp-status{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:#e6f6ec;color:#12683a}
+.hp-status[data-status="soon"]{background:#fff1d6;color:#8a5a00}
+.hp-sheet-tag{margin:16px 0 4px;font-size:15px;font-weight:700}
+.hp-sheet-desc{margin:0;font-size:15px;line-height:1.5;color:#3b3b63}
+.hp-sheet-actions{display:grid;gap:10px;margin-top:20px}
+.hp-go{display:flex;align-items:center;justify-content:center;min-height:50px;padding:0 20px;border-radius:999px;background:#F4A300;color:#12123b;font-weight:800;font-size:16px;text-decoration:none;text-align:center}
+.hp-go:hover{background:#ffb81f}
+.hp-close{min-height:46px;border:1.5px solid #c9c9e0;border-radius:999px;background:transparent;color:#12123b;font:inherit;font-weight:700;cursor:pointer}
+.hp-close:hover{background:#f1f1fa}
+.hp-sheet .hp-go:focus-visible,.hp-sheet .hp-close:focus-visible{outline-color:#12123b}
+
+@media (max-width:640px){
+  .hp-sheet{width:100%;max-width:none;margin:auto 0 0;border-radius:24px 24px 0 0;padding:22px 20px calc(20px + env(safe-area-inset-bottom))}
+  .hp-sheet[open]{animation:hpUp .26s ease-out}
+  @keyframes hpUp{from{transform:translateY(40px);opacity:0}}
+  .hp-chip{min-height:54px}
+  .hp-lead{font-size:13.5px}
+}
+@media (prefers-reduced-motion:reduce){.hp-sheet[open],.hp-sheet[open]::backdrop{animation:none}}
+
+/* the site styles h3 and p with a light colour; the card is white, so pin ours */
+.hp-sheet .hp-sheet-name{color:#12123b;font-family:inherit}
+.hp-sheet .hp-sheet-tag{color:#12123b}
+.hp-sheet .hp-sheet-desc{color:#3b3b63}

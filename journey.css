@@ -1,0 +1,88 @@
+/* Five portrait panels under the gallery. They build in, take turns in the
+   spotlight, line up together, then crack and shatter one after another and
+   rebuild a different way each loop. Driven by journey.js. */
+/* full width, edge to edge like the hero; clip sideways so flying shards never add a scrollbar */
+.jp-wrap { margin-top: 28px; position: relative; width: 100%; overflow-x: clip; }
+.jp-stage {
+  --jp-gap: 6px;
+  display: flex; gap: var(--jp-gap);
+  height: clamp(440px, 52vw, 780px);
+  position: relative;
+}
+.jp {
+  position: relative; flex: 1 1 0; min-width: 0; margin: 0;
+  border-radius: 0; overflow: hidden; background: #0b0b26;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+  transition: flex-grow .85s cubic-bezier(.2,.7,.2,1), filter .85s ease;
+  isolation: isolate;
+}
+.jp.is-off { visibility: hidden; }
+.jp-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: var(--pos, 50% 50%); display: block; transform: scale(1.02); transition: transform 2.2s cubic-bezier(.2,.6,.2,1); }
+.jp.is-shards .jp-img { visibility: hidden; }
+.jp::after { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; background: linear-gradient(0deg, rgba(11,11,38,.82) 0%, rgba(11,11,38,0) 48%), linear-gradient(180deg, rgba(11,11,38,.35) 0%, rgba(11,11,38,0) 24%); }
+
+/* spotlight tour: the active panel widens, the others dim */
+.jp-stage[data-mode="tour"] .jp { flex-grow: .75; filter: brightness(.5) saturate(.75); }
+.jp-stage[data-mode="tour"] .jp.is-active { flex-grow: 3.4; filter: none; }
+.jp-stage[data-mode="tour"] .jp.is-active .jp-img { transform: scale(1.1); }
+
+.jp-label { flex-wrap: wrap; position: absolute; left: clamp(14px, 1.6vw, 28px); right: 12px; bottom: 16px; z-index: 4; display: flex; align-items: baseline; gap: 10px; color: #fff; pointer-events: none; }
+.jp-num { font-variant-numeric: tabular-nums; font-size: 12px; letter-spacing: .14em; color: var(--amber, #F4A300); font-weight: 700; }
+.jp-word { font-size: clamp(15px, 1.7vw, 20px); font-weight: 700; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
+.jp-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; z-index: 4; background: var(--amber, #F4A300); transform: scaleX(0); transform-origin: left; }
+.jp.is-active .jp-bar { animation: jp-bar var(--jp-tour, 1500ms) linear forwards; }
+.jp-root.is-paused .jp-bar { animation-play-state: paused; }
+@keyframes jp-bar { to { transform: scaleX(1); } }
+
+/* a soft light sweep across the whole row while all five are on show */
+.jp-stage::after {
+  content: ""; position: absolute; inset: 0; z-index: 5; pointer-events: none; opacity: 0;
+  background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,.22) 50%, transparent 62%);
+  transform: translateX(-100%);
+}
+.jp-stage.is-shine::after { animation: jp-shine 1.6s ease-in-out forwards; }
+.jp-root.is-paused .jp-stage.is-shine::after { animation-play-state: paused; }
+@keyframes jp-shine { 0% { opacity: 1; transform: translateX(-100%); } 100% { opacity: 1; transform: translateX(100%); } }
+
+/* cracks and shards */
+.jp-shards { position: absolute; inset: 0; z-index: 2; display: none; }
+.jp.is-shards .jp-shards { display: block; }
+.jp-shard { position: absolute; inset: 0; background-size: cover; background-position: var(--pos, 50% 50%); will-change: transform, opacity; backface-visibility: hidden; }
+.jp-crack { position: absolute; inset: 0; z-index: 4; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity .25s ease; }
+.jp.is-cracking .jp-crack, .jp.is-shards .jp-crack { opacity: 1; }
+.jp.is-shards .jp-crack { opacity: 0; transition-duration: .5s; }
+.jp-crack path { fill: none; stroke: #fff; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 3px rgba(255,255,255,.85)); }
+.jp.is-cracking .jp-crack path { animation: jp-crack .38s ease-out forwards; animation-delay: var(--d, 0s); }
+.jp-root.is-paused .jp.is-cracking .jp-crack path { animation-play-state: paused; }
+@keyframes jp-crack { to { stroke-dashoffset: 0; } }
+.jp-flash { position: absolute; inset: 0; z-index: 5; background: #fff; opacity: 0; pointer-events: none; }
+
+.jp-toggle {
+  position: absolute; right: 16px; top: 16px; z-index: 6; width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(255,255,255,.28);
+  background: rgba(18,18,59,.5); color: #fff; cursor: pointer; display: grid; place-items: center;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: background .2s ease;
+}
+.jp-toggle:hover { background: var(--amber, #F4A300); color: #12123B; border-color: transparent; }
+.jp-toggle:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.jp-toggle svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.jp-toggle .ico-play { display: none; fill: currentColor; stroke: none; }
+.jp-root.is-paused .jp-toggle .ico-pause { display: none; }
+.jp-root.is-paused .jp-toggle .ico-play { display: block; }
+
+@media (max-width: 760px) {
+  .jp-stage { --jp-gap: 4px; height: 460px; }
+    .jp-stage[data-mode="tour"] .jp.is-active { flex-grow: 2.7; }
+  .jp-label { left: 8px; right: 6px; bottom: 12px; }
+  .jp-word { display: none; }
+  .jp.is-active .jp-word { display: block; }
+  .jp-stage[data-mode="all"] .jp-word, .jp-stage[data-mode="build"] .jp-word { display: none; }
+}
+
+/* reduced motion: all five stay on show, hover or focus widens one */
+.jp-root.is-static .jp-stage .jp:hover, .jp-root.is-static .jp-stage .jp:focus-within { flex-grow: 2.4; }
+.jp-root.is-static .jp-toggle { display: none; }
+
+/* one short line about the picture, shown on the panel in the spotlight (or hovered when still) */
+.jp-desc { flex-basis: 100%; order: 3; margin: 0; font-size: clamp(12px, 1.05vw, 15px); line-height: 1.35; font-weight: 500; color: rgba(255,255,255,.88); max-height: 0; opacity: 0; overflow: hidden; text-shadow: 0 2px 12px rgba(0,0,0,.55); transition: max-height .7s ease .25s, opacity .6s ease .35s, margin .5s ease; }
+.jp.is-active .jp-desc, .jp-root.is-static .jp:hover .jp-desc, .jp-root.is-static .jp:focus-within .jp-desc { max-height: 80px; opacity: 1; margin-top: 8px; }
+@media (prefers-reduced-motion: reduce) { .jp-desc { transition: none; } }

@@ -58,8 +58,55 @@
   function updateHeaderScrollState() {
     var header = document.querySelector(".site-header");
     if (!header) return;
-    header.classList.toggle("is-scrolled", window.scrollY > 8);
+    var was = header.classList.contains("is-scrolled");
+    var now = window.scrollY > 8;
+    header.classList.toggle("is-scrolled", now);
+    if (was !== now) bounceHeader(now);
   }
+
+  // Phone navbar "island" motion. The logo and the buttons take a small staggered spring each time the
+  // header shrinks into its pill or grows back. Played with the Web Animations API so it restarts every
+  // time. Phones only, and it follows the Reduce Motion setting unless the visitor opened the site with
+  // ?fun=1 once (remembered on this device; ?fun=0 turns it back off).
+  var FUN_KEY = "ar-island-fun";
+  try {
+    var q = /[?&]fun=([01])/.exec(window.location.search);
+    if (q) { if (q[1] === "1") localStorage.setItem(FUN_KEY, "always"); else localStorage.removeItem(FUN_KEY); }
+  } catch (e) { /* storage blocked */ }
+  function funAllowed() {
+    var reduce = false, forced = false;
+    try { reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { /* ignore */ }
+    try { forced = localStorage.getItem(FUN_KEY) === "always"; } catch (e) { /* ignore */ }
+    return !reduce || forced;
+  }
+  function onPhone() {
+    try { return window.matchMedia("(max-width: 859px)").matches; } catch (e) { return false; }
+  }
+  function syncFun() {
+    document.documentElement.setAttribute("data-ar-fun", funAllowed() ? "on" : "off");
+    var header = document.querySelector(".site-header");
+    if (header && !header.querySelector(":scope > .ar-glow")) {
+      var glow = document.createElement("span");
+      glow.className = "ar-glow";
+      glow.setAttribute("aria-hidden", "true");
+      header.insertBefore(glow, header.firstChild);
+    }
+  }
+  function bounceHeader(shrinking) {
+    if (!funAllowed() || !onPhone()) return;
+    var header = document.querySelector(".site-header");
+    if (!header) return;
+    var from = shrinking ? "scale(1.45)" : "scale(.55)";
+    var els = header.querySelectorAll(
+      ".brand, .header-actions .theme-toggle, .header-actions .lang-trigger, .header-actions .nav-account-link, .header-actions > .btn, .mobile-nav-toggle"
+    );
+    Array.prototype.forEach.call(els, function (el, i) {
+      if (typeof el.animate !== "function") return;
+      el.animate([{ transform: from }, { transform: "none" }], { duration: 650, delay: i * 45, easing: "cubic-bezier(.3,1.9,.5,1)" });
+    });
+  }
+  syncFun();
+  try { window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", syncFun); } catch (e) { /* older Safari */ }
   updateHeaderScrollState();
   window.addEventListener("scroll", updateHeaderScrollState, { passive: true });
 })();
