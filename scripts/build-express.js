@@ -94,6 +94,11 @@ fs.mkdirSync(OUT, { recursive: true });
 // ---- pages ---------------------------------------------------------------
 for (const rel of PAGES) {
   let html = mainSiteLinks(stripLaunchGate(read(rel)))
+    // Meta consent is for the main website, not this separate deployment.
+    .replace(/<!-- Main-site consent controls;[^>]*-->\s*/g, "")
+    .replace(/<link rel="stylesheet" href="\/marketing-consent\.css[^"]*">\s*/g, "")
+    .replace(/<script src="\/marketing-consent\.js[^"]*" defer><\/script>\s*/g, "")
+    .replace(/href="privacy\.html#cookie-preferences"/g, 'href="' + MAIN + '/privacy.html#cookie-preferences"')
     .replace("assets/pwa/ride/apple-touch-icon.png", "assets/pwa/express/apple-touch-icon.png")
     .replace(/(apple-mobile-web-app-title" content=")[^"]*"/, '$1ArrivoExpress"');
   if (rel === "express.html") {
@@ -187,10 +192,12 @@ sw = sw.replace(shellRe, `const SHELL_FILES = [
 ];`).replace('const CACHE_NAME = "arrivo-shell-"', 'const CACHE_NAME = "arrivo-express-"');
 write("sw.js", sw);
 
-// _headers: reuse the main site's rules unchanged (same CSP allowlist: the
-// API host, Google Maps/Sign-In, Apple, Paystack all apply here too) and
-// add no-store for the config file so an API URL change is picked up at once.
-write("_headers", read("_headers").replace(/\s*$/, "\n") +
+// _headers: retain the existing API, Maps, sign-in and Paystack permissions,
+// omit main-site-only Meta origins, and keep config updates immediately fresh.
+write("_headers", read("_headers")
+  .replace(/ https:\/\/(?:connect\.facebook\.net|www\.facebook\.com)/g, "")
+  .replace(/\n\/marketing-consent\.(?:js|css)\n  Cache-Control: [^\n]*\n/g, "\n")
+  .replace(/\s*$/, "\n") +
 `
 /express-config.js
   Cache-Control: no-store, no-cache, must-revalidate

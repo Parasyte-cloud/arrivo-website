@@ -1,0 +1,104 @@
+/* Isolated selectors: no changes to the site's shared .wrap or button rules. */
+.ra-cookie-banner {
+  --ra-consent-bg: rgba(255, 253, 248, .97);
+  --ra-consent-ink: #12123b;
+  --ra-consent-muted: #49495f;
+  --ra-consent-line: rgba(18, 18, 59, .18);
+  position: fixed;
+  z-index: 10050;
+  inset: auto 20px max(20px, env(safe-area-inset-bottom)) auto;
+  box-sizing: border-box;
+  width: min(520px, calc(100vw - 40px));
+  max-height: calc(100dvh - 40px - env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+  border: 1px solid var(--ra-consent-line);
+  border-top: 3px solid #f5a300;
+  border-radius: 20px;
+  background: var(--ra-consent-bg);
+  color: var(--ra-consent-ink);
+  box-shadow: 0 16px 64px rgba(9, 9, 28, .22);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  font: 400 14px/1.6 Inter, system-ui, sans-serif;
+  text-align: left;
+}
+html[data-theme="dark"] .ra-cookie-banner {
+  --ra-consent-bg: rgba(18, 18, 45, .98);
+  --ra-consent-ink: #f6f5ee;
+  --ra-consent-muted: #d0cedb;
+  --ra-consent-line: rgba(246, 245, 238, .24);
+}
+.ra-cookie-banner *, .ra-cookie-control * { box-sizing: border-box; }
+.ra-cookie-banner[hidden], .ra-cookie-banner [hidden] { display: none !important; }
+.ra-cookie-heading { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+.ra-cookie-banner h2 { margin: 0; padding: 0; font: 700 20px/1.35 Inter, system-ui, sans-serif; color: var(--ra-consent-ink); }
+.ra-cookie-banner p { margin: 12px 0 0; color: var(--ra-consent-muted); font: inherit; }
+.ra-cookie-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+.ra-cookie-banner .ra-cookie-button {
+  appearance: none;
+  min-width: 0;
+  min-height: 46px;
+  padding: 11px 12px;
+  border: 1px solid #f5a300;
+  border-radius: 11px;
+  background: #f5a300;
+  color: #12123b;
+  font: 650 14px/1.4 Inter, system-ui, sans-serif;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  box-shadow: none;
+  text-transform: none;
+}
+.ra-cookie-banner .ra-cookie-button:hover { background: #ffc24a; border-color: #ffc24a; }
+.ra-cookie-banner .ra-cookie-button:disabled { opacity: .5; cursor: not-allowed; }
+.ra-cookie-banner #ra-cookie-close {
+  flex: 0 0 auto;
+  background: transparent;
+  color: var(--ra-consent-ink);
+  border-color: var(--ra-consent-line);
+  font-size: 12px;
+  padding: 8px;
+  min-height: 44px;
+}
+.ra-cookie-banner a.ra-cookie-policy {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 8px;
+  color: var(--ra-consent-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-size: 13px;
+}
+.ra-cookie-control { padding: 12px 20px; text-align: center; }
+.ra-cookie-control #ra-cookie-settings {
+  appearance: none;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid currentColor;
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  font: 500 13px/1.4 Inter, system-ui, sans-serif;
+  cursor: pointer;
+}
+.ra-cookie-banner .ra-cookie-button:focus-visible, .ra-cookie-banner a:focus-visible, #ra-cookie-settings:focus-visible {
+  outline: 3px solid #c77700;
+  outline-offset: 3px;
+}
+.ra-cookie-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+@media (max-width: 540px) {
+  .ra-cookie-banner { inset: auto 12px max(12px, env(safe-area-inset-bottom)) 12px; width: auto; padding: 18px; border-radius: 16px; max-height: calc(100dvh - 24px - env(safe-area-inset-bottom)); }
+  .ra-cookie-banner h2 { font-size: 18px; }
+  .ra-cookie-actions { gap: 10px; }
+}
+@media (max-width: 360px) {
+  .ra-cookie-actions { grid-template-columns: 1fr; }
+}
+@media (forced-colors: active) {
+  .ra-cookie-banner { background: Canvas; color: CanvasText; border: 2px solid CanvasText; }
+  .ra-cookie-banner .ra-cookie-button { border: 1px solid ButtonText; }
+}
