@@ -72,7 +72,10 @@
           return;
         }
         state.token = result.data.token;
-        localStorage.setItem(TOKEN_KEY, state.token);
+        try { localStorage.setItem(TOKEN_KEY, state.token); } catch (e) { /* private mode: the session lasts until the tab closes */ }
+        // Back to usable. Without this the button stayed disabled after logout
+        // and the driver had to reload the page to sign in again.
+        loginBtn.disabled = false;
         checkProfile();
       })
       .catch(function () {
@@ -85,6 +88,23 @@
   // ───────────────────────── Profile check/setup ─────────────────────────
   function checkProfile() {
     api("/api/drivers/me").then(function (result) {
+      if (!result.ok && result.status === 401) {
+        // Token expired or revoked: sign in again.
+        try { localStorage.removeItem(TOKEN_KEY); } catch (e) { /* ignore */ }
+        state.token = null;
+        showSection("loginSection");
+        return;
+      }
+      if (!result.ok && result.status !== 404) {
+        // A 5xx or rate limit says nothing about whether a profile exists.
+        // Sending the driver to the vehicle form would invite them to submit a
+        // second profile, so show a retry on the login screen instead.
+        var errEl = document.getElementById("loginError");
+        errEl.hidden = false;
+        errEl.textContent = (result.data && result.data.error) || "Couldn't load your profile. Please try again.";
+        showSection("loginSection");
+        return;
+      }
       if (result.ok) {
         state.driver = result.data.driver;
         if (state.driver.is_verified) {
@@ -97,6 +117,11 @@
       } else {
         showSection("profileSection");
       }
+    }).catch(function () {
+      var errEl = document.getElementById("loginError");
+      errEl.hidden = false;
+      errEl.textContent = NETWORK_ERROR_TEXT;
+      showSection("loginSection");
     });
   }
 
@@ -444,22 +469,43 @@
     document.getElementById("availableRidesBox").innerHTML = "";
   }
 
+  // A 401 while the driver sits on the dashboard means the session ended. Say
+  // so and go to login, instead of showing an empty screen and missing rides.
+  function sessionEnded() {
+    stopPolling();
+    try { localStorage.removeItem(TOKEN_KEY); } catch (e) { /* ignore */ }
+    state.token = null;
+    var errEl = document.getElementById("loginError");
+    errEl.hidden = false;
+    errEl.textContent = "Your session ended. Please sign in again.";
+    showSection("loginSection");
+  }
+
   function checkActiveRide() {
     api("/api/rides/driver/mine").then(function (result) {
+      if (result.status === 401) { sessionEnded(); return; }
       if (!result.ok) return;
-      var active = result.data.rides.find(function (r) { return r.ride_status === "accepted" || r.ride_status === "in_progress"; });
+      var active = (result.data.rides || []).find(function (r) { return r.ride_status === "accepted" || r.ride_status === "in_progress"; });
       state.activeRide = active || null;
       renderActiveRide();
-      if (active) stopPolling();
-    });
+      if (active) {
+        stopPolling();
+      } else if (document.getElementById("onlineToggle").classList.contains("on")) {
+        // The trip just ended and the driver is still online. Polling was
+        // stopped when they accepted it, so start it again or they stop
+        // receiving rides until they toggle offline and online.
+        startPolling();
+      }
+    }).catch(function () { /* offline: the next poll tick tries again */ });
   }
 
   function refreshAvailable() {
     if (state.activeRide) return;
     api("/api/rides/available").then(function (result) {
+      if (result.status === 401) { sessionEnded(); return; }
       if (!result.ok) return;
       var box = document.getElementById("availableRidesBox");
-      if (result.data.rides.length === 0) {
+      if (!result.data.rides || result.data.rides.length === 0) {
         box.innerHTML = '<div class="ride-card" style="text-align:center;color:var(--text-muted);">Searching for ride requests…</div>';
         return;
       }
@@ -471,12 +517,12 @@
           '<button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="window.__acceptRide(' + Number(r.id) + ', this)">Accept Ride</button>' +
           '</div>';
       }).join("");
-    });
+    }).catch(function () { /* offline: the next poll tick tries again */ });
   }
 
   window.__acceptRide = function (rideId, btnEl) {
     if (btnEl) btnEl.disabled = true;
-    api("/api/rides/" + rideId + "/accept", { method: "POST" }).then(function (result) {
+    apiGuarded("/api/rides/" + rideId + "/accept", { method: "POST" }).then(function (result) {
       if (!result.ok) {
         if (btnEl) btnEl.disabled = false;
         alert(result.data.error || "This ride was just taken by another driver.");
@@ -535,9 +581,12 @@
     var d = state.driver || {};
     document.getElementById("driverProfileName").textContent = d.name || "";
     document.getElementById("driverProfileEmail").textContent = d.email || "";
-    document.getElementById("driverAvatarInitial").textContent = (d.name || "?").charAt(0).toUpperCase();
-
     var circle = document.getElementById("driverAvatarCircle");
+    // Rebuild the circle every time. It used to be filled in place, and showing
+    // a photo replaced the initial span, so opening My Profile a second time
+    // threw before the screen changed.
+    circle.innerHTML = '<span id="driverAvatarInitial"></span><div class="avatar-edit-badge">✎</div>';
+    document.getElementById("driverAvatarInitial").textContent = (d.name || "?").charAt(0).toUpperCase();
     if (d.profile_photo_url) {
       circle.innerHTML = '<div class="avatar-edit-badge">✎</div>';
       var img = document.createElement("img");
@@ -641,8 +690,23 @@
 
   // ───────────────────────── Logout ─────────────────────────
   document.getElementById("logoutBtn").addEventListener("click", function () {
-    localStorage.removeItem(TOKEN_KEY);
+    // Tell the server this driver is no longer taking rides. Best effort: a
+    // failure must not trap them on the dashboard.
+    if (state.token) {
+      apiGuarded("/api/drivers/status", { method: "PATCH", body: JSON.stringify({ isOnline: false }) });
+    }
+    stopPolling();
+    if (pendingPollTimer) { clearInterval(pendingPollTimer); pendingPollTimer = null; }
+    document.getElementById("activeRideBox").innerHTML = "";
+    try {
+      localStorage.removeItem(TOKEN_KEY);
+      // The SOS state is shared by rider and driver on this origin. A different
+      // person signing in next must not inherit a hidden SOS button.
+      localStorage.removeItem("arrivo_panic_active");
+      localStorage.removeItem("arrivo_listening_active");
+    } catch (e) { /* ignore */ }
     state = { token: null, driver: null, activeRide: null, pollTimer: null };
+    document.getElementById("onlineToggle").classList.remove("on");
     showSection("loginSection");
   });
 
@@ -837,10 +901,22 @@
       api("/api/auth/me").then(function (result) {
         if (result.ok && result.data.user.role === "driver") {
           checkProfile();
-        } else {
+        } else if (result.ok || result.status === 401 || result.status === 403) {
+          // Not a driver, or the session is gone.
           localStorage.removeItem(TOKEN_KEY);
           showSection("loginSection");
+        } else {
+          // 5xx or rate limit: keep the token and let them try again.
+          var errEl = document.getElementById("loginError");
+          errEl.hidden = false;
+          errEl.textContent = "Couldn't reach RideArrivo just now. Please try again.";
+          showSection("loginSection");
         }
+      }).catch(function () {
+        var errEl = document.getElementById("loginError");
+        errEl.hidden = false;
+        errEl.textContent = NETWORK_ERROR_TEXT;
+        showSection("loginSection");
       });
     }
   });

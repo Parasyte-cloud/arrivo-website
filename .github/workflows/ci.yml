@@ -50,3 +50,4 @@ jobs:
           python3 -I tests/e2e_session_checkout.py
           python3 -I tests/e2e_typed_address.py
           python3 -I tests/e2e_payment_recovery.py
+          python3 -I tests/e2e_driver.py
