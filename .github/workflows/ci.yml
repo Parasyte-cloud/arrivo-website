@@ -42,6 +42,13 @@ jobs:
           cat "$RUNNER_TEMP/wrangler.log"
           exit 1
 
+      # Its own step (not a line in the list below) so this change and other
+      # PRs that add a browser test do not edit the same lines.
+      - name: Driver page browser tests
+        env:
+          SITE_BASE: http://127.0.0.1:8788
+        run: python3 -I tests/e2e_driver.py
+
       - name: Browser tests
         env:
           SITE_BASE: http://127.0.0.1:8788
