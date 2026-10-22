@@ -50,3 +50,11 @@ jobs:
           python3 -I tests/e2e_session_checkout.py
           python3 -I tests/e2e_typed_address.py
           python3 -I tests/e2e_payment_recovery.py
+          python3 -I tests/e2e_account_pages.py
+
+      - name: ArrivoExpress never sits on the spinner
+        run: |
+          node scripts/build-express.js
+          (cd dist/express && python3 -m http.server 8790 > /dev/null 2>&1 &)
+          sleep 2
+          SITE_PATH=/ SITE_BASE=http://127.0.0.1:8790 python3 -I tests/e2e_express.py

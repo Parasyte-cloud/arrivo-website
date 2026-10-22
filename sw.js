@@ -20,7 +20,7 @@
 // and JSON only); this file does it for every page and script, so the two
 // should not both exist. The dated name below is newer than v2, and the
 // activate handler deletes every cache that is not it, including v2.
-const VERSION = "2026-10-15-meta-consent";
+const VERSION = "2026-10-22-no-redirect-cache";
 const CACHE_NAME = "arrivo-shell-" + VERSION;
 
 // Precached on install so a first-time offline visit has something to show.
@@ -122,7 +122,9 @@ self.addEventListener("fetch", (event) => {
 });
 
 function cacheable(response) {
-  return response && response.ok && response.type === "basic";
+  // A response that came through a redirect must not be stored: the browser
+  // refuses to answer a navigation with one, and the page would fail offline.
+  return response && response.ok && response.type === "basic" && !response.redirected;
 }
 
 async function networkFirst(event, request, isNavigation) {

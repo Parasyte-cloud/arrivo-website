@@ -76,7 +76,7 @@
         <img width="1829" height="309" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark wm-on-light"><img width="1829" height="309" src="assets/ridearrivo-wordmark-light.png" alt="" class="brand-wordmark wm-on-dark" aria-hidden="true">
       </div>
       <a href="index.html#how" data-i18n="nav.how">How it works</a>
-      <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
+      <a href="index.html#services" data-i18n="nav.audiences">Who it's for</a>
       <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
       <a href="https://blog.ridearrivo.com" target="_blank" rel="noopener" data-i18n="nav.blog">Blog</a>
       <span class="mobile-nav-menu-label" data-i18n="ui.services">Services</span>
@@ -170,9 +170,20 @@
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + getToken() },
       body: JSON.stringify({ scanToken: scanToken }),
     })
-      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, status: res.status, data: data }; }); })
       .then(function (result) {
+        if (result.status === 401) {
+          // The saved sign-in is stale. Clear it and go through login, which
+          // returns here with the scan code still in the URL.
+          localStorage.removeItem(TOKEN_KEY);
+          window.location.href = "login.html?next=" + encodeURIComponent(window.location.pathname + window.location.search);
+          return;
+        }
         if (!result.ok) {
+          // The name, car and plate above came from the link itself, which
+          // anyone can write. If the server refused the code, do not leave
+          // those details on screen looking trustworthy.
+          document.getElementById("driverPreview").style.display = "none";
           // The server was reachable and gave a definitive answer (wrong
           // ride, wrong driver, etc.) -- retrying won't help, so no retry button.
           showError(result.data.error || "Couldn't confirm your ride. Please try again or ask your driver for help.", false);
@@ -180,9 +191,11 @@
         }
         statusIcon.textContent = "✅";
         statusMsg.style.color = "var(--teal)";
+        // Replace the unverified details from the link with the server's own.
+        document.getElementById("driverPreviewName").textContent = result.data.driverName || document.getElementById("driverPreviewName").textContent;
         statusMsg.textContent = "Ride confirmed with " + result.data.driverName + ". Tracking has started, have a safe trip!";
         trackLink.style.display = "block";
-        trackLink.setAttribute("href", "track.html?ride=" + result.data.ride.id);
+        trackLink.setAttribute("href", "track.html?ride=" + encodeURIComponent(result.data.ride.id));
       })
       .catch(function () {
         // fetch() itself threw -- this is a connectivity failure, not a
