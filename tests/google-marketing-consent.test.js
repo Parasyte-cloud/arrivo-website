@@ -97,3 +97,17 @@ test("privacy policy discloses main-site Google marketing measurement", () => {
     /Meta Pixel and the main-site Google Tag Manager marketing container stay off until/
   );
 });
+
+test("the container start event is pushed after consent and before gtm.js loads", () => {
+  const start = consent.indexOf('"gtm.start": Date.now()');
+  assert.ok(start > -1, "gtm.start event is missing");
+  assert.match(consent.slice(start, start + 120), /event: "gtm\.js"/);
+  assert.ok(
+    start > consent.indexOf('googleConsent("update", true);'),
+    "gtm.start must come after the consent defaults and update"
+  );
+  assert.ok(
+    start < consent.indexOf('document.createElement("script")', start - 200),
+    "gtm.start must come before the container script is created"
+  );
+});

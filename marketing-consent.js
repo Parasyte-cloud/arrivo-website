@@ -233,6 +233,16 @@
       event: "ridearrivo_marketing_consent_granted"
     });
 
+    /*
+     * The standard container snippet pushes this just before loading gtm.js.
+     * Without it GTM's built-in "All Pages" / "Page View" triggers never fire,
+     * so GA4 and any page-view tag stay silent even though the container loads.
+     */
+    window.dataLayer.push({
+      "gtm.start": Date.now(),
+      event: "gtm.js"
+    });
+
     googleScript = document.createElement("script");
     googleScript.id = "ra-google-tag-manager";
     googleScript.async = true;
