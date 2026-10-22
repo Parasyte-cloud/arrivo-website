@@ -199,15 +199,23 @@
     // API for .ridearrivo.com). The API answers with an exact-origin CORS
     // allowlist plus Access-Control-Allow-Credentials, so this is safe; a
     // Bearer token, when present, still takes precedence server-side.
+    // A hung connection used to leave "Calculating your exact fare" up and the
+    // Pay button disabled forever. Abort after 30 seconds so the existing
+    // {ok:false, status:0} path (retry button, error line) runs.
+    var controller = typeof AbortController === "function" ? new AbortController() : null;
+    var timer = controller ? setTimeout(function () { controller.abort(); }, 30000) : null;
     return fetch(API_BASE_URL + path, {
       credentials: "include",
       ...options,
+      ...(controller ? { signal: controller.signal } : {}),
       headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     }).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
+        if (timer) clearTimeout(timer);
         return { ok: res.ok, status: res.status, data: data };
       });
     }).catch(function () {
+      if (timer) clearTimeout(timer);
       // fetch() itself rejected -- offline, server unreachable, CORS, etc.
       // Previously uncaught here, so every caller's .then(...) simply never
       // ran on a network failure: renderReview() left loadingText visible
@@ -611,8 +619,10 @@
         // dialog: change the time, or send what they filled in to Support.
         if (scheduled.getTime() - Date.now() < MIN_STANDARD_BOOKING_HOURS * 60 * 60 * 1000) {
           scheduledErrorBox.hidden = true;
-          openLateRequest(scheduled, null);
-          return false;
+          // If the dialog script did not load, do not leave Continue dead:
+          // carry on, and the server (or the card path's pre-check) answers
+          // the too-soon booking with its own message and the WhatsApp number.
+          if (openLateRequest(scheduled, null)) return false;
         }
         scheduledErrorBox.hidden = true;
         state.scheduledPickupAt = scheduled.toISOString();
@@ -777,8 +787,8 @@
     document.getElementById("rideContinue").addEventListener("click", function () {
       if (!contactFieldsValidator()) return;
 
-      var adults = Number(adultsInput.value) || 0;
-      var children = Number(childrenInput.value) || 0;
+      var adults = Math.min(Math.max(Math.floor(Number(adultsInput.value)) || 0, 0), 50);
+      var children = Math.min(Math.max(Math.floor(Number(childrenInput.value)) || 0, 0), 50);
       passengersError.hidden = true;
       document.getElementById("vehicleCapacityError").hidden = true;
       if (adults < 1) {
@@ -827,6 +837,14 @@
   // so it must exist on window before that script finishes loading.
   window.initGoogleMaps = function () {
     window.__googleMapsReady = true;
+    // The polling in setupPlacesForStep4 gives up after about 6 seconds. On a
+    // slow connection Maps can arrive after that, so attach now and clear the
+    // error.
+    var errEl = document.getElementById("mapsError");
+    var gaveUp = !!errEl && !errEl.hidden;
+    if (errEl) errEl.hidden = true;
+    // Only when the polling already gave up; otherwise it is still running.
+    if (gaveUp && typeof window.__attachPlacesLate === "function") window.__attachPlacesLate();
   };
 
   // Google calls this when it rejects the key or the page's address. Without
@@ -1398,6 +1416,12 @@
     }
   }
 
+  window.__attachPlacesLate = function () {
+    if (!window.google || !window.google.maps || !window.google.maps.places) return;
+    if (!document.getElementById("fPickup")) return;
+    setupPlacesForStep4(0);
+  };
+
   function setupPlacesForStep4(attempsLeft) {
     if (attempsLeft === undefined) attempsLeft = 20; // ~6 seconds total before giving up
     if (window.google && window.google.maps && window.google.maps.places) {
@@ -1653,6 +1677,7 @@
     }, getCoordsPayload(), extra || {});
   }
 
+  var quoteSeq = 0;
   function renderReview() {
     var loadingText = document.getElementById("quoteLoadingText");
     var errorText = document.getElementById("quoteErrorText");
@@ -1667,7 +1692,11 @@
     content.hidden = true;
     payBtn.disabled = true;
 
+    // Going back, changing the trip and continuing starts a second quote while
+    // the first may still be in flight. Only the newest answer may land.
+    var seq = ++quoteSeq;
     getLiveQuote().then(function (result) {
+      if (seq !== quoteSeq) return;
       loadingText.hidden = true;
       if (!result.ok) {
         errorText.hidden = false;
@@ -1736,7 +1765,7 @@
     if (state.bookingType === "dropoff" && state.scheduledPickupAt) {
       rows.push([
         t("booking.reviewScheduledPickup"),
-        new Date(state.scheduledPickupAt).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
+        new Date(state.scheduledPickupAt).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Africa/Lagos" }),
       ]);
     }
     if (state.bookingType === "full_day" && state.durationDays > 1) {
@@ -1803,10 +1832,14 @@
         // A membership covers the ride outright -- the obviously better
         // default the moment it's available, rather than making someone
         // notice and switch to it themselves.
-        state.paymentMethod = "membership";
-        document.querySelectorAll("#paymentMethodToggle .for-who-opt").forEach(function (b) {
-          b.classList.toggle("is-active", b.getAttribute("data-method") === "membership");
-        });
+        // Only the first time: a re-render after a fare change must not undo a
+        // deliberate switch to card.
+        if (!state.paymentChosen) {
+          state.paymentMethod = "membership";
+          document.querySelectorAll("#paymentMethodToggle .for-who-opt").forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-method") === "membership");
+          });
+        }
       } else {
         membershipOpt.hidden = true;
       }
@@ -1952,6 +1985,7 @@
       if (!rideResult.ok) {
         payBtn.disabled = false;
         payError.hidden = false;
+        if (handleWindowBlock(rideResult.data, null)) { payError.hidden = true; return; }
         payError.textContent = bookingErrorText(rideResult.data) || t("booking.paymentFailed");
         return;
       }
@@ -2062,7 +2096,7 @@
     state.stops = [destination];
     if (!isNaN(pickupLat) && !isNaN(pickupLng)) state.pickupLatLng = { lat: pickupLat, lng: pickupLng };
     if (!isNaN(destinationLat) && !isNaN(destinationLng)) state.dropoffLatLng = { lat: destinationLat, lng: destinationLng };
-    if (linkedRideId) state.linkedRideId = linkedRideId;
+    if (linkedRideId && /^[A-Za-z0-9_-]{1,64}$/.test(linkedRideId)) state.linkedRideId = linkedRideId;
 
     var pickupInput = document.getElementById("fPickup");
     if (pickupInput) pickupInput.value = pickup;
@@ -2162,7 +2196,9 @@
           // A definite refusal will not change on retry, so stop re-offering
           // recovery on every page load (the message below carries the
           // reference for support). A 5xx or network failure keeps the record.
-          if (rideResult.status >= 400 && rideResult.status < 500) clearPendingPayment();
+          // 401 (session ended while the card popup was open), 403, 408 and 429
+          // can all succeed on a later visit, so they keep the record.
+          if ([400, 404, 409, 410, 422].indexOf(rideResult.status) !== -1) clearPendingPayment();
           throw new Error(serverReason + t("booking.paymentFailed") + " (" + reference + ")");
         }
         createdRide = rideResult.data.ride;
@@ -2260,6 +2296,7 @@
       btn.addEventListener("click", function () {
         if (btn.disabled) return;
         state.paymentMethod = btn.getAttribute("data-method");
+        state.paymentChosen = true;
         document.querySelectorAll("#paymentMethodToggle .for-who-opt").forEach(function (b) { b.classList.toggle("is-active", b === btn); });
         document.getElementById("walletInsufficientNote").hidden = true;
         checkWalletMinimum(); // re-evaluate the informational note for the newly-selected method
@@ -2333,6 +2370,13 @@
           renderReviewContent();
           payError.hidden = false;
           payError.textContent = "Your fare has been updated to NGN " + check.data.fareNaira.toLocaleString() + ". Please review and press Pay again.";
+          return;
+        }
+        if (!state.email) {
+          // The profile lookup failed earlier. Paystack rejects an empty email.
+          payBtn.disabled = false;
+          payError.hidden = false;
+          payError.textContent = t("booking.checkoutOpenFailed");
           return;
         }
         try {
@@ -2410,10 +2454,14 @@
       var payError = document.getElementById("payError");
       api("/api/payments/verify/" + encodeURIComponent(rec.reference), { headers: authHeader() }).then(function (v) {
         if (v.ok && v.data && v.data.success) {
-          goToStep(5);
+          // Step 3 holds #payError. There is no step 5 (goToStep(5) hid every
+          // step and left a blank card). handlePaymentSuccess hides the error
+          // line as it starts, so show the "recovering" note after calling it.
+          goToStep(3);
+          var recovering = handlePaymentSuccess(rec.reference, rec.payload, true);
           payError.hidden = false;
           payError.textContent = t("booking.recovering");
-          return handlePaymentSuccess(rec.reference, rec.payload, true);
+          return recovering;
         }
         // Definite answer from Paystack that nothing was charged: forget it.
         // Network or server trouble keeps the record for the next visit.

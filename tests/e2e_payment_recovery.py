@@ -5,6 +5,7 @@ from playwright.async_api import async_playwright
 BASE=os.environ.get("SITE_BASE","http://127.0.0.1:8788")
 PATH=os.environ.get("SITE_PATH","/book")
 res=[]
+LAST_VIEW={}
 def rec(n,ok,d=""): res.append(ok); print(("PASS " if ok else "FAIL ")+n,d)
 CORS={"access-control-allow-origin":BASE,"access-control-allow-credentials":"true"}
 KEY="arrivo_pending_card_payment"
@@ -32,6 +33,8 @@ async def scenario(b,name,verify,ride_status,seed):
   await pg.goto(BASE+PATH); await pg.wait_for_timeout(2500)
   step4=await pg.evaluate("[...document.querySelectorAll('.step')].some(e=>e.getAttribute('data-step')==='4'&&!e.hidden)")
   left=await pg.evaluate(f"localStorage.getItem('{KEY}')")
+  global LAST_VIEW
+  LAST_VIEW=await pg.evaluate("""()=>{const e=document.getElementById('payError');const s=[...document.querySelectorAll('.step')].filter(x=>!x.hidden).map(x=>x.getAttribute('data-step'));return {steps:s,errVisible:!!e&&!e.hidden&&e.offsetParent!==null,errText:e?e.textContent:''}}""")
   await ctx.close(); return calls,step4,left
 async def main():
   async with async_playwright() as p:
@@ -46,6 +49,13 @@ async def main():
     rec("old abandoned: no ride created, record cleared",calls==["verify"] and left is None,str(calls))
     calls,step4,left=await scenario(b,"ride 500",{"success":True,"status":"success"},500,pending())
     rec("server error on ride: not confirmed, record kept for retry",not step4 and left is not None,str(calls))
+    rec("failed recovery: a booking step is on screen, never a blank card",len(LAST_VIEW.get("steps",[]))==1,str(LAST_VIEW))
+    rec("failed recovery: the reference and reason are visible",LAST_VIEW.get("errVisible") and "arrivo_test_ref1" in LAST_VIEW.get("errText",""),str(LAST_VIEW))
+    for code in (401,403,408,429):
+      calls,step4,left=await scenario(b,"ride %d"%code,{"success":True,"status":"success"},code,pending())
+      rec("ride %d: paid but not created, record KEPT so a later visit can finish it"%code,not step4 and left is not None,str(calls))
+    calls,step4,left=await scenario(b,"ride 409",{"success":True,"status":"success"},409,pending())
+    rec("ride 409: definite refusal, record cleared",not step4 and left is None,str(calls))
     calls,step4,left=await scenario(b,"ride 400",{"success":True,"status":"success"},400,pending())
     rec("refused ride (4xx): not confirmed, record cleared",not step4 and left is None,str(calls))
     calls,step4,left=await scenario(b,"expired",{"success":True,"status":"success"},200,pending(25*3600*1000))
