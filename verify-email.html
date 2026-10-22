@@ -80,7 +80,7 @@
         <img width="1829" height="309" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark wm-on-light"><img width="1829" height="309" src="assets/ridearrivo-wordmark-light.png" alt="" class="brand-wordmark wm-on-dark" aria-hidden="true">
       </div>
       <a href="index.html#how" data-i18n="nav.how">How it works</a>
-      <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
+      <a href="index.html#services" data-i18n="nav.audiences">Who it's for</a>
       <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
       <a href="https://blog.ridearrivo.com" target="_blank" rel="noopener" data-i18n="nav.blog">Blog</a>
       <span class="mobile-nav-menu-label" data-i18n="ui.services">Services</span>
@@ -137,6 +137,9 @@
     statusMsg.className = "status-bad";
     statusMsg.textContent = (window.RAt?RAt("auth.errNoToken","This verification link is missing its token."):"This verification link is missing its token.");
   } else {
+    // Take the one-time token out of the address bar so it does not sit in
+    // history or get copied along with the page link.
+    try { window.history.replaceState(null, "", window.location.pathname); } catch (e) {}
     fetch(API_BASE_URL + "/api/auth/verify-email", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -145,7 +148,9 @@
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (result) {
         statusMsg.className = result.ok ? "status-ok" : "status-bad";
-        statusMsg.textContent = result.data.message || result.data.error;
+        statusMsg.textContent = result.data.message || result.data.error || (result.ok
+          ? ""
+          : (window.RAt?RAt("auth.errServer","Couldn't reach the server. Please try again."):"Couldn't reach the server. Please try again."));
         if (result.ok) continueBtn.style.display = "block";
       })
       .catch(function () {
