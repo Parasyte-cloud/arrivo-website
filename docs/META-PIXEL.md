@@ -13,7 +13,10 @@ Every main-site HTML document loads the same local `marketing-consent.js` and
 The remote SDK is loaded only when the visitor grants marketing consent, the
 origin is exactly `https://www.ridearrivo.com` or `https://ridearrivo.com`, and the
 page is approved below. There is no noscript tracking image, preconnect to Meta,
-Google Tag Manager dependency, Conversions API integration or secret credential.
+Google Tag Manager container, Conversions API integration or secret credential.
+Google Analytics 4 now shares this same consent choice and gate: see
+`docs/GA4-ANALYTICS.md`. The banner offers one choice (**Accept optional cookies**)
+that covers both services.
 
 | Approved public pages | Explicitly excluded |
 | --- | --- |

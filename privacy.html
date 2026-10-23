@@ -52,8 +52,8 @@
   .legal .pending { background: #fff4c2; padding: 1px 5px; border-radius: 3px; }
 </style>
 <!-- Main-site consent controls; Meta stays off until marketing is accepted. -->
-<link rel="stylesheet" href="/marketing-consent.css?v=20261015-1">
-<script src="/marketing-consent.js?v=20261015-1" defer></script>
+<link rel="stylesheet" href="/marketing-consent.css?v=20261023-1">
+<script src="/marketing-consent.js?v=20261023-1" defer></script>
 </head>
 <body>
 
@@ -149,6 +149,7 @@
     <li><strong>Device and technical data:</strong> device type and operating system, app version, a push notification token, and the IP address your requests arrive from, which our servers process in order to deliver responses and to block abuse.</li>
   </ul>
   <p><strong>Optional website marketing data.</strong> On the main website, Meta Pixel is enabled only after you accept marketing cookies. It records visits to approved public pages and may receive your IP address, browser and device information, event time, page URL, referring URL and advertising-cookie identifiers. Our implementation does not send the answers you enter into forms, account details, trip locations or payment details as advertising-event parameters. See section 7 for the controls and exclusions.</p>
+  <p><strong>Optional website analytics.</strong> On the main website, Google Analytics is enabled only after you accept optional cookies. It records one visit event for each approved public page, using your browser and device information, event time, page URL and referring URL. Google receives your IP address as with any web request, but Google Analytics 4 does not log or store individual IP addresses. We turn off Google signals and advertising features, so these visits are not used for advertising. Our implementation does not send the answers you enter into forms, account details, trip locations or payment details. See section 7 for the controls and exclusions.</p>
 
   <h2>3. How we use your information, and our lawful basis</h2>
   <p>Section 27 of the NDPA requires us to give the purpose and the lawful basis for each activity, not just the purpose. This is the full list.</p>
@@ -167,7 +168,8 @@
       <tr><td>Prevent fraud, secure accounts, apply rate limits and investigate abuse of the service</td><td>Our legitimate interest in protecting the platform and the people using it</td></tr>
       <tr><td>Diagnose faults and keep the service reliable using operational records</td><td>Our legitimate interest in running a working service</td></tr>
       <tr><td>Send optional marketing, waitlist or product-update email</td><td>Your consent, which you can withdraw at any time</td></tr>
-      <tr><td>Measure visits to approved public website pages using Meta Pixel, assess advertising performance and support relevant advertising on Meta services</td><td>Your separate marketing-cookie consent, which you can reject or withdraw through Cookie preferences</td></tr>
+      <tr><td>Measure visits to approved public website pages using Meta Pixel, assess advertising performance and support relevant advertising on Meta services</td><td>Your separate optional-cookie consent, which you can reject or withdraw through Cookie preferences</td></tr>
+      <tr><td>Count visits to approved public website pages using Google Analytics, so we can see which pages people use and improve them</td><td>Your separate optional-cookie consent, which you can reject or withdraw through Cookie preferences</td></tr>
     </tbody>
   </table>
   </div>
@@ -181,10 +183,10 @@
     <li><strong>Route deviation is monitored automatically</strong> during a trip by comparing the vehicle's position and direction against the expected route. If something looks wrong it raises an alert for a person to review. The check does not by itself penalise a driver or a rider.</li>
     <li><strong>Identity and driver verification is decided by a person</strong> on our team reviewing the documents. It is not automated, and we do not use an external background-check or credit-scoring provider.</li>
   </ul>
-  <p>We do not make decisions that produce legal effects concerning you, or similarly significant effects, by solely automated means. When you accept marketing cookies, Meta may use website event information together with information it already holds to measure advertising, create or improve advertising audiences and personalise advertising under its own policies. Rejecting marketing cookies does not affect your ability to book or ride.</p>
+  <p>We do not make decisions that produce legal effects concerning you, or similarly significant effects, by solely automated means. When you accept optional cookies, Meta may use website event information together with information it already holds to measure advertising, create or improve advertising audiences and personalise advertising under its own policies. Rejecting optional cookies does not affect your ability to book or ride.</p>
 
   <h2>5. Who we share your data with</h2>
-  <p>We share information for the operational purposes below. In addition, with your separate marketing-cookie consent, approved public-page visit information is shared with Meta as described under Advertising partner and in section 7.</p>
+  <p>We share information for the operational purposes below. In addition, with your separate optional-cookie consent, approved public-page visit information is shared with Google (analytics) and with Meta (advertising) as described in sections 5 and 7.</p>
   <h3>Other people using the service</h3>
   <ul>
     <li>A matched rider and driver see each other's name, a way to contact each other through the app, and the trip's pickup and drop-off locations, for that trip.</li>
@@ -209,13 +211,15 @@
       <tr><td>AviationStack</td><td>Looks up flight status when you enter a flight number</td><td>European Union</td></tr>
       <tr><td>Google and Apple</td><td>Confirm your identity to us if you choose Sign in with Google or Sign in with Apple</td><td>United States</td></tr>
       <tr><td>Supabase</td><td>Stores what you submit through our public enquiry, charter, membership and booking forms: your name, email address, phone number, message and trip details</td><td>European Union (Ireland)</td></tr>
-      <tr><td>Google Tag Manager and Google Analytics</td><td>Count visits to our public forms and how far people get through them, only if you accept analytics on those forms. We do not send the answers you type, such as your name, email address or phone number. Google receives your IP address and device details, as with any web request.</td><td>United States</td></tr>
+      <tr><td>Google Analytics (main website)</td><td>Counts visits to approved public pages of www.ridearrivo.com, only if you accept optional cookies. We do not send the answers you type, and we turn off Google signals and advertising features. Google receives your IP address and device details, as with any web request.</td><td>United States</td></tr>
+      <tr><td>Google Tag Manager and Google Analytics (public forms)</td><td>Count visits to our public forms and how far people get through them, only if you accept analytics on those forms. We do not send the answers you type, such as your name, email address or phone number. Google receives your IP address and device details, as with any web request.</td><td>United States</td></tr>
       <tr><td>Google Fonts</td><td>Serves the typefaces on this website, which means Google receives your IP address when a page loads</td><td>United States</td></tr>
     </tbody>
   </table>
   </div>
   <h3>Advertising partner: Meta</h3>
-  <p>When marketing is accepted, Meta receives the website-event information described in sections 2 and 7 through Meta Pixel. Meta is an advertising partner, not simply a hosting provider acting only on our instructions. It may combine this information with other information it holds and process it internationally, including in the United States, under its applicable terms and <a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">Privacy Policy</a>. Its <a href="https://www.facebook.com/privacy/policies/cookies/" target="_blank" rel="noopener noreferrer">Cookies Policy</a> explains Meta's use of cookies. You can withdraw future website marketing tracking using Cookie preferences.</p>
+  <p>When optional cookies are accepted, Meta receives the website-event information described in sections 2 and 7 through Meta Pixel. Meta is an advertising partner, not simply a hosting provider acting only on our instructions. It may combine this information with other information it holds and process it internationally, including in the United States, under its applicable terms and <a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">Privacy Policy</a>. Its <a href="https://www.facebook.com/privacy/policies/cookies/" target="_blank" rel="noopener noreferrer">Cookies Policy</a> explains Meta's use of cookies. You can withdraw future website marketing tracking using Cookie preferences.</p>
+  <p>When optional cookies are accepted, Google Analytics receives the visit information described in sections 2 and 7. Google acts for us as an analytics service provider and may process it internationally, including in the United States, under its applicable terms and <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>. You can withdraw future analytics tracking using Cookie preferences.</p>
   <h3>Law enforcement and legal requests</h3>
   <p>We will disclose user or GPS location data to police, government bodies, or legal authorities <strong>only</strong> when presented with a valid court order, subpoena, or legally binding mandate under Nigerian law, or in emergency situations involving immediate physical safety threats. This includes audio from the in-vehicle listening device, which we share only for those purposes (see section 12).</p>
   <h3>Business transfers</h3>
@@ -231,14 +235,15 @@
   <h2 id="cookies">7. Cookies and similar technologies</h2>
   <h3>Essential storage and preferences</h3>
   <p>The website uses browser storage and cookies to support sign-in, language and theme preferences, and operational features such as booking recovery. These are separate from optional marketing. Clearing site data can sign you out and remove saved preferences or unfinished booking state.</p>
-  <h3>Optional Meta Pixel on the main website</h3>
-  <p>On <strong>www.ridearrivo.com and ridearrivo.com</strong>, Meta Pixel stays off until you choose <strong>Accept marketing</strong>. Choosing <strong>Reject marketing</strong> leaves it off and does not prevent you from using the site. A recognised Global Privacy Control signal also keeps this marketing integration off.</p>
-  <p>This integration sends a <strong>PageView</strong> event for an approved public page after consent. It does not add purchase, lead, registration or form-submission events, and does not supply advanced-matching identity fields such as email addresses or phone numbers. Account and sign-in flows, authenticated booking, driver pages, live trip tracking and payment callbacks are excluded. Visits with unrecognised or sensitive URL parameters are skipped, and embedded legal-policy frames do not generate separate page views.</p>
+  <h3>Optional analytics and Meta Pixel on the main website</h3>
+  <p>On <strong>www.ridearrivo.com and ridearrivo.com</strong>, Google Analytics and Meta Pixel both stay off until you choose <strong>Accept optional cookies</strong>. Choosing <strong>Reject optional cookies</strong> leaves both off and does not prevent you from using the site. A recognised Global Privacy Control signal also keeps these integrations off.</p>
+  <p>Each integration sends one page-view event (<strong>PageView</strong> for Meta, <strong>page_view</strong> for Google Analytics) for an approved public page after consent. Neither adds purchase, lead, registration or form-submission events, and neither supplies advanced-matching identity fields such as email addresses or phone numbers. Account and sign-in flows, authenticated booking, driver pages, live trip tracking and payment callbacks are excluded. Visits with unrecognised or sensitive URL parameters are skipped, and embedded legal-policy frames do not generate separate page views.</p>
   <p>Meta may set advertising identifiers such as <code>_fbp</code> and <code>_fbc</code> when this integration is permitted. As with other web requests, Meta also receives technical information such as IP address and browser details. Page URLs and referring URLs may be included; personal information should not be placed in campaign links.</p>
-  <p>Your decision and its timestamp are stored in <code>arrivo_marketing_consent_v1</code> in this website origin's local storage. A decision is valid for 180 days, after which we ask again on a public page. It does not grant consent on our other subdomains. When browser storage is unavailable, the choice applies to the current page only.</p>
-  <p>You can change or withdraw your decision at any time using <strong>Cookie preferences</strong> at the foot of the page, or <a href="privacy.html#cookie-preferences" data-ra-cookie-settings target="_top">open Cookie preferences here</a>. Withdrawal instructs the pixel to stop further marketing events and removes the accessible first-party Meta cookies set for this site. It does not remove unrelated sign-in cookies, erase information already received by Meta or change Meta cookies on Meta's own domains. Meta's policies explain its own retention and deletion controls.</p>
+  <p>Google Analytics sets the cookies <code>_ga</code> and <code>_ga_CL4Y16M64E</code>, which identify a browser so repeat visits can be counted. They are limited to this website's own address and are not shared with our subdomains. We keep Google Analytics event data for 14 months.</p>
+  <p>Your decision and its timestamp are stored in <code>arrivo_marketing_consent_v1</code> in this website origin's local storage. This one decision covers both Google Analytics and Meta Pixel. A decision is valid for 180 days, after which we ask again on a public page. Choices saved before Google Analytics was added do not carry over, so we ask again. It does not grant consent on our other subdomains. When browser storage is unavailable, the choice applies to the current page only.</p>
+  <p>You can change or withdraw your decision at any time using <strong>Cookie preferences</strong> at the foot of the page, or <a href="privacy.html#cookie-preferences" data-ra-cookie-settings target="_top">open Cookie preferences here</a>. Withdrawal tells both services to stop sending further events and removes the accessible first-party Meta and Google Analytics cookies set for this site. It does not remove unrelated sign-in cookies, erase information already received by Meta or Google, or change cookies on their own domains. Their policies explain their own retention and deletion controls.</p>
   <h3>Other websites and the apps</h3>
-  <p>The separately deployed blog, workspace, ArrivoExpress and other service subdomains are not enabled for Meta Pixel by this main-website installation. Our public forms (forms.ridearrivo.com and the booking, membership, move, boat, air and easybook subdomains) have their own analytics-consent controls. Their existing Google Tag Manager and Google Analytics choices are separate from this website's marketing decision.</p>
+  <p>The separately deployed blog, workspace, ArrivoExpress and other service subdomains are not enabled for Google Analytics or Meta Pixel by this main-website installation. Our public forms (forms.ridearrivo.com and the booking, membership, move, boat, air and easybook subdomains) have their own analytics-consent controls. Their existing Google Tag Manager and Google Analytics choices are separate from this website's optional-cookie decision.</p>
   <p>The apps store a sign-in token on the device and hold a push notification token so we can send you trip updates. This website change does not add advertising or analytics SDKs to the apps.</p>
   <p>Operational integrations such as Google Fonts, Google Maps, sign-in providers and Paystack may also receive requests when the relevant website features load or are used. These services are described in section 5; the marketing choice does not disable the functionality needed to operate the service.</p>
 
@@ -248,8 +253,9 @@
   <table>
     <thead><tr><th>What</th><th>How long</th><th>Why</th></tr></thead>
     <tbody>
-      <tr><td>Main-website marketing-consent decision</td><td>Valid for 180 days, or until replaced or cleared from browser storage</td><td>Remember and honour your marketing choice</td></tr>
+      <tr><td>Main-website optional-cookie decision</td><td>Valid for 180 days, or until replaced or cleared from browser storage</td><td>Remember and honour your optional-cookie choice</td></tr>
       <tr><td>Meta advertising cookies and event information</td><td>Under Meta's cookie and privacy policies; accessible site-owned Meta cookies are removed on withdrawal</td><td>Optional advertising measurement and relevant advertising, following consent</td></tr>
+      <tr><td>Google Analytics cookies and event information</td><td>Event data kept for 14 months in our Google Analytics account; accessible site-owned cookies are removed on withdrawal</td><td>Count visits to public pages, following consent</td></tr>
       <tr><td>Account profile: name, email, phone, preferences</td><td>While your account is open. Removed or anonymised when you delete it.</td><td>Needed to provide the service</td></tr>
       <tr><td>Trip invoice record: fare, currency, dates, status, vehicle class, pickup and stop addresses</td><td>7 years from the trip</td><td>Statutory tax, accounting and dispute-resolution obligations</td></tr>
       <tr><td>Precise GPS coordinates of a trip</td><td>Removed when you delete your account, and not part of the 7 year record</td><td>Finer than an invoice needs</td></tr>
