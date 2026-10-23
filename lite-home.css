@@ -74,8 +74,11 @@ html[data-theme="dark"] .lt-card strong{color:#fff}
 .lt-close{padding-top:0}
 
 /* drive with us: copy left, waitlist card right */
-.lt-drive-grid{display:grid;grid-template-columns:1fr;gap:28px;align-items:center}
-@media (min-width:900px){.lt-drive-grid{grid-template-columns:1.1fr 1fr;gap:56px}}
+/* minmax(0, ...) lets the columns shrink below their content's minimum width.
+   Plain 1fr means minmax(auto, 1fr), which made the page 36px wider than a
+   320px phone (16px at 340px) and caused a sideways scroll on the homepage. */
+.lt-drive-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:28px;align-items:center}
+@media (min-width:900px){.lt-drive-grid{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:56px}}
 .lt-drive-copy .lt-eyebrow,.lt-drive-copy .lt-h,.lt-drive-copy .lt-lede{text-align:left;margin-left:0}
 .lt-drive-copy .lt-lede{margin-top:14px;margin-bottom:22px;max-width:520px}
 .lt-dsteps{list-style:none;margin:0 0 24px;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
