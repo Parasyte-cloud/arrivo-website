@@ -423,10 +423,9 @@
   // than being blocked by a required field that doesn't apply to them.
   // Mirrors ON_THE_GO_ONLY_HOURS in arrivo-backend/services/bookingWindow.js.
   // Under this many hours the API refuses a standard booking and offers On the
-  // Go. The backend also defines STANDARD_MIN_HOURS = 48 with 12 to 48 hours
-  // left as an open "gap" Ops has not ruled on: today those bookings are
-  // accepted. If Ops closes the gap, change this and the backend together.
-  var MIN_STANDARD_BOOKING_HOURS = 12;
+  // Go. Was 12, lowered to 3 in Oct 2026 so same-day bookings go through.
+  // Change this and the backend together.
+  var MIN_STANDARD_BOOKING_HOURS = 3;
 
   function initStep2() {
     var resultBox = document.getElementById("flightResult");
