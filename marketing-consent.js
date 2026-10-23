@@ -1,16 +1,20 @@
-/* RideArrivo main-site optional-cookie consent. One optional PageView per
- * service (Meta Pixel and Google Analytics 4), no form events. Both services sit
- * behind the same accept/reject choice and the same page, origin, URL and
- * Global Privacy Control rules. See docs/META-PIXEL.md and docs/GA4-ANALYTICS.md
- * before adding a page, event or third-party integration.
+/* RideArrivo main-site optional-cookie consent. Meta Pixel and Google Tag
+ * Manager (which runs Google Analytics 4) sit behind the same accept/reject
+ * choice and the same page, origin, URL and Global Privacy Control rules. Neither
+ * is requested before consent. See docs/META-PIXEL.md and docs/GA4-ANALYTICS.md
+ * before adding a page, event, tag or third-party integration.
  */
 (function (window, document) {
   "use strict";
   if (window.RideArrivoPrivacy) return;
 
   var PIXEL_ID = "956256323771727";
-  // Google Analytics 4 web stream "RideArrivo Website". Loaded as a direct gtag.js
-  // tag, never through a Tag Manager container, so it cannot bypass these rules.
+  // Google Tag Manager container. It is injected here, only after consent, and
+  // NEVER pasted into the HTML heads (that would load Google before any choice).
+  // The GA4 tag for the stream below lives inside this container.
+  var GTM_ID = "GTM-WZ6Q7LPT";
+  // GA4 web stream "RideArrivo Website". Only used here to name and remove its
+  // cookies and to switch it off on withdrawal; the tag itself is in GTM.
   var GA_ID = "G-CL4Y16M64E";
   // Version 2 = the choice now covers Google Analytics as well as Meta Pixel.
   // Version 1 records (Meta only) are refused, so every visitor is asked again.
@@ -26,7 +30,7 @@
   var record = readRecord();
   var sdkStarted = false, sdkReady = false, sdkOwned = false;
   var initialized = false, pageViewSent = false, sdkGranted = false;
-  var gaStarted = false, gaReady = false, gaOwned = false, gaGranted = false, gaConfigured = false, gaPageViewSent = false;
+  var gtmStarted = false, gtmReady = false, gtmOwned = false, gtmGranted = false, gtmEventSent = false;
   var timer = null, banner, settings, accept, reject, close, message, status;
   var previousFocus = null;
 
@@ -170,73 +174,63 @@
   function ensureGtag() {
     window.dataLayer = window.dataLayer || [];
     if (!window.gtag) {
-      gaOwned = true;
-      // gtag.js only understands the real `arguments` object, not an array.
+      gtmOwned = true;
+      // gtag.js and GTM only understand the real `arguments` object, not an array.
       window.gtag = function () { window.dataLayer.push(arguments); };
     }
     return window.gtag;
   }
-  function grantReadyGa() {
-    if (!gaReady || !allowed()) return;
+  function grantReadyGtm() {
+    if (!gtmReady || !allowed()) return;
     window["ga-disable-" + GA_ID] = false;
-    if (!gaGranted) {
+    if (!gtmGranted) {
       // Analytics storage only. Advertising storage and signals are never granted.
       window.gtag("consent", "update", { analytics_storage: "granted", ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied" });
-      gaGranted = true;
+      gtmGranted = true;
     }
-    if (!gaConfigured) {
-      // No automatic page_view (sent once below), no Google signals, no ad
-      // personalisation, and a host-only cookie so it is not shared with the
-      // forms subdomains, which have their own consent choice.
-      window.gtag("config", GA_ID, {
-        send_page_view: false,
-        allow_google_signals: false,
-        allow_ad_personalization_signals: false,
-        cookie_domain: window.location.hostname,
-        cookie_flags: "SameSite=Lax;Secure"
-      });
-      gaConfigured = true;
-    }
-    if (!gaPageViewSent) {
-      gaPageViewSent = true;
-      window.gtag("event", "page_view");
+    if (!gtmEventSent) {
+      // Starts the container once per document, after consent is granted. Its
+      // Google tag then sends the single page_view; this file sends no events.
+      gtmEventSent = true;
+      window.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
     }
   }
-  function startGa() {
+  function startGtm() {
     if (!allowed()) return;
-    if (gaReady) { grantReadyGa(); return; }
-    // Never initialise over another Google tag installation.
-    if (gaStarted || (window.gtag && !gaOwned) || document.querySelector('script[src*="googletagmanager.com/gtag/js"]')) return;
-    gaStarted = true;
+    if (gtmReady) { grantReadyGtm(); return; }
+    // Never initialise over another Tag Manager installation.
+    if (gtmStarted || (window.google_tag_manager && window.google_tag_manager[GTM_ID]) || document.querySelector('script[src*="googletagmanager.com/gtm.js"]')) return;
+    gtmStarted = true;
     var gtag = ensureGtag();
-    // Consent Mode v2: everything denied until the checks below pass. Nothing is
-    // configured or sent before the script has downloaded and consent is re-read.
+    // Consent Mode v2: everything denied until the checks below pass. The
+    // container is not started (no gtm.js event) before the script has downloaded
+    // and consent has been read again, so no tag can fire for a visitor who
+    // rejected while it was loading.
     gtag("consent", "default", {
       ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied",
       analytics_storage: "denied", functionality_storage: "denied",
       personalization_storage: "denied", security_storage: "granted"
     });
-    gtag("js", new Date());
     var script = document.createElement("script");
-    script.id = "ra-ga4-sdk";
+    script.id = "ra-gtm-sdk";
     script.async = true;
     script.referrerPolicy = "no-referrer";
-    script.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(GA_ID);
+    script.src = "https://www.googletagmanager.com/gtm.js?id=" + encodeURIComponent(GTM_ID);
     script.onload = function () {
-      gaReady = true;
+      gtmReady = true;
       // Re-check after download: the visitor may have rejected while it loaded.
-      if (allowed()) grantReadyGa();
-      else revokeGa();
+      if (allowed()) grantReadyGtm();
+      else revokeGtm();
     };
-    script.onerror = function () { gaReady = false; }; // A blocker never breaks booking.
+    script.onerror = function () { gtmReady = false; }; // A blocker never breaks booking.
     document.head.appendChild(script);
   }
-  function revokeGa() {
+  function revokeGtm() {
     window["ga-disable-" + GA_ID] = true;
-    if (gaOwned && window.gtag && (gaGranted || !gaReady)) {
+    if (gtmOwned && window.gtag && (gtmGranted || !gtmReady)) {
       window.gtag("consent", "update", { analytics_storage: "denied", ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied" });
     }
-    gaGranted = false;
+    gtmGranted = false;
     clearAnalyticsCookies();
   }
   function scheduleExpiry() {
@@ -249,12 +243,12 @@
   }
   function sync() {
     if (!validRecord()) record = null;
-    if (allowed()) { startSdk(); startGa(); }
+    if (allowed()) { startSdk(); startGtm(); }
     else {
       if (sdkOwned && (sdkGranted || !sdkReady)) window.fbq("consent", "revoke");
       sdkGranted = false;
       clearMarketingCookies();
-      revokeGa();
+      revokeGtm();
     }
     scheduleExpiry();
     if (banner) {
