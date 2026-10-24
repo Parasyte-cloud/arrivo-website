@@ -32,18 +32,20 @@ Before that there is no request to Google at all. After it:
 2. `https://www.googletagmanager.com/gtm.js?id=GTM-WZ6Q7LPT` is requested.
 3. When the script has loaded, consent is read again. If the visitor rejected
    while it was downloading, the container is never started and nothing fires.
-4. Otherwise `analytics_storage` is granted (advertising storage, user data and
-   personalisation stay denied) and the container is started once with the
+4. Otherwise all four signals are granted together (`analytics_storage`,
+   `ad_storage`, `ad_user_data`, `ad_personalization`) and the container is
+   started once with the
    `gtm.js` event. The Google tag inside the container then sends the one
    `page_view`. This file sends no events and configures no tag itself.
 
 Withdrawal sets consent back to denied, sets `window['ga-disable-G-CL4Y16M64E']`,
-and removes the accessible `_ga` and `_ga_CL4Y16M64E` cookies. As with Meta, the
+and removes the accessible `_ga`, `_ga_CL4Y16M64E`, `_gcl_au`, `_gcl_aw`,
+`_gcl_dc`, `_gcl_gb` and `_ttp` cookies (plus Meta's `_fbp` and `_fbc`). As with Meta, the
 script cannot be unloaded from a running page, and events already sent are not
 recalled.
 
-The single stored choice is version 2. Version 1 records (made when the banner
-covered Meta only) are refused, so every visitor is asked once more. The stored
+The single stored choice is version 3. Version 1 (Meta only) and version 2
+(analytics only) records are refused, so every visitor is asked once more. The stored
 field is still called `marketing`; it means "optional cookies".
 
 Pages tracked are the same as Meta: `/`, `/index`, `/hello`, `/contact-us`,
@@ -71,11 +73,22 @@ tag. Tags created in a workspace do nothing until you submit and publish.
 6. **Submit** and **Publish** the version. Then check Admin > Container
    settings shows the new version live.
 
-Do not add other tags (advertising, remarketing, heatmaps, chat widgets) to this
-container without a consent review. Anything in it runs for visitors who accepted
-"optional cookies", and the privacy page only describes Google Analytics and
-Meta Pixel. Do not also add a direct `gtag.js` tag or install Meta through the
-container: it would double count or bypass the controls. A test fails if
+Advertising tags (Google Ads remarketing, TikTok) may be added to this container
+because one "optional cookies" choice now grants analytics and advertising
+consent. For every tag:
+- Open Advanced Settings > Consent Settings and require the signals it needs:
+  GA4 needs `analytics_storage`; advertising and remarketing tags need
+  `ad_storage` and `ad_user_data` (add `ad_personalization` for remarketing).
+- Add the origins the tag loads to the `_headers` Content-Security-Policy and
+  to `scripts/build-express.js` (which strips them again on Express). Check GTM
+  Preview and the browser console for CSP violations after consent.
+- Test in GTM Preview with consent rejected (the tag must not fire) and then
+  accepted.
+Heatmaps and chat widgets still need a consent review. Do not install Meta
+through the container: Meta Pixel is already loaded directly by
+`marketing-consent.js`, so a Facebook tag in GTM would count every event twice.
+Do not add a direct `gtag.js` tag either: it would double count or bypass the
+controls. A test fails if
 `gtag/js` appears in `marketing-consent.js`.
 
 Tag Assistant preview mode is blocked by the site's Content-Security-Policy, so
@@ -94,8 +107,9 @@ strips all of these, as it does for Meta.
 
 - Admin > Data collection and modification > **Data retention**: event data
   retention **14 months** (the privacy page says 14 months).
-- Admin > Data collection and modification > **Data collection**: leave
-  **Google signals** off, and do not turn on advertising features.
+- Admin > Data collection and modification > **Data collection**: turn
+  **Google signals** on only if Google Ads remarketing is used. The privacy page
+  describes advertising tags run through Tag Manager.
 - Admin > Data streams > RideArrivo Website: the stream should list only the
   production domain.
 

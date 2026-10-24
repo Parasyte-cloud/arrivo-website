@@ -78,8 +78,8 @@ function load({ url = "https://www.ridearrivo.com/", record = null, gpc = false,
   return { win, scripts, cookieWrites, store, gtmScript, layer, raw, gtmEvents, commands, emit };
 }
 
-const accepted = () => ({ version: 2, marketing: true, updatedAt: Date.now() - 1000 });
-const rejected = () => ({ version: 2, marketing: false, updatedAt: Date.now() - 1000 });
+const accepted = () => ({ version: 3, marketing: true, updatedAt: Date.now() - 1000 });
+const rejected = () => ({ version: 3, marketing: false, updatedAt: Date.now() - 1000 });
 const googleRequests = (scripts) => scripts.filter((s) => /googletagmanager|google-analytics/.test(s.src));
 
 test("GTM: no request to Google before any choice", () => {
@@ -112,9 +112,9 @@ test("GTM: accepted choice loads the container with consent denied first, starts
   script.onload();
   const update = env.commands("consent").find((c) => c[1] === "update");
   assert.equal(update[2].analytics_storage, "granted");
-  assert.equal(update[2].ad_storage, "denied");
-  assert.equal(update[2].ad_user_data, "denied");
-  assert.equal(update[2].ad_personalization, "denied");
+  assert.equal(update[2].ad_storage, "granted");
+  assert.equal(update[2].ad_user_data, "granted");
+  assert.equal(update[2].ad_personalization, "granted");
   assert.equal(env.gtmEvents().length, 1, "container started once");
   const order = env.raw().map((e) => (e && e.event === "gtm.js" ? "start" : e && e.length ? e[0] + ":" + e[1] : "other"));
   assert.ok(order.indexOf("consent:update") < order.indexOf("start"), "consent is granted before the container starts: " + order.join(", "));
@@ -170,11 +170,25 @@ test("GTM: withdrawal denies storage, disables the tag and removes the cookies",
   env.store[KEY] = JSON.stringify(rejected());
   env.emit("storage", { key: KEY, newValue: env.store[KEY] });
   const updates = env.commands("consent").filter((c) => c[1] === "update");
-  assert.equal(updates[updates.length - 1][2].analytics_storage, "denied");
+  const last = updates[updates.length - 1][2];
+  for (const signal of ["analytics_storage", "ad_storage", "ad_user_data", "ad_personalization"]) assert.equal(last[signal], "denied", signal);
   assert.equal(env.win["ga-disable-" + GA_ID], true);
   const names = env.cookieWrites.map((c) => c.split("=")[0]);
-  for (const cookie of ["_ga", "_ga_CL4Y16M64E"]) assert.ok(names.includes(cookie), cookie + " expired");
+  for (const cookie of ["_ga", "_ga_CL4Y16M64E", "_gcl_au", "_gcl_aw", "_ttp", "_fbp"]) assert.ok(names.includes(cookie), cookie + " expired");
   assert.ok(env.cookieWrites.every((c) => /Max-Age=0/.test(c)));
+});
+
+test("GTM: a choice saved before advertising tags were added (version 2) is refused, so the visitor is asked again", () => {
+  const env = load({ record: { version: 2, marketing: true, updatedAt: Date.now() - 1000 } });
+  assert.equal(env.gtmScript(), undefined, "an old analytics-only choice never starts the container");
+});
+
+test("GTM: accepting grants all four Consent Mode signals together", () => {
+  const env = load({ record: accepted() });
+  env.gtmScript().onload();
+  const update = env.commands("consent").find((c) => c[1] === "update");
+  assert.deepEqual(Object.keys(update[2]).sort(), ["ad_personalization", "ad_storage", "ad_user_data", "analytics_storage"]);
+  assert.ok(Object.values(update[2]).every((v) => v === "granted"));
 });
 
 test("GTM: does not start over another Tag Manager installation", () => {
@@ -228,13 +242,13 @@ test("GTM: privacy policy discloses Google Analytics, the 14 month retention and
   assert.ok(!/Accept marketing|Reject marketing/.test(html), "buttons were renamed, so the policy must not name the old ones");
 });
 
-test("GTM: banner copy names Google Analytics in all seven languages and uses no em dash", () => {
+test("GTM: banner copy names analytics and the advertising partners in all seven languages and uses no em dash", () => {
   for (const lang of ["en", "fr", "zh", "hi", "de", "es", "pt"]) {
     const line = SOURCE.split("\n").find((l) => l.startsWith("    " + lang + ": ["));
     assert.ok(line, lang);
     const text = JSON.parse(line.trim().replace(/^[a-z]{2}: /, "").replace(/,$/, ""));
     assert.equal(text.length, 9, lang);
-    assert.ok(text[1].includes("Google Analytics") && text[1].includes("Meta Pixel"), lang + " explanation names both services");
+    assert.ok(["Google Analytics", "Meta", "Google", "TikTok"].every((name) => text[1].includes(name)), lang + " explanation names analytics and the advertising partners");
     assert.ok(!text.some((t) => t.includes("\u2014")), lang);
   }
 });
