@@ -1,11 +1,25 @@
-/* RideArrivo main-site marketing consent. One optional PageView, no form events.
- * See docs/META-PIXEL.md before adding a page, event or third-party integration.
+/* RideArrivo main-site optional-cookie consent. Meta Pixel and Google Tag
+ * Manager (which runs Google Analytics 4) sit behind the same accept/reject
+ * choice and the same page, origin, URL and Global Privacy Control rules. Neither
+ * is requested before consent. See docs/META-PIXEL.md and docs/GA4-ANALYTICS.md
+ * before adding a page, event, tag or third-party integration.
  */
 (function (window, document) {
   "use strict";
   if (window.RideArrivoPrivacy) return;
 
   var PIXEL_ID = "956256323771727";
+  // Google Tag Manager container. It is injected here, only after consent, and
+  // NEVER pasted into the HTML heads (that would load Google before any choice).
+  // The GA4 tag for the stream below lives inside this container.
+  var GTM_ID = "GTM-WZ6Q7LPT";
+  // GA4 web stream "RideArrivo Website". Only used here to name and remove its
+  // cookies and to switch it off on withdrawal; the tag itself is in GTM.
+  var GA_ID = "G-CL4Y16M64E";
+  // Version 3 = the choice now also covers advertising tags run through Tag
+  // Manager (Google advertising, TikTok). Version 1 (Meta only) and version 2
+  // (analytics only) records are refused, so every visitor is asked again.
+  var RECORD_VERSION = 3;
   var STORAGE_KEY = "arrivo_marketing_consent_v1";
   var MAX_AGE = 180 * 24 * 60 * 60 * 1000;
   var PRODUCTION_ORIGINS = ["https://www.ridearrivo.com", "https://ridearrivo.com"];
@@ -17,6 +31,7 @@
   var record = readRecord();
   var sdkStarted = false, sdkReady = false, sdkOwned = false;
   var initialized = false, pageViewSent = false, sdkGranted = false;
+  var gtmStarted = false, gtmReady = false, gtmOwned = false, gtmGranted = false, gtmEventSent = false;
   var timer = null, banner, settings, accept, reject, close, message, status;
   var previousFocus = null;
 
@@ -24,19 +39,19 @@
   // Order: title, explanation, accept, reject, preferences, privacy, close,
   // browser opt-out explanation, saved announcement.
   var COPY = {
-    en: ["Your privacy, your choice", "We use essential storage to run RideArrivo. With your permission, Meta Pixel measures visits to our public pages and helps personalise ads on Facebook and Instagram. You can reject marketing and still use the site, or change your choice later.", "Accept marketing", "Reject marketing", "Cookie preferences", "Privacy policy", "Close", "Your browser's Global Privacy Control signal is on. Marketing tracking stays off.", "Your cookie preference has been saved."],
-    fr: ["Votre vie priv\u00e9e, votre choix", "Nous utilisons le stockage essentiel pour faire fonctionner RideArrivo. Avec votre accord, Meta Pixel mesure les visites de nos pages publiques et aide \u00e0 personnaliser les publicit\u00e9s sur Facebook et Instagram. Vous pouvez refuser le marketing et utiliser le site, ou modifier votre choix plus tard.", "Accepter le marketing", "Refuser le marketing", "Pr\u00e9f\u00e9rences des cookies", "Politique de confidentialit\u00e9", "Fermer", "Le signal Global Privacy Control de votre navigateur est activ\u00e9. Le suivi marketing reste d\u00e9sactiv\u00e9.", "Votre choix de cookies a \u00e9t\u00e9 enregistr\u00e9."],
-    zh: ["\u60a8\u7684\u9690\u79c1\uff0c\u7531\u60a8\u9009\u62e9", "RideArrivo \u4f7f\u7528\u5fc5\u8981\u7684\u5b58\u50a8\u6765\u8fd0\u884c\u7f51\u7ad9\u3002\u7ecf\u60a8\u540c\u610f\uff0cMeta Pixel \u4f1a\u7edf\u8ba1\u516c\u5f00\u9875\u9762\u7684\u8bbf\u95ee\uff0c\u5e76\u5e2e\u52a9\u5728 Facebook \u548c Instagram \u4e0a\u63d0\u4f9b\u4e2a\u6027\u5316\u5e7f\u544a\u3002\u60a8\u53ef\u4ee5\u62d2\u7edd\u8425\u9500\u8ddf\u8e2a\u5e76\u7ee7\u7eed\u4f7f\u7528\u7f51\u7ad9\uff0c\u6216\u7a0d\u540e\u66f4\u6539\u9009\u62e9\u3002", "\u63a5\u53d7\u8425\u9500", "\u62d2\u7edd\u8425\u9500", "Cookie \u504f\u597d", "\u9690\u79c1\u653f\u7b56", "\u5173\u95ed", "\u60a8\u7684\u6d4f\u89c8\u5668\u5df2\u542f\u7528 Global Privacy Control\u3002\u8425\u9500\u8ddf\u8e2a\u4fdd\u6301\u5173\u95ed\u3002", "\u5df2\u4fdd\u5b58\u60a8\u7684 Cookie \u504f\u597d\u3002"],
-    hi: ["\u0906\u092a\u0915\u0940 \u0928\u093f\u091c\u0924\u093e, \u0906\u092a\u0915\u0940 \u092a\u0938\u0902\u0926", "RideArrivo \u091a\u0932\u093e\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u0939\u092e \u0906\u0935\u0936\u094d\u092f\u0915 \u0938\u094d\u091f\u094b\u0930\u0947\u091c \u0915\u093e \u0909\u092a\u092f\u094b\u0917 \u0915\u0930\u0924\u0947 \u0939\u0948\u0902\u0964 \u0906\u092a\u0915\u0940 \u0905\u0928\u0941\u092e\u0924\u093f \u0938\u0947 Meta Pixel \u0938\u093e\u0930\u094d\u0935\u091c\u0928\u093f\u0915 \u092a\u0943\u0937\u094d\u0920\u094b\u0902 \u0915\u0940 \u0935\u093f\u091c\u093c\u093f\u091f \u092e\u093e\u092a\u0924\u093e \u0939\u0948 \u0914\u0930 Facebook \u0924\u0925\u093e Instagram \u092a\u0930 \u0935\u093f\u091c\u094d\u091e\u093e\u092a\u0928 \u0935\u094d\u092f\u0915\u094d\u0924\u093f\u0917\u0924 \u092c\u0928\u093e\u0928\u0947 \u092e\u0947\u0902 \u092e\u0926\u0926 \u0915\u0930\u0924\u093e \u0939\u0948\u0964 \u0906\u092a \u092e\u093e\u0930\u094d\u0915\u0947\u091f\u093f\u0902\u0917 \u0905\u0938\u094d\u0935\u0940\u0915\u093e\u0930 \u0915\u0930\u0915\u0947 \u092d\u0940 \u0938\u093e\u0907\u091f \u0909\u092a\u092f\u094b\u0917 \u0915\u0930 \u0938\u0915\u0924\u0947 \u0939\u0948\u0902 \u0914\u0930 \u092c\u093e\u0926 \u092e\u0947\u0902 \u0905\u092a\u0928\u0940 \u092a\u0938\u0902\u0926 \u092c\u0926\u0932 \u0938\u0915\u0924\u0947 \u0939\u0948\u0902\u0964", "\u092e\u093e\u0930\u094d\u0915\u0947\u091f\u093f\u0902\u0917 \u0938\u094d\u0935\u0940\u0915\u093e\u0930 \u0915\u0930\u0947\u0902", "\u092e\u093e\u0930\u094d\u0915\u0947\u091f\u093f\u0902\u0917 \u0905\u0938\u094d\u0935\u0940\u0915\u093e\u0930 \u0915\u0930\u0947\u0902", "\u0915\u0941\u0915\u0940 \u092a\u0938\u0902\u0926", "\u0917\u094b\u092a\u0928\u0940\u092f\u0924\u093e \u0928\u0940\u0924\u093f", "\u092c\u0902\u0926 \u0915\u0930\u0947\u0902", "\u0906\u092a\u0915\u0947 \u092c\u094d\u0930\u093e\u0909\u091c\u093c\u0930 \u092e\u0947\u0902 Global Privacy Control \u091a\u093e\u0932\u0942 \u0939\u0948\u0964 \u092e\u093e\u0930\u094d\u0915\u0947\u091f\u093f\u0902\u0917 \u091f\u094d\u0930\u0948\u0915\u093f\u0902\u0917 \u092c\u0902\u0926 \u0930\u0939\u0947\u0917\u0940\u0964", "\u0906\u092a\u0915\u0940 \u0915\u0941\u0915\u0940 \u092a\u0938\u0902\u0926 \u0938\u0939\u0947\u091c \u0926\u0940 \u0917\u0908 \u0939\u0948\u0964"],
-    de: ["Ihre Privatsph\u00e4re, Ihre Wahl", "Wir verwenden notwendigen Speicher, um RideArrivo zu betreiben. Mit Ihrer Erlaubnis misst Meta Pixel Besuche unserer \u00f6ffentlichen Seiten und hilft, Werbung auf Facebook und Instagram zu personalisieren. Sie k\u00f6nnen Marketing ablehnen und die Website weiter nutzen oder Ihre Wahl sp\u00e4ter \u00e4ndern.", "Marketing akzeptieren", "Marketing ablehnen", "Cookie-Einstellungen", "Datenschutzerkl\u00e4rung", "Schlie\u00dfen", "Global Privacy Control ist in Ihrem Browser aktiviert. Marketing-Tracking bleibt ausgeschaltet.", "Ihre Cookie-Einstellung wurde gespeichert."],
-    es: ["Tu privacidad, tu decisi\u00f3n", "Usamos almacenamiento esencial para que RideArrivo funcione. Con tu permiso, Meta Pixel mide las visitas a nuestras p\u00e1ginas p\u00fablicas y ayuda a personalizar anuncios en Facebook e Instagram. Puedes rechazar el marketing y seguir usando el sitio, o cambiar tu decisi\u00f3n m\u00e1s adelante.", "Aceptar marketing", "Rechazar marketing", "Preferencias de cookies", "Pol\u00edtica de privacidad", "Cerrar", "La se\u00f1al Global Privacy Control de tu navegador est\u00e1 activada. El seguimiento de marketing permanece desactivado.", "Se ha guardado tu preferencia de cookies."],
-    pt: ["Sua privacidade, sua escolha", "Usamos armazenamento essencial para o funcionamento do RideArrivo. Com sua permiss\u00e3o, o Meta Pixel mede visitas \u00e0s nossas p\u00e1ginas p\u00fablicas e ajuda a personalizar an\u00fancios no Facebook e Instagram. Voc\u00ea pode recusar o marketing e continuar usando o site, ou mudar sua escolha depois.", "Aceitar marketing", "Recusar marketing", "Prefer\u00eancias de cookies", "Pol\u00edtica de privacidade", "Fechar", "O sinal Global Privacy Control do seu navegador est\u00e1 ativado. O rastreamento de marketing permanece desativado.", "Sua prefer\u00eancia de cookies foi salva."]
+    en: ["Your privacy, your choice", "We use essential storage to run RideArrivo. With your permission, Google Analytics counts visits to our public pages, and advertising partners (Meta, Google and TikTok) help us measure and personalise ads. You can reject optional cookies and still use the site, or change your choice later.", "Accept optional cookies", "Reject optional cookies", "Cookie preferences", "Privacy policy", "Close", "Your browser's Global Privacy Control signal is on. Optional tracking stays off.", "Your cookie preference has been saved."],
+    fr: ["Votre vie priv\u00e9e, votre choix", "Nous utilisons le stockage essentiel pour faire fonctionner RideArrivo. Avec votre accord, Google Analytics compte les visites de nos pages publiques, et des partenaires publicitaires (Meta, Google et TikTok) nous aident \u00e0 mesurer et personnaliser les publicit\u00e9s. Vous pouvez refuser les cookies facultatifs et utiliser le site, ou modifier votre choix plus tard.", "Accepter les cookies facultatifs", "Refuser les cookies facultatifs", "Pr\u00e9f\u00e9rences des cookies", "Politique de confidentialit\u00e9", "Fermer", "Le signal Global Privacy Control de votre navigateur est activ\u00e9. Le suivi facultatif reste d\u00e9sactiv\u00e9.", "Votre choix de cookies a \u00e9t\u00e9 enregistr\u00e9."],
+    zh: ["\u60a8\u7684\u9690\u79c1\uff0c\u7531\u60a8\u9009\u62e9", "RideArrivo \u4f7f\u7528\u5fc5\u8981\u7684\u5b58\u50a8\u6765\u8fd0\u884c\u7f51\u7ad9\u3002\u7ecf\u60a8\u540c\u610f\uff0cGoogle Analytics \u4f1a\u7edf\u8ba1\u516c\u5f00\u9875\u9762\u7684\u8bbf\u95ee\uff0c\u5e7f\u544a\u5408\u4f5c\u4f19\u4f34\uff08Meta\u3001Google \u548c TikTok\uff09\u4f1a\u5e2e\u52a9\u6211\u4eec\u8861\u91cf\u5e76\u4e2a\u6027\u5316\u5e7f\u544a\u3002\u60a8\u53ef\u4ee5\u62d2\u7edd\u53ef\u9009 Cookie \u5e76\u7ee7\u7eed\u4f7f\u7528\u7f51\u7ad9\uff0c\u6216\u7a0d\u540e\u66f4\u6539\u9009\u62e9\u3002", "\u63a5\u53d7\u53ef\u9009 Cookie", "\u62d2\u7edd\u53ef\u9009 Cookie", "Cookie \u504f\u597d", "\u9690\u79c1\u653f\u7b56", "\u5173\u95ed", "\u60a8\u7684\u6d4f\u89c8\u5668\u5df2\u542f\u7528 Global Privacy Control\u3002\u53ef\u9009\u8ddf\u8e2a\u4fdd\u6301\u5173\u95ed\u3002", "\u5df2\u4fdd\u5b58\u60a8\u7684 Cookie \u504f\u597d\u3002"],
+    hi: ["\u0906\u092a\u0915\u0940 \u0928\u093f\u091c\u0924\u093e, \u0906\u092a\u0915\u0940 \u092a\u0938\u0902\u0926", "RideArrivo \u091a\u0932\u093e\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u0939\u092e \u0906\u0935\u0936\u094d\u092f\u0915 \u0938\u094d\u091f\u094b\u0930\u0947\u091c \u0915\u093e \u0909\u092a\u092f\u094b\u0917 \u0915\u0930\u0924\u0947 \u0939\u0948\u0902\u0964 \u0906\u092a\u0915\u0940 \u0905\u0928\u0941\u092e\u0924\u093f \u0938\u0947 Google Analytics \u0938\u093e\u0930\u094d\u0935\u091c\u0928\u093f\u0915 \u092a\u0943\u0937\u094d\u0920\u094b\u0902 \u0915\u0940 \u0935\u093f\u091c\u093c\u093f\u091f \u0917\u093f\u0928\u0924\u093e \u0939\u0948, \u0914\u0930 \u0935\u093f\u091c\u094d\u091e\u093e\u092a\u0928 \u0938\u093e\u091d\u0947\u0926\u093e\u0930 (Meta, Google \u0914\u0930 TikTok) \u0935\u093f\u091c\u094d\u091e\u093e\u092a\u0928\u094b\u0902 \u0915\u094b \u092e\u093e\u092a\u0928\u0947 \u0914\u0930 \u0935\u094d\u092f\u0915\u094d\u0924\u093f\u0917\u0924 \u092c\u0928\u093e\u0928\u0947 \u092e\u0947\u0902 \u0939\u092e\u093e\u0930\u0940 \u092e\u0926\u0926 \u0915\u0930\u0924\u0947 \u0939\u0948\u0902\u0964 \u0906\u092a \u0935\u0948\u0915\u0932\u094d\u092a\u093f\u0915 \u0915\u0941\u0915\u0940\u091c\u093c \u0905\u0938\u094d\u0935\u0940\u0915\u093e\u0930 \u0915\u0930\u0915\u0947 \u092d\u0940 \u0938\u093e\u0907\u091f \u0915\u093e \u0909\u092a\u092f\u094b\u0917 \u0915\u0930 \u0938\u0915\u0924\u0947 \u0939\u0948\u0902, \u092f\u093e \u092c\u093e\u0926 \u092e\u0947\u0902 \u0905\u092a\u0928\u093e \u0935\u093f\u0915\u0932\u094d\u092a \u092c\u0926\u0932 \u0938\u0915\u0924\u0947 \u0939\u0948\u0902\u0964", "\u0935\u0948\u0915\u0932\u094d\u092a\u093f\u0915 \u0915\u0941\u0915\u0940 \u0938\u094d\u0935\u0940\u0915\u093e\u0930 \u0915\u0930\u0947\u0902", "\u0935\u0948\u0915\u0932\u094d\u092a\u093f\u0915 \u0915\u0941\u0915\u0940 \u0905\u0938\u094d\u0935\u0940\u0915\u093e\u0930 \u0915\u0930\u0947\u0902", "\u0915\u0941\u0915\u0940 \u092a\u0938\u0902\u0926", "\u0917\u094b\u092a\u0928\u0940\u092f\u0924\u093e \u0928\u0940\u0924\u093f", "\u092c\u0902\u0926 \u0915\u0930\u0947\u0902", "\u0906\u092a\u0915\u0947 \u092c\u094d\u0930\u093e\u0909\u091c\u093c\u0930 \u092e\u0947\u0902 Global Privacy Control \u091a\u093e\u0932\u0942 \u0939\u0948\u0964 \u0935\u0948\u0915\u0932\u094d\u092a\u093f\u0915 \u091f\u094d\u0930\u0948\u0915\u093f\u0902\u0917 \u092c\u0902\u0926 \u0930\u0939\u0947\u0917\u0940\u0964", "\u0906\u092a\u0915\u0940 \u0915\u0941\u0915\u0940 \u092a\u0938\u0902\u0926 \u0938\u0939\u0947\u091c \u0926\u0940 \u0917\u0908 \u0939\u0948\u0964"],
+    de: ["Ihre Privatsph\u00e4re, Ihre Wahl", "Wir verwenden notwendigen Speicher, um RideArrivo zu betreiben. Mit Ihrer Erlaubnis z\u00e4hlt Google Analytics Besuche auf unseren \u00f6ffentlichen Seiten, und Werbepartner (Meta, Google und TikTok) helfen uns, Anzeigen zu messen und zu personalisieren. Sie k\u00f6nnen optionale Cookies ablehnen und die Website trotzdem nutzen oder Ihre Wahl sp\u00e4ter \u00e4ndern.", "Optionale Cookies akzeptieren", "Optionale Cookies ablehnen", "Cookie-Einstellungen", "Datenschutzerkl\u00e4rung", "Schlie\u00dfen", "Global Privacy Control ist in Ihrem Browser aktiviert. Optionales Tracking bleibt ausgeschaltet.", "Ihre Cookie-Einstellung wurde gespeichert."],
+    es: ["Tu privacidad, tu decisi\u00f3n", "Usamos almacenamiento esencial para que RideArrivo funcione. Con tu permiso, Google Analytics cuenta las visitas a nuestras p\u00e1ginas p\u00fablicas y socios publicitarios (Meta, Google y TikTok) nos ayudan a medir y personalizar los anuncios. Puedes rechazar las cookies opcionales y seguir usando el sitio, o cambiar tu elecci\u00f3n m\u00e1s tarde.", "Aceptar cookies opcionales", "Rechazar cookies opcionales", "Preferencias de cookies", "Pol\u00edtica de privacidad", "Cerrar", "La se\u00f1al Global Privacy Control de tu navegador est\u00e1 activada. El seguimiento opcional permanece desactivado.", "Se ha guardado tu preferencia de cookies."],
+    pt: ["Sua privacidade, sua escolha", "Usamos armazenamento essencial para o RideArrivo funcionar. Com a sua permiss\u00e3o, o Google Analytics conta as visitas \u00e0s nossas p\u00e1ginas p\u00fablicas e parceiros de publicidade (Meta, Google e TikTok) nos ajudam a medir e personalizar an\u00fancios. Voc\u00ea pode recusar os cookies opcionais e continuar usando o site, ou mudar sua escolha depois.", "Aceitar cookies opcionais", "Recusar cookies opcionais", "Prefer\u00eancias de cookies", "Pol\u00edtica de privacidade", "Fechar", "O sinal Global Privacy Control do seu navegador est\u00e1 ativado. O rastreamento opcional permanece desativado.", "Sua prefer\u00eancia de cookies foi salva."]
   };
 
   function parseRecord(raw) {
     try {
       var value = JSON.parse(raw);
-      if (!value || value.version !== 1 || typeof value.marketing !== "boolean" ||
+      if (!value || value.version !== RECORD_VERSION || typeof value.marketing !== "boolean" ||
           !Number.isFinite(value.updatedAt) || value.updatedAt < 0 ||
           value.updatedAt > Date.now() || Date.now() - value.updatedAt >= MAX_AGE) return null;
       return value;
@@ -97,17 +112,22 @@
     var choice = validRecord();
     return !!(choice && choice.marketing && !gpcEnabled() && eligible());
   }
-  function clearMarketingCookies() {
+  function expireCookies(names) {
     var domains = [""];
     if (/(^|\.)ridearrivo\.com$/.test(window.location.hostname)) {
       domains.push("; Domain=" + window.location.hostname, "; Domain=ridearrivo.com");
     }
-    ["_fbp", "_fbc"].forEach(function (name) {
+    names.forEach(function (name) {
       domains.forEach(function (domain) {
         try { document.cookie = name + "=; Max-Age=0; Path=/; SameSite=Lax" + domain + (window.location.protocol === "https:" ? "; Secure" : ""); } catch (e) {}
       });
     });
   }
+  // Meta, Google advertising (_gcl_*) and TikTok (_ttp) cookies set by the pixel
+  // and by advertising tags in the container.
+  function clearMarketingCookies() { expireCookies(["_fbp", "_fbc", "_gcl_au", "_gcl_aw", "_gcl_dc", "_gcl_gb", "_ttp"]); }
+  // GA4 names its cookies _ga and _ga_<measurement id without "G-">.
+  function clearAnalyticsCookies() { expireCookies(["_ga", "_gid", "_gat", "_ga_" + GA_ID.replace(/^G-/, "")]); }
   function grantReadySdk() {
     if (!sdkReady || !allowed()) return;
     if (!sdkGranted) { window.fbq("consent", "grant"); sdkGranted = true; }
@@ -154,6 +174,72 @@
     script.onerror = function () { sdkReady = false; }; // A blocker never breaks booking.
     document.head.appendChild(script);
   }
+  function ensureGtag() {
+    window.dataLayer = window.dataLayer || [];
+    if (!window.gtag) {
+      gtmOwned = true;
+      // gtag.js and GTM only understand the real `arguments` object, not an array.
+      window.gtag = function () { window.dataLayer.push(arguments); };
+    }
+    return window.gtag;
+  }
+  function grantReadyGtm() {
+    if (!gtmReady || !allowed()) return;
+    window["ga-disable-" + GA_ID] = false;
+    if (!gtmGranted) {
+      // The one optional-cookies choice covers analytics and advertising, so all
+      // four Consent Mode signals follow it. Each tag in the container still has
+      // its own consent requirements (GA4 needs analytics_storage; advertising
+      // tags need ad_storage and ad_user_data).
+      window.gtag("consent", "update", { analytics_storage: "granted", ad_storage: "granted", ad_user_data: "granted", ad_personalization: "granted" });
+      gtmGranted = true;
+    }
+    if (!gtmEventSent) {
+      // Starts the container once per document, after consent is granted. Its
+      // Google tag then sends the single page_view; this file sends no events.
+      gtmEventSent = true;
+      window.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
+    }
+  }
+  function startGtm() {
+    if (!allowed()) return;
+    if (gtmReady) { grantReadyGtm(); return; }
+    // Never initialise over another Tag Manager installation.
+    if (gtmStarted || (window.google_tag_manager && window.google_tag_manager[GTM_ID]) || document.querySelector('script[src*="googletagmanager.com/gtm.js"]')) return;
+    gtmStarted = true;
+    var gtag = ensureGtag();
+    // Consent Mode v2: everything denied until the checks below pass. The
+    // container is not started (no gtm.js event) before the script has downloaded
+    // and consent has been read again, so no tag can fire for a visitor who
+    // rejected while it was loading.
+    gtag("consent", "default", {
+      ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied",
+      analytics_storage: "denied", functionality_storage: "denied",
+      personalization_storage: "denied", security_storage: "granted"
+    });
+    var script = document.createElement("script");
+    script.id = "ra-gtm-sdk";
+    script.async = true;
+    script.referrerPolicy = "no-referrer";
+    script.src = "https://www.googletagmanager.com/gtm.js?id=" + encodeURIComponent(GTM_ID);
+    script.onload = function () {
+      gtmReady = true;
+      // Re-check after download: the visitor may have rejected while it loaded.
+      if (allowed()) grantReadyGtm();
+      else revokeGtm();
+    };
+    script.onerror = function () { gtmReady = false; }; // A blocker never breaks booking.
+    document.head.appendChild(script);
+  }
+  function revokeGtm() {
+    window["ga-disable-" + GA_ID] = true;
+    if (gtmOwned && window.gtag && (gtmGranted || !gtmReady)) {
+      window.gtag("consent", "update", { analytics_storage: "denied", ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied" });
+    }
+    gtmGranted = false;
+    clearAnalyticsCookies();
+    clearMarketingCookies();
+  }
   function scheduleExpiry() {
     if (timer !== null) window.clearTimeout(timer);
     timer = null;
@@ -164,11 +250,12 @@
   }
   function sync() {
     if (!validRecord()) record = null;
-    if (allowed()) startSdk();
+    if (allowed()) { startSdk(); startGtm(); }
     else {
       if (sdkOwned && (sdkGranted || !sdkReady)) window.fbq("consent", "revoke");
       sdkGranted = false;
       clearMarketingCookies();
+      revokeGtm();
     }
     scheduleExpiry();
     if (banner) {
@@ -178,7 +265,8 @@
   }
   function choose(marketing) {
     if (marketing && gpcEnabled()) return;
-    record = { version: 1, marketing: marketing, updatedAt: Date.now() };
+    // "marketing" is the stored name of the single optional-cookies choice.
+    record = { version: RECORD_VERSION, marketing: marketing, updatedAt: Date.now() };
     // If storage is unavailable, consent lasts for this document only.
     try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(record)); } catch (e) {}
     sync();
@@ -277,7 +365,7 @@
     openPreferences: showBanner,
     getConsent: function () {
       var choice = validRecord();
-      return { marketing: allowed(), choice: choice ? choice.marketing : null,
+      return { marketing: allowed(), analytics: allowed(), choice: choice ? choice.marketing : null,
         eligible: eligible(), expiresAt: choice ? choice.updatedAt + MAX_AGE : null,
         globalPrivacyControl: gpcEnabled() };
     }
