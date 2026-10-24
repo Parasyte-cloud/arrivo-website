@@ -1556,6 +1556,9 @@
         body.destinationLng = typeof state.dropoffLatLng.lng === "function" ? state.dropoffLatLng.lng() : state.dropoffLatLng.lng;
       }
     }
+    // The API needs a phone on file to book. Sent here too so a rider with none
+    // gets it saved even if the profile save on the contact step didn't go through.
+    if (state.whatsapp) body.riderPhone = state.whatsapp;
     return api("/api/rides/quote", { method: "POST", headers: authHeader(), body: JSON.stringify(body) });
   }
 
