@@ -20,7 +20,7 @@
 (function () {
   "use strict";
 
-  var MIN_HOURS = 12; // keep equal to ON_THE_GO_ONLY_HOURS in arrivo-backend/services/bookingWindow.js
+  var MIN_HOURS = 3; // keep equal to ON_THE_GO_ONLY_HOURS in arrivo-backend/services/bookingWindow.js
   var SUPPORT_PHONE = "+2348162706078";
   var SUPPORT_WA = "2348162706078";
   var SUPPORT_EMAIL = "info@ridearrivo.com";
@@ -209,12 +209,12 @@
 
     var summaryText = (opts.summary || []).filter(function (r) { return r && r.value; })
       .map(function (r) { return r.label + ": " + r.value; }).join("\n");
-    var waText = "Hello RideArrivo, I need a booking sooner than 12 hours from now.\n" + summaryText +
+    var waText = "Hello RideArrivo, I need a booking sooner than " + MIN_HOURS + " hours from now.\n" + summaryText +
       (opts.reference ? "\nPayment reference: " + opts.reference : "");
     var contacts = el("div", { "class": "alr-contacts", style: "margin-top:14px" });
     var wa = el("a", { "class": "alr-btn", href: "https://wa.me/" + SUPPORT_WA + "?text=" + encodeURIComponent(waText), target: "_blank", rel: "noopener" }, "WhatsApp");
     var call = el("a", { "class": "alr-btn", href: "tel:" + SUPPORT_PHONE }, "Call");
-    var mail = el("a", { "class": "alr-btn", href: "mailto:" + SUPPORT_EMAIL + "?subject=" + encodeURIComponent("Booking sooner than 12 hours") + "&body=" + encodeURIComponent(waText) }, "Email");
+    var mail = el("a", { "class": "alr-btn", href: "mailto:" + SUPPORT_EMAIL + "?subject=" + encodeURIComponent("Booking sooner than " + MIN_HOURS + " hours") + "&body=" + encodeURIComponent(waText) }, "Email");
     contacts.appendChild(wa); contacts.appendChild(call); contacts.appendChild(mail);
     dlg.appendChild(el("p", { "class": "alr-muted", style: "margin:14px 0 6px;font-size:13px" }, "For the fastest answer, message or call us:"));
     dlg.appendChild(contacts);
