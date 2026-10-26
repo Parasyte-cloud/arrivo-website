@@ -193,9 +193,10 @@ sw = sw.replace(shellRe, `const SHELL_FILES = [
 write("sw.js", sw);
 
 // _headers: retain the existing API, Maps, sign-in and Paystack permissions,
-// omit main-site-only Meta origins, and keep config updates immediately fresh.
+// omit main-site-only Meta and Google Analytics origins, and keep config
+// updates immediately fresh.
 write("_headers", read("_headers")
-  .replace(/ https:\/\/(?:connect\.facebook\.net|www\.facebook\.com)/g, "")
+  .replace(/ https:\/\/(?:connect\.facebook\.net|www\.facebook\.com|www\.googletagmanager\.com|\*\.google-analytics\.com|\*\.analytics\.google\.com)/g, "")
   .replace(/\n\/marketing-consent\.(?:js|css)\n  Cache-Control: [^\n]*\n/g, "\n")
   .replace(/\s*$/, "\n") +
 `
