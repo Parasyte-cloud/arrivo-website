@@ -1,6 +1,7 @@
-# ArrivoExpress is presented on the main RideArrivo website. The canonical
-# journey, pricing and dispatch engine is Arrivo Everywhere behind the page.
-/express /express.html 200
+# ArrivoExpress is presented on the main RideArrivo website at /express. Cloudflare
+# Pages already serves express.html at /express, so no rule is needed here. Do NOT
+# add "/express /express.html 200": Pages redirects /express.html back to /express
+# and the two rules loop forever (ERR_TOO_MANY_REDIRECTS).
 
 # Internal files that sit in the repo root but are not part of the site. Cloudflare
 # Pages serves every file in the repo, and _redirects cannot answer 404, so send

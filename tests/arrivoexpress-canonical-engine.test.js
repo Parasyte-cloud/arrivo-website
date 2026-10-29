@@ -45,7 +45,8 @@ test('Cloudflare preview fails closed without an explicit staging Arrivo Everywh
 
 test('main website keeps ArrivoExpress presentation route instead of redirecting away', () => {
   const redirects = text('_redirects');
-  assert.match(redirects, /^\/express \/express\.html 200/m);
+  assert.doesNotMatch(redirects, /^\/express\s+\/express\.html/m);
+  assert.doesNotMatch(redirects, /^\/express\.html\s/m);
   assert.doesNotMatch(redirects, /\/express(?:\.html)?\s+https:\/\/express\.ridearrivo\.com/);
 });
 
