@@ -6,7 +6,7 @@ body { overflow-x: clip; }
 .simple-home { overflow: clip; }
 
 /* -------------------------------------------------------------------------- */
-/* Arrivo Island — desktop/tablet                                              */
+/* Arrivo Island, desktop/tablet                                              */
 /* -------------------------------------------------------------------------- */
 .site-header {
   position: sticky !important;
@@ -309,7 +309,7 @@ html[data-theme="dark"] .site-header .logo-wrap {
   box-shadow: 0 0 0 4px rgba(244,163,64,.13);
 }
 
-/* Intent selector — the hero's dominant interaction. */
+/* Intent selector, the hero's dominant interaction. */
 .intent-shell {
   width: 100%;
   min-width: 0;
