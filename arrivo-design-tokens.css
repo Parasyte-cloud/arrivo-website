@@ -1,0 +1,81 @@
+/* Arrivo Design Language — shared semantic foundations.
+   Derived from the visual DNA used across RideArrivo products without copying
+   application/dashboard layouts into the public website. */
+:root {
+  color-scheme: light;
+  --arrivo-bg: #fbfaf7;
+  --arrivo-bg-subtle: #f5f2ea;
+  --arrivo-surface: #ffffff;
+  --arrivo-surface-elevated: #fffefd;
+  --arrivo-surface-strong: #f0ede5;
+  --arrivo-text: #11142f;
+  --arrivo-text-muted: #666a78;
+  --arrivo-text-soft: #858997;
+  --arrivo-border: rgba(17, 20, 47, .11);
+  --arrivo-border-strong: rgba(17, 20, 47, .19);
+  --arrivo-amber: #f4a340;
+  --arrivo-amber-strong: #e78c22;
+  --arrivo-amber-soft: rgba(244, 163, 64, .14);
+  --arrivo-navy: #0c2135;
+  --arrivo-navy-deep: #07111b;
+  --arrivo-success: #1d9a6c;
+  --arrivo-danger: #c94e58;
+  --arrivo-glass: rgba(255, 255, 255, .78);
+  --arrivo-glass-strong: rgba(255, 255, 255, .9);
+  --arrivo-shadow-sm: 0 10px 28px rgba(23, 31, 45, .08);
+  --arrivo-shadow: 0 24px 68px rgba(23, 31, 45, .13);
+  --arrivo-shadow-island: 0 16px 46px rgba(18, 28, 42, .13);
+  --arrivo-radius-sm: 12px;
+  --arrivo-radius-md: 18px;
+  --arrivo-radius-lg: 26px;
+  --arrivo-radius-xl: 34px;
+  --arrivo-radius-island: 999px;
+  --arrivo-focus: 0 0 0 3px rgba(244, 163, 64, .34);
+  --arrivo-ease-standard: cubic-bezier(.2, .8, .2, 1);
+  --arrivo-ease-spring: cubic-bezier(.2, .95, .25, 1.12);
+  --arrivo-motion-fast: 160ms;
+  --arrivo-motion: 260ms;
+  --arrivo-motion-slow: 720ms;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --arrivo-bg: #050b13;
+  --arrivo-bg-subtle: #08131f;
+  --arrivo-surface: #0b1724;
+  --arrivo-surface-elevated: #102033;
+  --arrivo-surface-strong: #16283a;
+  --arrivo-text: #f5f8fb;
+  --arrivo-text-muted: #a5b2bf;
+  --arrivo-text-soft: #798b9b;
+  --arrivo-border: rgba(255, 255, 255, .1);
+  --arrivo-border-strong: rgba(255, 255, 255, .17);
+  --arrivo-amber: #f4a340;
+  --arrivo-amber-strong: #ffc06e;
+  --arrivo-amber-soft: rgba(244, 163, 64, .14);
+  --arrivo-navy: #0c2135;
+  --arrivo-navy-deep: #050b13;
+  --arrivo-success: #54d69b;
+  --arrivo-danger: #ff7c84;
+  --arrivo-glass: rgba(10, 23, 36, .72);
+  --arrivo-glass-strong: rgba(10, 23, 36, .9);
+  --arrivo-shadow-sm: 0 12px 32px rgba(0, 0, 0, .25);
+  --arrivo-shadow: 0 30px 80px rgba(0, 0, 0, .35);
+  --arrivo-shadow-island: 0 18px 52px rgba(0, 0, 0, .3);
+}
+
+html { background: var(--arrivo-bg); }
+body { background: var(--arrivo-bg); color: var(--arrivo-text); }
+
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 0;
+  box-shadow: var(--arrivo-focus);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --arrivo-motion-fast: 0ms;
+    --arrivo-motion: 0ms;
+    --arrivo-motion-slow: 0ms;
+  }
+}

@@ -27,7 +27,7 @@
   // marketing pages. New paths are off until deliberately reviewed here.
   var PUBLIC_PAGES = ["/", "/index", "/hello", "/contact-us", "/charter-booking", "/privacy", "/terms"];
   var SAFE_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "utm_id", "fbclid", "gclid", "theme", "lang", "src"];
-  var SAFE_ANCHORS = ["", "how", "audiences", "safety", "contact", "fleet", "services", "main", "cookie-preferences", "cookies", "top", "faq"];
+  var SAFE_ANCHORS = ["", "how", "audiences", "safety", "contact", "fleet", "services", "drive", "business", "choose", "main", "cookie-preferences", "cookies", "top", "faq"];
   var record = readRecord();
   var sdkStarted = false, sdkReady = false, sdkOwned = false;
   var initialized = false, pageViewSent = false, sdkGranted = false;

@@ -1,111 +1,90 @@
-// Light / dark theme switch for the homepage.
-// First paint is handled by a tiny inline script in <head> (no flash of the
-// wrong theme). This file only wires up the toggle buttons.
+// RideArrivo theme controller: Light / Dark / System.
+// First paint is handled by the small inline bootstrap in <head>.
 (function () {
   "use strict";
-  var KEY = "arrivo_theme";
+  var RESOLVED_KEY = "arrivo_theme";
+  var MODE_KEY = "arrivo_theme_mode";
+  var MODES = ["light", "dark", "system"];
   var root = document.documentElement;
+  var systemQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
 
-  function current() {
-    return root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+  function mode() {
+    var value = root.getAttribute("data-theme-mode");
+    if (MODES.indexOf(value) !== -1) return value;
+    try {
+      value = localStorage.getItem(MODE_KEY);
+      if (MODES.indexOf(value) !== -1) return value;
+    } catch (e) {}
+    value = root.getAttribute("data-theme");
+    return value === "dark" ? "dark" : "light";
   }
-
+  function resolved(value) {
+    if (value === "system") return systemQuery && systemQuery.matches ? "dark" : "light";
+    return value === "dark" ? "dark" : "light";
+  }
   function dict() {
     var lang = root.lang || "en";
     return (typeof I18N !== "undefined" && (I18N[lang] || I18N.en)) || null;
   }
-
-  function label(theme) {
-    var d = dict();
-    var home = d && d.home;
-    if (theme === "dark") return (home && home.toLight) || "Switch to light mode";
-    return (home && home.toDark) || "Switch to dark mode";
+  function nextMode(value) { return MODES[(MODES.indexOf(value) + 1) % MODES.length]; }
+  function label(value) {
+    var d = dict(), home = d && d.home;
+    if (value === "light") return (home && home.toDark) || "Theme: Light. Switch to dark mode";
+    if (value === "dark") return "Theme: Dark. Switch to system mode";
+    return "Theme: System. Switch to light mode";
   }
-
-  // Links to the other RideArrivo sites carry the current theme (?theme=dark),
-  // so the next page opens in the same mode even where cookies cannot be
-  // shared (preview addresses, a browser that blocks them).
-  var SKIP = /\/(login|signup|account|track|book|driver|forgot-password|reset-password|verify-email|privacy|terms)(\.html)?$/;
-  function isSibling(host) {
-    return host !== location.hostname &&
-      (/(^|\.)ridearrivo\.com$/.test(host) || /\.pages\.dev$/.test(host));
-  }
-  function tagLinks(theme) {
-    document.querySelectorAll("a[href]").forEach(function (a) {
-      var u;
-      try { u = new URL(a.getAttribute("href"), location.href); } catch (e) { return; }
-      if (u.protocol !== "https:" && u.protocol !== "http:") return;
-      if (!isSibling(u.hostname) || SKIP.test(u.pathname)) return;
-      u.searchParams.set("theme", theme);
-      a.setAttribute("href", u.href);
-    });
-  }
-
-  function paint() {
-    var theme = current();
-    tagLinks(theme);
-    var text = label(theme);
-    document.querySelectorAll(".theme-toggle").forEach(function (btn) {
-      btn.setAttribute("aria-label", text);
-      btn.setAttribute("title", text);
-      var span = btn.querySelector(".theme-toggle-text");
-      if (span) span.textContent = text;
-    });
-    var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", theme === "dark" ? "#0A0C24" : "#12123B");
-  }
-
-  // Shared across every *.ridearrivo.com site (www, express, move, boat, air,
-  // membership). On any other host (previews, localhost) it is just a normal
-  // cookie for that host.
-  function readCookie() {
-    var m = document.cookie.match(/(?:^|; )arrivo_theme=(light|dark)/);
-    return m ? m[1] : null;
-  }
-  function writeCookie(theme) {
+  function writeCookie(name, value) {
     var host = location.hostname;
     var domain = /(^|\.)ridearrivo\.com$/.test(host) ? "; Domain=.ridearrivo.com" : "";
     var secure = location.protocol === "https:" ? "; Secure" : "";
-    try {
-      document.cookie = KEY + "=" + theme + "; Path=/; Max-Age=31536000; SameSite=Lax" + domain + secure;
-    } catch (e) { /* cookies blocked: the choice still lasts for this visit */ }
+    try { document.cookie = name + "=" + value + "; Path=/; Max-Age=31536000; SameSite=Lax" + domain + secure; } catch (e) {}
   }
-
-  function set(theme) {
+  function paint() {
+    var value = mode();
+    var theme = resolved(value);
     root.setAttribute("data-theme", theme);
-    writeCookie(theme);
-    try { localStorage.setItem(KEY, theme); } catch (e) { /* private mode: works for this visit only */ }
+    root.setAttribute("data-theme-mode", value);
+    writeCookie(RESOLVED_KEY, theme); // sibling products already understand this cookie
+    writeCookie(MODE_KEY, value);
+    var text = label(value);
+    document.querySelectorAll(".theme-toggle").forEach(function (btn) {
+      btn.setAttribute("aria-label", text);
+      btn.setAttribute("title", text);
+      btn.setAttribute("data-theme-mode", value);
+      var span = btn.querySelector(".theme-toggle-text");
+      if (span) span.textContent = value === "system" ? "Theme: System" : (value === "dark" ? "Theme: Dark" : "Theme: Light");
+    });
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", theme === "dark" ? "#050B13" : "#FBFAF7");
+  }
+  function setMode(value) {
+    if (MODES.indexOf(value) === -1) value = "light";
+    root.setAttribute("data-theme-mode", value);
+    try { localStorage.setItem(MODE_KEY, value); localStorage.setItem(RESOLVED_KEY, resolved(value)); } catch (e) {}
     paint();
   }
 
-  // Arrived with ?theme= from another RideArrivo site: keep it as this visitor's choice.
-  if (/[?&]theme=(light|dark)(?:&|$)/.test(location.search)) {
-    writeCookie(current());
-    try { localStorage.setItem(KEY, current()); } catch (e) { /* ignore */ }
+  // Backward-compatible inbound theme links are remembered once then cleaned.
+  var inbound = location.search.match(/[?&]theme=(light|dark)(?:&|$)/);
+  if (inbound) {
+    setMode(inbound[1]);
+    try {
+      var cleanUrl = new URL(location.href);
+      cleanUrl.searchParams.delete("theme");
+      history.replaceState(history.state, "", cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+    } catch (e) {}
   }
 
   document.querySelectorAll(".theme-toggle").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      set(current() === "dark" ? "light" : "dark");
-    });
+    btn.addEventListener("click", function () { setMode(nextMode(mode())); });
   });
 
-  // Follow the device setting until the visitor makes their own choice.
-  if (window.matchMedia) {
-    var mq = window.matchMedia("(prefers-color-scheme: dark)");
-    var onChange = function (e) {
-      var saved = readCookie();
-      try { saved = saved || localStorage.getItem(KEY); } catch (err) { /* ignore */ }
-      if (saved !== "light" && saved !== "dark") {
-        root.setAttribute("data-theme", e.matches ? "dark" : "light");
-        paint();
-      }
-    };
-    if (mq.addEventListener) mq.addEventListener("change", onChange);
-    else if (mq.addListener) mq.addListener(onChange);
+  function systemChanged() { if (mode() === "system") paint(); }
+  if (systemQuery) {
+    if (systemQuery.addEventListener) systemQuery.addEventListener("change", systemChanged);
+    else if (systemQuery.addListener) systemQuery.addListener(systemChanged);
   }
 
-  // The language switcher sets <html lang>; re-label the button when it changes.
   new MutationObserver(paint).observe(root, { attributes: true, attributeFilter: ["lang"] });
   paint();
 })();
