@@ -751,8 +751,26 @@ html[data-theme="dark"] .simple-faq-list .faq-item { box-shadow: none; }
    stale desktop-era sizing from shared styles. */
 .simple-home,
 .simple-home * { box-sizing: border-box; }
-.simple-home img,
-.site-footer img { max-width: 100%; height: auto; }
+.simple-home img { max-width: 100%; height: auto; }
+/* Footer logos already have intentional fixed heights in styles.css.
+   Never reset them to height:auto here: the high-resolution wordmark would
+   expand across the footer row and crush the legal/credit columns. */
+.site-footer img { max-width: 100%; }
+.site-footer .footer-wordmark {
+  width: auto !important;
+  height: 20px !important;
+  max-width: min(220px, 100%);
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+.site-footer .footer-parasyte-logo {
+  width: auto !important;
+  height: 18px !important;
+  max-width: 160px;
+  object-fit: contain;
+}
+.site-footer .footer-bottom > :first-child { min-width: 0; flex: 0 1 auto; }
+.site-footer .footer-credit-row { flex: 0 0 auto; min-width: max-content; }
 .simple-home :where(h1,h2,h3,p,a,span,small),
 .site-footer :where(p,a,span) { overflow-wrap: break-word; }
 

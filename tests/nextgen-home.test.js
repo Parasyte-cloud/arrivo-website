@@ -38,6 +38,13 @@ test('mobile mode uses safe areas and a separate command rail', () => {
 
 
 
+test('footer wordmarks keep bounded intrinsic sizing across responsive modes', () => {
+  assert.doesNotMatch(css, /\.site-footer img \{ max-width: 100%; height: auto; \}/);
+  assert.match(css, /\.site-footer \.footer-wordmark \{[\s\S]*height: 20px !important;/);
+  assert.match(css, /\.site-footer \.footer-parasyte-logo \{[\s\S]*height: 18px !important;/);
+  assert.match(css, /\.site-footer \.footer-credit-row \{ flex: 0 0 auto;/);
+});
+
 test('mobile pill hardening prevents desktop grid leakage and makes the dock adaptive', () => {
   assert.match(html, /data-mobile-dock/);
   assert.match(html, /data-dock-item="book"/);
