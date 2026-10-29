@@ -28,15 +28,15 @@ test('Arrivo Island is proprietary adaptive navigation, not the old movable head
   assert.doesNotMatch(island, /navigator\.userAgent|iPhone|Android/);
 });
 
-test('mobile mode uses safe areas and a separate command rail', () => {
-  assert.match(html, /class="mobile-command-bar"/);
+test('mobile mode uses safe areas and a centered morphing command island', () => {
+  assert.match(html, /id="mobileIslandActions"/);
+  assert.equal((html.match(/data-mobile-island-action=/g) || []).length, 5);
+  assert.doesNotMatch(html, /class="mobile-command-bar"|data-mobile-dock/);
   assert.match(css, /env\(safe-area-inset-top/);
   assert.match(css, /env\(safe-area-inset-bottom/);
   assert.match(css, /@media \(max-width: 767px\)/);
   assert.match(css, /border-radius: 999px;/);
 });
-
-
 
 test('footer wordmarks keep bounded intrinsic sizing across responsive modes', () => {
   assert.doesNotMatch(css, /\.site-footer img \{ max-width: 100%; height: auto; \}/);
@@ -45,17 +45,23 @@ test('footer wordmarks keep bounded intrinsic sizing across responsive modes', (
   assert.match(css, /\.site-footer \.footer-credit-row \{ flex: 0 0 auto;/);
 });
 
-test('mobile pill hardening prevents desktop grid leakage and makes the dock adaptive', () => {
-  assert.match(html, /data-mobile-dock/);
-  assert.match(html, /data-dock-item="book"/);
+test('mobile pill hardening prevents desktop grid leakage and replaces the dock with five-circle expansion', () => {
+  assert.match(html, /data-mobile-island-action="home"/);
+  assert.match(html, /data-mobile-island-action="book"/);
+  assert.match(html, /data-mobile-island-action="services"/);
+  assert.match(html, /data-mobile-island-action="account"/);
+  assert.match(html, /data-mobile-island-action="menu"/);
+  assert.doesNotMatch(html, /data-mobile-dock|mobile-command-bar/);
   assert.match(css, /Mobile responsive pill hardening 2026-10-29/);
   assert.match(css, /grid-template-columns: minmax\(0, 1fr\) !important;/);
   assert.match(css, /@media \(max-width: 430px\)/);
   assert.match(css, /@media \(max-width: 390px\)/);
   assert.match(css, /@media \(max-width: 360px\)/);
-  assert.match(css, /mobile-command-bar\.is-travelling/);
-  assert.match(island, /dockIdleTimer/);
-  assert.match(island, /setDockActive/);
+  assert.match(css, /Mobile Arrivo Island v3/);
+  assert.match(css, /is-mobile-expanded/);
+  assert.match(css, /background: rgba\(4,10,18,\.96\)/);
+  assert.match(island, /setMobileExpanded/);
+  assert.match(island, /setMobileIslandActive/);
 });
 
 test('hero motion is subtle, lazy for secondary media and reduced-motion aware', () => {
@@ -117,15 +123,15 @@ test("homepage avoids the full app translation payload and precaches its focused
 });
 
 
-test('mobile island v2 uses one visible wordmark, viewport safe-area cover and five ordered circles', () => {
+test('mobile island v3 uses one visible wordmark, viewport safe-area cover and five ordered circles', () => {
   assert.match(html, /viewport-fit=cover/);
   const actions = Array.from(html.matchAll(/data-mobile-island-action="([^"]+)"/g)).map((m) => m[1]);
   assert.deepEqual(actions.slice(0, 5), ['home','book','services','account','menu']);
   assert.equal(actions.length, 5);
-  assert.match(css, /Mobile Arrivo Island v2/);
+  assert.match(css, /Mobile Arrivo Island v3/);
   assert.match(css, /brand-wordmark\.wm-on-dark \{ display: none !important; \}/);
   assert.match(css, /is-condensed:not\(\.is-mobile-expanded\) \.header-inner/);
-  assert.match(css, /width: 116px !important/);
+  assert.match(css, /width: 112px !important/);
   assert.match(css, /mobile-command-bar \{ display: none !important; \}/);
   assert.match(island, /setMobileExpanded/);
   assert.match(island, /setMobileIslandActive/);

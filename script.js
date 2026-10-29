@@ -196,6 +196,11 @@
     }
 
     function initMobileNav() {
+      // The next-generation homepage owns its contextual mobile island in
+      // arrivo-island.js. Keep this legacy controller for every other page,
+      // but never attach a second set of menu listeners to the homepage.
+      if (document.querySelector(".site-header[data-arrivo-island]") && document.getElementById("mobileIslandActions")) return;
+
       var toggle = document.getElementById("mobileNavToggle");
       var menu = document.getElementById("mobileNavMenu");
       var backdrop = document.getElementById("mobileNavBackdrop");
