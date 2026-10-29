@@ -1,7 +1,6 @@
-# ArrivoExpress now lives on its own subdomain. Keep old links, bookmarks and
-# search results working with a permanent redirect.
-/express.html https://express.ridearrivo.com/ 301
-/express https://express.ridearrivo.com/ 301
+# ArrivoExpress is presented on the main RideArrivo website. The canonical
+# journey, pricing and dispatch engine is Arrivo Everywhere behind the page.
+/express /express.html 200
 
 # Internal files that sit in the repo root but are not part of the site. Cloudflare
 # Pages serves every file in the repo, and _redirects cannot answer 404, so send

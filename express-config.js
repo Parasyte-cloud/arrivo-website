@@ -1,11 +1,11 @@
-// Deployment settings for ArrivoExpress. This is the main-site copy; the
-// standalone build (scripts/build-express.js) writes its own version of this
-// file into dist/express with the same keys. express.js reads these and falls
-// back to the same defaults if the file is missing.
+// ArrivoExpress website client configuration.
+// Cloudflare build scripts overwrite these values from environment variables.
+// ArrivoExpress uses Arrivo Everywhere as its canonical journey engine.
 window.ARRIVO_EXPRESS_CONFIG = {
-  apiBase: "https://api.ridearrivo.com",
+  engineBase: "https://express.ridearrivo.com",
+  websiteApiBase: "https://api.ridearrivo.com",
   loginPath: "login.html",
+  signupPath: "signup.html",
   accountPath: "account.html",
-  trackPath: "track.html",
   selfPath: "express.html"
 };
