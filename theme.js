@@ -22,28 +22,8 @@
     return (home && home.toDark) || "Switch to dark mode";
   }
 
-  // Links to the other RideArrivo sites carry the current theme (?theme=dark),
-  // so the next page opens in the same mode even where cookies cannot be
-  // shared (preview addresses, a browser that blocks them).
-  var SKIP = /\/(login|signup|account|track|book|driver|forgot-password|reset-password|verify-email|privacy|terms)(\.html)?$/;
-  function isSibling(host) {
-    return host !== location.hostname &&
-      (/(^|\.)ridearrivo\.com$/.test(host) || /\.pages\.dev$/.test(host));
-  }
-  function tagLinks(theme) {
-    document.querySelectorAll("a[href]").forEach(function (a) {
-      var u;
-      try { u = new URL(a.getAttribute("href"), location.href); } catch (e) { return; }
-      if (u.protocol !== "https:" && u.protocol !== "http:") return;
-      if (!isSibling(u.hostname) || SKIP.test(u.pathname)) return;
-      u.searchParams.set("theme", theme);
-      a.setAttribute("href", u.href);
-    });
-  }
-
   function paint() {
     var theme = current();
-    tagLinks(theme);
     var text = label(theme);
     document.querySelectorAll(".theme-toggle").forEach(function (btn) {
       btn.setAttribute("aria-label", text);
@@ -52,7 +32,7 @@
       if (span) span.textContent = text;
     });
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", theme === "dark" ? "#0A0C24" : "#12123B");
+    if (meta) meta.setAttribute("content", theme === "dark" ? "#0A0C24" : "#FBFAF7");
   }
 
   // Shared across every *.ridearrivo.com site (www, express, move, boat, air,
@@ -84,26 +64,22 @@
     try { localStorage.setItem(KEY, current()); } catch (e) { /* ignore */ }
   }
 
+  try {
+    var cleanUrl = new URL(location.href);
+    if (cleanUrl.searchParams.has("theme")) {
+      cleanUrl.searchParams.delete("theme");
+      history.replaceState(history.state, "", cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+    }
+  } catch (e) { /* keep the current URL if History/URL is unavailable */ }
+
   document.querySelectorAll(".theme-toggle").forEach(function (btn) {
     btn.addEventListener("click", function () {
       set(current() === "dark" ? "light" : "dark");
     });
   });
 
-  // Follow the device setting until the visitor makes their own choice.
-  if (window.matchMedia) {
-    var mq = window.matchMedia("(prefers-color-scheme: dark)");
-    var onChange = function (e) {
-      var saved = readCookie();
-      try { saved = saved || localStorage.getItem(KEY); } catch (err) { /* ignore */ }
-      if (saved !== "light" && saved !== "dark") {
-        root.setAttribute("data-theme", e.matches ? "dark" : "light");
-        paint();
-      }
-    };
-    if (mq.addEventListener) mq.addEventListener("change", onChange);
-    else if (mq.addListener) mq.addListener(onChange);
-  }
+  // First-time visitors always start in light mode. Device colour-scheme
+  // changes never override that default; only an explicit visitor choice does.
 
   // The language switcher sets <html lang>; re-label the button when it changes.
   new MutationObserver(paint).observe(root, { attributes: true, attributeFilter: ["lang"] });
