@@ -1156,3 +1156,227 @@ html[data-theme="dark"] .simple-faq-list .faq-item { box-shadow: none; }
     width: calc(100vw - 24px) !important;
   }
 }
+
+
+/* -------------------------------------------------------------------------- */
+/* Mobile Arrivo Island v2 - centered compact pill with five-circle expansion */
+/* -------------------------------------------------------------------------- */
+.mobile-island-actions,
+.mobile-island-expand-toggle { display: none; }
+
+@media (max-width: 767px) {
+  /* One navigation system on phones: the top island morphs into the command dock. */
+  .mobile-command-bar { display: none !important; }
+  body { padding-bottom: max(20px, env(safe-area-inset-bottom, 0px)); }
+  .site-footer { padding-bottom: calc(42px + env(safe-area-inset-bottom, 0px)); }
+
+  .site-header {
+    display: flex !important;
+    justify-content: center !important;
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) 0 0 !important;
+  }
+  .site-header .header-inner,
+  .site-header.is-condensed .header-inner,
+  .site-header.is-side .header-inner {
+    width: min(336px, calc(100vw - 28px)) !important;
+    min-height: 54px;
+    padding: 5px 6px 5px 9px !important;
+    margin-inline: auto !important;
+    border-radius: 999px !important;
+    transform-origin: 50% 0;
+    transition:
+      width 260ms var(--arrivo-ease-standard),
+      min-height 220ms var(--arrivo-ease-standard),
+      padding 220ms var(--arrivo-ease-standard),
+      background 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      color 180ms ease !important;
+  }
+
+  /* Fix the duplicate brand: only the theme-appropriate wordmark can render. */
+  .site-header .brand-wordmark.wm-on-dark { display: none !important; }
+  .site-header .brand-wordmark.wm-on-light { display: block !important; }
+  html[data-theme="dark"] .site-header .brand-wordmark.wm-on-light { display: none !important; }
+  html[data-theme="dark"] .site-header .brand-wordmark.wm-on-dark { display: block !important; }
+  .site-header .brand { max-width: 148px; flex: 1 1 auto; }
+  .site-header .brand-wordmark { max-width: 100px; height: 14px; }
+  .site-header .logo-wrap { width: 34px; height: 34px; flex: 0 0 34px; }
+  .site-header .brand-mark { width: 27px; height: 27px; }
+
+  .site-header .header-actions { margin-left: auto; gap: 5px; }
+  .site-header .header-actions > .btn-sm {
+    display: inline-flex !important;
+    min-height: 40px;
+    padding-inline: 14px;
+    font-size: 11.25px;
+  }
+  .mobile-island-expand-toggle {
+    appearance: none;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    padding: 0;
+    display: grid !important;
+    grid-template-columns: repeat(2, 4px);
+    grid-template-rows: repeat(2, 4px);
+    place-content: center;
+    gap: 4px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(17,20,47,.07);
+    color: var(--arrivo-text);
+    cursor: pointer;
+    transition: transform 160ms ease, background 160ms ease, color 160ms ease;
+  }
+  .mobile-island-expand-toggle span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .mobile-island-expand-toggle:active { transform: scale(.92); }
+
+  /* Scroll morph: small, dark and centered beneath iOS/Android safe-area chrome. */
+  .site-header.is-condensed:not(.is-mobile-expanded) .header-inner {
+    width: 116px !important;
+    min-height: 46px;
+    padding: 4px 5px !important;
+    background: rgba(4,10,18,.94) !important;
+    border-color: rgba(255,255,255,.13) !important;
+    color: #fff !important;
+    box-shadow: 0 12px 32px rgba(0,0,0,.28) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+    backdrop-filter: blur(18px) saturate(135%) !important;
+  }
+  .site-header.is-condensed:not(.is-mobile-expanded) .brand {
+    flex: 0 0 36px;
+    max-width: 36px;
+    overflow: hidden;
+  }
+  .site-header.is-condensed:not(.is-mobile-expanded) .brand-wordmark { display: none !important; }
+  .site-header.is-condensed:not(.is-mobile-expanded) .logo-wrap {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+    background: rgba(244,163,64,.16);
+    box-shadow: inset 0 0 0 1px rgba(244,163,64,.22);
+  }
+  .site-header.is-condensed:not(.is-mobile-expanded) .header-actions > .btn-sm { display: none !important; }
+  .site-header.is-condensed:not(.is-mobile-expanded) .mobile-island-expand-toggle {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    background: rgba(255,255,255,.09);
+    color: #fff;
+  }
+
+  /* Tap morph: five circular actions. Home is first, Menu is the tail. */
+  .site-header.is-mobile-expanded .header-inner,
+  .site-header.is-condensed.is-mobile-expanded .header-inner {
+    width: min(300px, calc(100vw - 28px)) !important;
+    min-height: 58px;
+    padding: 6px !important;
+    background: rgba(4,10,18,.96) !important;
+    border-color: rgba(255,255,255,.13) !important;
+    box-shadow: 0 18px 46px rgba(0,0,0,.34) !important;
+    color: #fff;
+  }
+  .site-header.is-mobile-expanded .brand,
+  .site-header.is-mobile-expanded .header-actions,
+  .site-header.is-mobile-expanded .island-context { display: none !important; }
+  .site-header.is-mobile-expanded .mobile-island-actions {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0,1fr));
+    align-items: center;
+    justify-items: center;
+    gap: 4px;
+  }
+  .mobile-island-action {
+    appearance: none;
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    min-height: 46px;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.08) !important;
+    border-radius: 50% !important;
+    background: rgba(255,255,255,.07) !important;
+    color: rgba(255,255,255,.82) !important;
+    box-shadow: none !important;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 160ms ease, background 160ms ease, color 160ms ease, border-color 160ms ease;
+  }
+  .mobile-island-action svg { width: 20px; height: 20px; }
+  .mobile-island-action:active { transform: scale(.91); }
+  .mobile-island-action.is-active:not(.is-primary) {
+    background: rgba(255,255,255,.13) !important;
+    color: #fff !important;
+    border-color: rgba(255,255,255,.14) !important;
+  }
+  .mobile-island-action.is-primary {
+    background: linear-gradient(145deg, #ffc06e, #f4a340) !important;
+    color: #11142f !important;
+    border-color: transparent !important;
+  }
+  .site-header.is-mobile-expanded .mobile-nav-toggle {
+    display: flex !important;
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    min-height: 46px;
+    flex: 0 0 46px;
+    margin: 0;
+  }
+  .site-header.is-mobile-expanded .mobile-nav-toggle span { background: currentColor; }
+
+  /* Full navigation remains secondary disclosure from the fifth/tail circle. */
+  .mobile-nav-menu {
+    top: calc(env(safe-area-inset-top, 0px) + 76px) !important;
+    left: 50% !important;
+    right: auto !important;
+    width: min(360px, calc(100vw - 24px)) !important;
+    max-width: none !important;
+    margin: 0 !important;
+    transform: translateX(-50%);
+    border-radius: 26px !important;
+    background: rgba(7,17,27,.96) !important;
+    color: #fff !important;
+    border-color: rgba(255,255,255,.1) !important;
+  }
+  .mobile-nav-menu .mobile-nav-menu-header .wm-on-light { display: none !important; }
+  .mobile-nav-menu .mobile-nav-menu-header .wm-on-dark { display: block !important; height: 16px; width: auto; }
+  .mobile-nav-menu a,
+  .mobile-nav-menu .theme-toggle-row { color: rgba(255,255,255,.88); }
+
+  .simple-hero-grid { padding-top: calc(env(safe-area-inset-top, 0px) + 86px); }
+}
+
+@media (max-width: 390px) {
+  .site-header .header-inner,
+  .site-header.is-side .header-inner { width: min(318px, calc(100vw - 24px)) !important; }
+  .site-header .brand { max-width: 132px; }
+  .site-header .brand-wordmark { max-width: 88px; }
+  .site-header .header-actions > .btn-sm { padding-inline: 11px; font-size: 10.7px; }
+  .site-header.is-condensed:not(.is-mobile-expanded) .header-inner { width: 110px !important; }
+  .site-header.is-mobile-expanded .header-inner,
+  .site-header.is-condensed.is-mobile-expanded .header-inner { width: min(286px, calc(100vw - 24px)) !important; }
+  .mobile-island-action,
+  .site-header.is-mobile-expanded .mobile-nav-toggle { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
+}
+
+@media (max-width: 340px) {
+  .site-header .header-inner,
+  .site-header.is-side .header-inner { width: calc(100vw - 18px) !important; }
+  .site-header .brand-wordmark { display: none !important; }
+  .site-header .brand { flex: 0 0 38px; max-width: 38px; }
+  .site-header.is-condensed:not(.is-mobile-expanded) .header-inner { width: 106px !important; }
+  .site-header.is-mobile-expanded .header-inner,
+  .site-header.is-condensed.is-mobile-expanded .header-inner { width: calc(100vw - 22px) !important; }
+  .mobile-island-action,
+  .site-header.is-mobile-expanded .mobile-nav-toggle { width: 42px; height: 42px; min-width: 42px; min-height: 42px; }
+}

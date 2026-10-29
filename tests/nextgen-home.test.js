@@ -115,3 +115,18 @@ test("homepage avoids the full app translation payload and precaches its focused
     assert.match(sw, new RegExp('"/' + asset.replace(/\./g, '\\.') + '"'));
   }
 });
+
+
+test('mobile island v2 uses one visible wordmark, viewport safe-area cover and five ordered circles', () => {
+  assert.match(html, /viewport-fit=cover/);
+  const actions = Array.from(html.matchAll(/data-mobile-island-action="([^"]+)"/g)).map((m) => m[1]);
+  assert.deepEqual(actions.slice(0, 5), ['home','book','services','account','menu']);
+  assert.equal(actions.length, 5);
+  assert.match(css, /Mobile Arrivo Island v2/);
+  assert.match(css, /brand-wordmark\.wm-on-dark \{ display: none !important; \}/);
+  assert.match(css, /is-condensed:not\(\.is-mobile-expanded\) \.header-inner/);
+  assert.match(css, /width: 116px !important/);
+  assert.match(css, /mobile-command-bar \{ display: none !important; \}/);
+  assert.match(island, /setMobileExpanded/);
+  assert.match(island, /setMobileIslandActive/);
+});
