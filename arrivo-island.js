@@ -6,6 +6,10 @@
   var context = header.querySelector("[data-island-context]");
   var mainNav = header.querySelector(".main-nav");
   var choose = document.getElementById("choose");
+  var dock = document.querySelector("[data-mobile-dock]");
+  var dockItems = dock ? Array.prototype.slice.call(dock.querySelectorAll("[data-dock-item]")) : [];
+  var lastScrollY = Math.max(0, window.scrollY || window.pageYOffset || 0);
+  var dockIdleTimer = 0;
   var raf = 0;
   var lastY = -1;
 
@@ -17,8 +21,19 @@
     raf = 0;
     var y = Math.max(0, window.scrollY || window.pageYOffset || 0);
     if (Math.abs(y - lastY) < 2) return;
+    var movingDown = y > lastScrollY;
+    lastScrollY = y;
     lastY = y;
     header.classList.toggle("is-condensed", y > 46);
+    if (dock) {
+      dock.classList.toggle("is-scrolled", y > 80);
+      if (movingDown && y > 220) dock.classList.add("is-travelling");
+      else dock.classList.remove("is-travelling");
+      if (dockIdleTimer) window.clearTimeout(dockIdleTimer);
+      dockIdleTimer = window.setTimeout(function () {
+        dock.classList.remove("is-travelling");
+      }, reduceMotion() ? 0 : 420);
+    }
   }
 
   function scheduleScrollUpdate() {
@@ -49,7 +64,25 @@
 
   document.addEventListener("arrivo:intent", function (event) {
     setIntent(event.detail && event.detail.intent ? event.detail.intent : "ride");
+    setDockActive("services");
   });
+
+  function setDockActive(name) {
+    dockItems.forEach(function (item) {
+      var active = item.getAttribute("data-dock-item") === name;
+      item.classList.toggle("is-active", active);
+      if (active) item.setAttribute("aria-current", "page");
+      else item.removeAttribute("aria-current");
+    });
+  }
+
+  dockItems.forEach(function (item) {
+    item.addEventListener("click", function () {
+      setDockActive(item.getAttribute("data-dock-item"));
+    });
+  });
+
+  if (dockItems.length) setDockActive("home");
 
   if (choose && "IntersectionObserver" in window) {
     var observer = new IntersectionObserver(function (entries) {

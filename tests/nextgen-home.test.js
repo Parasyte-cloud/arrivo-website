@@ -33,7 +33,22 @@ test('mobile mode uses safe areas and a separate command rail', () => {
   assert.match(css, /env\(safe-area-inset-top/);
   assert.match(css, /env\(safe-area-inset-bottom/);
   assert.match(css, /@media \(max-width: 767px\)/);
-  assert.match(css, /border-radius: 0;/);
+  assert.match(css, /border-radius: 999px;/);
+});
+
+
+
+test('mobile pill hardening prevents desktop grid leakage and makes the dock adaptive', () => {
+  assert.match(html, /data-mobile-dock/);
+  assert.match(html, /data-dock-item="book"/);
+  assert.match(css, /Mobile responsive pill hardening 2026-10-29/);
+  assert.match(css, /grid-template-columns: minmax\(0, 1fr\) !important;/);
+  assert.match(css, /@media \(max-width: 430px\)/);
+  assert.match(css, /@media \(max-width: 390px\)/);
+  assert.match(css, /@media \(max-width: 360px\)/);
+  assert.match(css, /mobile-command-bar\.is-travelling/);
+  assert.match(island, /dockIdleTimer/);
+  assert.match(island, /setDockActive/);
 });
 
 test('hero motion is subtle, lazy for secondary media and reduced-motion aware', () => {
