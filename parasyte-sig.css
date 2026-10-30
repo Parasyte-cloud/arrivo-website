@@ -1,0 +1,7 @@
+/* PArAsYtE signature for utility pages: silver wordmark, centred at the base, links to parasyte.cloud */
+.parasyte-sig{display:flex;justify-content:center;padding:28px 16px calc(36px + env(safe-area-inset-bottom,0px))}
+.parasyte-sig a{display:inline-flex;opacity:.9;transition:opacity .15s ease;animation:parasyteSwell 4.2s ease-in-out infinite}
+.parasyte-sig a:hover,.parasyte-sig a:focus-visible{opacity:1;animation-play-state:paused}
+.parasyte-sig img{height:22px;width:auto;display:block;filter:drop-shadow(0 -1px 0 rgba(255,255,255,.35)) drop-shadow(0 1px 1px rgba(0,0,0,.55))}
+@keyframes parasyteSwell{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@media (prefers-reduced-motion:reduce){.parasyte-sig a{animation:none}}
