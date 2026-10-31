@@ -296,6 +296,7 @@
   function translate() {
     var copy = text();
     banner.lang = lang();
+    banner.dir = "ltr"; // the consent copy has no Arabic yet, so it is English and reads left to right
     document.getElementById("ra-cookie-title").textContent = copy[0];
     document.getElementById("ra-cookie-description").textContent = copy[1];
     accept.textContent = copy[2];

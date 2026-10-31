@@ -7,8 +7,8 @@
   // file in book.html) -- shared with track.html's tip flow so the two
   // can't drift out of sync again (see that file for why).
 
-  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt"];
-  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT" };
+  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt", "ar", "tr"];
+  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT", ar: "ع", tr: "TR" };
   var LANG_KEY = "arrivo_site_lang";
 
   // Anything that started as free text the person typed (name, pickup
@@ -28,6 +28,9 @@
     bookingFor: "self", passengerName: "",
     emergencyContactName: "", emergencyContactPhone: "",
     flightNumber: "",
+    flightDate: "",
+    passengerSurname: "",
+    pnr: "",
     adults: 1, children: 0,
     carryOnBags: 1, checkedBags: 1, bulky: false,
     bookingType: "one_way", durationDays: 1, multiplier: 1, fullDayCount: 1,
@@ -63,8 +66,10 @@
   function applyLanguage(lang) {
     var dict = I18N[lang] || I18N.en;
     document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
 
     document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      if (lang === "ar") el.setAttribute("dir", "auto"); else if (el.getAttribute("dir") === "auto") el.removeAttribute("dir");
       var value = getNested(dict, el.getAttribute("data-i18n"));
       if (value != null) el.innerHTML = value;
     });
@@ -87,7 +92,7 @@
   }
 
   function t(path) {
-    return getNested(I18N[currentLang()], path) || path;
+    return getNested(I18N[currentLang()], path) || getNested(I18N.en, path) || path;
   }
 
   // Same idea as t(), but for copy that needs a runtime value spliced in
@@ -428,11 +433,49 @@
   // accepted. If Ops closes the gap, change this and the backend together.
   var MIN_STANDARD_BOOKING_HOURS = 12;
 
+  // Mirrors arrivo-backend/services/flightInput.js, so a mistake shows here instead of at checkout.
+  // A flight is tracked by number and date. A booking code (PNR) is an airline reservation record
+  // that no flight status service can look up, so it has its own optional box.
+  var FLIGHT_IATA = /^([A-Z][A-Z0-9]|[A-Z0-9][A-Z])(\d{1,4})([A-Z])?$/;
+  var FLIGHT_ICAO = /^([A-Z]{3})(\d{1,4})([A-Z])?$/;
+  function squashCode(v) { return String(v || "").toUpperCase().replace(/[\s\-._\/]+/g, ""); }
+  function flightNumberProblem(v) {
+    var s = squashCode(v);
+    if (!s || FLIGHT_IATA.test(s) || FLIGHT_ICAO.test(s)) return null;
+    if (/^[A-Z0-9]{5,8}$/.test(s) && /\d/.test(s) && /[A-Z]/.test(s)) {
+      return t("booking.errFlightPnr");
+    }
+    return t("booking.errFlightFormat");
+  }
+  function flightDateProblem(v, today) {
+    var s = String(v || "").trim();
+    if (!s) return null;
+    var m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return t("booking.errDateFormat");
+    var d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+    if (d.getUTCMonth() !== +m[2] - 1 || d.getUTCDate() !== +m[3]) return t("booking.errDateReal");
+    return s < today ? t("booking.errDatePast") : null;
+  }
+  function pnrProblem(v) {
+    var s = squashCode(v);
+    return !s || /^[A-Z0-9]{5,8}$/.test(s) ? null : t("booking.errPnr");
+  }
+  function lagosTodayString() {
+    return window.ArrivoLate ? window.ArrivoLate.lagosNow().date : new Date().toISOString().slice(0, 10);
+  }
+
   function initStep2() {
     var resultBox = document.getElementById("flightResult");
     var errorBox = document.getElementById("flightError");
     var requiredErrorBox = document.getElementById("flightRequiredError");
     var flightInput = document.getElementById("fFlight");
+    var flightDateInput = document.getElementById("fFlightDate");
+    var surnameInput = document.getElementById("fSurname");
+    var pnrInput = document.getElementById("fPnr");
+    var flightFormatError = document.getElementById("flightFormatError");
+    var flightDateError = document.getElementById("flightDateError");
+    var pnrError = document.getElementById("pnrError");
+    if (flightDateInput) { flightDateInput.min = lagosTodayString(); if (!flightDateInput.value) flightDateInput.value = lagosTodayString(); }
     var flightSection = document.getElementById("flightNumberSection");
     var flightLabel = document.getElementById("flightSectionLabel");
     var flightSub = document.getElementById("flightSectionSub");
@@ -534,7 +577,12 @@
     // stuck up after they've already fixed it.
     flightInput.addEventListener("input", function () {
       requiredErrorBox.hidden = true;
+      var msg = flightNumberProblem(flightInput.value);
+      flightFormatError.hidden = !msg;
+      flightFormatError.textContent = msg || "";
     });
+    if (flightDateInput) flightDateInput.addEventListener("input", function () { flightDateError.hidden = true; });
+    if (pnrInput) pnrInput.addEventListener("input", function () { pnrError.hidden = true; });
     [dateInput, timeInput].forEach(function (el) {
       if (el) el.addEventListener("input", function () { scheduledErrorBox.hidden = true; });
     });
@@ -544,6 +592,8 @@
       resultBox.hidden = true;
       errorBox.hidden = true;
       if (!flightNumber) return;
+      var formatMsg = flightNumberProblem(flightNumber);
+      if (formatMsg) { errorBox.hidden = false; errorBox.textContent = formatMsg; return; }
 
       // requireAuth on the backend route means this call needs the rider's
       // Bearer token like every other authenticated call on this page --
@@ -551,7 +601,8 @@
       // button fail with "Missing or malformed Authorization header",
       // which is exactly the confusing, booking-looking error riders were
       // screenshotting and reporting as "can't book a ride".
-      api("/api/flights/status?flightNumber=" + encodeURIComponent(flightNumber) + "&arrIata=LOS", { headers: authHeader() }).then(function (result) {
+      api("/api/flights/status?flightNumber=" + encodeURIComponent(flightNumber) + "&arrIata=LOS" +
+        (flightDateInput && flightDateInput.value && !flightDateProblem(flightDateInput.value, lagosTodayString()) ? "&date=" + encodeURIComponent(flightDateInput.value) : ""), { headers: authHeader() }).then(function (result) {
         if (result.ok) {
           resultBox.hidden = false;
           resultBox.innerHTML =
@@ -586,6 +637,9 @@
       if (!isOneWayStyle(state.bookingType)) {
         // Charter bookings don't have a flight to track.
         state.flightNumber = "";
+        state.flightDate = "";
+        state.passengerSurname = "";
+        state.pnr = "";
         return true;
       }
 
@@ -629,7 +683,39 @@
         return false;
       }
       requiredErrorBox.hidden = true;
+
+      var numberMsg = flightNumberProblem(flightNumber);
+      if (numberMsg) {
+        flightFormatError.hidden = false;
+        flightFormatError.textContent = numberMsg;
+        flightInput.focus();
+        return false;
+      }
+      flightFormatError.hidden = true;
+
+      var dateVal2 = flightDateInput ? flightDateInput.value.trim() : "";
+      var dateMsg = !dateVal2 && state.bookingType === "one_way" ? t("booking.errDateRequired") : flightDateProblem(dateVal2, lagosTodayString());
+      if (dateMsg) {
+        flightDateError.hidden = false;
+        flightDateError.textContent = dateMsg;
+        if (flightDateInput) flightDateInput.focus();
+        return false;
+      }
+      flightDateError.hidden = true;
+
+      var pnrMsg = pnrProblem(pnrInput ? pnrInput.value : "");
+      if (pnrMsg) {
+        pnrError.hidden = false;
+        pnrError.textContent = pnrMsg;
+        pnrInput.focus();
+        return false;
+      }
+      pnrError.hidden = true;
+
       state.flightNumber = flightNumber;
+      state.flightDate = dateVal2;
+      state.passengerSurname = surnameInput ? surnameInput.value.trim() : "";
+      state.pnr = pnrInput ? squashCode(pnrInput.value) : "";
       return true;
     }
 
@@ -1632,6 +1718,9 @@
       idempotencyKey: getBookingIdempotencyKey(),
       stops: state.stops,
       flightNumber: state.flightNumber || null,
+      flightDate: state.flightDate || undefined,
+      passengerSurname: state.passengerSurname || undefined,
+      pnr: state.pnr || undefined,
       vehicleType: state.vehicle,
       fareNaira: state.liveQuote ? state.liveQuote.fareNaira : null,
       distanceKm: state.liveQuote && state.liveQuote.distanceKm != null ? state.liveQuote.distanceKm : state.distanceKm,
@@ -1723,7 +1812,7 @@
     rows.push(
       [t("booking.reviewBookingType"), escapeHtml(bookingLabel)],
       [t("booking.reviewPassengers"), passengersText],
-      [t("booking.reviewFlight"), escapeHtml(state.flightNumber) || "N/A"],
+      [t("booking.reviewFlight"), escapeHtml(state.flightNumber) ? escapeHtml(state.flightNumber) + (state.flightDate ? " on " + escapeHtml(state.flightDate) : "") : "N/A"],
       [t("booking.reviewVehicle"), vehicleText],
       [t("booking.reviewPickup"), escapeHtml([state.pickup].concat(state.stops).join(" → "))]
     );
