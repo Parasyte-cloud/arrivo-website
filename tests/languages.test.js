@@ -37,3 +37,21 @@ test("Arabic and Turkish fall back to English for untranslated screens", () => {
 test("the language blurb names the new markets", () => {
   assert.match(I18N.en.lang.body, /Lebanon|Lebanese/);
 });
+
+// Arabic is right to left. A negative physical offset (left: -999px) opens a scrollable strip on the
+// left in an rtl page, which showed up as a 1000px blank area and a sideways scroll. Use logical offsets.
+const fs = require("node:fs");
+const path = require("node:path");
+test("no stylesheet hides things with a large negative physical offset", () => {
+  for (const f of fs.readdirSync(path.join(__dirname, "..")).filter((n) => n.endsWith(".css"))) {
+    const css = fs.readFileSync(path.join(__dirname, "..", f), "utf8");
+    assert.ok(!/(^|[^-a-z])left:\s*-\d{3,}px/.test(css), `${f} has left: -NNNpx`);
+  }
+});
+
+test("Arabic marks each translated element for its own direction", () => {
+  for (const f of ["script.js", "booking.js", "express.js", "i18n-apply.js"]) {
+    const js = fs.readFileSync(path.join(__dirname, "..", f), "utf8");
+    assert.match(js, /lang === "ar"\) el\.setAttribute\("dir", "auto"\)/, f);
+  }
+});

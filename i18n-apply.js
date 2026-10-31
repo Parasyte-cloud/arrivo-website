@@ -41,6 +41,7 @@
     if (document.documentElement.lang !== lang) document.documentElement.lang = lang;
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
     document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      if (lang === "ar") el.setAttribute("dir", "auto"); else if (el.getAttribute("dir") === "auto") el.removeAttribute("dir");
       var k = el.getAttribute("data-i18n");
       if (!NS.test(k)) return;
       var v = get(d, k);
