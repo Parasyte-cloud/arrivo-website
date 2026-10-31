@@ -55,3 +55,28 @@ test("Arabic marks each translated element for its own direction", () => {
     assert.match(js, /lang === "ar"\) el\.setAttribute\("dir", "auto"\)/, f);
   }
 });
+
+// Arabic and Turkish: every English string must be translated (or be a known identical term),
+// and placeholders and markup must survive translation.
+{
+  const test = require("node:test");
+  const assert = require("node:assert/strict");
+  const fs = require("node:fs");
+  const m = {};
+  new Function("module", "window", "self", fs.readFileSync(require("node:path").join(__dirname, "..", "i18n.js"), "utf8") + ";module.exports=I18N")(m, global, global);
+  const I = m.exports;
+  const flat = (o, p = "", out = {}) => { for (const k in o) { const v = o[k]; if (v && typeof v === "object" && !Array.isArray(v)) flat(v, p + k + ".", out); else out[p + k] = v; } return out; };
+  const en = flat(I.en);
+  const SAME = new Set(["brand", "download.placeholder", "account.profileUserEmailPlaceholder", "arrivoExpress.tiers.xl.label", "nav.blog", "nav.express", "nav.removals", "nav.chauffeur", "booking.vehicleSuv", "account.planPremium", "account.planExecutive", "arrivoExpress.title", "arrivoExpress.tiers.premium.label", "arrivoExpress.distanceKm"]);
+  const tokens = (s) => String(s).match(/\{\w+\}|<[^>]+>/g)?.sort().join("|") || "";
+  for (const lang of ["ar", "tr"]) {
+    test(`${lang}: every string is translated and keeps its placeholders`, () => {
+      const f = flat(I[lang]);
+      const untranslated = Object.keys(en).filter((k) => typeof en[k] === "string" && f[k] === en[k] && !SAME.has(k));
+      assert.deepEqual(untranslated, [], `still English in ${lang}: ${untranslated.slice(0, 10).join(", ")}`);
+      const broken = Object.keys(en).filter((k) => typeof en[k] === "string" && !k.startsWith("track.rateRelax") && !k.startsWith("track.keepSame") && tokens(f[k]) !== tokens(en[k]));
+      assert.deepEqual(broken, [], `placeholder or markup changed in ${lang}: ${broken.slice(0, 10).join(", ")}`);
+      assert.ok(!Object.values(f).some((v) => typeof v === "string" && v.includes("—")), "no em dash");
+    });
+  }
+}
