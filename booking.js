@@ -7,8 +7,8 @@
   // file in book.html) -- shared with track.html's tip flow so the two
   // can't drift out of sync again (see that file for why).
 
-  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt"];
-  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT" };
+  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt", "ar", "tr"];
+  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT", ar: "ع", tr: "TR" };
   var LANG_KEY = "arrivo_site_lang";
 
   // Anything that started as free text the person typed (name, pickup
@@ -66,6 +66,7 @@
   function applyLanguage(lang) {
     var dict = I18N[lang] || I18N.en;
     document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
 
     document.querySelectorAll("[data-i18n]").forEach(function (el) {
       var value = getNested(dict, el.getAttribute("data-i18n"));
@@ -90,7 +91,7 @@
   }
 
   function t(path) {
-    return getNested(I18N[currentLang()], path) || path;
+    return getNested(I18N[currentLang()], path) || getNested(I18N.en, path) || path;
   }
 
   // Same idea as t(), but for copy that needs a runtime value spliced in
@@ -441,22 +442,22 @@
     var s = squashCode(v);
     if (!s || FLIGHT_IATA.test(s) || FLIGHT_ICAO.test(s)) return null;
     if (/^[A-Z0-9]{5,8}$/.test(s) && /\d/.test(s) && /[A-Z]/.test(s)) {
-      return "That looks like a booking code (PNR), not a flight number. Enter the flight number from your ticket, for example BA75, and put the booking code in the booking code box.";
+      return t("booking.errFlightPnr");
     }
-    return "Enter the airline code and digits, for example BA75 or ET 905.";
+    return t("booking.errFlightFormat");
   }
   function flightDateProblem(v, today) {
     var s = String(v || "").trim();
     if (!s) return null;
     var m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!m) return "Enter the flight date as year-month-day.";
+    if (!m) return t("booking.errDateFormat");
     var d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
-    if (d.getUTCMonth() !== +m[2] - 1 || d.getUTCDate() !== +m[3]) return "That is not a real date.";
-    return s < today ? "That date has already passed." : null;
+    if (d.getUTCMonth() !== +m[2] - 1 || d.getUTCDate() !== +m[3]) return t("booking.errDateReal");
+    return s < today ? t("booking.errDatePast") : null;
   }
   function pnrProblem(v) {
     var s = squashCode(v);
-    return !s || /^[A-Z0-9]{5,8}$/.test(s) ? null : "A booking code is 5 to 8 letters and numbers. You can leave it blank.";
+    return !s || /^[A-Z0-9]{5,8}$/.test(s) ? null : t("booking.errPnr");
   }
   function lagosTodayString() {
     return window.ArrivoLate ? window.ArrivoLate.lagosNow().date : new Date().toISOString().slice(0, 10);
@@ -692,7 +693,7 @@
       flightFormatError.hidden = true;
 
       var dateVal2 = flightDateInput ? flightDateInput.value.trim() : "";
-      var dateMsg = !dateVal2 && state.bookingType === "one_way" ? "Choose the day your flight lands." : flightDateProblem(dateVal2, lagosTodayString());
+      var dateMsg = !dateVal2 && state.bookingType === "one_way" ? t("booking.errDateRequired") : flightDateProblem(dateVal2, lagosTodayString());
       if (dateMsg) {
         flightDateError.hidden = false;
         flightDateError.textContent = dateMsg;

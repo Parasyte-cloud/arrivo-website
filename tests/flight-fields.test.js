@@ -11,7 +11,9 @@ const js = fs.readFileSync(path.join(__dirname, "..", "booking.js"), "utf8");
 const html = fs.readFileSync(path.join(__dirname, "..", "book.html"), "utf8");
 const block = js.slice(js.indexOf("var FLIGHT_IATA"), js.indexOf("function initStep2()"));
 assert.ok(block.includes("flightNumberProblem"), "flight checks not found in booking.js");
-const f = new Function("window", block + "; return { flightNumberProblem, flightDateProblem, pnrProblem, squashCode };")({});
+const I18N = require("../i18n.js");
+const tEn = (p) => p.split(".").reduce((o, k) => (o == null ? o : o[k]), I18N.en) || p;
+const f = new Function("window", "t", block + "; return { flightNumberProblem, flightDateProblem, pnrProblem, squashCode };")({}, tEn);
 
 test("real flight numbers pass in any casing or spacing", () => {
   ["BA75", "ba 075", "ET-905", "W3 123", "3K5", "BAW75", ""].forEach((v) => assert.strictEqual(f.flightNumberProblem(v), null, v));

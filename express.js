@@ -25,8 +25,8 @@
     remove: function (k) { try { window.localStorage.removeItem(k); } catch (e) { /* ignore */ } },
   };
 
-  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt"];
-  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT" };
+  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt", "ar", "tr"];
+  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT", ar: "ع", tr: "TR" };
   var LANG_KEY = "arrivo_site_lang";
 
   function escapeHtml(str) {
@@ -57,7 +57,7 @@
     // relies on this same bare-identifier lookup; `window.I18N` is always
     // undefined and silently breaks every translation lookup that uses it.
     var dict = (typeof I18N !== "undefined" && (I18N[currentLang()] || I18N.en)) || {};
-    return getNested(dict, path) || path;
+    return getNested(dict, path) || (typeof I18N !== "undefined" && getNested(I18N.en, path)) || path;
   }
 
   function tFormat(path, replacements) {
@@ -71,6 +71,7 @@
   function applyLanguage(lang) {
     var dict = (typeof I18N !== "undefined" && (I18N[lang] || I18N.en)) || {};
     document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
     document.querySelectorAll("[data-i18n]").forEach(function (el) {
       var value = getNested(dict, el.getAttribute("data-i18n"));
       if (value != null) el.innerHTML = value;
