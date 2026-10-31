@@ -286,6 +286,24 @@
         <div id="flightResult" class="flight-result" hidden></div>
         <p class="error-text" id="flightError" hidden></p>
         <p class="error-text" id="flightRequiredError" hidden data-i18n="booking.flightRequired">Please enter your flight number to continue.</p>
+        <p class="error-text" id="flightFormatError" hidden></p>
+        <p class="step-sub">Use the flight number printed on your ticket, like BA75. A booking code (PNR) is not a flight number, so it goes in the booking code box below.</p>
+
+        <div id="flightDetails">
+          <label class="field-label" for="fFlightDate" style="margin-top:12px; display:block;">Flight date</label>
+          <p class="step-sub">The day your flight lands (Lagos time). Flights are tracked by flight number and date.</p>
+          <input type="date" id="fFlightDate" class="field">
+          <p class="error-text" id="flightDateError" hidden></p>
+
+          <label class="field-label" for="fSurname" style="margin-top:12px; display:block;">Passenger surname <span style="font-weight:400;">(optional)</span></label>
+          <input type="text" id="fSurname" class="field" autocomplete="family-name" maxlength="60" placeholder="As on the ticket">
+          <p class="error-text" id="surnameError" hidden></p>
+
+          <label class="field-label" for="fPnr" style="margin-top:12px; display:block;">Booking code, PNR <span style="font-weight:400;">(optional)</span></label>
+          <p class="step-sub">Only our support team can see it, to confirm your booking with the airline. It does not track your flight.</p>
+          <input type="text" id="fPnr" class="field" maxlength="8" autocomplete="off" placeholder="e.g. AB12CD" style="text-transform:uppercase;">
+          <p class="error-text" id="pnrError" hidden></p>
+        </div>
       </div>
 
       <h2 style="margin-top:28px;" data-i18n="booking.pickupTitle">Where should we pick you up?</h2>
