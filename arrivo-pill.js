@@ -260,7 +260,7 @@
   var TIERS = [
     { k: "ride", name: "RideArrivo", href: "book.html", status: "live" },
     { k: "express", name: "ArrivoExpress", href: "https://express.ridearrivo.com/", status: "live" },
-    { k: "chauffeur", name: "ArrivoChauffeur", href: "charter-booking.html", status: "live" },
+    { k: "chauffeur", name: "ArrivoChauffeur", href: "https://chauffeur.ridearrivo.com/", status: "live" },
     { k: "removals", name: "ArrivoRemovals", href: "https://move.ridearrivo.com/", status: "live" },
     { k: "boat", name: "ArrivoBoat", href: "https://boat.ridearrivo.com/", status: "live" },
     { k: "air", name: "ArrivoAir", href: "https://air.ridearrivo.com/", status: "live" }
