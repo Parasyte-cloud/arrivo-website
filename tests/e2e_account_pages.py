@@ -78,7 +78,7 @@ async def main():
         recovered = await poll(pg, "document.getElementById('errorCard').hidden && !document.getElementById('rideCard').hidden", 200)
         rec("track: a later good answer hides the error card", recovered, f"polls={state['n']}")
         veh = await pg.evaluate("document.getElementById('driverVehicle').textContent")
-        rec("track: vehicle line shows car and plate", "Toyota Camry (ABC123)" in veh, veh)
+        rec("track: vehicle line shows car and plate", "Toyota Camry · ABC123" in veh, veh)
         await ctx.close()
 
         # track: an unsafe ride id is treated as none
