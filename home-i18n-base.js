@@ -22,7 +22,7 @@ const I18N = {
     "hero": {
       "eyebrow": "Lagos airport pickups, done right",
       "headline": "<span class=\"hl-line\">Land in Lagos.</span><span class=\"hl-line\">Arrive. Relax.</span><span class=\"hero-wm\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"RideArrivo\" class=\"hero-wordmark\" width=\"1829\" height=\"309\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"\" aria-hidden=\"true\" class=\"hero-wordmark-glow\" width=\"1829\" height=\"309\"></span>",
-      "sub": "A verified driver, a live-tracked ride, and a trip you can share with someone who cares about your safe arrival. Available in 7 languages, including English, Français, and 中文."
+      "sub": "A verified driver, a live-tracked ride, and a trip you can share with someone who cares about your safe arrival. Available in 9 languages, including English, Français, and 中文."
     },
     "idx": {
       "expressBody": "On-demand rides across Lagos. Choose Economy, Comfort, XL or Premium and get matched with a nearby verified driver in minutes, with live tracking.",
@@ -51,7 +51,7 @@ const I18N = {
       "faqQ5": "Are the drivers verified?",
       "faqA5": "Every driver completes identity and licence verification before accepting rides, and you can share your trip live with someone who wants to know you arrived safely.",
       "faqQ6": "Is RideArrivo available in my language?",
-      "faqA6": "Yes. The website and booking are available in English, French, Chinese, Hindi, German, Spanish and Portuguese."
+      "faqA6": "Yes. The website and booking are available in English, French, Chinese, Hindi, German, Spanish, Portuguese, Arabic and Turkish."
     },
     "footer": {
       "tagline": "Lagos airport pickups, done right.",
@@ -89,7 +89,7 @@ const I18N = {
     "hero": {
       "eyebrow": "L'arrivée à Lagos, bien faite",
       "headline": "<span class=\"hl-line\">Atterrissez à Lagos.</span><span class=\"hl-line\">Quelqu'un vous attend déjà.</span><span class=\"hero-wm\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"RideArrivo\" class=\"hero-wordmark\" width=\"1829\" height=\"309\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"\" aria-hidden=\"true\" class=\"hero-wordmark-glow\" width=\"1829\" height=\"309\"></span>",
-      "sub": "Un chauffeur vérifié, un trajet suivi en direct, et un voyage que vous pouvez partager avec un proche qui se soucie de votre arrivée en toute sécurité. Disponible en 7 langues, dont l'anglais, le français et le chinois."
+      "sub": "Un chauffeur vérifié, un trajet suivi en direct, et un voyage que vous pouvez partager avec un proche qui se soucie de votre arrivée en toute sécurité. Disponible en 9 langues, dont l'anglais, le français et le chinois."
     },
     "idx": {
       "expressBody": "Des courses à la demande dans tout Lagos. Choisissez Économique, Confort, XL ou Premium et soyez mis en relation en quelques minutes avec un chauffeur vérifié à proximité, avec suivi en direct.",
@@ -118,7 +118,7 @@ const I18N = {
       "faqQ5": "Les chauffeurs sont-ils vérifiés ?",
       "faqA5": "Chaque chauffeur passe une vérification d'identité et de permis avant d'accepter des courses, et vous pouvez partager votre trajet en direct avec un proche qui veut savoir que vous êtes bien arrivé.",
       "faqQ6": "RideArrivo est-il disponible dans ma langue ?",
-      "faqA6": "Oui. Le site et la réservation sont disponibles en anglais, français, chinois, hindi, allemand, espagnol et portugais."
+      "faqA6": "Oui. Le site et la réservation sont disponibles en anglais, français, chinois, hindi, allemand, espagnol, portugais, arabe et turc."
     },
     "footer": {
       "tagline": "Prises en charge à l'aéroport de Lagos, bien faites.",
@@ -156,7 +156,7 @@ const I18N = {
     "hero": {
       "eyebrow": "拉各斯机场接送，值得信赖",
       "headline": "<span class=\"hl-line\">抵达拉各斯。</span><span class=\"hl-line\">已有人在等您。</span><span class=\"hero-wm\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"RideArrivo\" class=\"hero-wordmark\" width=\"1829\" height=\"309\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"\" aria-hidden=\"true\" class=\"hero-wordmark-glow\" width=\"1829\" height=\"309\"></span>",
-      "sub": "经过身份验证的司机、实时追踪的行程，还能与关心您平安抵达的人分享行程。支持7种语言，包括英语、法语和中文。"
+      "sub": "经过身份验证的司机、实时追踪的行程，还能与关心您平安抵达的人分享行程。支持9种语言，包括英语、法语和中文。"
     },
     "idx": {
       "expressBody": "拉各斯全城按需叫车。选择经济、舒适、XL 或尊享车型，几分钟内即可匹配附近经过验证的司机，并支持实时追踪。",
@@ -185,7 +185,7 @@ const I18N = {
       "faqQ5": "司机都经过验证吗？",
       "faqA5": "每位司机在接单前都必须完成身份和驾照验证，您还可以向关心您的人实时分享行程，让他们知道您已平安抵达。",
       "faqQ6": "RideArrivo 支持我的语言吗？",
-      "faqA6": "支持。网站和预订流程提供英语、法语、中文、印地语、德语、西班牙语和葡萄牙语。"
+      "faqA6": "支持。网站和预订流程提供英语、法语、中文、印地语、德语、西班牙语、葡萄牙语、阿拉伯语和土耳其语。"
     },
     "footer": {
       "tagline": "拉各斯机场接送，值得信赖。",
@@ -223,7 +223,7 @@ const I18N = {
     "hero": {
       "eyebrow": "Flughafenabholung in Lagos, richtig gemacht",
       "headline": "<span class=\"hl-line\">Landung in Lagos.</span><span class=\"hl-line\">Jemand wartet bereits.</span><span class=\"hero-wm\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"RideArrivo\" class=\"hero-wordmark\" width=\"1829\" height=\"309\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"\" aria-hidden=\"true\" class=\"hero-wordmark-glow\" width=\"1829\" height=\"309\"></span>",
-      "sub": "Ein verifizierter Fahrer, eine live verfolgte Fahrt und eine Reise, die Sie mit jemandem teilen können, dem Ihre sichere Ankunft am Herzen liegt. Verfügbar in 7 Sprachen, darunter Englisch, Französisch und Chinesisch."
+      "sub": "Ein verifizierter Fahrer, eine live verfolgte Fahrt und eine Reise, die Sie mit jemandem teilen können, dem Ihre sichere Ankunft am Herzen liegt. Verfügbar in 9 Sprachen, darunter Englisch, Französisch und Chinesisch."
     },
     "idx": {
       "expressBody": "Fahrten auf Abruf in ganz Lagos. Wählen Sie Economy, Comfort, XL oder Premium und werden Sie in Minuten mit einem verifizierten Fahrer in der Nähe verbunden, mit Live-Tracking.",
@@ -252,7 +252,7 @@ const I18N = {
       "faqQ5": "Sind die Fahrer überprüft?",
       "faqA5": "Jeder Fahrer durchläuft vor der ersten Fahrt eine Identitäts- und Führerscheinprüfung. Außerdem können Sie Ihre Fahrt live mit jemandem teilen, der wissen möchte, dass Sie sicher angekommen sind.",
       "faqQ6": "Gibt es RideArrivo in meiner Sprache?",
-      "faqA6": "Ja. Website und Buchung gibt es auf Englisch, Französisch, Chinesisch, Hindi, Deutsch, Spanisch und Portugiesisch."
+      "faqA6": "Ja. Website und Buchung gibt es auf Englisch, Französisch, Chinesisch, Hindi, Deutsch, Spanisch, Portugiesisch, Arabisch und Türkisch."
     },
     "footer": {
       "tagline": "Flughafenabholung in Lagos, richtig gemacht.",
@@ -290,7 +290,7 @@ const I18N = {
     "hero": {
       "eyebrow": "लागोस एयरपोर्ट पिकअप, सही तरीके से",
       "headline": "<span class=\"hl-line\">लागोस पहुँचें।</span><span class=\"hl-line\">कोई पहले से इंतज़ार कर रहा है।</span><span class=\"hero-wm\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"RideArrivo\" class=\"hero-wordmark\" width=\"1829\" height=\"309\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"\" aria-hidden=\"true\" class=\"hero-wordmark-glow\" width=\"1829\" height=\"309\"></span>",
-      "sub": "एक सत्यापित ड्राइवर, लाइव-ट्रैक की गई राइड, और एक यात्रा जिसे आप किसी ऐसे व्यक्ति के साथ साझा कर सकते हैं जो आपकी सुरक्षित पहुंच की परवाह करता है। 7 भाषाओं में उपलब्ध, जिनमें अंग्रेज़ी, फ़्रेंच और चीनी शामिल हैं।"
+      "sub": "एक सत्यापित ड्राइवर, लाइव-ट्रैक की गई राइड, और एक यात्रा जिसे आप किसी ऐसे व्यक्ति के साथ साझा कर सकते हैं जो आपकी सुरक्षित पहुंच की परवाह करता है। 9 भाषाओं में उपलब्ध, जिनमें अंग्रेज़ी, फ़्रेंच और चीनी शामिल हैं।"
     },
     "idx": {
       "expressBody": "पूरे लागोस में ऑन-डिमांड राइड। इकोनॉमी, कम्फर्ट, XL या प्रीमियम चुनें और मिनटों में पास के सत्यापित ड्राइवर से जुड़ें, लाइव ट्रैकिंग के साथ।",
@@ -319,7 +319,7 @@ const I18N = {
       "faqQ5": "क्या ड्राइवर वेरिफ़ाइड होते हैं?",
       "faqA5": "हर ड्राइवर राइड स्वीकार करने से पहले पहचान और लाइसेंस की जाँच पूरी करता है, और आप अपनी ट्रिप किसी अपने के साथ लाइव शेयर कर सकते हैं, ताकि उन्हें पता रहे कि आप सुरक्षित पहुँच गए।",
       "faqQ6": "क्या RideArrivo मेरी भाषा में उपलब्ध है?",
-      "faqA6": "हाँ। वेबसाइट और बुकिंग अंग्रेज़ी, फ़्रेंच, चीनी, हिंदी, जर्मन, स्पेनिश और पुर्तगाली में उपलब्ध हैं।"
+      "faqA6": "हाँ। वेबसाइट और बुकिंग अंग्रेज़ी, फ़्रेंच, चीनी, हिंदी, जर्मन, स्पेनिश, पुर्तगाली, अरबी और तुर्की में उपलब्ध हैं।"
     },
     "footer": {
       "tagline": "लागोस एयरपोर्ट पिकअप, सही तरीके से।",
@@ -357,7 +357,7 @@ const I18N = {
     "hero": {
       "eyebrow": "Recogidas en el aeropuerto de Lagos, bien hechas",
       "headline": "<span class=\"hl-line\">Aterriza en Lagos.</span><span class=\"hl-line\">Alguien ya te espera.</span><span class=\"hero-wm\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"RideArrivo\" class=\"hero-wordmark\" width=\"1829\" height=\"309\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"\" aria-hidden=\"true\" class=\"hero-wordmark-glow\" width=\"1829\" height=\"309\"></span>",
-      "sub": "Un conductor verificado, un viaje rastreado en vivo, y un trayecto que puedes compartir con alguien a quien le importa que llegues seguro. Disponible en 7 idiomas, incluyendo inglés, francés y chino."
+      "sub": "Un conductor verificado, un viaje rastreado en vivo, y un trayecto que puedes compartir con alguien a quien le importa que llegues seguro. Disponible en 9 idiomas, incluyendo inglés, francés y chino."
     },
     "idx": {
       "expressBody": "Viajes bajo demanda en todo Lagos. Elige Economy, Comfort, XL o Premium y conecta en minutos con un conductor verificado cercano, con seguimiento en vivo.",
@@ -386,7 +386,7 @@ const I18N = {
       "faqQ5": "¿Los conductores están verificados?",
       "faqA5": "Cada conductor completa una verificación de identidad y de licencia antes de aceptar viajes, y puedes compartir tu trayecto en directo con alguien que quiera saber que llegaste bien.",
       "faqQ6": "¿RideArrivo está disponible en mi idioma?",
-      "faqA6": "Sí. El sitio y la reserva están disponibles en inglés, francés, chino, hindi, alemán, español y portugués."
+      "faqA6": "Sí. El sitio y la reserva están disponibles en inglés, francés, chino, hindi, alemán, español, portugués, árabe y turco."
     },
     "footer": {
       "tagline": "Recogidas en el aeropuerto de Lagos, bien hechas.",
@@ -424,7 +424,7 @@ const I18N = {
     "hero": {
       "eyebrow": "Buscas no aeroporto de Lagos, bem feitas",
       "headline": "<span class=\"hl-line\">Chegue a Lagos.</span><span class=\"hl-line\">Alguém já está à sua espera.</span><span class=\"hero-wm\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"RideArrivo\" class=\"hero-wordmark\" width=\"1829\" height=\"309\"><img src=\"assets/ridearrivo-wordmark-light.png\" alt=\"\" aria-hidden=\"true\" class=\"hero-wordmark-glow\" width=\"1829\" height=\"309\"></span>",
-      "sub": "Um motorista verificado, uma viagem rastreada ao vivo, e um trajeto que você pode compartilhar com alguém que se importa com sua chegada segura. Disponível em 7 idiomas, incluindo inglês, francês e chinês."
+      "sub": "Um motorista verificado, uma viagem rastreada ao vivo, e um trajeto que você pode compartilhar com alguém que se importa com sua chegada segura. Disponível em 9 idiomas, incluindo inglês, francês e chinês."
     },
     "idx": {
       "expressBody": "Viagens a pedido em todo Lagos. Escolha Economy, Comfort, XL ou Premium e seja ligado em minutos a um motorista verificado por perto, com seguimento em direto.",
@@ -453,7 +453,7 @@ const I18N = {
       "faqQ5": "Os motoristas são verificados?",
       "faqA5": "Todo motorista conclui a verificação de identidade e de carteira de habilitação antes de aceitar corridas, e você pode compartilhar a viagem ao vivo com alguém que queira saber que você chegou bem.",
       "faqQ6": "O RideArrivo está disponível no meu idioma?",
-      "faqA6": "Sim. O site e a reserva estão disponíveis em inglês, francês, chinês, hindi, alemão, espanhol e português."
+      "faqA6": "Sim. O site e a reserva estão disponíveis em inglês, francês, chinês, hindi, alemão, espanhol, português, árabe e turco."
     },
     "footer": {
       "tagline": "Buscas no aeroporto de Lagos, bem feitas.",

@@ -20,19 +20,19 @@
 // and JSON only); this file does it for every page and script, so the two
 // should not both exist. The dated name below is newer than v2, and the
 // activate handler deletes every cache that is not it, including v2.
-const VERSION = "2026-10-22-no-redirect-cache";
+const VERSION = "2026-11-01-lean-precache";
 const CACHE_NAME = "arrivo-shell-" + VERSION;
 
 // Precached on install so a first-time offline visit has something to show.
 // Only used as an offline fallback: online, everything is fetched fresh.
+// Only what the home page needs to open offline. Big files (i18n.js, booking.js,
+// driver.js) and the other pages used to be fetched here at install time, in the
+// middle of the first page load, which competed with the page for bandwidth on
+// slow phones. They are still cached the first time a visitor opens them (see the
+// fetch handler below), so nothing is lost for repeat visits.
 const SHELL_FILES = [
   "/",
   "/index.html",
-  "/book.html",
-  "/privacy.html",
-  "/terms.html",
-  "/signup.html",
-  "/forgot-password.html",
   "/styles.css",
   "/home.css",
   "/arrivo-design-tokens.css",
@@ -45,12 +45,7 @@ const SHELL_FILES = [
   "/hero-motion.js",
   "/marketing-consent.js",
   "/marketing-consent.css",
-  "/booking.css",
-  "/i18n.js",
   "/script.js",
-  "/booking.js",
-  "/clock.js",
-  "/driver.js",
   "/manifest.json",
   "/assets/icon.png",
   "/assets/favicon.png",
