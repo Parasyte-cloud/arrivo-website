@@ -7,8 +7,8 @@
   // file in book.html) -- shared with track.html's tip flow so the two
   // can't drift out of sync again (see that file for why).
 
-  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt"];
-  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT" };
+  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt", "ar", "tr"];
+  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT", ar: "ع", tr: "TR" };
   var LANG_KEY = "arrivo_site_lang";
 
   // Anything that started as free text the person typed (name, pickup
@@ -28,6 +28,9 @@
     bookingFor: "self", passengerName: "",
     emergencyContactName: "", emergencyContactPhone: "",
     flightNumber: "",
+    flightDate: "",
+    passengerSurname: "",
+    pnr: "",
     adults: 1, children: 0,
     carryOnBags: 1, checkedBags: 1, bulky: false,
     bookingType: "one_way", durationDays: 1, multiplier: 1, fullDayCount: 1,
@@ -63,8 +66,10 @@
   function applyLanguage(lang) {
     var dict = I18N[lang] || I18N.en;
     document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
 
     document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      if (lang === "ar") el.setAttribute("dir", "auto"); else if (el.getAttribute("dir") === "auto") el.removeAttribute("dir");
       var value = getNested(dict, el.getAttribute("data-i18n"));
       if (value != null) el.innerHTML = value;
     });
@@ -87,7 +92,7 @@
   }
 
   function t(path) {
-    return getNested(I18N[currentLang()], path) || path;
+    return getNested(I18N[currentLang()], path) || getNested(I18N.en, path) || path;
   }
 
   // Same idea as t(), but for copy that needs a runtime value spliced in
@@ -199,15 +204,23 @@
     // API for .ridearrivo.com). The API answers with an exact-origin CORS
     // allowlist plus Access-Control-Allow-Credentials, so this is safe; a
     // Bearer token, when present, still takes precedence server-side.
+    // A hung connection used to leave "Calculating your exact fare" up and the
+    // Pay button disabled forever. Abort after 30 seconds so the existing
+    // {ok:false, status:0} path (retry button, error line) runs.
+    var controller = typeof AbortController === "function" ? new AbortController() : null;
+    var timer = controller ? setTimeout(function () { controller.abort(); }, 30000) : null;
     return fetch(API_BASE_URL + path, {
       credentials: "include",
       ...options,
+      ...(controller ? { signal: controller.signal } : {}),
       headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     }).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
+        if (timer) clearTimeout(timer);
         return { ok: res.ok, status: res.status, data: data };
       });
     }).catch(function () {
+      if (timer) clearTimeout(timer);
       // fetch() itself rejected -- offline, server unreachable, CORS, etc.
       // Previously uncaught here, so every caller's .then(...) simply never
       // ran on a network failure: renderReview() left loadingText visible
@@ -423,16 +436,53 @@
   // than being blocked by a required field that doesn't apply to them.
   // Mirrors ON_THE_GO_ONLY_HOURS in arrivo-backend/services/bookingWindow.js.
   // Under this many hours the API refuses a standard booking and offers On the
-  // Go. The backend also defines STANDARD_MIN_HOURS = 48 with 12 to 48 hours
-  // left as an open "gap" Ops has not ruled on: today those bookings are
-  // accepted. If Ops closes the gap, change this and the backend together.
-  var MIN_STANDARD_BOOKING_HOURS = 12;
+  // Go. Was 12, lowered to 3 in Oct 2026 so same-day bookings go through.
+  // Change this and the backend together.
+  var MIN_STANDARD_BOOKING_HOURS = 3;
+
+  // Mirrors arrivo-backend/services/flightInput.js, so a mistake shows here instead of at checkout.
+  // A flight is tracked by number and date. A booking code (PNR) is an airline reservation record
+  // that no flight status service can look up, so it has its own optional box.
+  var FLIGHT_IATA = /^([A-Z][A-Z0-9]|[A-Z0-9][A-Z])(\d{1,4})([A-Z])?$/;
+  var FLIGHT_ICAO = /^([A-Z]{3})(\d{1,4})([A-Z])?$/;
+  function squashCode(v) { return String(v || "").toUpperCase().replace(/[\s\-._\/]+/g, ""); }
+  function flightNumberProblem(v) {
+    var s = squashCode(v);
+    if (!s || FLIGHT_IATA.test(s) || FLIGHT_ICAO.test(s)) return null;
+    if (/^[A-Z0-9]{5,8}$/.test(s) && /\d/.test(s) && /[A-Z]/.test(s)) {
+      return t("booking.errFlightPnr");
+    }
+    return t("booking.errFlightFormat");
+  }
+  function flightDateProblem(v, today) {
+    var s = String(v || "").trim();
+    if (!s) return null;
+    var m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return t("booking.errDateFormat");
+    var d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+    if (d.getUTCMonth() !== +m[2] - 1 || d.getUTCDate() !== +m[3]) return t("booking.errDateReal");
+    return s < today ? t("booking.errDatePast") : null;
+  }
+  function pnrProblem(v) {
+    var s = squashCode(v);
+    return !s || /^[A-Z0-9]{5,8}$/.test(s) ? null : t("booking.errPnr");
+  }
+  function lagosTodayString() {
+    return window.ArrivoLate ? window.ArrivoLate.lagosNow().date : new Date().toISOString().slice(0, 10);
+  }
 
   function initStep2() {
     var resultBox = document.getElementById("flightResult");
     var errorBox = document.getElementById("flightError");
     var requiredErrorBox = document.getElementById("flightRequiredError");
     var flightInput = document.getElementById("fFlight");
+    var flightDateInput = document.getElementById("fFlightDate");
+    var surnameInput = document.getElementById("fSurname");
+    var pnrInput = document.getElementById("fPnr");
+    var flightFormatError = document.getElementById("flightFormatError");
+    var flightDateError = document.getElementById("flightDateError");
+    var pnrError = document.getElementById("pnrError");
+    if (flightDateInput) { flightDateInput.min = lagosTodayString(); }
     var flightSection = document.getElementById("flightNumberSection");
     var flightLabel = document.getElementById("flightSectionLabel");
     var flightSub = document.getElementById("flightSectionSub");
@@ -534,7 +584,12 @@
     // stuck up after they've already fixed it.
     flightInput.addEventListener("input", function () {
       requiredErrorBox.hidden = true;
+      var msg = flightNumberProblem(flightInput.value);
+      flightFormatError.hidden = !msg;
+      flightFormatError.textContent = msg || "";
     });
+    if (flightDateInput) flightDateInput.addEventListener("input", function () { flightDateError.hidden = true; });
+    if (pnrInput) pnrInput.addEventListener("input", function () { pnrError.hidden = true; });
     [dateInput, timeInput].forEach(function (el) {
       if (el) el.addEventListener("input", function () { scheduledErrorBox.hidden = true; });
     });
@@ -544,6 +599,8 @@
       resultBox.hidden = true;
       errorBox.hidden = true;
       if (!flightNumber) return;
+      var formatMsg = flightNumberProblem(flightNumber);
+      if (formatMsg) { errorBox.hidden = false; errorBox.textContent = formatMsg; return; }
 
       // requireAuth on the backend route means this call needs the rider's
       // Bearer token like every other authenticated call on this page --
@@ -551,7 +608,8 @@
       // button fail with "Missing or malformed Authorization header",
       // which is exactly the confusing, booking-looking error riders were
       // screenshotting and reporting as "can't book a ride".
-      api("/api/flights/status?flightNumber=" + encodeURIComponent(flightNumber) + "&arrIata=LOS", { headers: authHeader() }).then(function (result) {
+      api("/api/flights/status?flightNumber=" + encodeURIComponent(flightNumber) + "&arrIata=LOS" +
+        (flightDateInput && flightDateInput.value && !flightDateProblem(flightDateInput.value, lagosTodayString()) ? "&date=" + encodeURIComponent(flightDateInput.value) : ""), { headers: authHeader() }).then(function (result) {
         if (result.ok) {
           resultBox.hidden = false;
           resultBox.innerHTML =
@@ -586,6 +644,9 @@
       if (!isOneWayStyle(state.bookingType)) {
         // Charter bookings don't have a flight to track.
         state.flightNumber = "";
+        state.flightDate = "";
+        state.passengerSurname = "";
+        state.pnr = "";
         return true;
       }
 
@@ -611,8 +672,10 @@
         // dialog: change the time, or send what they filled in to Support.
         if (scheduled.getTime() - Date.now() < MIN_STANDARD_BOOKING_HOURS * 60 * 60 * 1000) {
           scheduledErrorBox.hidden = true;
-          openLateRequest(scheduled, null);
-          return false;
+          // If the dialog script did not load, do not leave Continue dead:
+          // carry on, and the server (or the card path's pre-check) answers
+          // the too-soon booking with its own message and the WhatsApp number.
+          if (openLateRequest(scheduled, null)) return false;
         }
         scheduledErrorBox.hidden = true;
         state.scheduledPickupAt = scheduled.toISOString();
@@ -629,7 +692,39 @@
         return false;
       }
       requiredErrorBox.hidden = true;
+
+      var numberMsg = flightNumberProblem(flightNumber);
+      if (numberMsg) {
+        flightFormatError.hidden = false;
+        flightFormatError.textContent = numberMsg;
+        flightInput.focus();
+        return false;
+      }
+      flightFormatError.hidden = true;
+
+      var dateVal2 = flightDateInput ? flightDateInput.value.trim() : "";
+      var dateMsg = !dateVal2 && state.bookingType === "one_way" ? t("booking.errDateRequired") : flightDateProblem(dateVal2, lagosTodayString());
+      if (dateMsg) {
+        flightDateError.hidden = false;
+        flightDateError.textContent = dateMsg;
+        if (flightDateInput) flightDateInput.focus();
+        return false;
+      }
+      flightDateError.hidden = true;
+
+      var pnrMsg = pnrProblem(pnrInput ? pnrInput.value : "");
+      if (pnrMsg) {
+        pnrError.hidden = false;
+        pnrError.textContent = pnrMsg;
+        pnrInput.focus();
+        return false;
+      }
+      pnrError.hidden = true;
+
       state.flightNumber = flightNumber;
+      state.flightDate = dateVal2;
+      state.passengerSurname = surnameInput ? surnameInput.value.trim() : "";
+      state.pnr = pnrInput ? squashCode(pnrInput.value) : "";
       return true;
     }
 
@@ -777,8 +872,8 @@
     document.getElementById("rideContinue").addEventListener("click", function () {
       if (!contactFieldsValidator()) return;
 
-      var adults = Number(adultsInput.value) || 0;
-      var children = Number(childrenInput.value) || 0;
+      var adults = Math.min(Math.max(Math.floor(Number(adultsInput.value)) || 0, 0), 50);
+      var children = Math.min(Math.max(Math.floor(Number(childrenInput.value)) || 0, 0), 50);
       passengersError.hidden = true;
       document.getElementById("vehicleCapacityError").hidden = true;
       if (adults < 1) {
@@ -827,6 +922,14 @@
   // so it must exist on window before that script finishes loading.
   window.initGoogleMaps = function () {
     window.__googleMapsReady = true;
+    // The polling in setupPlacesForStep4 gives up after about 6 seconds. On a
+    // slow connection Maps can arrive after that, so attach now and clear the
+    // error.
+    var errEl = document.getElementById("mapsError");
+    var gaveUp = !!errEl && !errEl.hidden;
+    if (errEl) errEl.hidden = true;
+    // Only when the polling already gave up; otherwise it is still running.
+    if (gaveUp && typeof window.__attachPlacesLate === "function") window.__attachPlacesLate();
   };
 
   // Google calls this when it rejects the key or the page's address. Without
@@ -1398,6 +1501,12 @@
     }
   }
 
+  window.__attachPlacesLate = function () {
+    if (!window.google || !window.google.maps || !window.google.maps.places) return;
+    if (!document.getElementById("fPickup")) return;
+    setupPlacesForStep4(0);
+  };
+
   function setupPlacesForStep4(attempsLeft) {
     if (attempsLeft === undefined) attempsLeft = 20; // ~6 seconds total before giving up
     if (window.google && window.google.maps && window.google.maps.places) {
@@ -1632,6 +1741,9 @@
       idempotencyKey: getBookingIdempotencyKey(),
       stops: state.stops,
       flightNumber: state.flightNumber || null,
+      flightDate: state.flightDate || undefined,
+      passengerSurname: state.passengerSurname || undefined,
+      pnr: state.pnr || undefined,
       vehicleType: state.vehicle,
       fareNaira: state.liveQuote ? state.liveQuote.fareNaira : null,
       distanceKm: state.liveQuote && state.liveQuote.distanceKm != null ? state.liveQuote.distanceKm : state.distanceKm,
@@ -1656,6 +1768,7 @@
     }, getCoordsPayload(), extra || {});
   }
 
+  var quoteSeq = 0;
   function renderReview() {
     var loadingText = document.getElementById("quoteLoadingText");
     var errorText = document.getElementById("quoteErrorText");
@@ -1670,7 +1783,11 @@
     content.hidden = true;
     payBtn.disabled = true;
 
+    // Going back, changing the trip and continuing starts a second quote while
+    // the first may still be in flight. Only the newest answer may land.
+    var seq = ++quoteSeq;
     getLiveQuote().then(function (result) {
+      if (seq !== quoteSeq) return;
       loadingText.hidden = true;
       if (!result.ok) {
         errorText.hidden = false;
@@ -1723,7 +1840,7 @@
     rows.push(
       [t("booking.reviewBookingType"), escapeHtml(bookingLabel)],
       [t("booking.reviewPassengers"), passengersText],
-      [t("booking.reviewFlight"), escapeHtml(state.flightNumber) || "N/A"],
+      [t("booking.reviewFlight"), escapeHtml(state.flightNumber) ? escapeHtml(state.flightNumber) + (state.flightDate ? " on " + escapeHtml(state.flightDate) : "") : "N/A"],
       [t("booking.reviewVehicle"), vehicleText],
       [t("booking.reviewPickup"), escapeHtml([state.pickup].concat(state.stops).join(" → "))]
     );
@@ -1739,7 +1856,7 @@
     if (state.bookingType === "dropoff" && state.scheduledPickupAt) {
       rows.push([
         t("booking.reviewScheduledPickup"),
-        new Date(state.scheduledPickupAt).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
+        new Date(state.scheduledPickupAt).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Africa/Lagos" }),
       ]);
     }
     if (state.bookingType === "full_day" && state.durationDays > 1) {
@@ -1806,10 +1923,14 @@
         // A membership covers the ride outright -- the obviously better
         // default the moment it's available, rather than making someone
         // notice and switch to it themselves.
-        state.paymentMethod = "membership";
-        document.querySelectorAll("#paymentMethodToggle .for-who-opt").forEach(function (b) {
-          b.classList.toggle("is-active", b.getAttribute("data-method") === "membership");
-        });
+        // Only the first time: a re-render after a fare change must not undo a
+        // deliberate switch to card.
+        if (!state.paymentChosen) {
+          state.paymentMethod = "membership";
+          document.querySelectorAll("#paymentMethodToggle .for-who-opt").forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-method") === "membership");
+          });
+        }
       } else {
         membershipOpt.hidden = true;
       }
@@ -1955,6 +2076,7 @@
       if (!rideResult.ok) {
         payBtn.disabled = false;
         payError.hidden = false;
+        if (handleWindowBlock(rideResult.data, null)) { payError.hidden = true; return; }
         payError.textContent = bookingErrorText(rideResult.data) || t("booking.paymentFailed");
         return;
       }
@@ -2065,7 +2187,7 @@
     state.stops = [destination];
     if (!isNaN(pickupLat) && !isNaN(pickupLng)) state.pickupLatLng = { lat: pickupLat, lng: pickupLng };
     if (!isNaN(destinationLat) && !isNaN(destinationLng)) state.dropoffLatLng = { lat: destinationLat, lng: destinationLng };
-    if (linkedRideId) state.linkedRideId = linkedRideId;
+    if (linkedRideId && /^[A-Za-z0-9_-]{1,64}$/.test(linkedRideId)) state.linkedRideId = linkedRideId;
 
     var pickupInput = document.getElementById("fPickup");
     if (pickupInput) pickupInput.value = pickup;
@@ -2165,7 +2287,9 @@
           // A definite refusal will not change on retry, so stop re-offering
           // recovery on every page load (the message below carries the
           // reference for support). A 5xx or network failure keeps the record.
-          if (rideResult.status >= 400 && rideResult.status < 500) clearPendingPayment();
+          // 401 (session ended while the card popup was open), 403, 408 and 429
+          // can all succeed on a later visit, so they keep the record.
+          if ([400, 404, 409, 410, 422].indexOf(rideResult.status) !== -1) clearPendingPayment();
           throw new Error(serverReason + t("booking.paymentFailed") + " (" + reference + ")");
         }
         createdRide = rideResult.data.ride;
@@ -2263,6 +2387,7 @@
       btn.addEventListener("click", function () {
         if (btn.disabled) return;
         state.paymentMethod = btn.getAttribute("data-method");
+        state.paymentChosen = true;
         document.querySelectorAll("#paymentMethodToggle .for-who-opt").forEach(function (b) { b.classList.toggle("is-active", b === btn); });
         document.getElementById("walletInsufficientNote").hidden = true;
         checkWalletMinimum(); // re-evaluate the informational note for the newly-selected method
@@ -2336,6 +2461,13 @@
           renderReviewContent();
           payError.hidden = false;
           payError.textContent = "Your fare has been updated to NGN " + check.data.fareNaira.toLocaleString() + ". Please review and press Pay again.";
+          return;
+        }
+        if (!state.email) {
+          // The profile lookup failed earlier. Paystack rejects an empty email.
+          payBtn.disabled = false;
+          payError.hidden = false;
+          payError.textContent = t("booking.checkoutOpenFailed");
           return;
         }
         try {
@@ -2413,10 +2545,14 @@
       var payError = document.getElementById("payError");
       api("/api/payments/verify/" + encodeURIComponent(rec.reference), { headers: authHeader() }).then(function (v) {
         if (v.ok && v.data && v.data.success) {
-          goToStep(5);
+          // Step 3 holds #payError. There is no step 5 (goToStep(5) hid every
+          // step and left a blank card). handlePaymentSuccess hides the error
+          // line as it starts, so show the "recovering" note after calling it.
+          goToStep(3);
+          var recovering = handlePaymentSuccess(rec.reference, rec.payload, true);
           payError.hidden = false;
           payError.textContent = t("booking.recovering");
-          return handlePaymentSuccess(rec.reference, rec.payload, true);
+          return recovering;
         }
         // Definite answer from Paystack that nothing was charged: forget it.
         // Network or server trouble keeps the record for the next visit.

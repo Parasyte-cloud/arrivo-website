@@ -43,7 +43,7 @@ const API = process.env.API_BASE_URL || "https://api.ridearrivo.com";
 const PAGES = ["express.html", "privacy.html", "terms.html", "404.html"];
 const FILES = [
   "express.js", "express.css", "styles.css", "booking.css", "home.css", "i18n.js",
-  "auth.css", "pages.css", "auth-header.js", "i18n-apply.js", "theme.js", "header-move.js", "clock.js", "glass-effects.js", "pwa-register.js", "paystack-config.js", "maps-config.js",
+  "auth.css", "pages.css", "parasyte-sig.css", "auth-header.js", "i18n-apply.js", "theme.js", "arrivo-ui.css", "arrivo-pill.js", "clock.js", "glass-effects.js", "pwa-register.js", "paystack-config.js", "maps-config.js",
 ];
 const MAIN_ONLY = "login|signup|account|track|forgot-password|reset-password|verify-email";
 
@@ -81,11 +81,11 @@ function mainSiteLinks(html) {
   return html
     // Sign-in style pages: absolute, and "next" becomes the full Express URL
     // so the rider lands back here after logging in on www.
-    .replace(new RegExp('href="(' + MAIN_ONLY + ')\\.html\\?next=express\\.html"', "g"),
+    .replace(new RegExp('href="/?(' + MAIN_ONLY + ')\\.html\\?next=express\\.html"', "g"),
       (m, page) => 'href="' + MAIN + "/" + page + ".html?next=" + encodeURIComponent(SELF + "/") + '"')
-    .replace(new RegExp('href="(' + MAIN_ONLY + ')\\.html"', "g"), 'href="' + MAIN + '/$1.html"')
-    .replace(/href="index\.html(#[^"]*)"/g, 'href="' + MAIN + '/index.html$1"')
-    .replace(/href="(book|driver|charter-booking)\.html"/g, 'href="' + MAIN + '/$1.html"');
+    .replace(new RegExp('href="/?(' + MAIN_ONLY + ')\\.html"', "g"), 'href="' + MAIN + '/$1.html"')
+    .replace(/href="\/?index\.html(#[^"]*)"/g, 'href="' + MAIN + '/index.html$1"')
+    .replace(/href="\/?(book|driver|charter-booking)\.html"/g, 'href="' + MAIN + '/$1.html"');
 }
 
 fs.rmSync(OUT, { recursive: true, force: true });
@@ -179,6 +179,9 @@ sw = sw.replace(shellRe, `const SHELL_FILES = [
   "/express.css",
   "/pages.css",
   "/auth.css",
+  "/parasyte-sig.css",
+  "/arrivo-ui.css",
+  "/arrivo-pill.js",
   "/i18n-apply.js",
   "/theme.js",
   "/i18n.js",

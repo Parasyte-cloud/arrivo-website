@@ -92,3 +92,8 @@
   Content-Security-Policy: frame-ancestors 'self'
 /payment/*
   Content-Security-Policy: frame-ancestors 'self'
+
+# Images and icons rarely change under the same name. Cache them for a week so repeat
+# visits skip the revalidation round trip (each one costs ~150ms on a Lagos mobile link).
+/assets/*
+  Cache-Control: public, max-age=604800

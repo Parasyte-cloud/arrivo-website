@@ -6,7 +6,7 @@
 (function () {
   "use strict";
   var KEY = "arrivo_site_lang";
-  var SUPPORTED = ["en", "fr", "zh", "hi", "de", "es", "pt"];
+  var SUPPORTED = ["en", "fr", "zh", "hi", "de", "es", "pt", "ar", "tr"];
   var NS = /^(ui|idx|auth|nf|bk)\./;
 
   function currentLang() {
@@ -39,7 +39,9 @@
     if (!d) return;
     var lang = currentLang();
     if (document.documentElement.lang !== lang) document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
     document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      if (lang === "ar") el.setAttribute("dir", "auto"); else if (el.getAttribute("dir") === "auto") el.removeAttribute("dir");
       var k = el.getAttribute("data-i18n");
       if (!NS.test(k)) return;
       var v = get(d, k);

@@ -19,7 +19,7 @@ function load(file) {
 }
 const allowed = (u) => {
   try { const x = new URL(u, ORIGIN + "/"); return x.protocol === "https:" && !x.username && !x.port &&
-    ["www.ridearrivo.com", "ridearrivo.com", "express.ridearrivo.com", "move.ridearrivo.com", "boat.ridearrivo.com", "air.ridearrivo.com", "membership.ridearrivo.com"].includes(x.hostname); }
+    ["www.ridearrivo.com", "ridearrivo.com", "express.ridearrivo.com", "removals.ridearrivo.com", "boat.ridearrivo.com", "air.ridearrivo.com", "membership.ridearrivo.com"].includes(x.hostname); }
   catch (e) { return false; }
 };
 

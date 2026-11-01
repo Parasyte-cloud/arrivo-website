@@ -14,14 +14,16 @@
     return path.split(".").reduce(function (acc, key) { return acc && acc[key]; }, obj);
   }
 
-  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt"];
-  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT" };
+  var SUPPORTED_LANGS = ["en", "fr", "zh", "hi", "de", "es", "pt", "ar", "tr"];
+  var LANG_LABELS = { en: "EN", fr: "FR", zh: "中文", hi: "हि", de: "DE", es: "ES", pt: "PT", ar: "ع", tr: "TR" };
 
   function applyLanguage(lang) {
     var dict = I18N[lang] || I18N.en;
     document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
 
     document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      if (lang === "ar") el.setAttribute("dir", "auto"); else if (el.getAttribute("dir") === "auto") el.removeAttribute("dir");
       var value = getNested(dict, el.getAttribute("data-i18n"));
       if (value == null) return;
       // A handful of strings intentionally contain <br> for line breaks in
@@ -196,6 +198,11 @@
     }
 
     function initMobileNav() {
+      // The next-generation homepage owns its contextual mobile island in
+      // arrivo-island.js. Keep this legacy controller for every other page,
+      // but never attach a second set of menu listeners to the homepage.
+      if (document.querySelector(".site-header[data-arrivo-island]") && document.getElementById("mobileIslandActions")) return;
+
       var toggle = document.getElementById("mobileNavToggle");
       var menu = document.getElementById("mobileNavMenu");
       var backdrop = document.getElementById("mobileNavBackdrop");

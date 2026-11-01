@@ -76,11 +76,11 @@ a { color: inherit; text-decoration: none; }
 }
 
 .skip-link {
-  position: absolute; left: -999px; top: 0;
+  position: absolute; inset-inline-start: -999px; top: 0; /* logical, so Arabic (rtl) does not open a scrollable strip on the left */
   background: var(--ink); color: var(--cream);
   padding: 10px 16px; z-index: 100;
 }
-.skip-link:focus { left: 12px; top: 12px; }
+.skip-link:focus { inset-inline-start: 12px; top: 12px; }
 
 .eyebrow {
   display: block;
@@ -305,7 +305,7 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 8px;
+  border-radius: 50%;
   background: rgba(244, 163, 0, 0.55);
   z-index: 1;
   opacity: 0;
@@ -326,12 +326,13 @@ h1 .brand-arrivo, h2 .brand-arrivo { color: #B97700; }
    outward-expanding ring) so there's always a warm glow directly behind
    the mark, not only during the brief expanding-ring moment. */
 .logo-wrap .brand-mark {
+  border-radius: 8px;
   animation: logoDropIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both, logoGlow 2.4s ease-in-out 0.6s infinite;
 }
 
 @keyframes logoGlow {
-  0%, 100% { box-shadow: 0 0 0 8px rgba(244, 163, 0, 0.10), 0 2px 14px rgba(244, 163, 0, 0.30); }
-  50% { box-shadow: 0 0 0 12px rgba(244, 163, 0, 0.22), 0 2px 20px rgba(244, 163, 0, 0.55); }
+  0%, 100% { box-shadow: 0 1px 8px rgba(244, 163, 0, 0.22); }
+  50% { box-shadow: 0 1px 14px rgba(244, 163, 0, 0.42); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -506,10 +507,15 @@ html.nav-locked { overflow: hidden; }
 }
 
 .footer-credit-row {
+  /* The PArAsYtE signature sits alone, centred, at the very base of the page. */
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  margin-top: 6px;
+  margin-top: 18px;
+  width: 100%;
+  flex: 0 0 100%;
+  order: 99;
 }
 .footer-credit-label {
   font-size: 10.5px;
@@ -1458,6 +1464,7 @@ html.nav-locked { overflow: hidden; }
   flex-direction: column;
   gap: 18px;
   align-items: flex-start;
+  flex-wrap: wrap;
   padding-top: 24px;
 }
 
