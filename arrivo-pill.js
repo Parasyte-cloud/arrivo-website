@@ -254,12 +254,14 @@
   // (theme.js reads ?theme=, this file reads ?lang=) and the visitor lands in the
   // same look they just left. Change "soon" to "live" when a service launches.
   var MAIN = "https://ridearrivo.com";
+  // The ArrivoExpress app. One place to change if it moves. ?mode=now or ?mode=schedule opens it on that switch.
+  var EXPRESS = "https://express.ridearrivo.com";
   var host = location.hostname;
   // A page served from another host (a tier, Express) says so with data-ra-remote.
   var onTierHost = pill.hasAttribute("data-ra-remote") || /^(express|move|boat|air|chauffeur)\./.test(host);
   var TIERS = [
     { k: "ride", name: "RideArrivo", href: "book.html", status: "live" },
-    { k: "express", name: "ArrivoExpress", href: "https://express.ridearrivo.com/", status: "live" },
+    { k: "express", name: "ArrivoExpress", href: EXPRESS + "/?mode=now", status: "live" },
     { k: "chauffeur", name: "ArrivoChauffeur", href: "https://chauffeur.ridearrivo.com/", status: "live" },
     { k: "removals", name: "ArrivoRemovals", href: "https://move.ridearrivo.com/", status: "live" },
     { k: "boat", name: "ArrivoBoat", href: "https://boat.ridearrivo.com/", status: "live" },
@@ -319,6 +321,7 @@
       history.replaceState(history.state, "", clean.pathname + clean.search + clean.hash);
     }
   } catch (e) {}
+  document.querySelectorAll("a[data-express-mode]").forEach(function (a) { a.setAttribute("href", EXPRESS + "/?mode=" + a.getAttribute("data-express-mode")); });
   buildTiers();
   tagSoon();
 
