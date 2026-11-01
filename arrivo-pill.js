@@ -18,8 +18,8 @@
   // Words used only by the pill. Order: en fr zh hi de es pt ar tr.
   var W = {
     ride: ["Ride", "Course", "出行", "सवारी", "Fahrt", "Viaje", "Viagem", "رحلة", "Yolculuk"],
-    move: ["Move", "Déménager", "搬家", "शिफ्ट", "Umzug", "Mudanza", "Mudança", "نقل", "Taşınma"],
-    charter: ["Charter", "Affrètement", "包租", "चार्टर", "Charter", "Chárter", "Fretamento", "تأجير", "Kiralama"],
+    move: ["Removals", "Déménagement", "搬家", "शिफ्टिंग", "Umzug", "Mudanza", "Mudança", "نقل", "Taşınma"],
+    charter: ["Chauffeur", "Chauffeur", "专车司机", "शोफ़र", "Chauffeur", "Chófer", "Motorista", "سائق خاص", "Şoför"],
     business: ["Business", "Entreprise", "企业", "बिज़नेस", "Business", "Empresas", "Empresas", "الأعمال", "Kurumsal"],
     book: ["Book a ride", "Réserver", "预订", "बुक करें", "Buchen", "Reservar", "Reservar", "احجز", "Rezervasyon"],
     login: ["Log in", "Connexion", "登录", "लॉग इन", "Anmelden", "Entrar", "Entrar", "دخول", "Giriş"],
