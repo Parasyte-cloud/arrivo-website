@@ -20,7 +20,7 @@
 // and JSON only); this file does it for every page and script, so the two
 // should not both exist. The dated name below is newer than v2, and the
 // activate handler deletes every cache that is not it, including v2.
-const VERSION = "2026-11-01-lean-precache";
+const VERSION = "2026-11-01-pill-redesign";
 const CACHE_NAME = "arrivo-shell-" + VERSION;
 
 // Precached on install so a first-time offline visit has something to show.
@@ -34,14 +34,13 @@ const SHELL_FILES = [
   "/",
   "/index.html",
   "/styles.css",
-  "/home.css",
-  "/arrivo-design-tokens.css",
-  "/simplified-home.css",
-  "/home-i18n-base.js",
-  "/simple-i18n.js",
+  "/arrivo-ui.css",
+  "/arrivo-home.css",
+  "/parasyte-sig.css",
+  "/arrivo-pill.js",
+  "/arrivo-home-i18n.js",
   "/theme.js",
   "/home-intent.js",
-  "/arrivo-island.js",
   "/hero-motion.js",
   "/marketing-consent.js",
   "/marketing-consent.css",

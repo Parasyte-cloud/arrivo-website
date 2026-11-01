@@ -26,12 +26,13 @@
     var lang = root.lang || "en";
     return (typeof I18N !== "undefined" && (I18N[lang] || I18N.en)) || null;
   }
-  function nextMode(value) { return MODES[(MODES.indexOf(value) + 1) % MODES.length]; }
+  // Two choices only: light (the default) and dark. "system" is still understood if an
+  // older visit stored it, but the switch no longer cycles through it.
+  function nextMode(value) { return resolved(value) === "dark" ? "light" : "dark"; }
   function label(value) {
     var d = dict(), home = d && d.home;
-    if (value === "light") return (home && home.toDark) || "Theme: Light. Switch to dark mode";
-    if (value === "dark") return "Theme: Dark. Switch to system mode";
-    return "Theme: System. Switch to light mode";
+    if (resolved(value) === "dark") return "Switch to light mode";
+    return (home && home.toDark) || "Switch to dark mode";
   }
   function writeCookie(name, value) {
     var host = location.hostname;
@@ -52,7 +53,7 @@
       btn.setAttribute("title", text);
       btn.setAttribute("data-theme-mode", value);
       var span = btn.querySelector(".theme-toggle-text");
-      if (span) span.textContent = value === "system" ? "Theme: System" : (value === "dark" ? "Theme: Dark" : "Theme: Light");
+      if (span) span.textContent = resolved(value) === "dark" ? "Light mode" : "Dark mode";
     });
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute("content", theme === "dark" ? "#050B13" : "#FBFAF7");

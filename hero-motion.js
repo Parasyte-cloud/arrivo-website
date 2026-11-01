@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  var hero = document.querySelector(".simple-hero[data-hero-motion]");
+  var hero = document.querySelector(".rh-hero[data-hero-motion]");
   if (!hero) return;
 
   var media = window.matchMedia ? window.matchMedia("(min-width: 768px) and (prefers-reduced-motion: no-preference)") : null;
