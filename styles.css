@@ -76,11 +76,11 @@ a { color: inherit; text-decoration: none; }
 }
 
 .skip-link {
-  position: absolute; left: -999px; top: 0;
+  position: absolute; inset-inline-start: -999px; top: 0; /* logical, so Arabic (rtl) does not open a scrollable strip on the left */
   background: var(--ink); color: var(--cream);
   padding: 10px 16px; z-index: 100;
 }
-.skip-link:focus { left: 12px; top: 12px; }
+.skip-link:focus { inset-inline-start: 12px; top: 12px; }
 
 .eyebrow {
   display: block;
