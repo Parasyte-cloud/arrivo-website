@@ -24,6 +24,8 @@
     book: ["Book a ride", "Réserver", "预订", "बुक करें", "Buchen", "Reservar", "Reservar", "احجز", "Rezervasyon"],
     login: ["Log in", "Connexion", "登录", "लॉग इन", "Anmelden", "Entrar", "Entrar", "دخول", "Giriş"],
     account: ["Account", "Compte", "账户", "खाता", "Konto", "Cuenta", "Conta", "حسابي", "Hesabım"],
+    tiers: ["Our services", "Nos services", "我们的服务", "हमारी सेवाएँ", "Unsere Dienste", "Nuestros servicios", "Nossos serviços", "خدماتنا", "Hizmetlerimiz"],
+    soon: ["Soon", "Bientôt", "即将推出", "जल्द", "Bald", "Pronto", "Em breve", "قريبًا", "Yakında"],
     menu: ["Menu", "Menu", "菜单", "मेन्यू", "Menü", "Menú", "Menu", "القائمة", "Menü"],
     here: ["You are on", "Vous êtes sur", "当前页面", "आप यहाँ हैं", "Sie sind auf", "Estás en", "Você está em", "أنت في", "Şu an"],
     p_home: ["Home", "Accueil", "首页", "होम", "Start", "Inicio", "Início", "الرئيسية", "Ana sayfa"],
@@ -239,11 +241,86 @@
     if (k && W[k]) { hereLabel.textContent = word(k); peek(2000); setTimeout(function () { hereLabel.textContent = word("p_home"); }, 2100); }
   });
 
+  // ---- one family, one look: the service switcher and the hop between hosts ---
+  // ArrivoExpress, Removals, Boat and Air run on their own hosts. Browser
+  // storage is per host, so the theme and language are handed over in the link
+  // (theme.js reads ?theme=, this file reads ?lang=) and the visitor lands in the
+  // same look they just left. Change "soon" to "live" when a service launches.
+  var MAIN = "https://ridearrivo.com";
+  var host = location.hostname;
+  var onTierHost = /^(express|move|boat|air)\./.test(host);
+  var TIERS = [
+    { k: "ride", name: "RideArrivo", href: "book.html", status: "live" },
+    { k: "express", name: "ArrivoExpress", href: "https://express.ridearrivo.com/", status: "live" },
+    { k: "chauffeur", name: "ArrivoChauffeur", href: "charter-booking.html", status: "live" },
+    { k: "removals", name: "ArrivoRemovals", href: "https://move.ridearrivo.com/", status: "soon" },
+    { k: "boat", name: "ArrivoBoat", href: "https://boat.ridearrivo.com/", status: "soon" },
+    { k: "air", name: "ArrivoAir", href: "https://air.ridearrivo.com/", status: "soon" }
+  ];
+  var curTier = { book: "ride", express: "express", chauffeur: "chauffeur" }[page] || "";
+  var hm = host.match(/^(move|boat|air)\./);
+  if (hm) curTier = { move: "removals", boat: "boat", air: "air" }[hm[1]];
+  function tierHref(h) { return onTierHost && !/^https?:/.test(h) ? MAIN + "/" + h : h; }
+  function soonTag() { return '<em class="ra-tag">' + word("soon") + "</em>"; }
+  function buildTiers() {
+    if (!sheet || sheet.querySelector(".ra-pill__tiers")) return;
+    var box = document.createElement("div");
+    box.className = "ra-pill__tiers";
+    var h = '<p class="ra-pill__tiers-title" data-ra="tiers">' + word("tiers") + "</p>";
+    TIERS.forEach(function (t) {
+      h += '<a class="ra-pill__tier' + (t.k === curTier ? " is-current" : "") + '" href="' + tierHref(t.href) + '"' +
+        (t.k === curTier ? ' aria-current="page"' : "") + ' data-tier="' + t.k + '">' + t.name +
+        (t.status === "soon" ? soonTag() : "") + "</a>";
+    });
+    box.innerHTML = h;
+    var anchor = document.getElementById("accountNavLinkMobile");
+    sheet.insertBefore(box, anchor || sheet.firstChild);
+  }
+  // Home chooser cards for services that are not live yet say so.
+  function tagSoon() {
+    TIERS.forEach(function (t) {
+      if (t.status !== "soon") return;
+      document.querySelectorAll('a.rh-opt[href^="https://' + t.href.split("//")[1].split(".")[0] + '."]').forEach(function (a) {
+        // The tag lives beside the arrow, because the home dictionary rewrites the title text.
+        var go = a.querySelector(".rh-opt__go");
+        if (go && !go.querySelector(".ra-tag")) go.insertAdjacentHTML("afterbegin", soonTag());
+      });
+    });
+  }
+  function retagWords() {
+    document.querySelectorAll(".ra-tag").forEach(function (el) { el.textContent = word("soon"); });
+  }
+  // Carry theme and language to another RideArrivo host, never to anyone else.
+  function carry(e) {
+    var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+    if (!a) return;
+    var u;
+    try { u = new URL(a.getAttribute("href"), location.href); } catch (x) { return; }
+    if (u.origin === location.origin || u.protocol !== "https:" || !/(^|\.)ridearrivo\.com$/.test(u.hostname)) return;
+    if (!u.searchParams.has("theme")) u.searchParams.set("theme", document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light");
+    if (!u.searchParams.has("lang")) u.searchParams.set("lang", lang());
+    a.setAttribute("href", u.href);
+  }
+  document.addEventListener("click", carry, true);
+  document.addEventListener("auxclick", carry, true);
+  // Arriving from another host: take the language from the link, then tidy the URL.
+  try {
+    var inLang = new URL(location.href).searchParams.get("lang");
+    if (inLang && SUPPORTED.indexOf(inLang) !== -1) {
+      setLang(inLang);
+      var clean = new URL(location.href);
+      clean.searchParams.delete("lang");
+      history.replaceState(history.state, "", clean.pathname + clean.search + clean.hash);
+    }
+  } catch (e) {}
+  buildTiers();
+  tagSoon();
+
   paintIcon();
   paintWords();
   paintAccount();
   window.addEventListener("load", function () { paintAccount(); peek(2600); });
   // Other scripts switch <html lang>; keep the pill in step.
-  new MutationObserver(function () { paintWords(); paintAccount(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
+  new MutationObserver(function () { paintWords(); paintAccount(); retagWords(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
   onScroll();
 })();

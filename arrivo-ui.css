@@ -317,3 +317,15 @@ html.ra-menu-open { overflow: hidden; }
 /* Island layout: brand on the left, page circle and menu on the right. */
 .ra-pill.is-condensed .ra-pill__brand, .ra-pill.is-open .ra-pill__brand { margin-inline-end: auto; }
 @media (max-width: 899px) { .ra-pill__brand { margin-inline-end: auto; } }
+
+/* The service switcher inside the sheet, and the "Soon" tag. */
+.ra-pill__tiers { display: grid; gap: 2px; padding: 8px 4px 6px; border-top: 1px solid var(--ra-line); border-bottom: 1px solid var(--ra-line); margin: 4px 0; }
+.ra-pill__tiers-title { margin: 0; padding: 4px 14px 6px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ra-muted); }
+.ra-pill__tier { display: flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 14px; border-radius: 14px; color: var(--ra-ink); font-size: 15px; font-weight: 600; text-decoration: none; }
+.ra-pill__tier:hover { background: rgba(245, 163, 0, .14); }
+.ra-pill__tier.is-current { background: var(--ra-navy); color: #fff; }
+.ra-tag { margin-inline: 8px 8px; padding: 2px 8px; border-radius: 999px; font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: .02em; background: rgba(245, 163, 0, .2); color: var(--ra-amber-ink); vertical-align: middle; }
+html[data-theme="dark"] .ra-tag { color: var(--ra-amber-2); }
+.rh-opt.is-primary .ra-tag { background: rgba(10, 27, 51, .14); color: #1a1204; }
+/* Tall menus scroll inside the sheet instead of running off short phones. */
+.ra-pill__sheet { max-height: calc(100dvh - 96px); overflow-y: auto; overscroll-behavior: contain; }

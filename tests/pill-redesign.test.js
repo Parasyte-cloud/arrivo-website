@@ -26,3 +26,10 @@ assert(!/system/.test(theme.split('nextMode')[1] || ''), 'theme toggles light an
 
 for (const f of ['arrivo-ui.css', 'arrivo-pill.js', 'arrivo-home.css', 'arrivo-home-i18n.js', 'index.html']) assert(!r(f).includes('—'), f + ' has no em dash');
 console.log('pill redesign ok');
+
+// Tier switcher: every service reachable from the pill, theme and language carried across hosts.
+const pj = r('arrivo-pill.js');
+for (const h of ['express.ridearrivo.com', 'move.ridearrivo.com', 'boat.ridearrivo.com', 'air.ridearrivo.com']) assert(pj.includes(h), 'switcher lists ' + h);
+assert(pj.includes('"theme"') && pj.includes('"lang"'), 'theme and lang are carried');
+assert(/ridearrivo\\\.com\$/.test(pj), 'carry is limited to ridearrivo.com hosts');
+console.log('tier switcher ok');
