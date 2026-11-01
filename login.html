@@ -185,7 +185,7 @@
   // rider back where they came from. Exact host match, https only, no embedded
   // credentials -- never "anything under ridearrivo.com".
   var SSO_RETURN_HOSTS = ["ridearrivo.com", "www.ridearrivo.com", "express.ridearrivo.com", "staging-express.ridearrivo.com", "chauffeur.ridearrivo.com",
-    "move.ridearrivo.com", "boat.ridearrivo.com", "air.ridearrivo.com", "membership.ridearrivo.com"];
+    "removals.ridearrivo.com", "boat.ridearrivo.com", "air.ridearrivo.com", "membership.ridearrivo.com"];
   function getNextUrl() {
     var next = new URLSearchParams(window.location.search).get("next");
     if (!next) return "account.html";

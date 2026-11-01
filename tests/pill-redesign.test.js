@@ -29,7 +29,7 @@ console.log('pill redesign ok');
 
 // Tier switcher: every service reachable from the pill, theme and language carried across hosts.
 const pj = r('arrivo-pill.js');
-for (const h of ['express.ridearrivo.com', 'move.ridearrivo.com', 'boat.ridearrivo.com', 'air.ridearrivo.com']) assert(pj.includes(h), 'switcher lists ' + h);
+for (const h of ['express.ridearrivo.com', 'removals.ridearrivo.com', 'boat.ridearrivo.com', 'air.ridearrivo.com']) assert(pj.includes(h), 'switcher lists ' + h);
 assert(pj.includes('"theme"') && pj.includes('"lang"'), 'theme and lang are carried');
 assert(/ridearrivo\\\.com\$/.test(pj), 'carry is limited to ridearrivo.com hosts');
 console.log('tier switcher ok');
@@ -39,7 +39,7 @@ assert(home.includes('href="https://express.ridearrivo.com/express?mode=now" dat
 assert(home.includes('href="https://express.ridearrivo.com/express?mode=schedule" data-express-mode="schedule"'), 'Schedule opens Express on schedule');
 assert(pj.includes('"https://express.ridearrivo.com/express" : "https://staging-express.ridearrivo.com/express"'), 'production on ridearrivo.com, staging on previews');
 assert(!/flightDateInput\.value = lagosTodayString/.test(r('booking.js')), 'flight date is never pre-filled');
-for (const k of ['move', 'boat', 'air']) assert(pj.includes('https://' + k + '.ridearrivo.com/", status: "soon"'), k + ' stays soon until its domain is live');
+for (const k of ['removals', 'boat', 'air']) assert(pj.includes('https://' + k + '.ridearrivo.com/", status: "soon"'), k + ' stays soon until its domain is live');
 console.log('express entry ok');
 
 // Audit 1 Nov: the signature sits alone and centred at the base, and a service that is "soon" is never a link.

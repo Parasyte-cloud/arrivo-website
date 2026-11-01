@@ -263,7 +263,7 @@
     { k: "ride", name: "RideArrivo", href: "book.html", status: "live" },
     { k: "express", name: "ArrivoExpress", href: EXPRESS + "?mode=now", status: "live" },
     { k: "chauffeur", name: "ArrivoChauffeur", href: "charter-booking.html", status: "live" },
-    { k: "removals", name: "ArrivoRemovals", href: "https://move.ridearrivo.com/", status: "soon" },
+    { k: "removals", name: "ArrivoRemovals", href: "https://removals.ridearrivo.com/", status: "soon" },
     { k: "boat", name: "ArrivoBoat", href: "https://boat.ridearrivo.com/", status: "soon" },
     { k: "air", name: "ArrivoAir", href: "https://air.ridearrivo.com/", status: "soon" }
   ];
