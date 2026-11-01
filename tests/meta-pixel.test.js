@@ -13,7 +13,7 @@ for (const page of pages) {
   test(page + ": exactly one shared consent loader and stylesheet", () => {
     const html = read(page);
     assert.equal((html.match(/<script[^>]+src="\/marketing-consent\.js\?v=20261024-1"/g) || []).length, 1);
-    assert.equal((html.match(/<link[^>]+href="\/marketing-consent\.css\?v=20261023-1"/g) || []).length, 1);
+    assert.equal((html.match(/<link[^>]+href="\/marketing-consent\.css\?v=20261101-1"/g) || []).length, 1);
     assert.ok(!/connect\.facebook\.net|facebook\.com\/tr|fbq\(/.test(html), "no bypass via inline or noscript pixel");
   });
 }

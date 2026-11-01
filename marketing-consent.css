@@ -102,3 +102,22 @@ html[data-theme="dark"] .ra-cookie-banner {
   .ra-cookie-banner { background: Canvas; color: CanvasText; border: 2px solid CanvasText; }
   .ra-cookie-banner .ra-cookie-button { border: 1px solid ButtonText; }
 }
+
+/* Phones: keep the full wording and both choices equally prominent, but stop the
+   banner covering half the screen. Tighter type and spacing, link beside the text. */
+@media (max-width: 560px) {
+  .ra-cookie-banner {
+    inset: auto 10px max(10px, env(safe-area-inset-bottom)) 10px;
+    width: auto;
+    max-height: min(46dvh, 340px);
+    padding: 14px 16px 12px;
+    border-radius: 16px;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .ra-cookie-banner h2 { font-size: 16px; line-height: 1.3; }
+  .ra-cookie-banner p { margin-top: 6px; }
+  .ra-cookie-actions { gap: 8px; margin-top: 12px; }
+  .ra-cookie-banner .ra-cookie-button { min-height: 44px; padding: 8px 8px; font-size: 13px; }
+  .ra-cookie-banner a.ra-cookie-policy { min-height: 40px; margin-top: 2px; font-size: 12.5px; }
+}
