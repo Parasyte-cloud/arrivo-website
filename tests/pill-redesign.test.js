@@ -35,7 +35,9 @@ assert(/ridearrivo\\\.com\$/.test(pj), 'carry is limited to ridearrivo.com hosts
 console.log('tier switcher ok');
 
 // Ride now and Schedule open the ArrivoExpress app straight on the right switch.
-assert(home.includes('href="https://staging-express.ridearrivo.com/express?mode=now" data-express-mode="now"'), 'Ride now opens Express on now');
-assert(home.includes('href="https://staging-express.ridearrivo.com/express?mode=schedule" data-express-mode="schedule"'), 'Schedule opens Express on schedule');
-assert(pj.includes('var EXPRESS = "https://staging-express.ridearrivo.com/express"'), 'one Express origin');
+assert(home.includes('href="https://express.ridearrivo.com/express?mode=now" data-express-mode="now"'), 'Ride now opens Express on now');
+assert(home.includes('href="https://express.ridearrivo.com/express?mode=schedule" data-express-mode="schedule"'), 'Schedule opens Express on schedule');
+assert(pj.includes('"https://express.ridearrivo.com/express" : "https://staging-express.ridearrivo.com/express"'), 'production on ridearrivo.com, staging on previews');
+assert(!/flightDateInput\.value = lagosTodayString/.test(r('booking.js')), 'flight date is never pre-filled');
+for (const k of ['move', 'boat', 'air']) assert(pj.includes('https://' + k + '.ridearrivo.com/", status: "soon"'), k + ' stays soon until its domain is live');
 console.log('express entry ok');

@@ -482,7 +482,7 @@
     var flightFormatError = document.getElementById("flightFormatError");
     var flightDateError = document.getElementById("flightDateError");
     var pnrError = document.getElementById("pnrError");
-    if (flightDateInput) { flightDateInput.min = lagosTodayString(); if (!flightDateInput.value) flightDateInput.value = lagosTodayString(); }
+    if (flightDateInput) { flightDateInput.min = lagosTodayString(); }
     var flightSection = document.getElementById("flightNumberSection");
     var flightLabel = document.getElementById("flightSectionLabel");
     var flightSub = document.getElementById("flightSectionSub");

@@ -255,7 +255,7 @@
   // same look they just left. Change "soon" to "live" when a service launches.
   var MAIN = "https://ridearrivo.com";
   // The ArrivoExpress app (the engine serves it at /express). One place to change when the final host is ready. ?mode=now or ?mode=schedule opens it on that switch.
-  var EXPRESS = "https://staging-express.ridearrivo.com/express";
+  var EXPRESS = /(^|\.)ridearrivo\.com$/.test(location.hostname) ? "https://express.ridearrivo.com/express" : "https://staging-express.ridearrivo.com/express";
   var host = location.hostname;
   // A page served from another host (a tier, Express) says so with data-ra-remote.
   var onTierHost = pill.hasAttribute("data-ra-remote") || /^(express|move|boat|air|chauffeur)\./.test(host);
@@ -263,9 +263,9 @@
     { k: "ride", name: "RideArrivo", href: "book.html", status: "live" },
     { k: "express", name: "ArrivoExpress", href: EXPRESS + "?mode=now", status: "live" },
     { k: "chauffeur", name: "ArrivoChauffeur", href: "charter-booking.html", status: "live" },
-    { k: "removals", name: "ArrivoRemovals", href: "https://move.ridearrivo.com/", status: "live" },
-    { k: "boat", name: "ArrivoBoat", href: "https://boat.ridearrivo.com/", status: "live" },
-    { k: "air", name: "ArrivoAir", href: "https://air.ridearrivo.com/", status: "live" }
+    { k: "removals", name: "ArrivoRemovals", href: "https://move.ridearrivo.com/", status: "soon" },
+    { k: "boat", name: "ArrivoBoat", href: "https://boat.ridearrivo.com/", status: "soon" },
+    { k: "air", name: "ArrivoAir", href: "https://air.ridearrivo.com/", status: "soon" }
   ];
   var curTier = { book: "ride", express: "express", chauffeur: "chauffeur", removals: "removals", boat: "boat", air: "air" }[page] || "";
     function tierHref(h) { return onTierHost && !/^https?:/.test(h) ? MAIN + "/" + h : h; }
