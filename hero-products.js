@@ -15,7 +15,7 @@
     { k: "ride",      name: "RideArrivo",      icon: "i-car",    href: "book.html",                                   status: "live" },
     { k: "express",   name: "ArrivoExpress",   icon: "i-bolt",   href: "https://express.ridearrivo.com/?theme=dark",  status: "live" },
     { k: "removals",  name: "ArrivoRemovals",  icon: "i-truck",  href: "https://removals.ridearrivo.com/?theme=dark",     status: "live" },
-    { k: "chauffeur", name: "ArrivoChauffeur", icon: "i-shield", href: "charter-booking.html",                      status: "live" },
+    { k: "chauffeur", name: "ArrivoChauffeur", icon: "i-shield", href: "https://chauffeur.ridearrivo.com/", status: "live" },
     { k: "boat",      name: "ArrivoBoat",      icon: "i-ship",   href: "https://boat.ridearrivo.com/?theme=dark",     status: "live" },
     { k: "air",       name: "ArrivoAir",       icon: "i-plane",  href: "https://air.ridearrivo.com/?theme=dark",      status: "live" }
   ];
