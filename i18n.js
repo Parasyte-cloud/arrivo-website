@@ -5574,7 +5574,11 @@ I18N.ar = i18nMerge(I18N.ar, {
     "tippedThanks": "لقد أعطيت بقشيشًا بقيمة NGN {amount}. شكرًا لك!",
     "panicConfirm": "استخدم هذا الزر في حالة الطوارئ فقط. فهو ينبّه فريق عمليات RideArrivo فورًا بتفاصيل رحلتك وموقعك، وقد يقوم الفريق بعد ذلك بتفعيل جهاز الاستماع داخل المركبة ليسمع ما يحدث. هل تريد المتابعة؟",
     "panicAlertSent": "تم تنبيه الدعم. إذا كنت في خطر مباشر، يرجى أيضًا الاتصال بخدمات الطوارئ المحلية.",
-    "panicAlertFailed": "تعذّر إرسال التنبيه: يرجى المحاولة مرة أخرى أو الاتصال بالدعم مباشرة."
+    "panicAlertFailed": "تعذّر إرسال التنبيه: يرجى المحاولة مرة أخرى أو الاتصال بالدعم مباشرة.",
+    "driverInApp": "اتصل أو راسل عبر التطبيق",
+    "numbersPrivate": "لا تتم مشاركة أرقام الهاتف أبدًا. تتم المكالمات والرسائل عبر التطبيق.",
+    "supportCta": "تحدث إلى الدعم",
+    "supportCare": "سنعتني بك."
   },
   "account": {
     "panicBtnLabel": "🆘 زر الطوارئ",
@@ -6138,7 +6142,11 @@ I18N.tr = i18nMerge(I18N.tr, {
     "tippedThanks": "NGN {amount} bahşiş verdiniz. Teşekkürler!",
     "panicConfirm": "Bu düğmeyi yalnızca acil durumda kullanın. RideArrivo operasyon ekibini yolculuk ayrıntılarınız ve konumunuzla hemen uyarır; ekip ardından neler olduğunu duyabilmek için araç içi dinleme cihazını etkinleştirebilir. Devam edilsin mi?",
     "panicAlertSent": "Destek uyarıldı. Doğrudan tehlikedeyseniz lütfen yerel acil servisleri de arayın.",
-    "panicAlertFailed": "Uyarı gönderilemedi: lütfen tekrar deneyin veya doğrudan destekle iletişime geçin."
+    "panicAlertFailed": "Uyarı gönderilemedi: lütfen tekrar deneyin veya doğrudan destekle iletişime geçin.",
+    "driverInApp": "Uygulamadan arayın veya yazın",
+    "numbersPrivate": "Telefon numaraları asla paylaşılmaz. Aramalar ve mesajlar uygulama üzerinden yapılır.",
+    "supportCta": "Destekle konuşun",
+    "supportCare": "Sizinle biz ilgileniriz."
   },
   "account": {
     "panicBtnLabel": "🆘 Acil Durum Düğmesi",
