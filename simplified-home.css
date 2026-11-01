@@ -1540,3 +1540,24 @@ html[data-theme="dark"] .simple-faq-list .faq-item { box-shadow: none; }
 }
 
 
+
+/* Business and Drive live together: two compact cards side by side instead of two
+   full-width banners, so the page reads shorter and each action is one tap. */
+.simple-duo-section { padding-block: clamp(36px, 5vw, 64px); }
+.simple-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.simple-duo-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  padding: clamp(22px, 3vw, 32px);
+  border-radius: 24px;
+  background: linear-gradient(135deg, #0e1c33 0%, #0a1424 70%, #17140f 100%);
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(10, 20, 36, .16);
+  scroll-margin-top: 96px;
+}
+.simple-duo-card h2 { margin: 0; color: #fff; font-size: clamp(22px, 2.4vw, 28px); line-height: 1.15; letter-spacing: -.03em; }
+.simple-duo-card p { margin: 0 0 8px; color: rgba(245, 248, 251, .74); line-height: 1.6; font-size: 15px; flex: 1; }
+@media (max-width: 760px) {
+  .simple-duo { grid-template-columns: 1fr; gap: 14px; }
+  .simple-duo-card { border-radius: 20px; }
+  .simple-duo-card .btn { width: 100%; justify-content: center; }
+}
