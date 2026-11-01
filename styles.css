@@ -507,10 +507,15 @@ html.nav-locked { overflow: hidden; }
 }
 
 .footer-credit-row {
+  /* The PArAsYtE signature sits alone, centred, at the very base of the page. */
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  margin-top: 6px;
+  margin-top: 18px;
+  width: 100%;
+  flex: 0 0 100%;
+  order: 99;
 }
 .footer-credit-label {
   font-size: 10.5px;
@@ -1459,6 +1464,7 @@ html.nav-locked { overflow: hidden; }
   flex-direction: column;
   gap: 18px;
   align-items: flex-start;
+  flex-wrap: wrap;
   padding-top: 24px;
 }
 

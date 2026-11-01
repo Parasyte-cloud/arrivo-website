@@ -34,7 +34,7 @@
 <meta name="apple-mobile-web-app-title" content="RideArrivo">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=38">
+<link rel="stylesheet" href="styles.css?v=39">
 <link rel="stylesheet" href="booking.css?v=32">
 <link rel="stylesheet" href="home.css?v=44">
 <link rel="stylesheet" href="auth.css?v=3">
@@ -87,7 +87,7 @@
 <!-- Main-site consent controls; Meta stays off until marketing is accepted. -->
 <link rel="stylesheet" href="/marketing-consent.css?v=20261101-1">
 <script src="/marketing-consent.js?v=20261024-1" defer></script>
-<link rel="stylesheet" href="arrivo-ui.css?v=3">
+<link rel="stylesheet" href="arrivo-ui.css?v=4">
 </head>
 <body data-nav-wired="services">
 
@@ -203,7 +203,7 @@
            there), purely to reject garbage input. Only shown for full_day;
            defaults to 1 ("leave it as it is"). -->
       <div id="fullDayCountSection" hidden style="margin-top:16px;">
-        <label class="field-label" data-i18n="booking.fullDayCountLabel">Number of days</label>
+        <label class="field-label" for="fFullDayCountInput" data-i18n="booking.fullDayCountLabel">Number of days</label>
         <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
           <input type="number" id="fFullDayCountInput" class="field" min="1" value="1" style="width:90px;">
         </div>
@@ -690,7 +690,6 @@
       <p class="footer-legal-entity">RC 9700401</p>
     </div>
     <div class="footer-credit-row">
-      <span class="footer-credit-label">Powered by</span>
       <a href="https://www.parasyte.cloud" target="_blank" rel="noopener noreferrer" class="footer-parasyte-link" aria-label="Parasyte">
         <img src="assets/parasyte-wordmark.png" alt="Parasyte" class="footer-parasyte-logo" width="120" height="22" loading="lazy">
       </a>
@@ -732,6 +731,6 @@
 <script src="i18n-apply.js?v=2" defer></script>
 <script src="theme.js?v=3" defer></script>
 <script src="auth-header.js?v=3" defer></script>
-<script src="arrivo-pill.js?v=8" defer></script>
+<script src="arrivo-pill.js?v=9" defer></script>
 </body>
 </html>

@@ -41,3 +41,13 @@ assert(pj.includes('"https://express.ridearrivo.com/express" : "https://staging-
 assert(!/flightDateInput\.value = lagosTodayString/.test(r('booking.js')), 'flight date is never pre-filled');
 for (const k of ['move', 'boat', 'air']) assert(pj.includes('https://' + k + '.ridearrivo.com/", status: "soon"'), k + ' stays soon until its domain is live');
 console.log('express entry ok');
+
+// Audit 1 Nov: the signature sits alone and centred at the base, and a service that is "soon" is never a link.
+for (const f of ['book.html', 'express.html', 'privacy.html', 'terms.html']) {
+  assert(!r(f).includes('footer-credit-label'), f + ' has no "Powered by" label beside the signature');
+}
+assert(/\.footer-credit-row\s*\{[^}]*justify-content:\s*center[^}]*width:\s*100%/s.test(r('styles.css')), 'footer credit row is centred full width');
+const pillJs = r('arrivo-pill.js');
+assert(pillJs.includes('class="ra-pill__tier is-soon" aria-disabled="true"'), 'soon tiers in the switcher are not links');
+assert(pillJs.includes('function holdSoon'), 'links to soon hosts are held back site wide');
+assert(/for="fFullDayCountInput"/.test(r('book.html')), 'number of days input has a label');

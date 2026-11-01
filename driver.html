@@ -35,7 +35,7 @@
 <meta name="apple-mobile-web-app-title" content="ArrivoDriver">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=38">
+<link rel="stylesheet" href="styles.css?v=39">
 <link rel="stylesheet" href="booking.css?v=32">
 <link rel="stylesheet" href="home.css?v=44">
 <link rel="stylesheet" href="auth.css?v=3">
@@ -83,7 +83,7 @@
 <!-- Main-site consent controls; Meta stays off until marketing is accepted. -->
 <link rel="stylesheet" href="/marketing-consent.css?v=20261101-1">
 <script src="/marketing-consent.js?v=20261024-1" defer></script>
-<link rel="stylesheet" href="arrivo-ui.css?v=3">
+<link rel="stylesheet" href="arrivo-ui.css?v=4">
 </head>
 <body>
 
@@ -176,7 +176,7 @@
       <input type="password" id="sPasswordConfirm" class="field" placeholder="Confirm password">
       <!-- Honeypot -- same pattern as index.html's waitlist form: real
            visitors never see or fill this in, bots often do. -->
-      <input type="text" name="company" id="signupHoneypot" class="sr-only" tabindex="-1" autocomplete="off">
+      <input type="text" name="company" id="signupHoneypot" class="sr-only" aria-hidden="true" tabindex="-1" autocomplete="off">
       <label class="checkbox-row">
         <input type="checkbox" id="sAccountTerms">
         <span>I agree to <span class="brand-ride">Ride</span><span class="brand-arrivo">Arrivo</span>'s <a href="terms.html" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:underline;">terms of service</a> and privacy policy.</span>
@@ -518,6 +518,6 @@
 <script src="i18n-apply.js?v=2" defer></script>
 <script src="theme.js?v=3" defer></script>
 <script src="auth-header.js?v=3" defer></script>
-<script src="arrivo-pill.js?v=8" defer></script>
+<script src="arrivo-pill.js?v=9" defer></script>
 </body>
 </html>

@@ -276,9 +276,13 @@
     box.className = "ra-pill__tiers";
     var h = '<p class="ra-pill__tiers-title" data-ra="tiers">' + word("tiers") + "</p>";
     TIERS.forEach(function (t) {
+      if (t.status === "soon") {
+        // Not launched yet: shown, but not a link, so nobody lands on a host that is not ready.
+        h += '<span class="ra-pill__tier is-soon" aria-disabled="true" data-tier="' + t.k + '">' + t.name + soonTag() + "</span>";
+        return;
+      }
       h += '<a class="ra-pill__tier' + (t.k === curTier ? " is-current" : "") + '" href="' + tierHref(t.href) + '"' +
-        (t.k === curTier ? ' aria-current="page"' : "") + ' data-tier="' + t.k + '">' + t.name +
-        (t.status === "soon" ? soonTag() : "") + "</a>";
+        (t.k === curTier ? ' aria-current="page"' : "") + ' data-tier="' + t.k + '">' + t.name + "</a>";
     });
     box.innerHTML = h;
     var anchor = document.getElementById("accountNavLinkMobile");
@@ -324,6 +328,35 @@
   document.querySelectorAll("a[data-express-mode]").forEach(function (a) { a.setAttribute("href", EXPRESS + "?mode=" + a.getAttribute("data-express-mode")); });
   buildTiers();
   tagSoon();
+  // One switch for the whole site: while a tier is "soon" in TIERS, every link to its host is held back, wherever it
+  // sits (footers, cards, cross-sell buttons). Flip the status to "live" and they all work again.
+  function soonHosts() {
+    var hosts = {};
+    TIERS.forEach(function (t) { if (t.status === "soon") hosts[t.href.split("//")[1].split("/")[0]] = 1; });
+    return hosts;
+  }
+  var SOON = soonHosts();
+  function holdSoon(root) {
+    (root || document).querySelectorAll("a[href^='http']").forEach(function (a) {
+      var u;
+      try { u = new URL(a.getAttribute("href"), location.href); } catch (x) { return; }
+      if (!SOON[u.hostname]) return;
+      a.setAttribute("data-soon-href", a.getAttribute("href"));
+      a.removeAttribute("href");
+      a.removeAttribute("target");
+      a.setAttribute("aria-disabled", "true");
+      a.setAttribute("title", word("soon"));
+      a.classList.add("is-soon");
+    });
+  }
+  holdSoon(document);
+  if (window.MutationObserver) {
+    var held = 0;
+    new MutationObserver(function () {
+      clearTimeout(held);
+      held = setTimeout(function () { holdSoon(document); }, 60);
+    }).observe(document.body, { childList: true, subtree: true });
+  }
 
   paintIcon();
   paintWords();

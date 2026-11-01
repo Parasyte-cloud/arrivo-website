@@ -330,3 +330,7 @@ html[data-theme="dark"] .ra-tag { color: var(--ra-amber-2); }
 /* Tall menus scroll inside the sheet instead of running off short phones. */
 .ra-pill__sheet { max-height: calc(100dvh - 96px); overflow-y: auto; overscroll-behavior: contain; }
 html[data-theme="dark"] .ra-pill__tier.is-current { background: rgba(245, 163, 0, .18); color: var(--ra-amber-2); box-shadow: inset 0 0 0 1px rgba(255, 194, 77, .5); }
+
+/* A service that has not launched: visible, labelled, not clickable. */
+.is-soon { opacity: .55; cursor: default; pointer-events: none; }
+.ra-pill__tier.is-soon { pointer-events: none; }
