@@ -16,7 +16,7 @@
   // The browser key lives in maps-config.js (loaded by index.html), the one place
   // it is kept. If that file is missing, suggestions are simply off.
   var MAPS_KEY = window.GOOGLE_MAPS_BROWSER_KEY || "";
-  var MIN_HOURS = 12; // same rule as booking.js MIN_STANDARD_BOOKING_HOURS
+  var MIN_HOURS = 3; // same rule as booking.js MIN_STANDARD_BOOKING_HOURS
   var STORE_KEY = "arrivo_hero_quote";
 
   var tabs = form.querySelectorAll(".hf-tab");
@@ -402,7 +402,7 @@
       // start and length to the request form instead of the priced booking.
       var start = dateEl.value && timeEl.value ? new Date(dateEl.value + "T" + timeEl.value + ":00+01:00") : null;
       if (!start || isNaN(start.getTime()) || start.getTime() <= Date.now()) {
-        showError(tr("formErrWhen", "Choose a pickup date and time at least 12 hours from now."), dateEl);
+        showError(tr("formErrWhen", "Choose a pickup date and time at least 3 hours from now."), dateEl);
         return;
       }
       var cp = new URLSearchParams();
@@ -454,7 +454,7 @@
         return;
       }
       if (!at || isNaN(at.getTime()) || at.getTime() - Date.now() < MIN_HOURS * 3600 * 1000) {
-        showError(tr("formErrWhen", "Choose a pickup date and time at least 12 hours from now."), dateEl);
+        showError(tr("formErrWhen", "Choose a pickup date and time at least 3 hours from now."), dateEl);
         return;
       }
       params.set("date", dateEl.value);
