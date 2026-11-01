@@ -329,3 +329,4 @@ html[data-theme="dark"] .ra-tag { color: var(--ra-amber-2); }
 .rh-opt.is-primary .ra-tag { background: rgba(10, 27, 51, .14); color: #1a1204; }
 /* Tall menus scroll inside the sheet instead of running off short phones. */
 .ra-pill__sheet { max-height: calc(100dvh - 96px); overflow-y: auto; overscroll-behavior: contain; }
+html[data-theme="dark"] .ra-pill__tier.is-current { background: rgba(245, 163, 0, .18); color: var(--ra-amber-2); box-shadow: inset 0 0 0 1px rgba(255, 194, 77, .5); }

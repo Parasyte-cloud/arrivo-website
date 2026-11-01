@@ -32,6 +32,9 @@
     p_book: ["Book", "Réserver", "预订", "बुकिंग", "Buchen", "Reservar", "Reservar", "الحجز", "Rezervasyon"],
     p_express: ["Express", "Express", "快车", "एक्सप्रेस", "Express", "Express", "Express", "إكسبريس", "Ekspres"],
     p_chauffeur: ["Chauffeur", "Chauffeur", "专车司机", "शोफ़र", "Chauffeur", "Chófer", "Motorista", "سائق خاص", "Şoför"],
+    p_removals: ["Removals", "Déménagement", "搬家", "रिमूवल्स", "Umzüge", "Mudanzas", "Mudanças", "نقل", "Taşıma"],
+    p_boat: ["Boat", "Bateau", "船", "बोट", "Boot", "Barco", "Barco", "قارب", "Tekne"],
+    p_air: ["Air", "Avion", "飞行", "एयर", "Flug", "Aire", "Aéreo", "طيران", "Hava"],
     p_account: ["Account", "Compte", "账户", "खाता", "Konto", "Cuenta", "Conta", "حسابي", "Hesabım"],
     p_signin: ["Sign in", "Connexion", "登录", "साइन इन", "Anmelden", "Acceder", "Entrar", "تسجيل الدخول", "Giriş"],
     p_track: ["Track", "Suivi", "追踪", "ट्रैक", "Tracking", "Seguimiento", "Rastreio", "تتبع", "Takip"],
@@ -55,6 +58,9 @@
     scan: '<path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16M4 12h16"/>',
     help: '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.6 2.6 0 1 1 3.7 2.4c-.9.5-1.3 1-1.3 2M12 17h.01"/>',
     legal: '<path d="M7 3.5h7l4 4V20.5H7z"/><path d="M14 3.5v4h4M9.5 12h6M9.5 15.5h6"/>',
+    removals: '<path d="M3 7.5h11v9H3zM14 10.5h4l3 3v3h-7z"/><circle cx="7.5" cy="17.5" r="1.7"/><circle cx="17.5" cy="17.5" r="1.7"/>',
+    boat: '<path d="M12 3v11M12 5l5 6.5h-5M3.5 15.5h17l-2.2 4H5.7z"/>',
+    air: '<path d="M21 4L3 11l6.5 2.5L12 20l2-5.5z"/><path d="M9.5 13.5L21 4"/>',
     other: '<circle cx="12" cy="12" r="8.5"/>'
   };
 
@@ -116,8 +122,8 @@
 
   // ---- account link: same rule the old header used --------------------------
   function paintAccount() {
-    var signedIn = false;
-    try { signedIn = !!localStorage.getItem("arrivo_rider_token"); } catch (e) {}
+    var signedIn = pill.getAttribute("data-ra-signed") === "1";
+    try { signedIn = signedIn || !!localStorage.getItem("arrivo_rider_token"); } catch (e) {}
     var dest = signedIn ? "account.html" : "login.html";
     var label = word(signedIn ? "account" : "login");
     ["accountNavLink", "accountNavLinkMobile"].forEach(function (id) {
@@ -126,6 +132,7 @@
       var cur = a.getAttribute("href") || "";
       // Pages on other hosts (ArrivoExpress) set an absolute link themselves.
       if (!/^https?:/.test(cur)) a.setAttribute("href", dest);
+      else if (/\/(login|account)\.html$/.test(cur)) a.setAttribute("href", cur.replace(/[^\/]*$/, dest));
     });
     ["accountNavLabel", "accountNavLabelMobile"].forEach(function (id) {
       var el = document.getElementById(id);
@@ -248,19 +255,18 @@
   // same look they just left. Change "soon" to "live" when a service launches.
   var MAIN = "https://ridearrivo.com";
   var host = location.hostname;
-  var onTierHost = /^(express|move|boat|air)\./.test(host);
+  // A page served from another host (a tier, Express) says so with data-ra-remote.
+  var onTierHost = pill.hasAttribute("data-ra-remote") || /^(express|move|boat|air|chauffeur)\./.test(host);
   var TIERS = [
     { k: "ride", name: "RideArrivo", href: "book.html", status: "live" },
     { k: "express", name: "ArrivoExpress", href: "https://express.ridearrivo.com/", status: "live" },
     { k: "chauffeur", name: "ArrivoChauffeur", href: "charter-booking.html", status: "live" },
-    { k: "removals", name: "ArrivoRemovals", href: "https://move.ridearrivo.com/", status: "soon" },
-    { k: "boat", name: "ArrivoBoat", href: "https://boat.ridearrivo.com/", status: "soon" },
-    { k: "air", name: "ArrivoAir", href: "https://air.ridearrivo.com/", status: "soon" }
+    { k: "removals", name: "ArrivoRemovals", href: "https://move.ridearrivo.com/", status: "live" },
+    { k: "boat", name: "ArrivoBoat", href: "https://boat.ridearrivo.com/", status: "live" },
+    { k: "air", name: "ArrivoAir", href: "https://air.ridearrivo.com/", status: "live" }
   ];
-  var curTier = { book: "ride", express: "express", chauffeur: "chauffeur" }[page] || "";
-  var hm = host.match(/^(move|boat|air)\./);
-  if (hm) curTier = { move: "removals", boat: "boat", air: "air" }[hm[1]];
-  function tierHref(h) { return onTierHost && !/^https?:/.test(h) ? MAIN + "/" + h : h; }
+  var curTier = { book: "ride", express: "express", chauffeur: "chauffeur", removals: "removals", boat: "boat", air: "air" }[page] || "";
+    function tierHref(h) { return onTierHost && !/^https?:/.test(h) ? MAIN + "/" + h : h; }
   function soonTag() { return '<em class="ra-tag">' + word("soon") + "</em>"; }
   function buildTiers() {
     if (!sheet || sheet.querySelector(".ra-pill__tiers")) return;
