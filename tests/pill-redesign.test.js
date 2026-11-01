@@ -35,7 +35,7 @@ assert(/ridearrivo\\\.com\$/.test(pj), 'carry is limited to ridearrivo.com hosts
 console.log('tier switcher ok');
 
 // Ride now and Schedule open the ArrivoExpress app straight on the right switch.
-assert(home.includes('href="https://express.ridearrivo.com/?mode=now" data-express-mode="now"'), 'Ride now opens Express on now');
-assert(home.includes('href="https://express.ridearrivo.com/?mode=schedule" data-express-mode="schedule"'), 'Schedule opens Express on schedule');
-assert(pj.includes('var EXPRESS = "https://express.ridearrivo.com"'), 'one Express origin');
+assert(home.includes('href="https://staging-express.ridearrivo.com/express?mode=now" data-express-mode="now"'), 'Ride now opens Express on now');
+assert(home.includes('href="https://staging-express.ridearrivo.com/express?mode=schedule" data-express-mode="schedule"'), 'Schedule opens Express on schedule');
+assert(pj.includes('var EXPRESS = "https://staging-express.ridearrivo.com/express"'), 'one Express origin');
 console.log('express entry ok');
