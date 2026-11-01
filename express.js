@@ -192,8 +192,20 @@
     var init = Object.assign({}, options, { headers: headers, credentials: "include" });
     delete init.auth;
     delete init.soft401;
+    delete init.timeout;
+    // Without a limit, a server that accepts the connection and never answers
+    // (a cold start on the host, a stalled network) leaves the rider on the
+    // spinner for good. After the limit the call counts as a network failure,
+    // which every caller already handles (error card with Retry).
+    var timer = null;
+    if (window.AbortController && !init.signal) {
+      var controller = new AbortController();
+      init.signal = controller.signal;
+      timer = setTimeout(function () { controller.abort(); }, options.timeout || 30000);
+    }
     return fetch(API_BASE_URL + path, init).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
+        if (timer) clearTimeout(timer);
         // A 401 on any authenticated call means the saved token is dead.
         // Handle it in one place so no step of the flow can strand the
         // rider on a spinner or a vague error.
@@ -201,6 +213,7 @@
         return { ok: res.ok, status: res.status, data: data };
       });
     }).catch(function () {
+      if (timer) clearTimeout(timer);
       return { ok: false, status: 0, data: { error: t("arrivoExpress.networkError") } };
     });
   }
@@ -1234,11 +1247,22 @@
     state.token = store.get("arrivo_rider_token");
     showCard("loadingCard");
 
+    function showLoadError(message) {
+      document.getElementById("loadErrorText").textContent = message || t("arrivoExpress.loadError");
+      showCard("loadErrorCard");
+    }
+
     function loadEverything() {
       showCard("loadingCard");
+      // Last line of defence: whatever goes wrong below, the spinner never
+      // outlives this. The rider gets the error card with Retry instead.
+      var loadGuard = setTimeout(function () {
+        var card = document.getElementById("loadingCard");
+        if (card && !card.hidden) showLoadError();
+      }, 25000);
       Promise.all([
-        api("/api/instant-rides/status", { auth: true, soft401: true }),
-        api("/api/instant-rides/rider/active", { auth: true, soft401: true }),
+        api("/api/instant-rides/status", { auth: true, soft401: true, timeout: 15000 }),
+        api("/api/instant-rides/rider/active", { auth: true, soft401: true, timeout: 15000 }),
       ]).then(function (results) {
         var statusResult = results[0];
         var activeResult = results[1];
@@ -1285,11 +1309,19 @@
         return api("/api/instant-rides/tiers", { auth: true }).then(function (tiersResult) {
           state.tiers = (tiersResult.ok && tiersResult.data.tiers) || [];
           state.selectedTier = state.tiers.length ? state.tiers[0].key : null;
+          if (!state.tiers.length) {
+            // An empty list is a failed load, not an empty menu.
+            showLoadError(tiersResult.data && tiersResult.data.error);
+            return;
+          }
           renderTiers();
           renderRecent();
           showCard("pickerCard");
         });
-      });
+      }).catch(function (err) {
+        if (window.console) console.error("[ArrivoExpress] load failed", err);
+        showLoadError();
+      }).then(function () { clearTimeout(loadGuard); });
     }
 
     document.getElementById("loadRetryBtn").addEventListener("click", loadEverything);

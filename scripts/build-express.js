@@ -81,11 +81,11 @@ function mainSiteLinks(html) {
   return html
     // Sign-in style pages: absolute, and "next" becomes the full Express URL
     // so the rider lands back here after logging in on www.
-    .replace(new RegExp('href="(' + MAIN_ONLY + ')\\.html\\?next=express\\.html"', "g"),
+    .replace(new RegExp('href="/?(' + MAIN_ONLY + ')\\.html\\?next=express\\.html"', "g"),
       (m, page) => 'href="' + MAIN + "/" + page + ".html?next=" + encodeURIComponent(SELF + "/") + '"')
-    .replace(new RegExp('href="(' + MAIN_ONLY + ')\\.html"', "g"), 'href="' + MAIN + '/$1.html"')
-    .replace(/href="index\.html(#[^"]*)"/g, 'href="' + MAIN + '/index.html$1"')
-    .replace(/href="(book|driver|charter-booking)\.html"/g, 'href="' + MAIN + '/$1.html"');
+    .replace(new RegExp('href="/?(' + MAIN_ONLY + ')\\.html"', "g"), 'href="' + MAIN + '/$1.html"')
+    .replace(/href="\/?index\.html(#[^"]*)"/g, 'href="' + MAIN + '/index.html$1"')
+    .replace(/href="\/?(book|driver|charter-booking)\.html"/g, 'href="' + MAIN + '/$1.html"');
 }
 
 fs.rmSync(OUT, { recursive: true, force: true });

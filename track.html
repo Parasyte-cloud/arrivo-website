@@ -98,7 +98,7 @@
         <img width="1829" height="309" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark wm-on-light"><img width="1829" height="309" src="assets/ridearrivo-wordmark-light.png" alt="" class="brand-wordmark wm-on-dark" aria-hidden="true">
       </div>
       <a href="index.html#how" data-i18n="nav.how">How it works</a>
-      <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
+      <a href="index.html#services" data-i18n="nav.audiences">Who it's for</a>
       <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
       <a href="https://blog.ridearrivo.com" target="_blank" rel="noopener" data-i18n="nav.blog">Blog</a>
       <span class="mobile-nav-menu-label" data-i18n="arrivoExpress.servicesLabel">Services</span>
@@ -377,6 +377,11 @@
 
   var urlParams = new URLSearchParams(window.location.search);
   var rideId = urlParams.get("ride");
+  // The id and the share token are put into an API path, so accept only the
+  // characters a real id or token contains. Anything else (../ tricks, query
+  // fragments) is treated as "no ride specified".
+  var SAFE_ID = /^[A-Za-z0-9_-]{1,128}$/;
+  if (rideId && !SAFE_ID.test(rideId)) rideId = null;
   // A share=<token> link (see GET /api/rides/:id/share, and the rider
   // app's TrackingScreen share button) needs no login at all -- meant for
   // someone RideArrivo has never heard of, like the emergency contact
@@ -386,6 +391,7 @@
   // view can't offer any of the rider-only actions (rate, tip, panic,
   // wallet top-up) that need the rider's own auth token to call.
   var shareToken = urlParams.get("share");
+  if (shareToken && !SAFE_ID.test(shareToken)) shareToken = null;
   var token = localStorage.getItem(TOKEN_KEY);
 
   // The rider may be signed in by the shared single sign-on cookie (set when
@@ -421,6 +427,27 @@
     document.getElementById("rideCard").hidden = true;
     document.getElementById("errorCard").hidden = false;
     document.getElementById("errorMsg").textContent = msg;
+  }
+
+  // make_model and plate_number come from the vehicles join on the ride row.
+  function vehicleLine(ride) {
+    var car = ride.make_model ? ride.make_model + (ride.plate_number ? " (" + ride.plate_number + ")" : "") : "";
+    return [car, ride.driver_phone].filter(Boolean).join(" · ");
+  }
+
+  // The first load can fail with a non-JSON answer (a 502 page) which used to
+  // leave the spinner up forever. After a few failures in a row, say so.
+  var failedLoads = 0;
+  function loadFailed() {
+    failedLoads++;
+    if (failedLoads >= 3 && !document.getElementById("loadingCard").hidden) {
+      showError(t("track.couldntLoadRide"));
+    }
+  }
+  function loadOk() {
+    failedLoads = 0;
+    // An earlier failed poll may have shown the error card. A good answer wins.
+    document.getElementById("errorCard").hidden = true;
   }
 
   function initials(name) {
@@ -527,6 +554,7 @@
             return;
           }
           var ride = result.data.ride;
+          loadOk();
           document.getElementById("tripEndedNote").hidden = !result.data.ended;
           document.getElementById("loadingCard").hidden = true;
           document.getElementById("rideCard").hidden = false;
@@ -559,7 +587,7 @@
             mapLink.style.display = "none";
           }
         })
-        .catch(function () { /* transient -- next poll will retry */ });
+        .catch(loadFailed);
     }
 
     refreshPublic();
@@ -579,6 +607,7 @@
           }
           var ride = result.data.ride;
           currentRide = ride;
+          loadOk();
           document.getElementById("loadingCard").hidden = true;
           document.getElementById("rideCard").hidden = false;
 
@@ -610,7 +639,7 @@
             document.getElementById("driverRow").hidden = false;
             document.getElementById("driverInitials").textContent = initials(ride.driver_name);
             document.getElementById("driverName").textContent = ride.driver_name;
-            document.getElementById("driverVehicle").textContent = ride.driver_phone || "";
+            document.getElementById("driverVehicle").textContent = vehicleLine(ride);
           }
 
           var mapLink = document.getElementById("mapLink");
@@ -630,7 +659,7 @@
           refreshFleetConvoy();
           refreshSafety();
         })
-        .catch(function () { /* transient -- next poll will retry */ });
+        .catch(loadFailed);
     }
 
     // Fleet Accompaniment convoy -- only ever populated for a ride that
@@ -948,6 +977,13 @@
             return;
           }
           refresh();
+        }).catch(function () {
+          // Network drop: the tip may or may not have gone through. Reload the
+          // ride (it shows a tip already recorded) and let the rider retry.
+          tipSendBtn.disabled = false;
+          errEl.hidden = false;
+          errEl.textContent = t("track.tipFailed");
+          refresh();
         });
         return;
       }
@@ -977,6 +1013,12 @@
               return;
             }
             refresh();
+          }).catch(function () {
+            // The card was charged but we could not confirm the tip. Show the
+            // reference so support can reconcile it. The button stays off so the
+            // rider cannot be charged a second time.
+            errEl.hidden = false;
+            errEl.textContent = tFormat("track.cardChargedTipNotConfirmed", { reference: response.reference });
           });
         },
         // Rider closed the popup without tipping -- let them try again.

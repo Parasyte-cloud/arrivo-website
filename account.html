@@ -248,7 +248,7 @@
         <img width="1829" height="309" src="assets/ridearrivo-wordmark.png" alt="RideArrivo" class="brand-wordmark wm-on-light"><img width="1829" height="309" src="assets/ridearrivo-wordmark-light.png" alt="" class="brand-wordmark wm-on-dark" aria-hidden="true">
       </div>
       <a href="index.html#how" data-i18n="nav.how">How it works</a>
-      <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
+      <a href="index.html#services" data-i18n="nav.audiences">Who it's for</a>
       <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
       <a href="https://blog.ridearrivo.com" target="_blank" rel="noopener" data-i18n="nav.blog">Blog</a>
       <span class="mobile-nav-menu-label" data-i18n="arrivoExpress.servicesLabel">Services</span>
@@ -469,7 +469,7 @@
     <div class="footer-col">
       <h3 data-i18n="footer.companyHeading">Company</h3>
       <a href="index.html#how" data-i18n="nav.how">How it works</a>
-      <a href="index.html#audiences" data-i18n="nav.audiences">Who it's for</a>
+      <a href="index.html#services" data-i18n="nav.audiences">Who it's for</a>
       <a href="index.html#safety" data-i18n="nav.safety">Safety</a>
       <a href="https://blog.ridearrivo.com" target="_blank" rel="noopener" data-i18n="nav.blog">Blog</a>
     </div>
@@ -662,11 +662,16 @@
 
     api("/api/auth/me", { headers: authHeader() }).then(function (result) {
       if (!result.ok) {
-        localStorage.removeItem(TOKEN_KEY);
-        window.location.href = "login.html?next=account.html";
+        // Only a real "not signed in" answer ends the session. A 500 or a
+        // slow server must not throw away a valid sign-in.
+        if (result.status === 401 || result.status === 403) {
+          localStorage.removeItem(TOKEN_KEY);
+          window.location.href = "login.html?next=account.html";
+        }
         return;
       }
       var user = result.data.user;
+      if (!user) return;
       document.getElementById("accountName").textContent = user.name;
       document.getElementById("accountEmail").textContent = user.email;
 
@@ -679,7 +684,7 @@
       } else {
         document.getElementById("avatarInitial").textContent = (user.name || "?").charAt(0).toUpperCase();
       }
-    });
+    }).catch(function () { /* offline: keep the page and the sign-in */ });
 
     document.getElementById("avatarCircle").addEventListener("click", function () {
       document.getElementById("fAvatarInput").click();
@@ -720,6 +725,9 @@
             errEl.hidden = false;
             errEl.textContent = result.data.error || t("account.avatarSaveFailed");
           }
+        }).catch(function () {
+          errEl.hidden = false;
+          errEl.textContent = t("account.avatarSaveFailed");
         });
       };
       reader.readAsDataURL(file);
@@ -828,6 +836,11 @@
         return;
       }
 
+      // A second click while the payment window is open would open a second
+      // one. It is switched back on when the window closes or the call ends.
+      if (topUpConfirmBtn.disabled) return;
+      topUpConfirmBtn.disabled = true;
+      var verifying = false;
       var email = document.getElementById("accountEmail") ? document.getElementById("accountEmail").textContent : "";
       var handler = PaystackPop.setup({
         key: PAYSTACK_PUBLIC_KEY,
@@ -835,6 +848,7 @@
         amount: amount * 100,
         currency: "NGN",
         callback: function (response) {
+          verifying = true;
           topUpConfirmBtn.disabled = true;
           topUpConfirmBtn.textContent = t("account.confirming");
           api("/api/wallet/topup/verify", {
@@ -852,11 +866,20 @@
             topUpForm.hidden = true;
             document.getElementById("topUpAmount").value = "";
             loadWallet(token);
+          }).catch(function () {
+            // The card was charged but the confirmation call did not get
+            // through. Show the reference so the top-up can be reconciled.
+            topUpConfirmBtn.disabled = false;
+            topUpConfirmBtn.textContent = t("account.continueToPayment");
+            topUpError.hidden = false;
+            topUpError.textContent = tFormat("account.topUpNotConfirmed", { reference: response.reference });
           });
         },
-        onClose: function () {},
+        // The popup also closes after a successful payment, while the
+        // confirmation call is still running. Only re-enable on a real cancel.
+        onClose: function () { if (!verifying) topUpConfirmBtn.disabled = false; },
       });
-      handler.openIframe();
+      try { handler.openIframe(); } catch (e) { topUpConfirmBtn.disabled = false; }
     });
   }
 
@@ -1225,9 +1248,18 @@
 
       // Look up whether this rider currently has an active ride, in
       // parallel with the GPS lookup, so finish() has a rideId to attach to.
+      // Time-boxed: if this lookup hangs, the alert must still go out (the
+      // WhatsApp message and the GPS fix do not depend on it).
+      var mineController = window.AbortController ? new AbortController() : null;
+      var mineTimer = setTimeout(function () { if (mineController) mineController.abort(); }, 5000);
       var activeRidePromise = fetch(apiBaseUrl + "/api/rides/mine", {
         headers: { Authorization: "Bearer " + localStorage.getItem(tokenKey) },
-      }).then(function (res) { return res.json(); }).then(function (data) {
+        signal: mineController ? mineController.signal : undefined,
+      }).then(function (res) {
+        clearTimeout(mineTimer);
+        if (!res.ok) return {};
+        return res.json();
+      }).then(function (data) {
         var rides = (data && data.rides) || [];
         var active = rides.find(function (r) { return r.ride_status === "accepted" || r.ride_status === "in_progress"; });
         return active ? active.id : null;
