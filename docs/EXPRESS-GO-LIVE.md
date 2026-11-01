@@ -104,7 +104,7 @@ You do **not** need new Google or Apple sign-in origins for Express, because sig
 1. Logged out, open `https://express.ridearrivo.com/`: log-in card shows.
 2. Click Log in: you go to www, sign in, and land back on Express already signed in (no second login).
 3. DevTools > Application > Cookies: `arrivo_session`, Domain `.ridearrivo.com`, HttpOnly, Secure, SameSite Lax.
-4. Open `https://move.ridearrivo.com` (or any other subdomain that calls the API with credentials): also signed in.
+4. Open `https://removals.ridearrivo.com` (or any other subdomain that calls the API with credentials): also signed in.
 5. Pick pickup and destination, edit the pickup text: you must be asked to pick again. See fare, confirm, driver accepts, you are sent to tracking on www.
 6. Top up from www account, return to Express, balance updated.
 7. Log out on www: refresh Express, log-in card shows again.
