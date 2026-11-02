@@ -34,6 +34,7 @@
     p_chauffeur: ["Chauffeur", "Chauffeur", "专车司机", "शोफ़र", "Chauffeur", "Chófer", "Motorista", "سائق خاص", "Şoför"],
     p_removals: ["Removals", "Déménagement", "搬家", "रिमूवल्स", "Umzüge", "Mudanzas", "Mudanças", "نقل", "Taşıma"],
     p_boat: ["Boat", "Bateau", "船", "बोट", "Boot", "Barco", "Barco", "قارب", "Tekne"],
+    p_campus: ["Campus", "Campus", "校园", "कैंपस", "Campus", "Campus", "Campus", "الحرم الجامعي", "Kampüs"],
     p_air: ["Air", "Avion", "飞行", "एयर", "Flug", "Aire", "Aéreo", "طيران", "Hava"],
     p_account: ["Account", "Compte", "账户", "खाता", "Konto", "Cuenta", "Conta", "حسابي", "Hesabım"],
     p_signin: ["Sign in", "Connexion", "登录", "साइन इन", "Anmelden", "Acceder", "Entrar", "تسجيل الدخول", "Giriş"],
@@ -59,6 +60,7 @@
     help: '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.6 2.6 0 1 1 3.7 2.4c-.9.5-1.3 1-1.3 2M12 17h.01"/>',
     legal: '<path d="M7 3.5h7l4 4V20.5H7z"/><path d="M14 3.5v4h4M9.5 12h6M9.5 15.5h6"/>',
     removals: '<path d="M3 7.5h11v9H3zM14 10.5h4l3 3v3h-7z"/><circle cx="7.5" cy="17.5" r="1.7"/><circle cx="17.5" cy="17.5" r="1.7"/>',
+    campus: '<path d="M12 4 2.5 9 12 14l9.5-5z"/><path d="M6 11.5v4.6c0 1.2 2.7 2.4 6 2.4s6-1.2 6-2.4v-4.6M21.5 9v5"/>',
     boat: '<path d="M12 3v11M12 5l5 6.5h-5M3.5 15.5h17l-2.2 4H5.7z"/>',
     air: '<path d="M21 4L3 11l6.5 2.5L12 20l2-5.5z"/><path d="M9.5 13.5L21 4"/>',
     other: '<circle cx="12" cy="12" r="8.5"/>'
@@ -258,16 +260,17 @@
   var EXPRESS = /(^|\.)ridearrivo\.com$/.test(location.hostname) ? "https://express.ridearrivo.com/express" : "https://staging-express.ridearrivo.com/express";
   var host = location.hostname;
   // A page served from another host (a tier, Express) says so with data-ra-remote.
-  var onTierHost = pill.hasAttribute("data-ra-remote") || /^(express|removals|move|boat|air|chauffeur)\./.test(host);
+  var onTierHost = pill.hasAttribute("data-ra-remote") || /^(express|removals|move|boat|air|chauffeur|campus)\./.test(host);
   var TIERS = [
     { k: "ride", name: "RideArrivo", href: "book.html", status: "live" },
     { k: "express", name: "ArrivoExpress", href: EXPRESS + "?mode=now", status: "live" },
     { k: "chauffeur", name: "ArrivoChauffeur", href: "charter-booking.html", status: "live" },
     { k: "removals", name: "ArrivoRemovals", href: "https://removals.ridearrivo.com/", status: "live" },
     { k: "boat", name: "ArrivoBoat", href: "https://boat.ridearrivo.com/", status: "live" },
-    { k: "air", name: "ArrivoAir", href: "https://air.ridearrivo.com/", status: "live" }
+    { k: "air", name: "ArrivoAir", href: "https://air.ridearrivo.com/", status: "live" },
+    { k: "campus", name: "ArrivoCampus", href: "https://campus.ridearrivo.com/", status: "soon" }
   ];
-  var curTier = { book: "ride", express: "express", chauffeur: "chauffeur", removals: "removals", boat: "boat", air: "air" }[page] || "";
+  var curTier = { book: "ride", express: "express", chauffeur: "chauffeur", removals: "removals", boat: "boat", air: "air", campus: "campus" }[page] || "";
     function tierHref(h) { return onTierHost && !/^https?:/.test(h) ? MAIN + "/" + h : h; }
   function soonTag() { return '<em class="ra-tag">' + word("soon") + "</em>"; }
   function buildTiers() {
