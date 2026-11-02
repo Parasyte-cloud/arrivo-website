@@ -169,6 +169,28 @@
   "سائق باليوم أو الأسبوع.",
   "Günlük veya haftalık şoför."
  ],
+ "campus": [
+  "Student ride",
+  "Course étudiante",
+  "学生出行",
+  "छात्र राइड",
+  "Studentenfahrt",
+  "Viaje de estudiante",
+  "Corrida de estudante",
+  "رحلة طالب",
+  "Öğrenci yolculuğu"
+ ],
+ "campusBody": [
+  "Split the fare with friends.",
+  "Partagez le tarif entre amis.",
+  "和朋友分摊车费。",
+  "दोस्तों के साथ किराया बाँटें।",
+  "Teilt euch den Fahrpreis.",
+  "Divide la tarifa con tus amigos.",
+  "Divida a tarifa com os amigos.",
+  "قسّم الأجرة مع أصدقائك.",
+  "Ücreti arkadaşlarınla paylaş."
+ ],
  "removals": [
   "Home or office move",
   "Déménagement maison ou bureau",
