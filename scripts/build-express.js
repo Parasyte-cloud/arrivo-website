@@ -35,6 +35,9 @@ const SELF = process.env.EXPRESS_ORIGIN || "https://express.ridearrivo.com";
 // from inside ridearrivo.com, so the standalone site defaults to the
 // api.ridearrivo.com custom domain (see docs/EXPRESS-GO-LIVE.md, step 2).
 const API = process.env.API_BASE_URL || "https://api.ridearrivo.com";
+// Where the live ArrivoExpress app is served (the engine). This old build only
+// forwards riders there; it never takes a payment.
+const ENGINE = process.env.ENGINE_EXPRESS_URL || "https://arrivo-everywhere.onrender.com/express";
 
 // Only what Express itself needs. Login, signup, password reset, email
 // verification, wallet/account and ride tracking stay on www.ridearrivo.com:
@@ -134,7 +137,8 @@ window.ARRIVO_EXPRESS_CONFIG = {
   loginPath: ${JSON.stringify(MAIN + "/login.html")},
   accountPath: ${JSON.stringify(MAIN + "/account.html")},
   trackPath: ${JSON.stringify(MAIN + "/track.html")},
-  selfPath: ${JSON.stringify(SELF + "/")}
+  selfPath: ${JSON.stringify(SELF + "/")},
+  engineUrl: ${JSON.stringify(ENGINE)}
 };
 `);
 
