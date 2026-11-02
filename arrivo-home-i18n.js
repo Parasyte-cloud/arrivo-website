@@ -60,7 +60,7 @@
   "Yolculuk"
  ],
  "tabMove": [
-  "Move",
+  "Removals",
   "Déménager",
   "搬家",
   "मूव",

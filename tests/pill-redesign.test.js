@@ -41,6 +41,9 @@ assert(pj.includes('"https://express.ridearrivo.com/express" : "https://staging-
 assert(!/flightDateInput\.value = lagosTodayString/.test(r('booking.js')), 'flight date is never pre-filled');
 for (const k of ['removals', 'boat', 'air']) assert(pj.includes('https://' + k + '.ridearrivo.com/", status: "live"'), k + ' is live now that its domain answers');
 assert(pj.includes('(express|removals|move|boat|air|chauffeur)'), 'the switcher recognises the removals tier host');
+assert(pj.includes('href: "https://chauffeur.ridearrivo.com/", status: "live"'), 'ArrivoChauffeur opens the new Chauffeur site');
+for (const f of ['index.html', 'hello.html', 'book.html', 'express.html', 'hero-products.js']) assert(!/href(: |=)"charter-booking\.html/.test(r(f)), f + ' no longer links to the old charter page');
+assert(r('hero-form.js').includes('"https://chauffeur.ridearrivo.com/?" + cp.toString()'), 'the home form hands pickup, date, time and duration to the Chauffeur site');
 console.log('express entry ok');
 
 // Audit 1 Nov: the signature sits alone and centred at the base, and a service that is "soon" is never a link.
