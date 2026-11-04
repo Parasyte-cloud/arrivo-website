@@ -268,7 +268,7 @@
     { k: "removals", name: "ArrivoRemovals", href: "https://removals.ridearrivo.com/", status: "live" },
     { k: "boat", name: "ArrivoBoat", href: "https://boat.ridearrivo.com/", status: "live" },
     { k: "air", name: "ArrivoAir", href: "https://air.ridearrivo.com/", status: "live" },
-    { k: "campus", name: "ArrivoCampus", href: "https://campus.ridearrivo.com/", status: "soon" }
+    { k: "campus", name: "ArrivoCampus", href: "https://campus.ridearrivo.com/", status: "live" }
   ];
   var curTier = { book: "ride", express: "express", chauffeur: "chauffeur", removals: "removals", boat: "boat", air: "air", campus: "campus" }[page] || "";
     function tierHref(h) { return onTierHost && !/^https?:/.test(h) ? MAIN + "/" + h : h; }
