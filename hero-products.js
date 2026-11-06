@@ -17,7 +17,8 @@
     { k: "removals",  name: "ArrivoRemovals",  icon: "i-truck",  href: "https://removals.ridearrivo.com/?theme=dark",     status: "live" },
     { k: "chauffeur", name: "ArrivoChauffeur", icon: "i-shield", href: "charter-booking.html",                      status: "live" },
     { k: "boat",      name: "ArrivoBoat",      icon: "i-ship",   href: "https://boat.ridearrivo.com/?theme=dark",     status: "live" },
-    { k: "air",       name: "ArrivoAir",       icon: "i-plane",  href: "https://air.ridearrivo.com/?theme=dark",      status: "live" }
+    { k: "air",       name: "ArrivoAir",       icon: "i-plane",  href: "https://air.ridearrivo.com/?theme=dark",      status: "live" },
+    { k: "campus",    name: "ArrivoCampus",    icon: "i-cap",    href: "https://campus.ridearrivo.com/?theme=dark",   status: "live" }
   ];
 
   var T = {
@@ -30,7 +31,8 @@
       removals: ["House and office moves", "A trained crew and the right vehicle to move your home or office."],
       chauffeur: ["Chauffeur and charter", "Book a professional chauffeur and a vehicle for the hour, the day or a special occasion."],
       boat: ["Travel by water", "Our water transport service. We are building it now."],
-      air: ["Travel by air", "Our air travel service. We are building it now."]
+      air: ["Travel by air", "Our air travel service. We are building it now."],
+      campus: ["Student rides, split the fare", "Rides for students going to school or heading home. Bring your friends, split one car and use your campaign code for a lower price."]
     },
     fr: {
       lead: "Nos services. Touchez-en un pour en savoir plus.",
@@ -41,7 +43,8 @@
       removals: ["Déménagements maison et bureau", "Une équipe formée et le bon véhicule pour déménager votre domicile ou votre bureau."],
       chauffeur: ["Chauffeur et location privée", "Réservez un chauffeur professionnel et un véhicule à l'heure, à la journée ou pour une occasion spéciale."],
       boat: ["Voyager par voie d'eau", "Notre service de transport par eau. Nous le construisons actuellement."],
-      air: ["Voyager par les airs", "Notre service de transport aérien. Nous le construisons actuellement."]
+      air: ["Voyager par les airs", "Notre service de transport aérien. Nous le construisons actuellement."],
+      campus: ["Courses étudiantes, tarif partagé", "Des courses pour les étudiants qui vont à l'école ou rentrent chez eux. Venez à plusieurs, partagez une voiture et utilisez votre code de campagne pour un prix réduit."]
     },
     es: {
       lead: "Nuestros servicios. Toca uno para saber más.",
@@ -52,7 +55,8 @@
       removals: ["Mudanzas de casa y oficina", "Un equipo capacitado y el vehículo adecuado para mudar tu hogar u oficina."],
       chauffeur: ["Chófer y alquiler privado", "Reserva un chófer profesional y un vehículo por horas, por días o para una ocasión especial."],
       boat: ["Viaja por agua", "Nuestro servicio de transporte acuático. Lo estamos construyendo ahora."],
-      air: ["Viaja por aire", "Nuestro servicio de transporte aéreo. Lo estamos construyendo ahora."]
+      air: ["Viaja por aire", "Nuestro servicio de transporte aéreo. Lo estamos construyendo ahora."],
+      campus: ["Viajes de estudiantes, tarifa compartida", "Viajes para estudiantes que van a la escuela o vuelven a casa. Ve con tus amigos, compartan un auto y usa tu código de campaña para pagar menos."]
     },
     pt: {
       lead: "Nossos serviços. Toque em um para saber mais.",
@@ -63,7 +67,8 @@
       removals: ["Mudanças de casa e escritório", "Uma equipe treinada e o veículo certo para mudar sua casa ou escritório."],
       chauffeur: ["Motorista particular e fretamento", "Reserve um motorista profissional e um veículo por hora, por dia ou para uma ocasião especial."],
       boat: ["Viaje pela água", "Nosso serviço de transporte aquático. Estamos construindo agora."],
-      air: ["Viaje pelo ar", "Nosso serviço de transporte aéreo. Estamos construindo agora."]
+      air: ["Viaje pelo ar", "Nosso serviço de transporte aéreo. Estamos construindo agora."],
+      campus: ["Corridas de estudantes, tarifa dividida", "Corridas para estudantes que vão para a escola ou voltam para casa. Leve os amigos, dividam um carro e use o código da campanha para pagar menos."]
     },
     de: {
       lead: "Unsere Services. Tippen Sie auf einen, um mehr zu erfahren.",
@@ -74,7 +79,8 @@
       removals: ["Umzüge für Haus und Büro", "Ein geschultes Team und das passende Fahrzeug für Ihren Umzug."],
       chauffeur: ["Chauffeur und Charter", "Buchen Sie einen professionellen Chauffeur samt Fahrzeug für Stunden, Tage oder einen besonderen Anlass."],
       boat: ["Reisen auf dem Wasser", "Unser Wassertransport-Service. Wir bauen ihn gerade auf."],
-      air: ["Reisen in der Luft", "Unser Luftverkehrs-Service. Wir bauen ihn gerade auf."]
+      air: ["Reisen in der Luft", "Unser Luftverkehrs-Service. Wir bauen ihn gerade auf."],
+      campus: ["Studentenfahrten, Fahrpreis teilen", "Fahrten für Studierende auf dem Weg zur Schule oder nach Hause. Fahrt mit Freunden in einem Auto, teilt den Preis und nutzt euren Aktionscode für einen günstigeren Preis."]
     },
     zh: {
       lead: "我们的服务。点按任意一项了解更多。",
@@ -85,7 +91,8 @@
       removals: ["家庭与办公室搬迁", "专业培训的团队和合适的车辆，帮您搬家或搬办公室。"],
       chauffeur: ["专车司机与包车", "按小时、按天或为特殊场合预订专业司机和车辆。"],
       boat: ["水上出行", "我们的水上交通服务，正在建设中。"],
-      air: ["空中出行", "我们的航空出行服务，正在建设中。"]
+      air: ["空中出行", "我们的航空出行服务，正在建设中。"],
+      campus: ["学生出行，车费分摊", "为上学或回家的学生提供的出行服务。和朋友同乘一辆车分摊车费，并使用活动码享受更低价格。"]
     },
     hi: {
       lead: "हमारी सेवाएँ। ज़्यादा जानने के लिए किसी एक पर टैप करें।",
@@ -96,7 +103,8 @@
       removals: ["घर और ऑफ़िस शिफ़्टिंग", "आपके घर या ऑफ़िस को शिफ़्ट करने के लिए प्रशिक्षित टीम और सही वाहन।"],
       chauffeur: ["शोफ़र और चार्टर", "घंटे, दिन या किसी ख़ास मौके के लिए पेशेवर ड्राइवर और वाहन बुक करें।"],
       boat: ["जल मार्ग से यात्रा", "हमारी जल परिवहन सेवा। हम इसे अभी बना रहे हैं।"],
-      air: ["हवाई यात्रा", "हमारी हवाई यात्रा सेवा। हम इसे अभी बना रहे हैं।"]
+      air: ["हवाई यात्रा", "हमारी हवाई यात्रा सेवा। हम इसे अभी बना रहे हैं।"],
+      campus: ["छात्रों की राइड, किराया बाँटें", "स्कूल जाने या घर लौटने वाले छात्रों के लिए राइड। दोस्तों के साथ एक कार में जाएँ, किराया बाँटें और कैंपेन कोड से कम कीमत पाएँ।"]
     }
   };
 
