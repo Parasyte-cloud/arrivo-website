@@ -53,3 +53,6 @@ const pillJs = r('arrivo-pill.js');
 assert(pillJs.includes('class="ra-pill__tier is-soon" aria-disabled="true"'), 'soon tiers in the switcher are not links');
 assert(pillJs.includes('function holdSoon'), 'links to soon hosts are held back site wide');
 assert(/for="fFullDayCountInput"/.test(r('book.html')), 'number of days input has a label');
+
+// ArrivoCampus must be reachable from the home chooser on desktop, not only in the mobile menu.
+assert(/<a class="rh-opt" href="https:\/\/campus\.ridearrivo\.com\//.test(home), 'home chooser has the ArrivoCampus card');
