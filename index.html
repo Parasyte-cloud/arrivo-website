@@ -52,6 +52,7 @@
 {
   "@context": "https://schema.org",
   "@type": "TaxiService",
+  "@id": "https://ridearrivo.com/#organization",
   "name": "RideArrivo",
   "alternateName": "Arrivo",
   "url": "https://ridearrivo.com",
@@ -80,7 +81,7 @@
     "@type": "ReserveAction",
     "target": {
       "@type": "EntryPoint",
-      "urlTemplate": "https://ridearrivo.com/book.html",
+      "urlTemplate": "https://ridearrivo.com/book",
       "actionPlatform": [
         "http://schema.org/DesktopWebPlatform",
         "http://schema.org/MobileWebPlatform"
@@ -91,6 +92,17 @@
       "name": "Book a RideArrivo pickup"
     }
   }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": "https://ridearrivo.com/#website",
+  "url": "https://ridearrivo.com/",
+  "name": "RideArrivo",
+  "inLanguage": "en-NG",
+  "publisher": { "@id": "https://ridearrivo.com/#organization" }
 }
 </script>
 <script type="application/ld+json">
@@ -316,6 +328,13 @@
         <details><summary><span data-i18n="h.faqQ3">Can I cancel?</span></summary><p data-i18n="h.faqA3">Yes. Cancel 48 hours before pickup for a full refund, or get 50% back after that.</p></details>
         <details><summary><span data-i18n="h.faqQ4">Are the drivers verified?</span></summary><p data-i18n="h.faqA4">Yes. Every driver passes ID and licence checks, and you can share your trip live.</p></details>
       </div>
+    </div>
+  </section>
+
+  <section class="rh-faq" aria-labelledby="exploreTitle">
+    <div class="wrap rh-faq__wrap">
+      <h2 id="exploreTitle">Explore RideArrivo</h2>
+      <p><a href="/ride-hailing-lagos">Book a ride in Lagos</a> &middot; <a href="/lagos-airport-transfers">Airport transfers (MMIA and MMA2)</a> &middot; <a href="/corporate-transport-lagos">Corporate and hotel transport</a> &middot; <a href="/uber-alternative-lagos">Uber alternative in Lagos</a> &middot; <a href="/drive-with-ridearrivo">Drive with RideArrivo</a> &middot; <a href="/safety">How we keep trips safe</a></p>
     </div>
   </section>
 
