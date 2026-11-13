@@ -9,6 +9,9 @@
 - [Uber alternative in Lagos](https://ridearrivo.com/uber-alternative-lagos)
 - [Drive with RideArrivo](https://ridearrivo.com/drive-with-ridearrivo): 0% commission, flat daily access fee
 - [Safety](https://ridearrivo.com/safety)
+- [How much is a taxi in Lagos](https://ridearrivo.com/lagos-taxi-fares): how fares are built, worked examples, no surge
+- [Book a ride on WhatsApp](https://ridearrivo.com/book-a-ride-on-whatsapp-lagos)
+- [Taxi and ride booking across Lagos](https://ridearrivo.com/taxi-areas-lagos): Lekki, Ikeja, Victoria Island, Ikoyi, Surulere, Yaba, Ajah, Maryland
 - [Contact](https://ridearrivo.com/contact-us)
 
 ## Facts
