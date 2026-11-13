@@ -1,0 +1,20 @@
+# RideArrivo
+
+> RideArrivo is a Lagos, Nigeria ride and transport service. ArrivoExpress covers everyday rides with the fare shown before you request. RideArrivo also does airport transfers (MMIA and MMA2) with flight tracking, chauffeur bookings and corporate transport.
+
+## Key pages
+- [Book a ride in Lagos](https://ridearrivo.com/ride-hailing-lagos): how ArrivoExpress works, fares, safety
+- [Lagos airport transfers](https://ridearrivo.com/lagos-airport-transfers): pre-booked pickups and drop-offs timed to your flight
+- [Corporate and hotel transport](https://ridearrivo.com/corporate-transport-lagos)
+- [Uber alternative in Lagos](https://ridearrivo.com/uber-alternative-lagos)
+- [Drive with RideArrivo](https://ridearrivo.com/drive-with-ridearrivo): 0% commission, flat daily access fee
+- [Safety](https://ridearrivo.com/safety)
+- [How much is a taxi in Lagos](https://ridearrivo.com/lagos-taxi-fares): how fares are built, worked examples, no surge
+- [Book a ride on WhatsApp](https://ridearrivo.com/book-a-ride-on-whatsapp-lagos)
+- [Taxi and ride booking across Lagos](https://ridearrivo.com/taxi-areas-lagos): Lekki, Ikeja, Victoria Island, Ikoyi, Surulere, Yaba, Ajah, Maryland
+- [Contact](https://ridearrivo.com/contact-us)
+
+## Facts
+- Service area: Lagos, Nigeria
+- Riders pay the driver directly after an ArrivoExpress trip
+- ArrivoExpress takes 0% commission from drivers
