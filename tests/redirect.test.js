@@ -19,7 +19,7 @@ function load(file) {
 }
 const allowed = (u) => {
   try { const x = new URL(u, ORIGIN + "/"); return x.protocol === "https:" && !x.username && !x.port &&
-    ["www.ridearrivo.com", "ridearrivo.com", "express.ridearrivo.com", "removals.ridearrivo.com", "boat.ridearrivo.com", "air.ridearrivo.com", "membership.ridearrivo.com"].includes(x.hostname); }
+    ["www.ridearrivo.com", "ridearrivo.com", "express.ridearrivo.com", "removals.ridearrivo.com", "boat.ridearrivo.com", "air.ridearrivo.com", "campus.ridearrivo.com", "chauffeur.ridearrivo.com", "membership.ridearrivo.com"].includes(x.hostname); }
   catch (e) { return false; }
 };
 
@@ -34,5 +34,7 @@ for (const file of ["login.html", "signup.html"]) {
   test(file + ": legitimate returns preserved", () => {
     assert.strictEqual(fn("book.html?type=air"), ORIGIN + "/book.html?type=air");
     assert.strictEqual(fn("https://express.ridearrivo.com/x?a=1"), "https://express.ridearrivo.com/x?a=1");
+    assert.strictEqual(fn("https://campus.ridearrivo.com/student"), "https://campus.ridearrivo.com/student");
+    assert.strictEqual(fn("https://campus.ridearrivo.com.evil.example/"), "account.html");
   });
 }
