@@ -194,11 +194,25 @@
     }
     return { id: parts[0], at: at };
   }
-  function queueRegistration() {
+  // Called BEFORE the signup request. Returns what the server needs to send the
+  // same conversion from its side (Meta Conversions API, TikTok Events API), or
+  // null when there is no live consent. The id is shared with queueRegistration
+  // so Meta and TikTok can match the browser event and the server event.
+  function prepareRegistration() {
+    var choice = validRecord();
+    if (!choice || !choice.marketing || gpcEnabled() || PRODUCTION_ORIGINS.indexOf(window.location.origin) === -1 || window.self !== window.top) return null;
+    var out = { consent: true, eventId: newEventId(), url: window.location.origin + window.location.pathname };
+    var fbp = readCookie("_fbp"), fbc = readCookie("_fbc"), ttp = readCookie("_ttp");
+    if (fbp) out.fbp = fbp;
+    if (fbc) out.fbc = fbc;
+    if (ttp) out.ttp = ttp;
+    return out;
+  }
+  function queueRegistration(eventId) {
     // Same rules as any tracking: a live "yes", no Global Privacy Control, real site.
     var choice = validRecord();
     if (!choice || !choice.marketing || gpcEnabled() || PRODUCTION_ORIGINS.indexOf(window.location.origin) === -1 || window.self !== window.top) return false;
-    writeCookie(REG_KEY, newEventId() + "." + Date.now(), REG_MAX_AGE);
+    writeCookie(REG_KEY, (/^[0-9a-f]{24}$/.test(eventId || "") ? eventId : newEventId()) + "." + Date.now(), REG_MAX_AGE);
     return true;
   }
   function flushRegistration() {
@@ -460,6 +474,7 @@
 
   window.RideArrivoPrivacy = Object.freeze({
     openPreferences: showBanner,
+    prepareRegistration: prepareRegistration,
     queueRegistration: queueRegistration,
     getConsent: function () {
       var choice = validRecord();

@@ -32,8 +32,9 @@ test("registration hand-off carries no personal data", () => {
 
 test("signup counts a registration only for a certainly new account", () => {
   const h = read("signup.html");
-  assert.equal((h.match(/queueRegistration\(\)/g) || []).length, 2);
-  assert.match(h, /isNewUser === true \|\| result\.data\.created === true/);
+  assert.equal((h.match(/queueRegistration\(mk\.eventId\)/g) || []).length, 2);
+  assert.match(h, /result\.data\.isNewAccount === true/);
+  assert.equal((h.match(/prepareRegistration\(\)/g) || []).length, 2, "both paths ask for consent-gated details first");
 });
 
 test("CSP allows the TikTok pixel transport without a wildcard", () => {

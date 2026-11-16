@@ -38,7 +38,7 @@ visitors are asked once. No other subdomain or app is enabled.
 
 Registration: `signup.html` calls `RideArrivoPrivacy.queueRegistration()` after a
 new account is created (email signup always; Google/Apple only when the server
-returns `isNewUser` or `created` as true). That sets `arrivo_reg` (random id plus
+returns `isNewAccount: true`). That sets `arrivo_reg` (random id plus
 time, 15 minutes). The next approved page sends Meta `CompleteRegistration` with
 `eventID` and pushes `{event: "arrivo_registration", event_id}` to the Tag Manager
 data layer, then deletes the note. Rejection, withdrawal or Global Privacy Control
