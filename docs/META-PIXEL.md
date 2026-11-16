@@ -29,11 +29,24 @@ paste the Tag Manager snippet into a page.
 
 Trailing-slash variants are supported. New public pages must be reviewed and
 added to `PUBLIC_PAGES`; the default for an unreviewed route is no tracking.
-The standalone Express build strips the local consent assets and the new Meta
-CSP origins. No other subdomain or app is enabled by this patch.
+The standalone Express build (`scripts/build-express.js`) now bundles the same
+consent script and stylesheet, keeps the Meta, Google and TikTok CSP origins, and
+the script lists `https://express.ridearrivo.com` as an approved origin with its
+own page list (`/`, `/express`, privacy, terms). The consent choice is stored in
+localStorage and also in a first-party cookie `arrivo_mc` on `.ridearrivo.com`, so
+visitors are asked once. No other subdomain or app is enabled.
+
+Registration: `signup.html` calls `RideArrivoPrivacy.queueRegistration()` after a
+new account is created (email signup always; Google/Apple only when the server
+returns `isNewUser` or `created` as true). That sets `arrivo_reg` (random id plus
+time, 15 minutes). The next approved page sends Meta `CompleteRegistration` with
+`eventID` and pushes `{event: "arrivo_registration", event_id}` to the Tag Manager
+data layer, then deletes the note. Rejection, withdrawal or Global Privacy Control
+deletes it unused. In Tag Manager, create a TikTok `CompleteRegistration` tag and
+a Google conversion tag with a Custom Event trigger on `arrivo_registration`.
 
 One `PageView` is sent per eligible document, after consent. There are no Purchase,
-Lead, registration, checkout or form-submission events. Reopening the preferences
+Lead, checkout or form-submission events (see Registration above for the one conversion). Reopening the preferences
 or accidentally loading the module twice does not send another PageView.
 Automatic configuration is disabled before initialization. No identity fields or
 form answers are passed as advanced matching or event parameters.

@@ -226,11 +226,10 @@ test("GTM: CSP allows only the Google hosts GA4 needs", () => {
   assert.ok(!/default-src[^;]*google/.test(headers), "default-src not widened");
 });
 
-test("GTM: the Express build strips the Google origins like the Meta ones", () => {
+test("GTM: the Express build keeps the Google origins (Express shares the consent gate)", () => {
   const build = fs.readFileSync(path.join(ROOT, "scripts/build-express.js"), "utf8");
-  for (const host of ["www\\.googletagmanager\\.com", "\\*\\.google-analytics\\.com", "\\*\\.analytics\\.google\\.com"]) {
-    assert.ok(build.includes(host), host + " is stripped from the Express CSP");
-  }
+  assert.ok(!/googletagmanager\\\.com[^\n]*\.replace|\.replace\([^\n]*googletagmanager/.test(build), "Google origins are no longer stripped");
+  assert.ok(build.includes("analytics.tiktok.com"), "build checks the TikTok origin is present");
 });
 
 test("GTM: privacy policy discloses Google Analytics, the 14 month retention and the new labels", () => {

@@ -44,6 +44,8 @@ const PAGES = ["express.html", "privacy.html", "terms.html", "404.html"];
 const FILES = [
   "express.js", "express.css", "styles.css", "booking.css", "home.css", "i18n.js",
   "auth.css", "pages.css", "parasyte-sig.css", "auth-header.js", "i18n-apply.js", "theme.js", "arrivo-ui.css", "arrivo-pill.js", "clock.js", "glass-effects.js", "pwa-register.js", "paystack-config.js", "maps-config.js",
+  // One consent choice and one tracking gate for every ridearrivo.com site.
+  "marketing-consent.js", "marketing-consent.css",
 ];
 const MAIN_ONLY = "login|signup|account|track|forgot-password|reset-password|verify-email";
 
@@ -94,11 +96,8 @@ fs.mkdirSync(OUT, { recursive: true });
 // ---- pages ---------------------------------------------------------------
 for (const rel of PAGES) {
   let html = mainSiteLinks(stripLaunchGate(read(rel)))
-    // Meta consent is for the main website, not this separate deployment.
-    .replace(/<!-- Main-site consent controls;[^>]*-->\s*/g, "")
-    .replace(/<link rel="stylesheet" href="\/marketing-consent\.css[^"]*">\s*/g, "")
-    .replace(/<script src="\/marketing-consent\.js[^"]*" defer><\/script>\s*/g, "")
-    .replace(/href="privacy\.html#cookie-preferences"/g, 'href="' + MAIN + '/privacy.html#cookie-preferences"')
+    // Consent controls stay: the same banner and the same marketing-consent.js
+    // run here, with Express listed as an approved origin inside that file.
     .replace("assets/pwa/ride/apple-touch-icon.png", "assets/pwa/express/apple-touch-icon.png")
     .replace(/(apple-mobile-web-app-title" content=")[^"]*"/, '$1ArrivoExpress"');
   if (rel === "express.html") {
@@ -188,6 +187,8 @@ sw = sw.replace(shellRe, `const SHELL_FILES = [
   "/express.js",
   "/express-config.js",
   "/clock.js",
+  "/marketing-consent.js",
+  "/marketing-consent.css",
   "/manifest.json",
   "/assets/icon.png",
   "/assets/favicon.png",
@@ -195,12 +196,10 @@ sw = sw.replace(shellRe, `const SHELL_FILES = [
 ];`).replace('const CACHE_NAME = "arrivo-shell-"', 'const CACHE_NAME = "arrivo-express-"');
 write("sw.js", sw);
 
-// _headers: retain the existing API, Maps, sign-in and Paystack permissions,
-// omit main-site-only Meta and Google Analytics origins, and keep config
-// updates immediately fresh.
+// _headers: the Express host keeps the same Meta, Google and TikTok origins as
+// the main site. They only matter after the visitor accepts optional cookies,
+// because marketing-consent.js is the only thing that ever loads them.
 write("_headers", read("_headers")
-  .replace(/ https:\/\/(?:connect\.facebook\.net|www\.facebook\.com|www\.googletagmanager\.com|\*\.google-analytics\.com|\*\.analytics\.google\.com)/g, "")
-  .replace(/\n\/marketing-consent\.(?:js|css)\n  Cache-Control: [^\n]*\n/g, "\n")
   .replace(/\s*$/, "\n") +
 `
 /express-config.js
@@ -211,6 +210,17 @@ write("_headers", read("_headers")
 `);
 
 // ---- verification ----------------------------------------------------------
+{
+  const must = ["marketing-consent.js", "marketing-consent.css"];
+  for (const f of must) if (!fs.existsSync(path.join(OUT, f))) die(f + " was not bundled");
+  const ex = fs.readFileSync(path.join(OUT, "express.html"), "utf8");
+  if (!ex.includes("/marketing-consent.js")) die("express.html lost its consent script");
+  const hd = fs.readFileSync(path.join(OUT, "_headers"), "utf8");
+  for (const host of ["connect.facebook.net", "www.googletagmanager.com", "analytics.tiktok.com"]) {
+    if (!hd.includes(host)) die("Express CSP is missing " + host);
+  }
+  if (!fs.readFileSync(path.join(OUT, "marketing-consent.js"), "utf8").includes("https://express.ridearrivo.com")) die("consent script does not list the Express origin");
+}
 const missing = [];
 for (const rel of PAGES.map((p) => (p === "payment/callback/index.html" ? p : p))) {
   const html = fs.readFileSync(path.join(OUT, rel === "express.html" ? "express.html" : rel), "utf8");
