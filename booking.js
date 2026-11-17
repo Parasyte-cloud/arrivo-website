@@ -1762,6 +1762,7 @@
       adults: state.adults,
       children: state.children,
       emergencyContactName: state.emergencyContactName,
+      riderPhone: state.whatsapp || undefined,
       emergencyContactPhone: state.emergencyContactPhone,
       scheduledPickupAt: state.scheduledPickupAt || null,
       linkedRideId: state.linkedRideId || null,
@@ -1790,6 +1791,7 @@
       if (seq !== quoteSeq) return;
       loadingText.hidden = true;
       if (!result.ok) {
+        if (handlePhoneProblem(result.data)) { loadingText.hidden = true; return; }
         errorText.hidden = false;
         errorText.textContent = bookingErrorText(result.data) || "Couldn't calculate your fare right now. Please try again.";
         // api() now always resolves {ok:false} instead of rejecting on a
@@ -2026,6 +2028,29 @@
   // Turns a backend error body into what the rider should read. The
   // 12-hour booking-window refusal also carries the On the Go / WhatsApp
   // route, so point them at it instead of leaving a dead end.
+  // The server will not quote or book without a phone number it can reach the rider
+  // on (PHONE_REQUIRED), or if the one sent is not valid (PHONE_INVALID). The number is
+  // asked for on step 2, so take the rider there with a plain message and the field
+  // in focus. Never send them off to another page, and nothing is charged yet.
+  function handlePhoneProblem(data) {
+    if (!data || (data.code !== "PHONE_REQUIRED" && data.code !== "PHONE_INVALID")) return false;
+    goToStep(2);
+    var ce = document.getElementById("contactError");
+    if (ce) {
+      ce.hidden = false;
+      ce.textContent = data.code === "PHONE_INVALID"
+        ? (data.error || "That phone number does not look right. Please check it and try again.")
+        : "Please add the WhatsApp number we can reach you on, then continue.";
+    }
+    var box = document.getElementById("whatsappInputContainer");
+    if (box) {
+      try { box.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
+      var inp = box.querySelector("input[type=tel], input[type=text], input");
+      if (inp) { try { inp.focus(); } catch (e) {} }
+    }
+    return true;
+  }
+
   function bookingErrorText(data) {
     if (!data) return "";
     // The server refuses a reused key for a different trip. This really
@@ -2077,6 +2102,7 @@
         payBtn.disabled = false;
         payError.hidden = false;
         if (handleWindowBlock(rideResult.data, null)) { payError.hidden = true; return; }
+        if (handlePhoneProblem(rideResult.data)) { payError.hidden = true; return; }
         payError.textContent = bookingErrorText(rideResult.data) || t("booking.paymentFailed");
         return;
       }
@@ -2448,6 +2474,7 @@
           payBtn.disabled = false;
           payError.hidden = false;
           if (handleWindowBlock(check.data, null)) { payError.hidden = true; return; }
+          if (handlePhoneProblem(check.data)) { payError.hidden = true; return; }
           payError.textContent = bookingErrorText(check.data) || t("booking.paymentFailed");
           return;
         }
