@@ -32,6 +32,9 @@
   var sdkStarted = false, sdkReady = false, sdkOwned = false;
   var initialized = false, pageViewSent = false, sdkGranted = false;
   var gtmStarted = false, gtmReady = false, gtmOwned = false, gtmGranted = false, gtmEventSent = false;
+  var gtmConversionMode = false, registrationEventSent = false;
+  var registrationRedirectCallback = null, registrationFallbackTimer = null;
+  var gtmConversionMode = false, registrationEventSent = false;
   var timer = null, banner, settings, accept, reject, close, message, status;
   var previousFocus = null;
 
@@ -112,6 +115,27 @@
     var choice = validRecord();
     return !!(choice && choice.marketing && !gpcEnabled() && eligible());
   }
+  // Signup is excluded from normal page tracking. A conversion is permitted
+  // only with a valid prior opt-in on this production origin and no GPC signal.
+  function registrationAllowed() {
+    var choice = validRecord();
+    var path = window.location.pathname;
+    return !!(choice && choice.marketing && !gpcEnabled() &&
+      window.self === window.top &&
+      PRODUCTION_ORIGINS.indexOf(window.location.origin) !== -1 &&
+      (path === "/signup" || path === "/signup.html"));
+  }
+  // Signup is deliberately excluded from normal page tracking. A conversion
+  // may be sent there only when the visitor already accepted optional cookies
+  // on this origin, has a valid unexpired choice, and GPC is not enabled.
+  function registrationAllowed() {
+    var choice = validRecord();
+    var path = window.location.pathname;
+    return !!(choice && choice.marketing && !gpcEnabled() &&
+      window.self === window.top &&
+      PRODUCTION_ORIGINS.indexOf(window.location.origin) !== -1 &&
+      (path === "/signup" || path === "/signup.html"));
+  }
   function expireCookies(names) {
     var domains = [""];
     if (/(^|\.)ridearrivo\.com$/.test(window.location.hostname)) {
@@ -184,7 +208,7 @@
     return window.gtag;
   }
   function grantReadyGtm() {
-    if (!gtmReady || !allowed()) return;
+    if (!gtmReady || !(allowed() || (gtmConversionMode && registrationAllowed()))) return;
     window["ga-disable-" + GA_ID] = false;
     if (!gtmGranted) {
       // The one optional-cookies choice covers analytics and advertising, so all
@@ -200,9 +224,15 @@
       gtmEventSent = true;
       window.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
     }
+    // FIFO dataLayer ordering ensures GTM initializes before this conversion.
+    // No page URL, identity, form values, or authentication data are included.
+    if (gtmConversionMode && !registrationEventSent && registrationAllowed()) {
+      registrationEventSent = true;
+      window.dataLayer.push({ event: "registration_complete" });
+    }
   }
   function startGtm() {
-    if (!allowed()) return;
+    if (!allowed() && !(gtmConversionMode && registrationAllowed())) return;
     if (gtmReady) { grantReadyGtm(); return; }
     // Never initialise over another Tag Manager installation.
     if (gtmStarted || (window.google_tag_manager && window.google_tag_manager[GTM_ID]) || document.querySelector('script[src*="googletagmanager.com/gtm.js"]')) return;
@@ -225,10 +255,13 @@
     script.onload = function () {
       gtmReady = true;
       // Re-check after download: the visitor may have rejected while it loaded.
-      if (allowed()) grantReadyGtm();
+      if (allowed() || (gtmConversionMode && registrationAllowed())) grantReadyGtm();
       else revokeGtm();
     };
-    script.onerror = function () { gtmReady = false; }; // A blocker never breaks booking.
+    script.onerror = function () {
+      gtmReady = false;
+      finishRegistrationRedirect(); // A blocker must never prevent account creation.
+    };
     document.head.appendChild(script);
   }
   function revokeGtm() {
@@ -364,6 +397,26 @@
 
   window.RideArrivoPrivacy = Object.freeze({
     openPreferences: showBanner,
+    trackRegistrationComplete: function (onComplete) {
+      if (typeof onComplete === "function") registrationRedirectCallback = onComplete;
+      if (!registrationAllowed() || registrationEventSent) {
+        finishRegistrationRedirect();
+        return false;
+      }
+      gtmConversionMode = true;
+      // Continue signup even if GTM is blocked or slow.
+      if (registrationRedirectCallback && registrationFallbackTimer === null) {
+        registrationFallbackTimer = window.setTimeout(finishRegistrationRedirect, 2200);
+      }
+      startGtm();
+      return true;
+    },
+    trackRegistrationComplete: function () {
+      if (!registrationAllowed() || registrationEventSent) return false;
+      gtmConversionMode = true;
+      startGtm();
+      return true;
+    },
     getConsent: function () {
       var choice = validRecord();
       return { marketing: allowed(), analytics: allowed(), choice: choice ? choice.marketing : null,

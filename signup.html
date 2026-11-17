@@ -161,6 +161,14 @@
 <script>
   var API_BASE_URL = "https://api.ridearrivo.com";
   var TOKEN_KEY = "arrivo_rider_token";
+  function trackSuccessfulRegistration(onComplete) {
+    var privacy = window.RideArrivoPrivacy;
+    if (privacy && typeof privacy.trackRegistrationComplete === "function") {
+      privacy.trackRegistrationComplete(onComplete);
+    } else if (typeof onComplete === "function") {
+      onComplete();
+    }
+  }
 
   function api(path, options) {
     options = options || {};
@@ -281,7 +289,9 @@
           return;
         }
         localStorage.setItem(TOKEN_KEY, result.data.token);
-        window.location.href = getNextUrl();
+        trackSuccessfulRegistration(function () {
+          window.location.href = getNextUrl();
+        });
       }).catch(function () {
         btn.disabled = false;
         btn.textContent = RAt("auth.createBtn","Create profile");
@@ -325,7 +335,9 @@
           return;
         }
         localStorage.setItem(TOKEN_KEY, result.data.token);
-        window.location.href = getNextUrl();
+        trackSuccessfulRegistration(function () {
+          window.location.href = getNextUrl();
+        });
       }).catch(function () {
         oauthErrEl.hidden = false;
         oauthErrEl.textContent = RAt("auth.errServer","Couldn't reach the server. Please try again.");
