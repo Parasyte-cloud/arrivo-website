@@ -1,6 +1,26 @@
 (function () {
   "use strict";
 
+  // RETIRED PAGE. ArrivoExpress is now the engine app, where the rider sees
+  // the fare and pays the driver directly after the trip. This old page used
+  // to charge riders from a wallet or by card, so it must never run: hand the
+  // rider straight over (keeping mode/theme/src) and stop before anything
+  // else on this page initialises.
+  (function retire() {
+    var cfg = window.ARRIVO_EXPRESS_CONFIG || {};
+    var target = cfg.engineUrl || "https://arrivo-everywhere.onrender.com/express";
+    try {
+      var to = new URL(target);
+      if (window.location.hostname !== to.hostname) {
+        var keep = new URLSearchParams(window.location.search);
+        keep.forEach(function (v, k) { if (["mode", "theme", "src", "lang"].indexOf(k) !== -1) to.searchParams.set(k, v); });
+        window.location.replace(to.toString());
+      }
+    } catch (e) { /* fall through to the hard stop below */ }
+  })();
+  window.ARRIVO_EXPRESS_RETIRED = true;
+  if (window.ARRIVO_EXPRESS_RETIRED) return;
+
   // ── Configuration ────────────────────────────────────────────────────
   // Deployment settings come from express-config.js (loaded before this
   // file). The standalone express.ridearrivo.com build ships its own copy of
@@ -893,6 +913,8 @@
   // endpoint the account page's wallet top-up already uses, then book the
   // ride. The backend only trusts Paystack's confirmed amount, never ours.
   function payShortfallThenBook(amountNaira, btn, err) {
+    // Riders never pay the platform. Card top-ups and wallet charges are switched off.
+    return;
     if (typeof PaystackPop === "undefined" || typeof PAYSTACK_PUBLIC_KEY === "undefined" || PAYSTACK_PUBLIC_KEY.indexOf("replace_me") !== -1) {
       err.textContent = t("account.cardTopUpNotConfigured");
       err.hidden = false;
@@ -960,6 +982,8 @@
   }
 
   function confirmRide() {
+    // Riders never pay the platform: booking happens in the engine app.
+    return;
     var err = document.getElementById("quoteError");
     err.hidden = true;
 

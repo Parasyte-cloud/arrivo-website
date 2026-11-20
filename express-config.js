@@ -7,5 +7,9 @@ window.ARRIVO_EXPRESS_CONFIG = {
   loginPath: "login.html",
   accountPath: "account.html",
   trackPath: "track.html",
-  selfPath: "express.html"
+  selfPath: "express.html",
+  // The live ArrivoExpress app is served by the engine. This page is retired:
+  // it sends riders there and never takes a payment (riders pay the driver
+  // directly, after the trip).
+  engineUrl: "https://arrivo-everywhere.onrender.com/express"
 };
