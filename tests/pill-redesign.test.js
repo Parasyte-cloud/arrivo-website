@@ -36,14 +36,15 @@ console.log('tier switcher ok');
 
 // Ride now and Schedule open the ArrivoExpress app straight on the right switch.
 assert(home.includes('href="https://express.ridearrivo.com/express?mode=now" data-express-mode="now"'), 'Ride now opens Express on now');
-assert(home.includes('href="https://express.ridearrivo.com/express?mode=schedule" data-express-mode="schedule"'), 'Schedule opens Express on schedule');
+assert(!home.includes('mode=schedule'), 'no separate Schedule a ride card: Ride now opens Express, which has its own Schedule switch');
 assert(pj.includes('"https://express.ridearrivo.com/express" : "https://staging-express.ridearrivo.com/express"'), 'production on ridearrivo.com, staging on previews');
 assert(!/flightDateInput\.value = lagosTodayString/.test(r('booking.js')), 'flight date is never pre-filled');
 for (const k of ['removals', 'boat', 'air']) assert(pj.includes('https://' + k + '.ridearrivo.com/", status: "live"'), k + ' is live now that its domain answers');
-assert(pj.includes('(express|removals|move|boat|air|chauffeur)'), 'the switcher recognises the removals tier host');
+assert(pj.includes('(express|removals|move|boat|air|chauffeur|campus)'), 'the switcher recognises the removals tier host');
 assert(pj.includes('href: "https://chauffeur.ridearrivo.com/", status: "live"'), 'ArrivoChauffeur opens the new Chauffeur site');
 for (const f of ['index.html', 'hello.html', 'book.html', 'express.html', 'hero-products.js']) assert(!/href(: |=)"charter-booking\.html/.test(r(f)), f + ' no longer links to the old charter page');
 assert(r('hero-form.js').includes('"https://chauffeur.ridearrivo.com/?" + cp.toString()'), 'the home form hands pickup, date, time and duration to the Chauffeur site');
+assert(pj.includes('https://campus.ridearrivo.com/", status: "live"'), 'campus is listed as live now that its host answers');
 console.log('express entry ok');
 
 // Audit 1 Nov: the signature sits alone and centred at the base, and a service that is "soon" is never a link.
@@ -55,3 +56,6 @@ const pillJs = r('arrivo-pill.js');
 assert(pillJs.includes('class="ra-pill__tier is-soon" aria-disabled="true"'), 'soon tiers in the switcher are not links');
 assert(pillJs.includes('function holdSoon'), 'links to soon hosts are held back site wide');
 assert(/for="fFullDayCountInput"/.test(r('book.html')), 'number of days input has a label');
+
+// ArrivoCampus must be reachable from the home chooser on desktop, not only in the mobile menu.
+assert(/<a class="rh-opt" href="https:\/\/campus\.ridearrivo\.com\//.test(home), 'home chooser has the ArrivoCampus card');

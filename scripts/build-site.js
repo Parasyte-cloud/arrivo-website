@@ -64,7 +64,8 @@ walk(OUT, (p) => {
     if (ref.includes("' +")) continue; // JS string concatenation inside a script, not a file path
     if (/^(https?:|mailto:|tel:|data:|javascript:|\/\/)/i.test(ref)) continue;
     const target = ref.startsWith("/") ? path.join(OUT, ref) : path.join(path.dirname(p), ref);
-    if (ref.endsWith("/") ? !fs.existsSync(path.join(target, "index.html")) : !fs.existsSync(target)) {
+    // Cloudflare Pages serves /name for name.html, so an extensionless link is fine when the .html file exists.
+    if (ref.endsWith("/") ? !fs.existsSync(path.join(target, "index.html")) : !(fs.existsSync(target) || fs.existsSync(target + ".html"))) {
       missing.push(path.relative(OUT, p) + " -> " + ref);
     }
   }
