@@ -70,7 +70,7 @@
   <link rel="stylesheet" href="/launch-countdown.css?v=20260912-02">
 <!-- Main-site consent controls; Meta stays off until marketing is accepted. -->
 <link rel="stylesheet" href="/marketing-consent.css?v=20261101-1">
-<script src="/marketing-consent.js?v=20261024-1" defer></script>
+<script src="/marketing-consent.js?v=20261116-1" defer></script>
 <link rel="stylesheet" href="/parasyte-sig.css">
 <link rel="stylesheet" href="arrivo-ui.css?v=4">
 </head>
@@ -265,10 +265,14 @@
       btn.disabled = true;
       btn.textContent = RAt("auth.creating","Creating your profile…");
 
+      // Consent-gated details so the server can send the same conversion (null = no consent).
+      var mk = null;
+      try { mk = window.RideArrivoPrivacy ? window.RideArrivoPrivacy.prepareRegistration() : null; } catch (e) {}
       api("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          marketing: mk,
           firstName: firstName, lastName: lastName, email: email, password: password, confirmPassword: passwordConfirm,
           whatsappNumber: phoneResult.full, countryOfResidence: country || null, agreedToTerms: agreed, role: "rider",
         }),
@@ -281,6 +285,8 @@
           return;
         }
         localStorage.setItem(TOKEN_KEY, result.data.token);
+        // New account created: leave the one-time conversion note (consent permitting).
+        try { if (window.RideArrivoPrivacy && mk) window.RideArrivoPrivacy.queueRegistration(mk.eventId); } catch (e) {}
         window.location.href = getNextUrl();
       }).catch(function () {
         btn.disabled = false;
@@ -314,6 +320,9 @@
 
     function submitOAuth(path, payload) {
       oauthErrEl.hidden = true;
+      var mk = null;
+      try { mk = window.RideArrivoPrivacy ? window.RideArrivoPrivacy.prepareRegistration() : null; } catch (e) {}
+      if (mk) payload.marketing = mk;
       api(path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -325,6 +334,8 @@
           return;
         }
         localStorage.setItem(TOKEN_KEY, result.data.token);
+        // Google and Apple sign-in can be an existing account: the server says when it was new.
+        if (result.data.isNewAccount === true && mk) { try { window.RideArrivoPrivacy.queueRegistration(mk.eventId); } catch (e) {} }
         window.location.href = getNextUrl();
       }).catch(function () {
         oauthErrEl.hidden = false;

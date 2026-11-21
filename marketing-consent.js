@@ -22,15 +22,30 @@
   var RECORD_VERSION = 3;
   var STORAGE_KEY = "arrivo_marketing_consent_v1";
   var MAX_AGE = 180 * 24 * 60 * 60 * 1000;
-  var PRODUCTION_ORIGINS = ["https://www.ridearrivo.com", "https://ridearrivo.com"];
+  var EXPRESS_ORIGIN = "https://express.ridearrivo.com";
+  var PRODUCTION_ORIGINS = ["https://www.ridearrivo.com", "https://ridearrivo.com", EXPRESS_ORIGIN];
+  // The Express site is its own deployment, so its pages are listed on their own.
+  // "/" and "/express" are the ad landing page. Nothing typed into the booking
+  // form ever reaches the URL, and the same URL filters below still apply.
+  var EXPRESS_PAGES = ["/", "/index", "/express", "/privacy", "/terms"];
+  // One choice for every ridearrivo.com site. localStorage is per origin, so the
+  // choice is also kept in a first-party cookie on .ridearrivo.com. It holds the
+  // same record as localStorage and nothing else about the visitor.
+  var SHARED_KEY = "arrivo_mc";
+  // One-time hand-off for the "registration completed" conversion. The signup page
+  // is not a tracked page, so it only leaves this note (a random id and a time,
+  // no personal data) and the next approved page sends the event.
+  var REG_KEY = "arrivo_reg";
+  var REG_MAX_AGE = 15 * 60;
   // Authenticated booking, account, driver, payment and tracking flows are NOT
   // marketing pages. New paths are off until deliberately reviewed here.
   var PUBLIC_PAGES = ["/", "/index", "/hello", "/contact-us", "/charter-booking", "/privacy", "/terms"];
-  var SAFE_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "utm_id", "fbclid", "gclid", "theme", "lang", "src"];
+  var SAFE_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "utm_id", "fbclid", "gclid", "ttclid", "theme", "lang", "src"];
   var SAFE_ANCHORS = ["", "how", "audiences", "safety", "contact", "fleet", "services", "drive", "business", "choose", "main", "cookie-preferences", "cookies", "top", "faq"];
   var record = readRecord();
   var sdkStarted = false, sdkReady = false, sdkOwned = false;
   var initialized = false, pageViewSent = false, sdkGranted = false;
+  var regMetaSent = false, regGtmSent = false;
   var gtmStarted = false, gtmReady = false, gtmOwned = false, gtmGranted = false, gtmEventSent = false;
   var timer = null, banner, settings, accept, reject, close, message, status;
   var previousFocus = null;
@@ -57,20 +72,48 @@
       return value;
     } catch (e) { return null; }
   }
-  function readRecord() {
+  function sharedDomain() {
+    return /(^|\.)ridearrivo\.com$/.test(window.location.hostname) ? "; Domain=.ridearrivo.com" : "";
+  }
+  function readCookie(name) {
     try {
-      var raw = window.localStorage.getItem(STORAGE_KEY);
-      var parsed = parseRecord(raw);
-      if (raw !== null && !parsed) window.localStorage.removeItem(STORAGE_KEY);
-      return parsed;
+      var m = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+      return m ? decodeURIComponent(m[1]) : null;
     } catch (e) { return null; }
   }
-  function refreshAndSync() {
+  function writeCookie(name, value, maxAge) {
+    try {
+      document.cookie = name + "=" + encodeURIComponent(value) + "; Max-Age=" + maxAge + "; Path=/; SameSite=Lax" +
+        sharedDomain() + (window.location.protocol === "https:" ? "; Secure" : "");
+    } catch (e) {}
+  }
+  function dropCookie(name) {
+    try {
+      document.cookie = name + "=; Max-Age=0; Path=/; SameSite=Lax" + sharedDomain() + (window.location.protocol === "https:" ? "; Secure" : "");
+    } catch (e) {}
+  }
+  // Newest valid choice wins between this origin's storage and the shared cookie.
+  function readRecord() {
+    var local = null, shared = null;
     try {
       var raw = window.localStorage.getItem(STORAGE_KEY);
-      record = parseRecord(raw);
-      if (raw !== null && !record) window.localStorage.removeItem(STORAGE_KEY);
-    } catch (e) { /* Keep this-page choice when storage is unavailable. */ }
+      local = parseRecord(raw);
+      if (raw !== null && !local) window.localStorage.removeItem(STORAGE_KEY);
+    } catch (e) { /* storage may be blocked */ }
+    var cookie = readCookie(SHARED_KEY);
+    if (cookie !== null) {
+      shared = parseRecord(cookie);
+      if (!shared) dropCookie(SHARED_KEY);
+    }
+    var best = local;
+    if (shared && (!best || shared.updatedAt > best.updatedAt)) {
+      best = shared;
+      try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(shared)); } catch (e) {}
+    }
+    return best;
+  }
+  function refreshAndSync() {
+    record = readRecord();
     sync();
   }
   function validRecord() {
@@ -80,7 +123,8 @@
   function isPublicPath(path) {
     try { path = decodeURIComponent(path); } catch (e) { return false; }
     path = path.replace(/\.html$/i, "").replace(/\/$/, "") || "/";
-    return PUBLIC_PAGES.indexOf(path) !== -1;
+    var pages = window.location.origin === EXPRESS_ORIGIN ? EXPRESS_PAGES : PUBLIC_PAGES;
+    return pages.indexOf(path) !== -1;
   }
   function safeUrl(url) {
     try {
@@ -128,6 +172,66 @@
   function clearMarketingCookies() { expireCookies(["_fbp", "_fbc", "_gcl_au", "_gcl_aw", "_gcl_dc", "_gcl_gb", "_ttp"]); }
   // GA4 names its cookies _ga and _ga_<measurement id without "G-">.
   function clearAnalyticsCookies() { expireCookies(["_ga", "_gid", "_gat", "_ga_" + GA_ID.replace(/^G-/, "")]); }
+  // ---- registration conversion -------------------------------------------
+  // Flow: signup page calls queueRegistration() right after a new account is
+  // created. The next approved page (home, or Express) finds the note, and if
+  // consent is still granted sends CompleteRegistration to Meta and a
+  // dataLayer event for Tag Manager (TikTok and Google tags listen for it).
+  // The note is removed as soon as it is used, or on rejection, or after 15 min.
+  function newEventId() {
+    var a = new Uint8Array(12);
+    try { window.crypto.getRandomValues(a); } catch (e) { for (var i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256); }
+    return Array.prototype.map.call(a, function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+  }
+  function pendingRegistration() {
+    var raw = readCookie(REG_KEY);
+    if (!raw) return null;
+    var parts = raw.split(".");
+    var at = Number(parts[1]);
+    if (!/^[0-9a-f]{24}$/.test(parts[0] || "") || !Number.isFinite(at) || Date.now() - at > REG_MAX_AGE * 1000 || at > Date.now() + 60000) {
+      dropCookie(REG_KEY);
+      return null;
+    }
+    return { id: parts[0], at: at };
+  }
+  // Called BEFORE the signup request. Returns what the server needs to send the
+  // same conversion from its side (Meta Conversions API, TikTok Events API), or
+  // null when there is no live consent. The id is shared with queueRegistration
+  // so Meta and TikTok can match the browser event and the server event.
+  function prepareRegistration() {
+    var choice = validRecord();
+    if (!choice || !choice.marketing || gpcEnabled() || PRODUCTION_ORIGINS.indexOf(window.location.origin) === -1 || window.self !== window.top) return null;
+    var out = { consent: true, eventId: newEventId(), url: window.location.origin + window.location.pathname };
+    var fbp = readCookie("_fbp"), fbc = readCookie("_fbc"), ttp = readCookie("_ttp");
+    if (fbp) out.fbp = fbp;
+    if (fbc) out.fbc = fbc;
+    if (ttp) out.ttp = ttp;
+    return out;
+  }
+  function queueRegistration(eventId) {
+    // Same rules as any tracking: a live "yes", no Global Privacy Control, real site.
+    var choice = validRecord();
+    if (!choice || !choice.marketing || gpcEnabled() || PRODUCTION_ORIGINS.indexOf(window.location.origin) === -1 || window.self !== window.top) return false;
+    writeCookie(REG_KEY, (/^[0-9a-f]{24}$/.test(eventId || "") ? eventId : newEventId()) + "." + Date.now(), REG_MAX_AGE);
+    return true;
+  }
+  function flushRegistration() {
+    var pending = pendingRegistration();
+    if (!pending) return;
+    if (!allowed()) return; // Not an approved page right now. The note waits, or expires.
+    if (sdkReady && sdkGranted && !regMetaSent) {
+      regMetaSent = true;
+      // eventID lets Meta de-duplicate this against a server-side copy later.
+      window.fbq("track", "CompleteRegistration", {}, { eventID: pending.id });
+    }
+    if (gtmReady && gtmGranted && !regGtmSent) {
+      regGtmSent = true;
+      window.dataLayer.push({ event: "arrivo_registration", event_id: pending.id });
+    }
+    // Used once. Keep the note only while a started channel is still loading.
+    if ((!sdkStarted || regMetaSent) && (!gtmStarted || regGtmSent)) dropCookie(REG_KEY);
+  }
+
   function grantReadySdk() {
     if (!sdkReady || !allowed()) return;
     if (!sdkGranted) { window.fbq("consent", "grant"); sdkGranted = true; }
@@ -141,6 +245,7 @@
       pageViewSent = true;
       window.fbq("track", "PageView");
     }
+    flushRegistration();
   }
   function startSdk() {
     if (!allowed()) return;
@@ -200,6 +305,7 @@
       gtmEventSent = true;
       window.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
     }
+    flushRegistration();
   }
   function startGtm() {
     if (!allowed()) return;
@@ -256,6 +362,9 @@
       sdkGranted = false;
       clearMarketingCookies();
       revokeGtm();
+      // A "no" (or GPC) also cancels any registration note that was waiting.
+      var c = validRecord();
+      if ((c && !c.marketing) || gpcEnabled()) dropCookie(REG_KEY);
     }
     scheduleExpiry();
     if (banner) {
@@ -269,6 +378,7 @@
     record = { version: RECORD_VERSION, marketing: marketing, updatedAt: Date.now() };
     // If storage is unavailable, consent lasts for this document only.
     try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(record)); } catch (e) {}
+    writeCookie(SHARED_KEY, JSON.stringify(record), Math.floor(MAX_AGE / 1000));
     sync();
     hideBanner();
     status.textContent = text()[8];
@@ -364,6 +474,8 @@
 
   window.RideArrivoPrivacy = Object.freeze({
     openPreferences: showBanner,
+    prepareRegistration: prepareRegistration,
+    queueRegistration: queueRegistration,
     getConsent: function () {
       var choice = validRecord();
       return { marketing: allowed(), analytics: allowed(), choice: choice ? choice.marketing : null,
