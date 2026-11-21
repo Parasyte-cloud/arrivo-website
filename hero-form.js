@@ -412,7 +412,7 @@
       cp.set("duration", durationEl ? durationEl.value : "Full day");
       submitting = true;
       if (submitBtn) submitBtn.disabled = true;
-      window.location.href = "charter-booking.html?" + cp.toString();
+      window.location.href = "https://chauffeur.ridearrivo.com/?" + cp.toString();
       return;
     }
 
