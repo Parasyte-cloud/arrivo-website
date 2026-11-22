@@ -157,3 +157,19 @@ html[data-theme="dark"] .rh-faq summary::after { color: var(--ra-amber-2); }
   .hero-media-layer { transition: none; }
   .rh-opt, .rh-tab, .rh-faq summary::after { transition: none; }
 }
+
+/* Audit 2026-11-22: the "Explore" links read as plain text and were 20px tall on phones.
+   Underline them so they look tappable and give every footer link a 44px touch target. */
+.rh-faq__wrap > p a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.rh-faq__wrap > p a:hover { text-decoration-thickness: 2px; }
+@media (max-width: 640px) {
+  .rh-faq__wrap > p { line-height: 1; }
+  .rh-faq__wrap > p a { display: inline-block; padding: 12px 0; line-height: 1.4; }
+  .rf__links { gap: 0 20px; }
+  .rf__links a { display: inline-flex; align-items: center; min-height: 44px; padding: 0; }
+  .rf__brand { display: inline-flex; align-items: center; min-height: 44px; }
+  #footerEmailLink, #footerPhoneLink { display: inline-flex; align-items: center; min-height: 44px; }
+}
+@media (max-width: 640px) {
+  a[href="https://www.parasyte.cloud"] { display: inline-flex; align-items: center; min-height: 44px; }
+}

@@ -26,6 +26,8 @@
 <title>Contact Us | RideArrivo</title>
 <link rel="canonical" href="https://ridearrivo.com/contact-us">
 <meta name="description" content="Get in touch with the RideArrivo team, questions, feedback, or anything else we can help with.">
+<meta property="og:image" content="https://ridearrivo.com/assets/og-image.png">
+<meta name="twitter:image" content="https://ridearrivo.com/assets/og-image.png">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -107,8 +109,8 @@
     <label class="field-label" for="cEmail">Email</label>
     <input type="email" id="cEmail" class="field" maxlength="200" autocomplete="email" placeholder="you@example.com">
 
-    <label class="field-label" for="cPhoneContainer">Contact number</label>
-    <div id="cPhoneContainer"></div>
+    <span class="field-label" id="cPhoneLabel">Contact number</span>
+    <div id="cPhoneContainer" role="group" aria-labelledby="cPhoneLabel"></div>
 
     <label class="field-label" for="cMessage">Message</label>
     <textarea id="cMessage" class="field" maxlength="3000" placeholder="How can we help?"></textarea>
@@ -125,6 +127,29 @@
   <div class="booking-card" id="contactSuccess" hidden>
     <p style="margin:0;">Thank you, your message has been received. A member of the RideArrivo team will follow up using the details you provided.</p>
   </div>
+  <div class="booking-card" id="contactDirect" style="margin-top:16px;">
+    <h2 style="margin:0 0 6px;font-size:18px;">Prefer to talk now?</h2>
+    <p style="margin:0 0 12px;">The fastest way to reach us is WhatsApp. Our team replies there first.</p>
+    <p style="margin:0;display:flex;flex-wrap:wrap;gap:10px;">
+      <a class="btn btn-primary" href="https://wa.me/2348162706078" target="_blank" rel="noopener">Chat on WhatsApp</a>
+      <a class="btn btn-ghost" id="footerPhoneLink" data-cc="234" data-num="8162706078" data-display="081 6270 6078" href="#"><span id="footerPhoneText">Call us</span></a>
+      <a class="btn btn-ghost" id="footerEmailLink" data-user="info" data-domain="ridearrivo.com" href="#"><span id="footerEmailText">Email us</span></a>
+    </p>
+  </div>
+  <script>
+    (function () {
+      var link = document.getElementById("footerEmailLink");
+      if (link) {
+        link.href = "mailto:" + link.getAttribute("data-user") + "@" + link.getAttribute("data-domain");
+        document.getElementById("footerEmailText").textContent = link.getAttribute("data-user") + "@" + link.getAttribute("data-domain");
+      }
+      var p = document.getElementById("footerPhoneLink");
+      if (p) {
+        p.href = "tel:+" + p.getAttribute("data-cc") + p.getAttribute("data-num");
+        document.getElementById("footerPhoneText").textContent = p.getAttribute("data-display");
+      }
+    })();
+  </script>
 </main>
 
 <script src="supabase-config.js?v=1"></script>
@@ -152,7 +177,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    var phoneField = arrivoBuildPhoneInput(document.getElementById("cPhoneContainer"), { placeholder: "Phone or WhatsApp number" });
+    var phoneField = arrivoBuildPhoneInput(document.getElementById("cPhoneContainer"), { placeholder: "Phone or WhatsApp" });
     var errEl = document.getElementById("contactError");
     var btn = document.getElementById("contactBtn");
 
@@ -218,5 +243,6 @@
 <script src="auth-header.js?v=3" defer></script>
 <div class="parasyte-sig"><a href="https://www.parasyte.cloud" target="_blank" rel="noopener noreferrer" aria-label="Parasyte"><img src="/assets/parasyte-wordmark.png" alt="Parasyte" width="120" height="22" loading="lazy"></a></div>
 <script src="arrivo-pill.js?v=9" defer></script>
+<script src="a11y-labels.js?v=20261122-1" defer></script>
 </body>
 </html>

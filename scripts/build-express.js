@@ -48,7 +48,7 @@ const FILES = [
   "express.js", "express.css", "styles.css", "booking.css", "home.css", "i18n.js",
   "auth.css", "pages.css", "parasyte-sig.css", "auth-header.js", "i18n-apply.js", "theme.js", "arrivo-ui.css", "arrivo-pill.js", "clock.js", "glass-effects.js", "pwa-register.js", "paystack-config.js", "maps-config.js",
   // One consent choice and one tracking gate for every ridearrivo.com site.
-  "marketing-consent.js", "marketing-consent.css",
+  "marketing-consent.js", "marketing-consent.css", "a11y-labels.js",
 ];
 const MAIN_ONLY = "login|signup|account|track|forgot-password|reset-password|verify-email";
 
