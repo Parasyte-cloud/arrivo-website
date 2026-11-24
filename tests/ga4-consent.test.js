@@ -149,6 +149,14 @@ test("GTM: not on preview domains, with unsafe URL parameters, or with Global Pr
   assert.equal(googleRequests(load({ url: "https://abc123.arrivo-website.pages.dev/", record: accepted() }).scripts).length, 0);
   assert.equal(googleRequests(load({ url: "https://www.ridearrivo.com/?token=TEST_ONLY", record: accepted() }).scripts).length, 0);
   assert.equal(googleRequests(load({ url: "https://www.ridearrivo.com/?email=a@b.com", record: accepted() }).scripts).length, 0);
+  assert.equal(
+    googleRequests(load({
+      url: "https://www.ridearrivo.com/?utm_source=a%5Cb",
+      record: accepted()
+    }).scripts).length,
+    0,
+    "backslashes in parameter values remain blocked"
+  );
   assert.equal(googleRequests(load({ gpc: true, record: accepted() }).scripts).length, 0);
   assert.equal(googleRequests(load({ url: "https://www.ridearrivo.com/?utm_source=x&gclid=abc", record: accepted() }).scripts).length, 1, "reviewed campaign parameters still count");
 });

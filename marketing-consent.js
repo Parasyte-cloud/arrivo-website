@@ -139,7 +139,7 @@
       parsed.searchParams.forEach(function (value, key) {
         var allowedParam = SAFE_PARAMS.indexOf(key) !== -1 ||
           (allowTagAssistantDebug === true && key === "gtm_debug");
-        if (!allowedParam || value.length > 512 || !/^[a-zA-Z0-9 _.,:\\/-]*$/.test(value)) safe = false;
+        if (!allowedParam || value.length > 512 || !/^[a-zA-Z0-9 _.,:\/-]*$/.test(value)) safe = false;
       });
       return safe && SAFE_ANCHORS.indexOf(parsed.hash.slice(1)) !== -1;
     } catch (e) { return false; }
