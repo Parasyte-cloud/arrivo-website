@@ -55,12 +55,12 @@
   // browser opt-out explanation, saved announcement.
   var COPY = {
     en: ["Your privacy, your choice", "We use essential storage to run RideArrivo. With your permission, Google Analytics counts visits to our public pages, and advertising partners (Meta, Google and TikTok) help us measure and personalise ads. You can reject optional cookies and still use the site, or change your choice later.", "Accept optional cookies", "Reject optional cookies", "Cookie preferences", "Privacy policy", "Close", "Your browser's Global Privacy Control signal is on. Optional tracking stays off.", "Your cookie preference has been saved."],
-    fr: ["Votre vie priv\u00e9e, votre choix", "Nous utilisons le stockage essentiel pour faire fonctionner RideArrivo. Avec votre accord, Google Analytics compte les visites de nos pages publiques, et des partenaires publicitaires (Meta, Google et TikTok) nous aident \u00e0 mesurer et personnaliser les publicit\u00e9s. Vous pouvez refuser les cookies facultatifs et utiliser le site, ou modifier votre choix plus tard.", "Accepter les cookies facultatifs", "Refuser les cookies facultatifs", "Pr\u00e9f\u00e9rences des cookies", "Politique de confidentialit\u00e9", "Fermer", "Le signal Global Privacy Control de votre navigateur est activ\u00e9. Le suivi facultatif reste d\u00e9sactiv\u00e9.", "Votre choix de cookies a \u00e9t\u00e9 enregistr\u00e9."],
-    zh: ["\u60a8\u7684\u9690\u79c1\uff0c\u7531\u60a8\u9009\u62e9", "RideArrivo \u4f7f\u7528\u5fc5\u8981\u7684\u5b58\u50a8\u6765\u8fd0\u884c\u7f51\u7ad9\u3002\u7ecf\u60a8\u540c\u610f\uff0cGoogle Analytics \u4f1a\u7edf\u8ba1\u516c\u5f00\u9875\u9762\u7684\u8bbf\u95ee\uff0c\u5e7f\u544a\u5408\u4f5c\u4f19\u4f34\uff08Meta\u3001Google \u548c TikTok\uff09\u4f1a\u5e2e\u52a9\u6211\u4eec\u8861\u91cf\u5e76\u4e2a\u6027\u5316\u5e7f\u544a\u3002\u60a8\u53ef\u4ee5\u62d2\u7edd\u53ef\u9009 Cookie \u5e76\u7ee7\u7eed\u4f7f\u7528\u7f51\u7ad9\uff0c\u6216\u7a0d\u540e\u66f4\u6539\u9009\u62e9\u3002", "\u63a5\u53d7\u53ef\u9009 Cookie", "\u62d2\u7edd\u53ef\u9009 Cookie", "Cookie \u504f\u597d", "\u9690\u79c1\u653f\u7b56", "\u5173\u95ed", "\u60a8\u7684\u6d4f\u89c8\u5668\u5df2\u542f\u7528 Global Privacy Control\u3002\u53ef\u9009\u8ddf\u8e2a\u4fdd\u6301\u5173\u95ed\u3002", "\u5df2\u4fdd\u5b58\u60a8\u7684 Cookie \u504f\u597d\u3002"],
-    hi: ["\u0906\u092a\u0915\u0940 \u0928\u093f\u091c\u0924\u093e, \u0906\u092a\u0915\u0940 \u092a\u0938\u0902\u0926", "RideArrivo \u091a\u0932\u093e\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u0939\u092e \u0906\u0935\u0936\u094d\u092f\u0915 \u0938\u094d\u091f\u094b\u0930\u0947\u091c \u0915\u093e \u0909\u092a\u092f\u094b\u0917 \u0915\u0930\u0924\u0947 \u0939\u0948\u0902\u0964 \u0906\u092a\u0915\u0940 \u0905\u0928\u0941\u092e\u0924\u093f \u0938\u0947 Google Analytics \u0938\u093e\u0930\u094d\u0935\u091c\u0928\u093f\u0915 \u092a\u0943\u0937\u094d\u0920\u094b\u0902 \u0915\u0940 \u0935\u093f\u091c\u093c\u093f\u091f \u0917\u093f\u0928\u0924\u093e \u0939\u0948, \u0914\u0930 \u0935\u093f\u091c\u094d\u091e\u093e\u092a\u0928 \u0938\u093e\u091d\u0947\u0926\u093e\u0930 (Meta, Google \u0914\u0930 TikTok) \u0935\u093f\u091c\u094d\u091e\u093e\u092a\u0928\u094b\u0902 \u0915\u094b \u092e\u093e\u092a\u0928\u0947 \u0914\u0930 \u0935\u094d\u092f\u0915\u094d\u0924\u093f\u0917\u0924 \u092c\u0928\u093e\u0928\u0947 \u092e\u0947\u0902 \u0939\u092e\u093e\u0930\u0940 \u092e\u0926\u0926 \u0915\u0930\u0924\u0947 \u0939\u0948\u0902\u0964 \u0906\u092a \u0935\u0948\u0915\u0932\u094d\u092a\u093f\u0915 \u0915\u0941\u0915\u0940\u091c\u093c \u0905\u0938\u094d\u0935\u0940\u0915\u093e\u0930 \u0915\u0930\u0915\u0947 \u092d\u0940 \u0938\u093e\u0907\u091f \u0915\u093e \u0909\u092a\u092f\u094b\u0917 \u0915\u0930 \u0938\u0915\u0924\u0947 \u0939\u0948\u0902, \u092f\u093e \u092c\u093e\u0926 \u092e\u0947\u0902 \u0905\u092a\u0928\u093e \u0935\u093f\u0915\u0932\u094d\u092a \u092c\u0926\u0932 \u0938\u0915\u0924\u0947 \u0939\u0948\u0902\u0964", "\u0935\u0948\u0915\u0932\u094d\u092a\u093f\u0915 \u0915\u0941\u0915\u0940 \u0938\u094d\u0935\u0940\u0915\u093e\u0930 \u0915\u0930\u0947\u0902", "\u0935\u0948\u0915\u0932\u094d\u092a\u093f\u0915 \u0915\u0941\u0915\u0940 \u0905\u0938\u094d\u0935\u0940\u0915\u093e\u0930 \u0915\u0930\u0947\u0902", "\u0915\u0941\u0915\u0940 \u092a\u0938\u0902\u0926", "\u0917\u094b\u092a\u0928\u0940\u092f\u0924\u093e \u0928\u0940\u0924\u093f", "\u092c\u0902\u0926 \u0915\u0930\u0947\u0902", "\u0906\u092a\u0915\u0947 \u092c\u094d\u0930\u093e\u0909\u091c\u093c\u0930 \u092e\u0947\u0902 Global Privacy Control \u091a\u093e\u0932\u0942 \u0939\u0948\u0964 \u0935\u0948\u0915\u0932\u094d\u092a\u093f\u0915 \u091f\u094d\u0930\u0948\u0915\u093f\u0902\u0917 \u092c\u0902\u0926 \u0930\u0939\u0947\u0917\u0940\u0964", "\u0906\u092a\u0915\u0940 \u0915\u0941\u0915\u0940 \u092a\u0938\u0902\u0926 \u0938\u0939\u0947\u091c \u0926\u0940 \u0917\u0908 \u0939\u0948\u0964"],
-    de: ["Ihre Privatsph\u00e4re, Ihre Wahl", "Wir verwenden notwendigen Speicher, um RideArrivo zu betreiben. Mit Ihrer Erlaubnis z\u00e4hlt Google Analytics Besuche auf unseren \u00f6ffentlichen Seiten, und Werbepartner (Meta, Google und TikTok) helfen uns, Anzeigen zu messen und zu personalisieren. Sie k\u00f6nnen optionale Cookies ablehnen und die Website trotzdem nutzen oder Ihre Wahl sp\u00e4ter \u00e4ndern.", "Optionale Cookies akzeptieren", "Optionale Cookies ablehnen", "Cookie-Einstellungen", "Datenschutzerkl\u00e4rung", "Schlie\u00dfen", "Global Privacy Control ist in Ihrem Browser aktiviert. Optionales Tracking bleibt ausgeschaltet.", "Ihre Cookie-Einstellung wurde gespeichert."],
-    es: ["Tu privacidad, tu decisi\u00f3n", "Usamos almacenamiento esencial para que RideArrivo funcione. Con tu permiso, Google Analytics cuenta las visitas a nuestras p\u00e1ginas p\u00fablicas y socios publicitarios (Meta, Google y TikTok) nos ayudan a medir y personalizar los anuncios. Puedes rechazar las cookies opcionales y seguir usando el sitio, o cambiar tu elecci\u00f3n m\u00e1s tarde.", "Aceptar cookies opcionales", "Rechazar cookies opcionales", "Preferencias de cookies", "Pol\u00edtica de privacidad", "Cerrar", "La se\u00f1al Global Privacy Control de tu navegador est\u00e1 activada. El seguimiento opcional permanece desactivado.", "Se ha guardado tu preferencia de cookies."],
-    pt: ["Sua privacidade, sua escolha", "Usamos armazenamento essencial para o RideArrivo funcionar. Com a sua permiss\u00e3o, o Google Analytics conta as visitas \u00e0s nossas p\u00e1ginas p\u00fablicas e parceiros de publicidade (Meta, Google e TikTok) nos ajudam a medir e personalizar an\u00fancios. Voc\u00ea pode recusar os cookies opcionais e continuar usando o site, ou mudar sua escolha depois.", "Aceitar cookies opcionais", "Recusar cookies opcionais", "Prefer\u00eancias de cookies", "Pol\u00edtica de privacidade", "Fechar", "O sinal Global Privacy Control do seu navegador est\u00e1 ativado. O rastreamento opcional permanece desativado.", "Sua prefer\u00eancia de cookies foi salva."]
+    fr: ["Votre vie privée, votre choix", "Nous utilisons le stockage essentiel pour faire fonctionner RideArrivo. Avec votre accord, Google Analytics compte les visites de nos pages publiques, et des partenaires publicitaires (Meta, Google et TikTok) nous aident à mesurer et personnaliser les publicités. Vous pouvez refuser les cookies facultatifs et utiliser le site, ou modifier votre choix plus tard.", "Accepter les cookies facultatifs", "Refuser les cookies facultatifs", "Préférences des cookies", "Politique de confidentialité", "Fermer", "Le signal Global Privacy Control de votre navigateur est activé. Le suivi facultatif reste désactivé.", "Votre choix de cookies a été enregistré."],
+    zh: ["您的隐私，由您选择", "RideArrivo 使用必要的存储来运行网站。经您同意，Google Analytics 会统计公开页面的访问，广告合作伙伴（Meta、Google 和 TikTok）会帮助我们衡量并个性化广告。您可以拒绝可选 Cookie 并继续使用网站，或稍后更改选择。", "接受可选 Cookie", "拒绝可选 Cookie", "Cookie 偏好", "隐私政策", "关闭", "您的浏览器已启用 Global Privacy Control。可选跟踪保持关闭。", "已保存您的 Cookie 偏好。"],
+    hi: ["आपकी निजता, आपकी पसंद", "RideArrivo चलाने के लिए हम आवश्यक स्टोरेज का उपयोग करते हैं। आपकी अनुमति से Google Analytics सार्वजनिक पृष्ठों की विज़िट गिनता है, और विज्ञापन साझेदार (Meta, Google और TikTok) विज्ञापनों को मापने और व्यक्तिगत बनाने में हमारी मदद करते हैं। आप वैकल्पिक कुकीज़ अस्वीकार करके भी साइट का उपयोग कर सकते हैं, या बाद में अपना विकल्प बदल सकते हैं।", "वैकल्पिक कुकी स्वीकार करें", "वैकल्पिक कुकी अस्वीकार करें", "कुकी पसंद", "गोपनीयता नीति", "बंद करें", "आपके ब्राउज़र में Global Privacy Control चालू है। वैकल्पिक ट्रैकिंग बंद रहेगी।", "आपकी कुकी पसंद सहेज दी गई है।"],
+    de: ["Ihre Privatsphäre, Ihre Wahl", "Wir verwenden notwendigen Speicher, um RideArrivo zu betreiben. Mit Ihrer Erlaubnis zählt Google Analytics Besuche auf unseren öffentlichen Seiten, und Werbepartner (Meta, Google und TikTok) helfen uns, Anzeigen zu messen und zu personalisieren. Sie können optionale Cookies ablehnen und die Website trotzdem nutzen oder Ihre Wahl später ändern.", "Optionale Cookies akzeptieren", "Optionale Cookies ablehnen", "Cookie-Einstellungen", "Datenschutzerklärung", "Schließen", "Global Privacy Control ist in Ihrem Browser aktiviert. Optionales Tracking bleibt ausgeschaltet.", "Ihre Cookie-Einstellung wurde gespeichert."],
+    es: ["Tu privacidad, tu decisión", "Usamos almacenamiento esencial para que RideArrivo funcione. Con tu permiso, Google Analytics cuenta las visitas a nuestras páginas públicas y socios publicitarios (Meta, Google y TikTok) nos ayudan a medir y personalizar los anuncios. Puedes rechazar las cookies opcionales y seguir usando el sitio, o cambiar tu elección más tarde.", "Aceptar cookies opcionales", "Rechazar cookies opcionales", "Preferencias de cookies", "Política de privacidad", "Cerrar", "La señal Global Privacy Control de tu navegador está activada. El seguimiento opcional permanece desactivado.", "Se ha guardado tu preferencia de cookies."],
+    pt: ["Sua privacidade, sua escolha", "Usamos armazenamento essencial para o RideArrivo funcionar. Com a sua permissão, o Google Analytics conta as visitas às nossas páginas públicas e parceiros de publicidade (Meta, Google e TikTok) nos ajudam a medir e personalizar anúncios. Você pode recusar os cookies opcionais e continuar usando o site, ou mudar sua escolha depois.", "Aceitar cookies opcionais", "Recusar cookies opcionais", "Preferências de cookies", "Política de privacidade", "Fechar", "O sinal Global Privacy Control do seu navegador está ativado. O rastreamento opcional permanece desativado.", "Sua preferência de cookies foi salva."]
   };
 
   function parseRecord(raw) {
@@ -126,31 +126,40 @@
     var pages = window.location.origin === EXPRESS_ORIGIN ? EXPRESS_PAGES : PUBLIC_PAGES;
     return pages.indexOf(path) !== -1;
   }
-  function safeUrl(url) {
+
+  // Tag Assistant adds gtm_debug to the page URL while previewing. Permit that
+  // single diagnostic parameter only when the navigation came from Tag Assistant.
+  // All other unknown parameters remain blocked by the normal URL allowlist.
+  function safeUrl(url, allowTagAssistantDebug) {
     try {
       var parsed = new URL(url);
       if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return false;
       if (parsed.username || parsed.password) return false;
       var safe = true;
       parsed.searchParams.forEach(function (value, key) {
-        // Unknown keys, email-like values and token-bearing fragments cause the
-        // ENTIRE visit to be skipped. Do not rewrite auth/campaign URLs in place.
-        if (SAFE_PARAMS.indexOf(key) === -1 || value.length > 512 || !/^[a-zA-Z0-9 _.,:\/-]*$/.test(value)) safe = false;
+        var allowedParam = SAFE_PARAMS.indexOf(key) !== -1 ||
+          (allowTagAssistantDebug === true && key === "gtm_debug");
+        if (!allowedParam || value.length > 512 || !/^[a-zA-Z0-9 _.,:\\/-]*$/.test(value)) safe = false;
       });
       return safe && SAFE_ANCHORS.indexOf(parsed.hash.slice(1)) !== -1;
     } catch (e) { return false; }
   }
   function eligible() {
     if (window.self !== window.top || PRODUCTION_ORIGINS.indexOf(window.location.origin) === -1 ||
-        !isPublicPath(window.location.pathname) || !safeUrl(window.location.href)) return false;
+        !isPublicPath(window.location.pathname)) return false;
+
+    var fromTagAssistant = false;
     if (document.referrer) {
       if (!safeUrl(document.referrer)) return false;
       try {
         var from = new URL(document.referrer);
-        if ((PRODUCTION_ORIGINS.indexOf(from.origin) !== -1 || from.origin === window.location.origin) && !isPublicPath(from.pathname)) return false;
+        fromTagAssistant = from.origin === "https://tagassistant.google.com";
+        if ((PRODUCTION_ORIGINS.indexOf(from.origin) !== -1 || from.origin === window.location.origin) &&
+            !isPublicPath(from.pathname)) return false;
       } catch (e) { return false; }
     }
-    return true;
+
+    return safeUrl(window.location.href, fromTagAssistant);
   }
   function allowed() {
     var choice = validRecord();

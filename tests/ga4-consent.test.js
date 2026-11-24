@@ -153,6 +153,39 @@ test("GTM: not on preview domains, with unsafe URL parameters, or with Global Pr
   assert.equal(googleRequests(load({ url: "https://www.ridearrivo.com/?utm_source=x&gclid=abc", record: accepted() }).scripts).length, 1, "reviewed campaign parameters still count");
 });
 
+
+test("GTM: allows Tag Assistant debug URLs only from Tag Assistant with consent", () => {
+  const previewUrl = "https://www.ridearrivo.com/?gtm_debug=1795515469831";
+
+  const validPreview = load({
+    url: previewUrl,
+    referrer: "https://tagassistant.google.com/",
+    record: accepted()
+  });
+  assert.equal(googleRequests(validPreview.scripts).length, 1);
+
+  const noTrustedReferrer = load({
+    url: previewUrl,
+    record: accepted()
+  });
+  assert.equal(googleRequests(noTrustedReferrer.scripts).length, 0);
+
+  const untrustedReferrer = load({
+    url: previewUrl,
+    referrer: "https://example.com/",
+    record: accepted()
+  });
+  assert.equal(googleRequests(untrustedReferrer.scripts).length, 0);
+
+  const rejectedConsent = load({
+    url: previewUrl,
+    referrer: "https://tagassistant.google.com/",
+    record: rejected()
+  });
+  assert.equal(googleRequests(rejectedConsent.scripts).length, 0);
+});
+
+
 test("GTM: rejecting while gtm.js is still downloading means the container never starts", () => {
   const env = load({ record: accepted() });
   const script = env.gtmScript();
