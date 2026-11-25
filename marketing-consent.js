@@ -126,31 +126,40 @@
     var pages = window.location.origin === EXPRESS_ORIGIN ? EXPRESS_PAGES : PUBLIC_PAGES;
     return pages.indexOf(path) !== -1;
   }
-  function safeUrl(url) {
+
+  // Tag Assistant adds gtm_debug to the page URL while previewing. Permit that
+  // single diagnostic parameter only when the navigation came from Tag Assistant.
+  // All other unknown parameters remain blocked by the normal URL allowlist.
+  function safeUrl(url, allowTagAssistantDebug) {
     try {
       var parsed = new URL(url);
       if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return false;
       if (parsed.username || parsed.password) return false;
       var safe = true;
       parsed.searchParams.forEach(function (value, key) {
-        // Unknown keys, email-like values and token-bearing fragments cause the
-        // ENTIRE visit to be skipped. Do not rewrite auth/campaign URLs in place.
-        if (SAFE_PARAMS.indexOf(key) === -1 || value.length > 512 || !/^[a-zA-Z0-9 _.,:\/-]*$/.test(value)) safe = false;
+        var allowedParam = SAFE_PARAMS.indexOf(key) !== -1 ||
+          (allowTagAssistantDebug === true && key === "gtm_debug");
+        if (!allowedParam || value.length > 512 || !/^[a-zA-Z0-9 _.,:\/-]*$/.test(value)) safe = false;
       });
       return safe && SAFE_ANCHORS.indexOf(parsed.hash.slice(1)) !== -1;
     } catch (e) { return false; }
   }
   function eligible() {
     if (window.self !== window.top || PRODUCTION_ORIGINS.indexOf(window.location.origin) === -1 ||
-        !isPublicPath(window.location.pathname) || !safeUrl(window.location.href)) return false;
+        !isPublicPath(window.location.pathname)) return false;
+
+    var fromTagAssistant = false;
     if (document.referrer) {
       if (!safeUrl(document.referrer)) return false;
       try {
         var from = new URL(document.referrer);
-        if ((PRODUCTION_ORIGINS.indexOf(from.origin) !== -1 || from.origin === window.location.origin) && !isPublicPath(from.pathname)) return false;
+        fromTagAssistant = from.origin === "https://tagassistant.google.com";
+        if ((PRODUCTION_ORIGINS.indexOf(from.origin) !== -1 || from.origin === window.location.origin) &&
+            !isPublicPath(from.pathname)) return false;
       } catch (e) { return false; }
     }
-    return true;
+
+    return safeUrl(window.location.href, fromTagAssistant);
   }
   function allowed() {
     var choice = validRecord();
